@@ -1,0 +1,59 @@
+# The method: a decoupled anchor toward w0 whose strength is chosen by a
+# controller tracking NTK drift against a linear schedule d*(t) = D_max * t/T.
+#
+# Identical to baseline.yaml except for weight_decay and the anchor block, so a
+# difference between this and the baseline is attributable to the anchor and to
+# nothing else. Five seeds rather than three: the effect being looked for on
+# CIFAR-10 is around 0.3%, which is the same size as the seed-to-seed spread.
+#
+# anchor_beta and anchor_dmax are deliberately left at 0, which makes this config
+# REFUSE TO RUN. Both are outputs of the pilot -- beta = 1/g with
+# g = -d(d_ema)/d(log lambda) at mid-training, and D_max the d_T that the best
+# fixed lambda reached -- and a guessed value would produce a controller that
+# tracks a schedule nobody chose. Run `make pilot && make pilot-check`, then
+# write the two numbers in here.
+
+seeds: "0,1,2,3,4"
+
+batch_size: 128
+val_size: 0
+augment: true
+
+arch: resnet18
+width: 64
+zero_init_residual: true
+
+epochs: 100
+optimizer: sgd
+lr: 0.1
+momentum: 0.9
+nesterov: true
+# The anchor replaces decay rather than joining it. Two shrinkage mechanisms
+# stacking -- one toward 0, one toward w0 -- would make any result attributable
+# to neither, so config.py refuses the combination outright.
+weight_decay: 0.0
+schedule: cosine
+warmup_epochs: 5
+grad_clip: 0.0
+label_smoothing: 0.0
+
+anchor_mode: adaptive
+anchor_beta: 0.0          # <- from the pilot
+anchor_dmax: 0.0          # <- from the pilot
+anchor_lambda_max_frac: 0.5
+anchor_hold_steps: 500
+anchor_rho: 0.9
+anchor_rate_limit: 0.1
+anchor_ratio_bn: 1.0
+anchor_ratio_head: 1.0
+
+probe_every: 100
+probe_batch: 250
+probe_tangents: 8
+probe_kernel: ntk
+hessian_every: 1000
+hessian_iters: 10
+
+ckpt_every: 10
+
+per_class: true

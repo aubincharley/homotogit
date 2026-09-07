@@ -23,3 +23,15 @@ warmup_epochs: 0
 schedule: cosine
 
 per_class: false
+
+# The probe and the hold window are STEP counts, and 4000 images at batch 128 is
+# 31 steps an epoch -- 62 in the whole run. Left at their real values the probe
+# would fire once and the controller would never leave its hold, so a quick run
+# would exercise none of the code it exists to check.
+probe_every: 5
+probe_batch: 40
+probe_tangents: 4
+anchor_hold_steps: 5
+hessian_every: 20
+hessian_iters: 4
+ckpt_every: 1

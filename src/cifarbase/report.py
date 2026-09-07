@@ -26,8 +26,17 @@ HEADLINE = [
     ("train_acc", "train acc", "{:.4f}"),
     ("gen_gap", "gen gap", "{:+.4f}"),
     ("worst_class_acc", "worst cls", "{:.4f}"),
+    # The homotopy coordinate, reported next to the accuracy it bought. An arm
+    # without an accuracy number attached to a drift number is not comparable to
+    # any other arm.
+    ("d_final", "drift d_T", "{:.4f}"),
+    ("lambda_final", "lambda_T", "{:.3g}"),
     ("wall_s", "wall s", "{:.0f}"),
 ]
+
+# On CIFAR-10 an effect worth believing has to clear about this much. Stated as a
+# constant so the report and the protocol cannot drift apart.
+EFFECT_THRESHOLD = 0.003
 
 CLASSES = ("airplane", "automobile", "bird", "cat", "deer",
            "dog", "frog", "horse", "ship", "truck")
@@ -70,6 +79,73 @@ def _point_latest_at(base, name):
         os.symlink(name, link)
     except OSError:                                         # pragma: no cover
         pass                            # a filesystem without symlinks is fine
+
+
+def arm_dir(parent, name):
+    """A subdirectory of the run for one arm, or the run itself when unnamed.
+
+    Arms as subdirectories rather than sibling runs is what makes
+    `analyze.py runs/latest` draw the comparison: find_runs() treats a folder
+    whose children hold results.json as a set of runs to overlay.
+    """
+    if not name:
+        return parent
+    path = os.path.join(parent, name)
+    os.makedirs(path, exist_ok=True)
+    return path
+
+
+def print_comparison(arms, baseline=None):
+    """Every arm on one table, differences stated against a named baseline arm.
+
+    A difference is only reported next to what would make it credible: two
+    independent means separate at about 2*sqrt(2)*sem, and on 10k test images
+    there is a binomial floor underneath that no number of seeds gets past. An
+    arm that beats the reference by less than the floor is printed with a dash,
+    because it has shown nothing and a number there would invite reading it.
+    """
+    if len(arms) < 2:
+        return
+    reference = next((a for a in arms if a["name"] == baseline), arms[0])
+    ref_acc = reference["stats"].get("test_acc_selected", {})
+
+    print("\n" + "=" * 78)
+    print(f"ARM COMPARISON  --  {len(arms)} arms, reference "
+          f"'{reference['name']}'")
+    print("=" * 78)
+    header = ["arm", "test acc", "+-sem", "vs ref", "credible?", "d_T", "lambda_T"]
+    print("  " + "".join(f"{h:>13}" for h in header))
+
+    for arm in arms:
+        acc = arm["stats"].get("test_acc_selected", {})
+        mean = acc.get("mean", float("nan"))
+        sem = acc.get("sem", float("nan"))
+        drift = arm["stats"].get("d_final", {}).get("mean", float("nan"))
+        lam = arm["stats"].get("lambda_final", {}).get("mean", float("nan"))
+        if arm is reference:
+            delta, verdict = "--", "reference"
+        else:
+            gap = mean - ref_acc.get("mean", float("nan"))
+            delta = f"{gap:+.4f}"
+            verdict = _credible(gap, sem, ref_acc.get("sem"), mean)
+        cells = [arm["name"][:13], f"{mean:.4f}",
+                 "n/a" if sem != sem else f"{sem:.4f}",
+                 delta, verdict, f"{drift:.3f}", f"{lam:.3g}"]
+        print("  " + "".join(f"{c:>13}" for c in cells))
+
+    print("\n  'credible?' is |difference| against max(2*sqrt(2)*sem_pooled, "
+          "2*binomial sem).")
+    print("  A 'no' means the arms are not separated by this experiment -- not "
+          "that they are equal.")
+
+
+def _credible(gap, sem_a, sem_b, mean, test_n=10000):
+    if sem_a != sem_a or sem_b is None or sem_b != sem_b:
+        return "1 seed"
+    pooled = math.sqrt(sem_a ** 2 + sem_b ** 2)
+    binom = math.sqrt(max(mean, 1e-9) * (1 - max(mean, 1e-9)) / test_n)
+    floor = max(2 * math.sqrt(2) * pooled, 2 * binom)
+    return "yes" if abs(gap) > floor else "no"
 
 
 def dump_invocation(cfg, directory, filename="invocation.json"):
@@ -137,7 +213,10 @@ def print_report(cfg, runs, stats, test_n=10000):
     print("\nper seed:")
     print("  " + "".join(f"{h:>12}" for h in ["seed"] + [n for _, n, _ in HEADLINE]))
     for row in runs:
-        cells = [str(row["seed"])] + [fmt.format(row[key])
+        # .get, because a run too short to reach anchor_reference_step never
+        # captures K_0 and so has no drift column -- a legitimate state for a
+        # smoke test, and not worth a KeyError in the reporting.
+        cells = [str(row["seed"])] + [fmt.format(row.get(key, float("nan")))
                                       for key, _, fmt in HEADLINE]
         print("  " + "".join(f"{c:>12}" for c in cells))
 
@@ -168,6 +247,9 @@ def print_report(cfg, runs, stats, test_n=10000):
               f"({floor * test_n:.1f} test images)")
         print(f"  -> a change must beat {acc['mean']:.4f} by more than "
               f"{floor:.4f} to have shown anything")
+        print(f"  (the protocol's threshold for a real effect is "
+              f"{EFFECT_THRESHOLD:.4f}; this run resolves "
+              f"{'better' if floor < EFFECT_THRESHOLD else 'WORSE'} than that)")
 
     per_class = runs[0].get("per_class")
     if per_class:
@@ -176,12 +258,82 @@ def print_report(cfg, runs, stats, test_n=10000):
         for name, value in zip(CLASSES, per_class, strict=True):
             print(f"  {name:>12}  {value:.4f}")
 
+    _print_anchor(cfg, runs, stats)
+
     selection = runs[0]["selection"]
     print(f"\nmodel selection: {selection}"
           + (f" (val_size={cfg['val_size']}, mean selected epoch "
              f"{stats['selected_epoch']['mean']:.1f})" if selection == "best_val"
              else " -- no validation split, so 'selected' == final epoch"))
     print(f"throughput: {stats['img_per_s']['mean']:,.0f} img/s mean")
+
+
+def _print_anchor(cfg, runs, stats):
+    """The anchor's own block. Printed for every arm, the unanchored one included.
+
+    The three monitor lines are the reason this is not folded into the headline
+    table. A controller that saturated, or whose feedback sign flipped, still
+    produces a smooth lambda trace and a plausible accuracy -- so the run has to
+    say so itself, in words, next to the number it produced. Reading those off a
+    CSV afterwards is exactly what does not happen.
+    """
+    first = runs[0]
+    if "anchor_mode" not in first:
+        return
+    mode = first["anchor_mode"]
+    print(f"\nanchor: mode={mode}")
+    if mode == "off":
+        print("  no penalty applied; drift was measured and logged only")
+    else:
+        print(f"  lambda clip  [{first['lambda_min']:.4g}, "
+              f"{first['lambda_max']:.4g}]"
+              + (f"   target d*(T) = {cfg['anchor_dmax']:.4f}, "
+                 f"beta = {cfg['anchor_beta']:.4g}"
+                 if mode == "adaptive" else ""))
+    for key, label, fmt in (("d_final", "drift d_T", "{:.4f}"),
+                            ("d_ntk_final", "  via NTK", "{:.4f}"),
+                            ("a_ntk_final", "  alignment a_T", "{:.4f}"),
+                            ("scale_ntk_final", "  kernel scale", "{:.4f}"),
+                            ("d_feature_final", "  via features", "{:.4f}"),
+                            ("scale_feature_final", "  feature scale", "{:.4f}"),
+                            ("dist_rel_final", "||w-w0||/||w0||", "{:.4f}"),
+                            ("lambda_final", "lambda at T", "{:.4g}")):
+        entry = stats.get(key)
+        if entry:
+            print(f"  {label:>16}  {fmt.format(entry['mean'])}"
+                  f"   ({fmt.format(entry['min'])} .. {fmt.format(entry['max'])})")
+
+    clips = [r.get("clip_hits", 0) for r in runs]
+    flips = [r.get("sign_flip_step", -1) for r in runs]
+    sats = [r.get("saturation_step", -1) for r in runs]
+    print(f"  clip hits per seed          {clips}")
+    if any(f >= 0 for f in flips):
+        print(f"  !! FEEDBACK SIGN FLIPPED at steps {flips} (-1 = never). Every "
+              f"step after that is constant-lambda training: the controller was "
+              f"frozen because d had started responding POSITIVELY to lambda.")
+    if any(s >= 0 for s in sats):
+        print(f"  !! DRIFT SIGNAL SATURATED at steps {sats} (-1 = never). The "
+              f"controller had no authority left past that point; treat the tail "
+              f"of the run as constant lambda, not as a tracked schedule.")
+    if all(f < 0 for f in flips) and all(s < 0 for s in sats):
+        print("  monitors clean: feedback sign held and the drift signal stayed live")
+    # d^2 = scale^2 - 2 a scale + 1. When the scale term dominates, the drift the
+    # controller regulated was mostly the kernel getting bigger rather than the
+    # function class rotating, and the run has to say so next to the number.
+    scale = stats.get("scale_ntk_final", {}).get("mean")
+    align = stats.get("a_ntk_final", {}).get("mean")
+    if scale is not None and align is not None and scale > 2.0:
+        print(f"  !! the kernel's NORM grew {scale:.1f}x while its alignment with "
+              f"K_0 is {align:.2f}. d is therefore mostly reporting scale, not "
+              f"geometry. Read the alignment column, and consider "
+              f"probe_signal=alignment (which steers by 1-a, the same quantity "
+              f"with the scale divided out) before attributing this drift to "
+              f"feature learning.")
+
+    if max(clips, default=0) > 0 and mode == "adaptive":
+        print("  a persistently clipped lambda means the drift target is "
+              "unreachable at this beta -- a finding, not a bug, but it means "
+              "d*(t) was not actually tracked. Check the d vs d* panel.")
 
 
 def dump(payload, directory, filename="results.json"):
@@ -219,6 +371,6 @@ def dump_history(history, directory, stem="history"):
         writer.writeheader()
         writer.writerows(history)
 
-    print(f"history written to {jsonl_path} and {csv_path} "
-          f"({len(history)} epoch rows)")
+    print(f"{stem} written to {jsonl_path} and {csv_path} "
+          f"({len(history)} rows)")
     return [jsonl_path, csv_path]

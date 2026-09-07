@@ -1,6 +1,14 @@
-.PHONY: build run quick baseline push status pull clean runs plot
+.PHONY: build run quick baseline selfcheck pilot pilot-check anchor resume \
+        push status pull clean runs plot help
 
-KERNEL = aubincharley/cifar10-resnet
+# The lambda sweep for stage 1. 0 is included deliberately: it is the free drift
+# curve, and D_max is only interpretable as a fraction of it.
+PILOT_LAMBDAS ?= 0 0.0001 0.001 0.01 0.1 1
+
+# The slug Kaggle actually assigned. A kernel's slug comes from its TITLE on the
+# first push, not from `id` in kernel-metadata.json -- `id` only routes pushes to
+# a kernel that already exists. Renaming the title later does not move the slug.
+KERNEL = aubincharley/cifar-10-anchored-l2-vs-baseline
 # Override if the venv is not activated: make quick PYTHON=.venv/bin/python
 PYTHON ?= python3
 DIR ?= runs/latest
@@ -16,6 +24,34 @@ quick:          ## CPU smoke test: resnet18 w=16, 4k images, 2 epochs, 1 seed
 
 baseline:       ## the reference recipe, one seed -- for timing a change
 	$(PYTHON) main.py --seeds 0
+
+# -- the anchored method: stage 0, stage 1, stage 3 ---------------------------
+# Run them in this order. Each one is a gate on the next, and every failure they
+# catch produces a run that looks entirely normal.
+
+selfcheck:      ## stage 0: the anchor's correctness gates. Needs no dataset.
+	CIFAR_ALLOW_CPU=1 $(PYTHON) main.py --selfcheck
+
+pilot:          ## stage 1: fixed-lambda sweep. The go/no-go for the whole design.
+	@for lam in $(PILOT_LAMBDAS); do \
+		echo "=== pilot lambda=$$lam ==="; \
+		$(PYTHON) main.py --config pilot --anchor-lambda $$lam || exit 1; \
+	done
+	@echo "now: make pilot-check"
+
+pilot-check:    ## stage 2: monotone separation, then beta and D_max for anchor.yaml
+	$(PYTHON) analyze.py runs --pilot
+
+anchor:         ## stage 3: the method. Refuses until beta and D_max are set.
+	$(PYTHON) main.py --config anchor
+
+# Stage 3 is ~2.4 h per arm on a T4 and does not fit one Kaggle session. Split it
+# with --stop-after-epoch, never by lowering --epochs: total_steps and therefore
+# the whole cosine curve come from `epochs`, so a shorter declared run trains its
+# first half on a different schedule. checkpoint.load refuses that resume.
+resume:         ## continue a stopped run: make resume CKPT=runs/latest/ckpt_s0.pt
+	@test -n "$(CKPT)" || { echo "usage: make resume CKPT=runs/<dir>/ckpt_s0.pt"; exit 1; }
+	$(PYTHON) main.py --config anchor --resume $(CKPT)
 
 push: build     ## rebuild, then push the kernel to Kaggle
 	@echo "NOTE: a push resets the accelerator. Set GPU T4 x2 in the UI, then Save & Run All."
@@ -54,3 +90,7 @@ runs:           ## one line per run: which config, how many seeds, what accuracy
 
 plot:           ## plot the last run  (make plot DIR=runs to compare them all)
 	$(PYTHON) analyze.py $(DIR)
+
+help:           ## this list
+	@grep -hE '^[a-z-]+:.*##' $(MAKEFILE_LIST) \
+		| sed -E 's/:.*## /\t/' | expand -t18

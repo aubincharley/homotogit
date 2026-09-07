@@ -1,0 +1,70 @@
+# The comparison the pilot cannot make: the anchor against the reference recipe,
+# at the reference recipe's own length, with enough seeds for the difference to
+# mean something.
+#
+# Identical to baseline.yaml in every respect except the anchor block, so a
+# difference between an arm and `baseline_wd` is attributable to the anchor and
+# to nothing else.
+#
+# ONE seed per arm, which is a deliberate trade and worth being explicit about:
+# the effect being looked for on CIFAR-10 is around 0.3% and that is also the
+# size of the seed-to-seed spread, so a single seed cannot separate two arms that
+# differ by less than roughly half a point. What it CAN do is rank the arms
+# coarsely and produce the d(lambda) curve that beta and D_max are fitted from,
+# which is what this push is for. print_comparison prints "1 seed" instead of a
+# credibility verdict rather than implying one.
+#
+# The adaptive arm is NOT here. It needs anchor_beta and anchor_dmax, both of
+# which are outputs of the pilot, and a guessed D_max is a controller tracking a
+# schedule nobody chose. Run `pilot` -> `make pilot-check` first, write the two
+# numbers into anchor.yaml, then push that.
+#
+# Cost on one T4: 4 arms x 1 seed x ~28 min ~= 2 h.
+
+seeds: "0"
+
+batch_size: 128
+val_size: 0
+augment: true
+
+arch: resnet18
+width: 64
+zero_init_residual: true
+
+epochs: 100
+optimizer: sgd
+lr: 0.1
+momentum: 0.9
+nesterov: true
+weight_decay: 0.0         # per-arm; only baseline_wd carries decay
+schedule: cosine
+warmup_epochs: 5
+grad_clip: 0.0
+label_smoothing: 0.0
+
+anchor_mode: const
+anchor_lambda: 0.0
+anchor_lambda_max_frac: 0.5
+anchor_hold_steps: 500
+anchor_ratio_bn: 1.0
+anchor_ratio_head: 1.0
+
+probe_every: 100
+probe_batch: 250
+probe_tangents: 8
+probe_kernel: ntk
+hessian_every: 1000
+hessian_iters: 10
+
+ckpt_every: 20
+
+per_class: true
+
+# A ladder around the middle of §6's stability bracket. For lr = 0.1 and
+# T = 39000 steps that bracket is [2.6e-4, 5], so 1e-3 is near-inert, 1e-1 is
+# firm, and 1e-2 sits where a useful anchor should live if one exists at all.
+arms:
+  - {name: baseline_wd, anchor_mode: "off", weight_decay: 5.0e-4}
+  - {name: anchor_1e-3, anchor_lambda: 0.001}
+  - {name: anchor_1e-2, anchor_lambda: 0.01}
+  - {name: anchor_1e-1, anchor_lambda: 0.1}

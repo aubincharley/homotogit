@@ -18,6 +18,7 @@ seeds, which is most of the difference anyone is trying to see.
 """
 import argparse
 import json
+import math
 import os
 import sys
 
@@ -61,7 +62,14 @@ def load_run(directory):
         with open(jsonl) as fh:
             history = [json.loads(line) for line in fh if line.strip()]
 
+    probes = []
+    probe_jsonl = os.path.join(directory, "probes.jsonl")
+    if os.path.isfile(probe_jsonl):
+        with open(probe_jsonl) as fh:
+            probes = [json.loads(line) for line in fh if line.strip()]
+
     payload["history"] = history
+    payload["probes"] = probes
     payload["dir"] = directory
     # realpath, so pointing at runs/latest labels the figure with the run it
     # resolves to rather than the word "latest".
@@ -189,6 +197,394 @@ def plot_curves(run, outdir):
     return path
 
 
+def by_step(probes, key):
+    """Per-step mean across seeds, with min..max as the band.
+
+    band() above keys on epoch; the anchor series are sampled every probe_every
+    STEPS, several times an epoch, and the whole point of them is the shape
+    between epoch boundaries.
+    """
+    per_step = {}
+    for row in probes:
+        value = row.get(key)
+        if value is None or not isinstance(value, (int, float)):
+            continue
+        per_step.setdefault(row["step"], []).append(value)
+    steps = sorted(per_step)
+    if not steps:
+        return [], [], [], []
+    values = [per_step[s] for s in steps]
+    return (steps,
+            [sum(v) / len(v) for v in values],
+            [min(v) for v in values],
+            [max(v) for v in values])
+
+
+def _draw_steps(ax, probes, key, colour, label, dashed=False):
+    steps, mean, lo, hi = by_step(probes, key)
+    if not steps:
+        return False
+    ax.plot(steps, mean, color=colour, lw=1.6, label=label,
+            ls="--" if dashed else "-")
+    if any(top > bot for top, bot in zip(hi, lo, strict=True)):
+        ax.fill_between(steps, lo, hi, color=colour, alpha=0.15, linewidth=0)
+    return True
+
+
+def spearman(xs, ys):
+    """Rank correlation, without pulling in scipy for one number.
+
+    Average ranks for ties, then Pearson on the ranks -- which is what Spearman
+    is. Ties matter here: a saturated drift signal produces long stretches of
+    identical d, and integer ranking would invent an ordering inside them.
+    """
+    if len(xs) < 3:
+        return float("nan")
+
+    def rank(values):
+        order = sorted(range(len(values)), key=lambda i: values[i])
+        ranks = [0.0] * len(values)
+        i = 0
+        while i < len(order):
+            j = i
+            while j + 1 < len(order) and values[order[j + 1]] == values[order[i]]:
+                j += 1
+            shared = (i + j) / 2.0 + 1.0
+            for k in range(i, j + 1):
+                ranks[order[k]] = shared
+            i = j + 1
+        return ranks
+
+    rx, ry = rank(xs), rank(ys)
+    mx, my = sum(rx) / len(rx), sum(ry) / len(ry)
+    cov = sum((a - mx) * (b - my) for a, b in zip(rx, ry, strict=True))
+    sx = sum((a - mx) ** 2 for a in rx) ** 0.5
+    sy = sum((b - my) ** 2 for b in ry) ** 0.5
+    return cov / (sx * sy) if sx > 0 and sy > 0 else float("nan")
+
+
+def plot_anchor(run, outdir):
+    """The homotopy coordinate, and everything needed to believe it.
+
+    Six panels, all against STEP rather than epoch, because that is the axis the
+    controller lives on. Two of them decide whether the rest means anything:
+
+    d vs d* is whether the loop actually tracked its schedule. If it did not, no
+    accuracy number from this run means what it claims to.
+
+    The kernel scale is whether d was measuring what it is supposed to measure.
+    d^2 = scale^2 - 2 a scale + 1, so a drift of 29 with an alignment of 0.27 is
+    a kernel whose NORM grew 29x -- feature learning is not what was regulated.
+    The alignment panel next to it carries 1 - a, the same quantity with the
+    scale divided out, which is what probe_signal=alignment steers by.
+    """
+    import matplotlib.pyplot as plt
+
+    probes = run.get("probes") or []
+    if not probes:
+        return None
+    cfg = run["config"]
+
+    fig, axes = plt.subplots(3, 2, figsize=(11.5, 10.2))
+    (ax_drift, ax_lam), (ax_align, ax_dist), (ax_hess, ax_pay) = axes
+    # Room for the right-hand twin axes, whose labels otherwise land on top of
+    # the next panel's left label.
+    fig.subplots_adjust(wspace=0.34, hspace=0.45, top=0.93)
+
+    drawn = _draw_steps(ax_drift, probes, "d", TEST, "d (measured)")
+    _draw_steps(ax_drift, probes, "d_ema", "#eb6834", "d (EMA, what the loop sees)")
+    _draw_steps(ax_drift, probes, "d_target", "#0b0b0b", "d* (target)", dashed=True)
+    ax_drift.set_title("the controlled quantity: drift against its schedule")
+    ax_drift.set_ylabel("drift signal")
+    # Guarded: a run shorter than anchor_reference_step has no drift columns at
+    # all, and legend() on an empty axis is a warning rather than a legend.
+    if drawn:
+        ax_drift.legend(loc="upper left")
+    twin_scale = ax_drift.twinx()
+    if _draw_steps(twin_scale, probes, "scale_ntk", "#1baf7a", "||K_t||/||K_0||"):
+        twin_scale.set_yscale("log")
+        twin_scale.set_ylabel("kernel scale", color="#1baf7a")
+        twin_scale.spines["right"].set_visible(True)
+        twin_scale.legend(loc="lower right")
+
+    _draw_steps(ax_lam, probes, "lam", VAL, "lambda")
+    _draw_steps(ax_lam, probes, "lam_applied", MUTED, "lambda applied")
+    for bound, label in (("lambda_min", "clip lo"), ("lambda_max", "clip hi")):
+        value = run["stats"].get(bound, {}).get("mean")
+        if value:
+            ax_lam.axhline(value, color="#d63a6a", lw=0.9, ls=":")
+            ax_lam.annotate(label, (0, value), fontsize=7, color="#d63a6a",
+                            va="bottom")
+    _, lam_mean, _, _ = by_step(probes, "lam")
+    if lam_mean and min(lam_mean) > 0:
+        ax_lam.set_yscale("log")
+    ax_lam.set_title(f"lambda  ({cfg.get('anchor_mode', '?')})")
+    ax_lam.set_ylabel("lambda")
+    ax_lam.legend(loc="best")
+
+    # Scale-free view of the same measurement, on one bounded axis.
+    drawn = _draw_steps(ax_align, probes, "a_ntk", TEST, "a  (NTK)")
+    _draw_steps(ax_align, probes, "a_feature", "#eb6834", "a  (features)")
+    _draw_steps(ax_align, probes, "dalign_ntk", MUTED,
+                "1 - a  (the scale-free signal)", dashed=True)
+    ax_align.set_title("kernel alignment: geometry alone, scale divided out")
+    ax_align.set_ylabel("cosine alignment with K_0")
+    if drawn:
+        ax_align.legend(loc="best")
+    else:
+        _blank(ax_align)
+
+    _draw_steps(ax_dist, probes, "dist_rel", TEST, "||w-w0|| / ||w0||")  # always present
+    twin_eta = ax_dist.twinx()
+    # eta_eff on its own log axis: it spans layers whose norms differ by an order
+    # of magnitude, and it is the defence against the reading that an arm simply
+    # trained at a better effective learning rate.
+    if _draw_steps(twin_eta, probes, "eta_eff_mean", "#1baf7a", "mean eta_eff"):
+        twin_eta.set_yscale("log")
+        twin_eta.set_ylabel("eta / ||w_l||^2", color="#1baf7a")
+        twin_eta.spines["right"].set_visible(True)
+    ax_dist.set_title("distance from the anchor, and the effective lr it implies")
+    ax_dist.set_ylabel("||w-w0|| / ||w0||")
+    ax_dist.legend(loc="upper left")
+
+    if _draw_steps(ax_hess, probes, "hessian_lambda_min", "#9a5fd0", "lambda_min(H)"):
+        ax_hess.axhline(0, color="#0b0b0b", lw=0.8)
+        ax_hess.set_title("smallest Hessian eigenvalue  (a crossing is a branch event)")
+        ax_hess.set_ylabel("eigenvalue")
+    else:
+        ax_hess.set_title("lambda_min(H) not logged  (hessian_every = 0)")
+        _blank(ax_hess)
+
+    # The payoff: accuracy bought per unit of drift spent. Read off the epoch
+    # rows, which carry both the last probe of the epoch and the test accuracy.
+    history = run.get("history") or []
+    pairs = sorted((row["d"], row["test_acc"], row["epoch"]) for row in history
+                   if isinstance(row.get("d"), (int, float))
+                   and isinstance(row.get("test_acc"), (int, float)))
+    if len(pairs) >= 2:
+        ax_pay.plot([p[0] for p in pairs], [p[1] for p in pairs],
+                    color=TEST, lw=1.4, marker="o", ms=3)
+        ax_pay.set_xlabel("drift spent  d")
+        ax_pay.set_ylabel("test accuracy")
+        ax_pay.set_title("accuracy bought per unit of feature learning spent")
+    else:
+        ax_pay.set_title("no epoch carries both drift and accuracy yet")
+        _blank(ax_pay)
+
+    for ax in (ax_drift, ax_lam, ax_align, ax_dist, ax_hess):
+        ax.set_xlabel("step")
+    fig.suptitle(f"{run['name']}  --  anchor {cfg.get('anchor_mode', '?')}, "
+                 f"signal {cfg.get('probe_signal', 'drift')} on the "
+                 f"{cfg.get('probe_kernel', 'ntk')} kernel, "
+                 f"D_max {cfg.get('anchor_dmax', 0):.3f}, "
+                 f"beta {cfg.get('anchor_beta', 0):.3g}",
+                 x=0.5, y=0.975, fontsize=11)
+
+    path = os.path.join(outdir, "anchor.png")
+    fig.savefig(path)
+    plt.close(fig)
+    return path
+
+
+def _blank(ax):
+    """An empty panel that reads as "nothing to show" rather than as a plot that
+    failed to draw."""
+    ax.set_xticks([])
+    ax.set_yticks([])
+    for side in ("left", "bottom"):
+        ax.spines[side].set_visible(False)
+
+
+def plot_drift_validation(run, outdir):
+    """The cheap estimator against the real one, over a whole trajectory.
+
+    This figure is a decision, not decoration: the penultimate-feature Gram costs
+    one forward pass instead of R JVPs, and may be substituted for the NTK
+    estimator only if Spearman rho over the trajectory clears 0.95. Agreement at
+    one point in training is worthless -- the two disagree exactly where the
+    controller is doing something -- which is why the correlation is taken over
+    every probe rather than at the end.
+
+    One trap, and the figure now names it. If both series rise monotonically with
+    step -- which is what happens on a constant-lambda or unanchored arm -- then
+    their rank correlation is 1 by construction, whatever the two estimators
+    actually think, because Spearman only sees the ordering and time already
+    orders both. Measured on a short const-lambda run: rho = 1.0000 while the two
+    drifts differed by more than a factor of two (28.9 against 13.8). The
+    substitution can only be justified on an arm where lambda moves enough to
+    make the ordering non-trivial.
+    """
+    import matplotlib.pyplot as plt
+
+    probes = [r for r in run.get("probes") or []
+              if isinstance(r.get("d_ntk"), (int, float))
+              and isinstance(r.get("d_feature"), (int, float))]
+    if len(probes) < 5:
+        return None
+
+    ntk = [r["d_ntk"] for r in probes]
+    feature = [r["d_feature"] for r in probes]
+    rho = spearman(ntk, feature)
+
+    # Both monotone in step means the ranks agree for free.
+    def monotone(values):
+        return (all(b >= a for a, b in zip(values, values[1:], strict=False))
+                or all(b <= a for a, b in zip(values, values[1:], strict=False)))
+
+    trivial = monotone(ntk) and monotone(feature)
+
+    fig, (ax_scatter, ax_time) = plt.subplots(1, 2, figsize=(11.5, 4.4))
+    fig.subplots_adjust(wspace=0.26, top=0.82)
+    ax_scatter.scatter(ntk, feature, s=12, alpha=0.6,
+                       c=[r["step"] for r in probes], cmap="viridis")
+    ax_scatter.set_xlabel("d from the NTK sketch (primary)")
+    ax_scatter.set_ylabel("d from the feature Gram (cheap)")
+    ax_scatter.set_title("colour is step; doubling back = ranks disagree")
+
+    _draw_steps(ax_time, probes, "d_ntk", TEST, "NTK")
+    _draw_steps(ax_time, probes, "d_feature", "#eb6834", "feature Gram")
+    ax_time.set_xlabel("step")
+    ax_time.set_ylabel("relative drift")
+    ax_time.legend()
+    ax_time.set_title("both estimators over the run")
+
+    if trivial:
+        verdict = ("UNINFORMATIVE: both series are monotone in step, so rho is 1 "
+                   "by construction. Read this on an arm where lambda moves.")
+    else:
+        verdict = (f"the feature Gram is "
+                   f"{'ADMISSIBLE' if rho >= 0.95 else 'NOT admissible'} as a "
+                   f"substitute (threshold 0.95)")
+    fig.suptitle(f"{run['name']}  --  Spearman rho = {rho:.4f} over "
+                 f"{len(probes)} probes\n{verdict}", x=0.5, y=0.99, fontsize=9)
+
+    path = os.path.join(outdir, "drift_validation.png")
+    fig.savefig(path)
+    plt.close(fig)
+    return path
+
+
+def check_pilot(runs):
+    """Stage 1's go/no-go, and stage 2's two numbers.
+
+    Separation. d(t) must order monotonically in lambda: more anchor, less drift.
+    Checked as a rank correlation between lambda and d at several points in
+    training, not just at the end, because an arm can converge to the same drift
+    by a different route. A non-negative correlation means lambda has no
+    authority over drift and the adaptive arm cannot work at any beta -- the
+    design is dead and no amount of tuning revives it.
+
+    The gain. g = -d(d_ema)/d(log lambda) at mid-training, by OLS over the swept
+    lambdas. beta = 1/g makes the loop gain 1, i.e. one probe to correct an error.
+    lambda = 0 is excluded from the fit (no logarithm) but reported: it is the
+    free drift curve, and it is what D_max is a fraction of.
+    """
+    arms, excluded = [], []
+    for run in runs:
+        probes = run.get("probes") or []
+        if not probes:
+            continue
+        # Only the ANCHORED arms may enter the lambda-vs-drift fit. An arm running
+        # weight decay, or with the anchor off, has its drift set by a different
+        # regulariser entirely -- letting the tuned-decay reference in as a
+        # "lambda = 0" point would put a number from another experiment into the
+        # separation correlation and quietly bias the gain.
+        cfg = run["config"]
+        if cfg.get("anchor_mode", "off") == "off" or cfg.get("weight_decay", 0):
+            excluded.append((run["name"], cfg.get("anchor_mode", "off"),
+                             cfg.get("weight_decay", 0)))
+            continue
+        # Rows written before K_0 was captured carry no drift columns at all --
+        # a legitimate state, not a hole to interpolate over.
+        probes = [r for r in probes if isinstance(r.get("d_ema"), (int, float))]
+        if not probes:
+            continue
+        arms.append({
+            "lam": float(run["config"].get("anchor_lambda", 0.0)),
+            "name": run["name"],
+            "acc": run["stats"].get("test_acc_selected", {}).get("mean", float("nan")),
+            "probes": probes,
+        })
+    arms.sort(key=lambda a: a["lam"])
+    for name, mode, decay in excluded:
+        print(f"  excluded from the fit: {name} (anchor_mode={mode}, "
+              f"weight_decay={decay:g}) -- its drift is not lambda's doing")
+    if len(arms) < 3:
+        print(f"!! only {len(arms)} pilot runs with probe rows: the separation "
+              f"check needs at least 3. Run `make pilot` first.")
+        return False
+
+    def drift_at(arm, fraction):
+        target = fraction * max(r["step"] for r in arm["probes"])
+        row = min(arm["probes"], key=lambda r: abs(r["step"] - target))
+        return row["d_ema"]
+
+    print(f"\npilot: {len(arms)} arms")
+    print("  " + "".join(f"{h:>13}" for h in
+                         ["lambda", "d@25%", "d@50%", "d@75%", "d@100%", "test acc"]))
+    fractions = (0.25, 0.5, 0.75, 1.0)
+    for arm in arms:
+        cells = [f"{arm['lam']:.4g}"] + [f"{drift_at(arm, f):.4f}" for f in fractions]
+        cells.append(f"{arm['acc']:.4f}")
+        print("  " + "".join(f"{c:>13}" for c in cells))
+
+    lams = [a["lam"] for a in arms]
+    print("\n  separation (rank correlation of lambda against d; want <= -0.9):")
+    correlations = []
+    for fraction in fractions:
+        rho = spearman(lams, [drift_at(a, fraction) for a in arms])
+        correlations.append(rho)
+        print(f"    at {fraction:>5.0%} of training   rho = {rho:+.4f}")
+
+    final = [drift_at(a, 1.0) for a in arms]
+    span = max(final) / max(min(final), 1e-12)
+    separated = all(rho <= -0.9 for rho in correlations) and span > 1.5
+    print(f"    d_T spread across the sweep: {span:.2f}x  (want > 1.5x)")
+    print(f"\n  -> {'SEPARATED' if separated else 'NOT SEPARATED'}")
+    if not separated:
+        print("     lambda does not control drift monotonically over this sweep.")
+        print("     There is nothing for a controller to control. Do NOT run an")
+        print("     adaptive arm: stop and report this, it is a real negative")
+        print("     result about the mechanism rather than a tuning problem.")
+        return False
+
+    # g at mid-training, over the arms with a logarithm.
+    fitted = [(math.log(a["lam"]), drift_at(a, 0.5)) for a in arms if a["lam"] > 0]
+    if len(fitted) < 3:
+        print("     (need at least 3 non-zero lambdas to fit the gain)")
+        return False
+    mean_x = sum(x for x, _ in fitted) / len(fitted)
+    mean_y = sum(y for _, y in fitted) / len(fitted)
+    slope = (sum((x - mean_x) * (y - mean_y) for x, y in fitted)
+             / sum((x - mean_x) ** 2 for x, _ in fitted))
+    gain = -slope
+    beta = 1.0 / gain
+
+    best = max((a for a in arms if a["lam"] > 0),
+               key=lambda a: (a["acc"] if a["acc"] == a["acc"] else -1))
+    dmax = drift_at(best, 1.0)
+    free = next((a for a in arms if a["lam"] == 0.0), None)
+
+    print(f"\n  gain      g = -d(d_ema)/d(log lambda) at 50% = {gain:.6g}")
+    print(f"  gain      beta = 1/g = {beta:.6g}   (loop gain beta*g = 1.0, "
+          f"inside the stable band 0 < beta*g < 2)")
+    print(f"  budget    best fixed lambda = {best['lam']:.4g} "
+          f"(test acc {best['acc']:.4f}), its d_T = {dmax:.6g}")
+    if free is not None:
+        print(f"  budget    free drift at lambda = 0 reached d_T = "
+              f"{drift_at(free, 1.0):.6g}, so the budget above is "
+              f"{dmax / max(drift_at(free, 1.0), 1e-12):.2%} of unconstrained")
+    if gain <= 0:
+        print("  !! the fitted gain is not positive: beta = 1/g would invert the "
+              "feedback. Treat the separation verdict above as unreliable.")
+        return False
+
+    print("\n  paste into src/cifarbase/configs/anchor.yaml:")
+    print(f"    anchor_beta: {beta:.6g}")
+    print(f"    anchor_dmax: {dmax:.6g}")
+    return True
+
+
 def plot_per_class(run, outdir):
     """Which classes the model is actually failing, worst first."""
     import matplotlib.pyplot as plt
@@ -296,6 +692,9 @@ def main():
     parser.add_argument("folder", help="a run directory, or a folder of them")
     parser.add_argument("--out", default=None,
                         help="where the pngs go (default: <folder>/figures)")
+    parser.add_argument("--pilot", action="store_true",
+                        help="stage 1's go/no-go: does lambda control drift "
+                             "monotonically? Then print beta and D_max.")
     args = parser.parse_args()
 
     if not os.path.isdir(args.folder):
@@ -309,6 +708,9 @@ def main():
 
     print_table(runs)
 
+    if args.pilot:
+        raise SystemExit(0 if check_pilot(runs) else 1)
+
     import matplotlib
     matplotlib.use("Agg")           # no display on Kaggle, and none needed here
     _theme(matplotlib)
@@ -318,7 +720,9 @@ def main():
 
     made = []
     if len(runs) == 1:
-        made += [plot_curves(runs[0], outdir), plot_per_class(runs[0], outdir)]
+        made += [plot_curves(runs[0], outdir), plot_per_class(runs[0], outdir),
+                 plot_anchor(runs[0], outdir),
+                 plot_drift_validation(runs[0], outdir)]
     else:
         made.append(plot_compare(runs, outdir))
         # Per-run curves too, each in its own directory, so a folder of runs
@@ -326,7 +730,8 @@ def main():
         for run in runs:
             sub = os.path.join(run["dir"], "figures")
             os.makedirs(sub, exist_ok=True)
-            made += [plot_curves(run, sub), plot_per_class(run, sub)]
+            made += [plot_curves(run, sub), plot_per_class(run, sub),
+                     plot_anchor(run, sub), plot_drift_validation(run, sub)]
 
     print()
     for path in made:

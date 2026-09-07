@@ -1,0 +1,65 @@
+# Stage 1, and the real go/no-go for the whole design.
+#
+# Short runs at a FIXED lambda, sweeping it over four decades, logging d(t). The
+# question is not accuracy, it is whether lambda has any authority over drift at
+# all: the d(t) trajectories must separate monotonically in lambda. If they do
+# not, there is nothing for a controller to control and the adaptive arm cannot
+# work no matter how beta is tuned -- so this runs before anything else and costs
+# about an hour of T4 time for the whole sweep.
+#
+#   make pilot          # the sweep, including lambda = 0 for the free curve
+#   make pilot-check    # monotone separation, then the gain g and D_max
+#
+# One seed on purpose. This is a mechanism check, not a measurement; the spread
+# across seeds matters in stage 3 and would triple the cost here for nothing.
+
+seeds: "0"
+
+batch_size: 128
+val_size: 0
+augment: true
+
+arch: resnet18
+width: 64
+
+epochs: 30
+optimizer: sgd
+lr: 0.1
+momentum: 0.9
+nesterov: true
+# Zero, and not negotiable: the pilot is measuring d(lambda), and decay toward 0
+# would be a second, uncontrolled shrinkage confounding every point on the curve.
+weight_decay: 0.0
+schedule: cosine
+warmup_epochs: 5
+
+anchor_mode: const
+anchor_lambda: 0.0        # per-arm below
+
+# The sweep, as arms of one run. A Kaggle script kernel is one file with no argv,
+# so the whole ladder has to be declared here or it cannot run there at all --
+# and six separate pushes would be six arms that ran six versions of the code.
+#
+# lambda = 0 is in the ladder deliberately: it is the free-drift curve, and D_max
+# is only interpretable as a fraction of it. baseline_wd is the reference recipe
+# and the only arm carrying weight decay; every anchored arm has wd = 0, because
+# decay toward 0 and an anchor toward w0 would stack and the arm would measure
+# their sum.
+arms:
+  - {name: baseline_wd, anchor_mode: "off", weight_decay: 5.0e-4}
+  - {name: lam0,        anchor_lambda: 0.0}
+  - {name: lam1e-4,     anchor_lambda: 0.0001}
+  - {name: lam1e-3,     anchor_lambda: 0.001}
+  - {name: lam1e-2,     anchor_lambda: 0.01}
+  - {name: lam1e-1,     anchor_lambda: 0.1}
+  - {name: lam1,        anchor_lambda: 1.0}
+
+probe_every: 100
+probe_batch: 250
+probe_tangents: 8
+probe_kernel: ntk
+# Off during the pilot: lambda_min(H) is a stage-3 diagnostic and the pilot is
+# already the cheapest useful thing that can be run.
+hessian_every: 0
+
+per_class: false

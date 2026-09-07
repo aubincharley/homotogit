@@ -90,11 +90,19 @@ class ResNet(nn.Module):
             self.in_ch = out_ch * BasicBlock.expansion
         return nn.Sequential(*layers)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward_features(self, x: torch.Tensor) -> torch.Tensor:
+        """Everything up to and including the pool: the penultimate features.
+
+        Split out of forward so the drift probe can read the feature Gram in one
+        forward pass (kernel.feature_gram). forward() below is the only other
+        caller, so the split cannot make the two disagree.
+        """
         out = F.relu(self.bn1(self.conv1(x)), inplace=True)
         out = self.layer4(self.layer3(self.layer2(self.layer1(out))))
-        out = F.adaptive_avg_pool2d(out, 1).flatten(1)
-        return self.fc(out)
+        return F.adaptive_avg_pool2d(out, 1).flatten(1)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.fc(self.forward_features(x))
 
 
 ARCHS = {

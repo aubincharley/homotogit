@@ -176,6 +176,48 @@ class Split:
             index = slice(start, start + batch_size)
             yield self._view(index), self.y[index]
 
+    def take(self, index):
+        """The rows at `index`, un-augmented. The probe batch is read through here.
+
+        Un-augmented, always: a probe under random crops would measure the crop
+        rather than the network, and the drift curve would be pure noise. For a
+        padded split "un-augmented" is the deterministic centre crop, which is the
+        same view evaluate() sees.
+        """
+        return self._view(index), self.y[index]
+
+
+def class_balanced_indices(split, count, seed):
+    """`count` indices into `split`, count/NUM_CLASSES per class, drawn once.
+
+    Seeded from a CONSTANT, never from the run seed, so every seed and every arm
+    measures drift on the same images. A probe set that moved with the seed would
+    put the batch's own difficulty into the across-seed spread of d_t, which is
+    the one number the controller is steering by.
+
+    Balanced because an unbalanced probe makes ||K_t - K_0|| partly a statement
+    about which classes happen to be over-represented in it.
+    """
+    if count % NUM_CLASSES:
+        raise ValueError(f"probe_batch {count} is not a multiple of "
+                         f"{NUM_CLASSES}: a balanced probe needs an equal share "
+                         f"per class")
+    per_class = count // NUM_CLASSES
+    generator = torch.Generator().manual_seed(int(seed))
+    labels = split.y.to("cpu")
+    picked = []
+    for label in range(NUM_CLASSES):
+        members = (labels == label).nonzero(as_tuple=True)[0]
+        if members.numel() < per_class:
+            raise ValueError(f"class {label} has {members.numel()} examples in "
+                             f"this split but the probe wants {per_class}: lower "
+                             f"probe_batch or raise train_subset")
+        order = torch.randperm(members.numel(), generator=generator)
+        picked.append(members[order[:per_class]])
+    # Sorted so the probe batch's row order is a property of the split, not of the
+    # order the classes were walked in -- K_t is only comparable to K_0 row by row.
+    return torch.cat(picked).sort().values.to(split.device)
+
 
 def _random_crop(raw, pad, generator=None):
     """Crop 32x32 out of a padded row at a PER-SAMPLE offset, with one gather."""
