@@ -1,0 +1,30 @@
+# The reference recipe. The accuracy number in the README describes exactly this
+# file, so changing a value here means the README no longer describes your run --
+# override with a flag or an env var for an experiment, and edit this only when
+# you mean to move the reference itself.
+#
+# ResNet-18, SGD + nesterov, cosine with a 5-epoch linear warmup, standard
+# crop+flip augmentation, trained on all 50k and evaluated on the 10k test set.
+
+seeds: "0,1,2"
+
+batch_size: 128
+val_size: 0
+augment: true
+
+arch: resnet18
+width: 64
+zero_init_residual: true
+
+epochs: 100
+optimizer: sgd
+lr: 0.1
+momentum: 0.9
+nesterov: true
+weight_decay: 5.0e-4
+schedule: cosine
+warmup_epochs: 5
+grad_clip: 0.0
+label_smoothing: 0.0
+
+per_class: true

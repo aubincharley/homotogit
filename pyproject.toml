@@ -1,0 +1,38 @@
+# Only for local work. Kaggle's image already has torch, numpy, pyyaml and wandb,
+# and a script kernel cannot pip-install anyway -- nothing here reaches the kernel.
+#
+# Pinned below 3.13 because the Kaggle image runs 3.12: a local venv on a newer
+# interpreter would exercise a different torch than the one that produces the
+# number in the README.
+[project]
+name = "cifar10-resnet"
+version = "0.1.0"
+description = "ResNet baseline on CIFAR-10, runnable locally and on a Kaggle GPU"
+readme = "README.md"
+authors = [{ name = "Aubin Charley", email = "aubin.charley@raidium.eu" }]
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "torch>=2.4",
+    "numpy>=1.26",
+    "pyyaml>=6.0",
+    # analyze.py only. It lives at the top level, not in src/, so matplotlib
+    # never has to exist inside the kernel.
+    "matplotlib>=3.8",
+]
+
+[project.optional-dependencies]
+# Optional so the default local install stays small: wandb_setup falls back to a
+# NullRun that records to stdout and results.json when the import fails.
+wandb = ["wandb>=0.17"]
+
+[build-system]
+requires = ["uv_build>=0.12.5,<0.13.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "cifarbase"
+module-root = "src"
+
+[tool.pyright]
+venvPath = "."
+venv = ".venv"

@@ -1,0 +1,25 @@
+# A plumbing check, not an experiment: does the whole path from config to
+# results.json run without falling over? Two epochs of a narrow net on 4k images
+# finishes on a CPU in a couple of minutes and proves nothing about accuracy.
+#
+# Pair it with CIFAR_ALLOW_CPU=1 (see `make quick`), because pick_device refuses
+# to fall back to CPU inside a Kaggle session.
+
+seeds: "0"
+quick: false          # this file IS the small config; no need for _QUICK on top
+
+batch_size: 128
+eval_batch_size: 500
+train_subset: 4000
+val_size: 1000
+augment: true
+
+arch: resnet18
+width: 16
+
+epochs: 2
+lr: 0.05
+warmup_epochs: 0
+schedule: cosine
+
+per_class: false
