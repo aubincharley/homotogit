@@ -103,6 +103,44 @@ CONFIG = {
     "anchor_replay_path": "",   # replay arm: a probes.jsonl to replay verbatim
     "anchor_replay_seed": 0,    # which seed's lambda trace in that file
 
+    # ---- the per-group penalty and its allocation ------------------------
+    # The penalty is sum_g (lambda_g/2) ||w_g - w0_g||^2 / ||w0_g||^2 over the
+    # seven groups in anchor.py, with log lambda_g = u + a_g and sum_g a_g = 0.
+    # u is the fast loop above; a_g is the slow loop in controller.Allocator.
+    "anchor_normalize": True,   # divide the penalty by ||w0_g||^2, which is what
+                                # makes lambda_g dimensionless and therefore
+                                # comparable across depth. False is the raw
+                                # (lambda/2)||w-w0||^2 the closed-form gate needs
+                                # and is not a sensible setting for a real run.
+    "anchor_grouping": "stage",      # stage (7 groups) | coarse (4) | trunk (3).
+                                # How fine the allocation is allowed to be. The
+                                # coupling gate is what chooses: a diagonal
+                                # controller needs a plant whose off-diagonal
+                                # coupling is small, and merging two groups that
+                                # move together removes a coupling instead of
+                                # hiding it. Coarsen when H7 fails; do not loosen
+                                # H7.
+    "anchor_alloc": "off",      # off | adaptive. off holds a_g = 0, i.e. one
+                                # shared lambda -- the control arm.
+    "anchor_alloc_every": 10,   # PROBES between slow-loop updates. 10 probes at
+                                # probe_every=100 is 1000 steps, an order of
+                                # magnitude slower than the level. Do not close
+                                # this gap: the two-timescale separation is the
+                                # only stability argument the pair has.
+    "anchor_alloc_beta_frac": 0.2,   # beta_a = frac * anchor_beta. The slow loop
+                                # is deliberately five times shyer than the fast
+                                # one on top of being ten times rarer.
+    "anchor_alloc_shrink": 0.01,     # gamma: pull a_g back toward uniform every
+                                # update, so "no evidence" means "uniform"
+                                # instead of an arbitrary random walk
+    "anchor_alloc_clip_decades": 1.0,     # |a_g| <= decades * log(10). One decade
+                                # either way is already a 100x spread in lambda
+                                # across groups.
+    "anchor_tau_rho": 0.9,      # EMA on the per-group gradient norm feeding the
+                                # tension. A single minibatch read once every
+                                # 1000 steps is mostly gradient noise; 0.0 is the
+                                # protocol's literal single-batch reading.
+
     # ---- the drift probe -------------------------------------------------
     "probe_batch": 250,         # fixed, class-balanced, never augmented. 25 per
                                 # class: the protocol asks for ~256 AND for exact
@@ -122,6 +160,14 @@ CONFIG = {
                                 # 29 means the kernel's norm grew 29x whatever its
                                 # geometry did. Check the scale column before
                                 # reading a drift number as feature learning.
+    "probe_group_every": 1,     # PROBES between per-group NTK sketches; 0 disables
+                                # them. A per-group sketch costs L*R JVPs where
+                                # the global one costs R -- 8x here -- and gives
+                                # the global sketch for free, since the blocks sum
+                                # to it. Purely a diagnostic and the coupling
+                                # gate's regressand: the slow loop steers by
+                                # tension, so turning this down changes what is
+                                # logged and nothing about what is controlled.
     "probe_deterministic": False,    # pin cudnn inside the probe; see selfcheck H3
     "hessian_every": 0,         # steps between Lanczos sweeps; 0 disables
     "hessian_iters": 10,        # HVPs per sweep
@@ -137,6 +183,15 @@ CONFIG = {
                                 # is derived from `epochs`, so lowering it to stop
                                 # early would train on a different cosine and the
                                 # resumed half would not continue the same run.
+
+    # ---- where it runs ---------------------------------------------------
+    "allow_cpu": False,         # let a Kaggle session run on CPU. pick_device
+                                # refuses that by default, because a GPU session
+                                # spent on CPU arithmetic burns the quota and
+                                # usually hits the wall clock first. A script
+                                # kernel is handed no environment, so
+                                # CIFAR_ALLOW_CPU cannot reach it -- a config that
+                                # is MEANT for a CPU kernel has to say so itself.
 
     # ---- reporting -------------------------------------------------------
     "per_class": True,
@@ -246,7 +301,7 @@ def _validate_anchor(cfg):
     Every one of these is a mistake that produces a runnable configuration and a
     meaningless number, which is the only kind worth spending a SystemExit on.
     """
-    from cifarbase.controller import MODES
+    from cifarbase.controller import ALLOC_MODES, MODES
 
     mode = cfg["anchor_mode"]
     if mode not in MODES:
@@ -283,6 +338,55 @@ def _validate_anchor(cfg):
             raise SystemExit(f"!! no such file: {cfg['anchor_replay_path']!r}")
     if mode == "const" and cfg["anchor_lambda"] < 0.0:
         raise SystemExit(f"!! anchor_lambda must be >= 0, got {cfg['anchor_lambda']}")
+
+    from cifarbase.anchor import COARSENINGS
+
+    if cfg["anchor_grouping"] not in COARSENINGS:
+        raise SystemExit(f"!! unknown anchor_grouping {cfg['anchor_grouping']!r}: "
+                         f"pick from {', '.join(COARSENINGS)}")
+
+    alloc = cfg["anchor_alloc"]
+    if alloc not in ALLOC_MODES:
+        raise SystemExit(f"!! unknown anchor_alloc {alloc!r}: "
+                         f"pick from {', '.join(ALLOC_MODES)}")
+    if alloc == "adaptive":
+        # beta_a is a fraction of beta, so an unfitted beta makes the slow loop
+        # silently inert rather than obviously misconfigured.
+        if mode != "adaptive":
+            raise SystemExit(
+                f"!! anchor_alloc adaptive with anchor_mode {mode!r}: the "
+                f"allocation only redistributes the level the closed loop sets, "
+                f"so it is meaningless without one. Set anchor_mode adaptive, or "
+                f"anchor_alloc off.")
+        if cfg["anchor_beta"] <= 0.0:
+            raise SystemExit(f"!! anchor_alloc adaptive needs anchor_beta > 0: "
+                             f"beta_a = anchor_alloc_beta_frac * beta, so a beta "
+                             f"of {cfg['anchor_beta']} makes the slow loop inert")
+        if cfg["anchor_alloc_beta_frac"] <= 0.0:
+            raise SystemExit(f"!! anchor_alloc_beta_frac must be > 0, got "
+                             f"{cfg['anchor_alloc_beta_frac']}")
+    if cfg["anchor_alloc_every"] < 1:
+        raise SystemExit(f"!! anchor_alloc_every must be at least 1 probe, got "
+                         f"{cfg['anchor_alloc_every']}")
+    if cfg["anchor_alloc_shrink"] < 0.0:
+        raise SystemExit(f"!! anchor_alloc_shrink must be >= 0, got "
+                         f"{cfg['anchor_alloc_shrink']}")
+    if cfg["anchor_alloc_clip_decades"] <= 0.0:
+        raise SystemExit(f"!! anchor_alloc_clip_decades must be > 0, got "
+                         f"{cfg['anchor_alloc_clip_decades']}")
+    if not 0.0 <= cfg["anchor_tau_rho"] < 1.0:
+        raise SystemExit(f"!! anchor_tau_rho must be in [0, 1), got "
+                         f"{cfg['anchor_tau_rho']}")
+    if cfg["probe_group_every"] < 0:
+        raise SystemExit(f"!! probe_group_every must be >= 0 (0 disables the "
+                         f"per-group sketch), got {cfg['probe_group_every']}")
+    if not cfg["anchor_normalize"] and mode != "off":
+        # Not fatal: gate 5 needs exactly this. Loud, because on a real run it
+        # silently un-does what makes lambda_g comparable across depth.
+        print("!! WARNING: anchor_normalize is off. The penalty is the raw "
+              "(lambda/2)||w - w0||^2, lambda is no longer dimensionless, and "
+              "per-group lambdas are not comparable across depth. This setting "
+              "exists for the closed-form gate.")
 
     if cfg["anchor_w0_dtype"] not in ("fp32", "bf16"):
         raise SystemExit(f"!! anchor_w0_dtype {cfg['anchor_w0_dtype']!r}: "

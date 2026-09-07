@@ -63,3 +63,10 @@ probe_kernel: ntk
 hessian_every: 0
 
 per_class: false
+
+# NOTE on the ladder under the normalised penalty. lambda is dimensionless now --
+# the pull is lr * lambda_g * (w - w0) / ||w0_g||^2 -- so these numbers do not
+# mean what they meant before normalisation, and the stability bracket has moved
+# with min_g ||w0_g||^2. controller.describe() prints the bracket at the top of
+# every arm; if this ladder sits entirely inside or entirely outside it, move the
+# ladder rather than the bracket. Separation is still the only thing being asked.

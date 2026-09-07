@@ -335,6 +335,62 @@ def _print_anchor(cfg, runs, stats):
               "unreachable at this beta -- a finding, not a bug, but it means "
               "d*(t) was not actually tracked. Check the d vs d* panel.")
 
+    _print_groups(first, stats)
+
+
+def _print_groups(first, stats):
+    """One row per parameter group: what the allocation did and what it bought.
+
+    Printed even with the allocation off, where every a_g is 0 by construction:
+    the point of the table is then the OTHER columns -- how the drift, the
+    displacement and the group's share of the kernel differ across depth under a
+    single shared lambda. That is the comparison the adaptive arm has to beat, and
+    it is unreadable if only one arm prints it.
+    """
+    groups = first.get("anchor_groups")
+    if not groups:
+        return
+    alloc = first.get("anchor_alloc", "off")
+    grouping = first.get("anchor_grouping", "stage")
+    print(f"\nper group ({len(groups)}, grouping {grouping!r}), "
+          f"allocation {alloc}:")
+    print(f"  {'group':<10} {'||w0||^2':>10} {'lambda_T':>10} {'a_T':>8} "
+          f"{'d_T':>9} {'|w-w0|/|w0|':>12} {'share K':>8} {'tau_T':>10}")
+    w0_sq = first.get("anchor_w0_sq", {})
+    for group in groups:
+        def cell(key, fmt="{:>9.4f}", width=9):
+            # The across-seed mean when summarise() aggregated the column, and
+            # seed 0's own value when it did not (a single-seed arm, or a column
+            # only some seeds produced).
+            entry = stats.get(f"{key}_{group}_final")
+            value = (entry["mean"] if entry is not None
+                     else first.get(f"{key}_{group}_final"))
+            return fmt.format(value) if value is not None else "-".rjust(width)
+        print(f"  {group:<10} {w0_sq.get(group, float('nan')):>10.3g} "
+              f"{cell('lam', '{:>10.4g}', 10)} "
+              f"{cell('a', '{:>8.3f}', 8)} "
+              f"{cell('d')} "
+              f"{cell('dist_rel', '{:>12.5f}', 12)} "
+              f"{cell('share', '{:>8.4f}', 8)} "
+              f"{cell('tau', '{:>10.3g}', 10)}")
+
+    spread = [first.get(f"a_{g}_final") for g in groups]
+    spread = [v for v in spread if v is not None]
+    if alloc == "adaptive" and spread:
+        width = max(spread) - min(spread)
+        print(f"  a spread {width:.3f} in log lambda ({math.exp(width):.1f}x "
+              f"between the loosest and tightest group), sum "
+              f"{sum(spread):+.2e} (must be ~0)")
+        skipped = first.get("alloc_skipped", 0)
+        if skipped:
+            print(f"  !! {skipped} slow-loop updates were SKIPPED on a "
+                  f"non-finite tension. The allocation is that many updates "
+                  f"behind what the cadence says it is.")
+        if first.get("alloc_clip_hits", 0):
+            print(f"  !! the allocation hit its |a| clip "
+                  f"{first['alloc_clip_hits']} times: a group wanted more than "
+                  f"anchor_alloc_clip_decades of separation and did not get it.")
+
 
 def dump(payload, directory, filename="results.json"):
     """Always write the numbers somewhere durable.

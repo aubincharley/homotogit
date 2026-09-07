@@ -1,0 +1,86 @@
+# Stage 1 at CPU scale: the fixed-lambda ladder, sized to finish on Kaggle's four
+# vCPUs in about an hour rather than on a T4 in about one.
+#
+# This is a SIZING of the pilot, not a cheaper substitute for it. It asks the same
+# go/no-go question -- do the d(t) trajectories separate monotonically in lambda?
+# -- at a scale where the answer arrives today. What it cannot do is stand in for
+# the full-scale pilot: beta and D_max fitted here belong to THIS width, THIS
+# subset and THIS schedule, and carrying them to the 100-epoch width-64 recipe
+# would be fitting a controller on one plant and running it on another.
+#
+# The ladder is centred on the stability bracket AT THIS SCALE, which
+# controller.bounds prints at the top of every arm:
+#
+#     lambda in [min_g ||w0_g||^2 / (lr T), 0.5 min_g ||w0_g||^2 / lr]
+#              = [0.046, 32.5]   at width 16, lr 0.05, T = 1404
+#
+# That bracket is NOT the one the pre-normalisation configs used. The penalty is
+# now divided by ||w0_g||^2, so lambda is dimensionless and the old {1e-4 .. 1}
+# ladder would sit almost entirely below lambda_min -- five arms of an anchor
+# doing nothing, which looks exactly like an anchor that cannot control drift.
+
+seeds: "0"
+# A script kernel is handed no environment, so CIFAR_ALLOW_CPU cannot reach it.
+# This config is FOR a CPU kernel, so it says so itself.
+allow_cpu: true
+
+batch_size: 128
+eval_batch_size: 500
+train_subset: 10000
+val_size: 0
+augment: true
+
+arch: resnet18
+width: 16
+zero_init_residual: true
+
+epochs: 18
+optimizer: sgd
+lr: 0.05
+momentum: 0.9
+nesterov: true
+weight_decay: 0.0         # per-arm; only baseline_wd carries decay
+schedule: cosine
+warmup_epochs: 1
+grad_clip: 0.0
+label_smoothing: 0.0
+
+anchor_mode: const
+anchor_lambda: 0.0
+anchor_lambda_max_frac: 0.5
+anchor_hold_steps: 100
+anchor_normalize: true
+anchor_alloc: "off"       # the ladder is about the LEVEL; allocation comes later
+
+# 1404 steps, so a probe every 50 gives 28 points per arm -- enough to fit
+# g = -d(d_ema)/d(log lambda) at mid-training and to see separation by eye.
+# Measured on four threads, which is what a Kaggle CPU kernel gets: 563 ms per
+# training step, 1.1 s per global probe, 6.5 s per per-group probe. That is
+# ~14 min an arm and ~1.5 h for the ladder -- double it if Kaggle's vCPUs are
+# slower than the ones this was timed on, and it still clears the 12 h limit.
+probe_every: 50
+probe_batch: 50
+probe_tangents: 4
+probe_kernel: ntk
+# Every 7th probe, i.e. 4 per arm. The per-group sketch costs 6x the wall clock
+# of a global one at this probe size, and the
+# pilot does not steer by it -- these four points exist so the compare push can be
+# read against a d_g baseline rather than against nothing.
+probe_group_every: 7
+# Off. Lanczos is the single most expensive thing in the probe and nothing in
+# stage 1 reads lambda_min(H).
+hessian_every: 0
+
+ckpt_every: 0
+per_class: false
+
+# Five anchored rungs spanning the bracket end to end, roughly 8x apart, plus the
+# two references: lam0 is free drift (D_max is only readable as a fraction of it)
+# and baseline_wd is the recipe to beat.
+arms:
+  - {name: baseline_wd, anchor_mode: "off", weight_decay: 5.0e-4}
+  - {name: lam0,        anchor_lambda: 0.0}
+  - {name: lam0p05,     anchor_lambda: 0.05}
+  - {name: lam0p4,      anchor_lambda: 0.4}
+  - {name: lam3,        anchor_lambda: 3.0}
+  - {name: lam25,       anchor_lambda: 25.0}

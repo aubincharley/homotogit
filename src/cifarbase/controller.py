@@ -22,6 +22,18 @@ the drift budget opens up, rather than starting free and being reined in. The
 first few hundred steps are the initial transient, where K_0 is not yet a
 meaningful reference, so the loop is held shut there rather than trusted.
 
+TWO LOOPS. The integrator above is the LEVEL, u. On top of it sits an
+allocation a_g, one offset per parameter group, with
+
+    log lambda_g = u + a_g,      sum_g a_g = 0
+
+so the allocation can only ever redistribute the anchor between groups, never
+strengthen or weaken it overall -- that remains the level's job alone, and the
+level's transfer function is therefore unchanged by anything the allocation does.
+The allocation runs an order of magnitude slower (Allocator, below) and is driven
+by per-group tension rather than by per-group drift. With anchor_alloc off it
+holds a_g = 0 and this file behaves exactly as it did before groups existed.
+
 The monitors. A controller that has silently lost authority -- the sign of
 dd/dlambda flipped, or the drift signal went flat -- keeps producing a plausible
 lambda trace and a plausible loss curve. Both conditions are detected, logged, and
@@ -43,35 +55,50 @@ _SATURATION_DRIFT = 1e-3
 _SATURATION_LAMBDA = 2.0
 
 
-def bounds(cfg, total_steps):
-    """[lambda_min, lambda_max] from §6's stability bracket 1/(eta T) << l << 1/eta.
+def bounds(cfg, total_steps, min_w0_sq=1.0):
+    """[lambda_min, lambda_max] from §6's stability bracket 1/(eta T) << nu << 1/eta.
 
-    With gradients off the pull is (1 - eta*lambda)^k: below 1/(eta T) the anchor
-    does not close a meaningful fraction of the distance to w0 over the whole run
-    and is inert; at 1/eta it closes all of it in a single step. eta here is the
-    BASE lr, since the bracket is about the run as a whole.
+    The bracket is on the RAW coefficient nu_g = lambda_g / ||w0_g||^2, which is
+    what actually multiplies (w - w0) in the update. With gradients off the pull
+    is (1 - eta*nu)^k: below 1/(eta T) the anchor does not close a meaningful
+    fraction of the distance to w0 over the whole run and is inert; at 1/eta it
+    closes all of it in a single step. eta here is the BASE lr, since the bracket
+    is about the run as a whole.
 
-    lambda_max carries a safety factor. At exactly 1/eta the pull factor
-    eta_k*lambda reaches 1.0 the moment warmup finishes, which lands the weights
-    on w0 and trips anchor.pull's overshoot assertion. Set
-    anchor_lambda_max_frac to 1.0 for §6 literally.
+    Converting back to lambda multiplies through by ||w0_g||^2, and the bracket
+    has to hold for EVERY group, so the binding one is the smallest:
+
+        lambda_min = min_g ||w0_g||^2 / (eta T)
+        lambda_max = min_g ||w0_g||^2 / eta
+
+    min rather than max at both ends because a bracket wide enough for the
+    largest group would put the smallest one past its overshoot bound, and
+    overshoot is a silent oscillation while inertness is a visible clip.
+
+    lambda_max carries a safety factor. At exactly min||w0||^2/eta the pull factor
+    eta_k*lambda/||w0||^2 reaches 1.0 for the smallest group the moment warmup
+    finishes, which lands its weights on w0 and trips anchor.pull's overshoot
+    assertion. Set anchor_lambda_max_frac to 1.0 for §6 literally.
+
+    min_w0_sq defaults to 1 so an un-normalised anchor (gate 5) gets the original
+    bracket back unchanged.
     """
     base_lr = float(cfg["lr"])
-    lo = 1.0 / (base_lr * max(total_steps, 1))
-    hi = float(cfg["anchor_lambda_max_frac"]) / base_lr
+    lo = min_w0_sq / (base_lr * max(total_steps, 1))
+    hi = float(cfg["anchor_lambda_max_frac"]) * min_w0_sq / base_lr
     return lo, hi
 
 
 class DriftController:
     """One per run. Produces lambda for every step and consumes d at every probe."""
 
-    def __init__(self, cfg, total_steps):
+    def __init__(self, cfg, total_steps, min_w0_sq=1.0):
         self.mode = cfg["anchor_mode"]
         if self.mode not in MODES:
             raise SystemExit(f"!! unknown anchor_mode {self.mode!r}: "
                              f"pick from {', '.join(MODES)}")
         self.total_steps = max(int(total_steps), 1)
-        self.lambda_min, self.lambda_max = bounds(cfg, self.total_steps)
+        self.lambda_min, self.lambda_max = bounds(cfg, self.total_steps, min_w0_sq)
         self.beta = float(cfg["anchor_beta"])
         self.dmax = float(cfg["anchor_dmax"])
         self.rho = float(cfg["anchor_rho"])
@@ -290,6 +317,195 @@ class DriftController:
                   }[self.mode]
         return (f"anchor: {self.mode}, {detail}; "
                 f"clip [{self.lambda_min:.3g}, {self.lambda_max:.3g}]")
+
+
+ALLOC_MODES = ("off", "adaptive")
+
+# Floors, not knobs. tau is a ratio of two norms either of which can be exactly
+# zero on the first probe (no backward yet, or w still exactly at w0), and log(0)
+# would take the whole allocation to nan in one step.
+_TENSION_EPS = 1e-12
+_TENSION_FLOOR = 1e-30
+
+
+class Allocator:
+    """a_g: how the drift budget is split across groups. The slow loop.
+
+        log lambda_g = u + a_g,        sum_g a_g = 0
+
+    u is the level and a is the allocation. They are updated on deliberately
+    different timescales -- a fires once every anchor_alloc_every probes, the
+    level every probe -- and that separation IS the stability argument. The fast
+    loop is entitled to treat a as constant while it converges; the slow loop is
+    entitled to treat u as converged when it moves. Run them at the same rate and
+    neither assumption holds: the two integrators then chase each other, and
+    because they are both in log lambda the result is a lambda trace that looks
+    like a controller working.
+
+    The signal is TENSION, not per-group drift. For group g,
+
+        tau_g = ||grad_g L|| * ||w0_g||^2 / (lambda_g * ||w_g - w0_g|| + eps)
+
+    the ratio of the gradient force pulling the group away from w0 to the anchor
+    force holding it there. tau_g > 1 means the group is anchor-limited: the data
+    wants it to move and the anchor is what is stopping it, so it should be given
+    more of the budget. The update is a log-space integrator on the deviation of
+    log tau_g from its mean over groups, which is what keeps sum_g a_g = 0 an
+    invariant rather than something to restore afterwards.
+
+    Why tension and not d_g. The per-group drifts are measured and logged, and
+    they are the right thing for the coupling gate, but they make a poor
+    regressand for a diagonal controller: d_g responds to lambda_m for every m,
+    and steering each d_g by its own lambda_g is exactly the diagonal-control-on-a
+    -non-diagonal-plant failure the coupling gate exists to detect. Tension is
+    local by construction -- both of its terms are properties of group g alone.
+
+    The shrinkage term -gamma*a_g is what makes "no evidence" mean "uniform". A
+    pure integrator on a signal with no persistent structure random-walks away
+    from zero and the allocation ends up somewhere arbitrary but confident.
+    """
+
+    def __init__(self, cfg, groups, beta):
+        self.mode = cfg["anchor_alloc"]
+        if self.mode not in ALLOC_MODES:
+            raise SystemExit(f"!! unknown anchor_alloc {self.mode!r}: "
+                             f"pick from {', '.join(ALLOC_MODES)}")
+        self.groups = tuple(groups)
+        self.every = int(cfg["anchor_alloc_every"])
+        self.beta_a = float(cfg["anchor_alloc_beta_frac"]) * float(beta)
+        self.gamma = float(cfg["anchor_alloc_shrink"])
+        self.clip = float(cfg["anchor_alloc_clip_decades"]) * math.log(10.0)
+        self.tau_rho = float(cfg["anchor_tau_rho"])
+        self.hold_steps = int(cfg["anchor_hold_steps"])
+
+        self.a = {group: 0.0 for group in self.groups}
+        self.tau = {group: None for group in self.groups}
+        self.updates = 0
+        self.skipped = 0
+        self.clip_hits = 0
+        self._probes = 0
+
+    @property
+    def active(self):
+        return self.mode == "adaptive"
+
+    def offsets(self):
+        """The a_g the pull should use. None when the allocation is off, which is
+        what makes anchor.lambdas fall back to one shared lambda exactly."""
+        return self.a if self.active else None
+
+    # -- the per-probe read and the per-cadence update ---------------------
+
+    def observe(self, step, lambdas, grad_norms, delta_norms, w0_sq):
+        """Fold one tension reading in; update a_g when the cadence comes round.
+
+        Called on EVERY arm, including the ones with the allocation off, so tau_g
+        is a column in every probes.jsonl and the arms can be compared on it.
+        """
+        row = {}
+        # With no anchor there is no anchor force, so the tension is not large --
+        # it is undefined. Emitting eps-divided infinities on the unanchored arm
+        # would put a 1e12 column in every probes.csv and poison the EMA the
+        # moment an arm switched the anchor on.
+        measurable = all(lambdas.get(group, 0.0) > 0.0 for group in self.groups)
+        for group in self.groups:
+            if measurable:
+                raw = (grad_norms.get(group, 0.0) * w0_sq[group]
+                       / (lambdas[group] * delta_norms.get(group, 0.0)
+                          + _TENSION_EPS))
+                if not math.isfinite(raw):
+                    raw = _TENSION_FLOOR
+                previous = self.tau[group]
+                self.tau[group] = (raw if previous is None else
+                                   self.tau_rho * previous
+                                   + (1.0 - self.tau_rho) * raw)
+                row[f"tau_{group}"] = self.tau[group]
+            row[f"a_{group}"] = self.a[group]
+
+        self._probes += 1
+        row["a_sum"] = sum(self.a.values())
+        row["alloc_updates"] = self.updates
+        if not self.active or not measurable or step < self.hold_steps:
+            return row
+        if self._probes % self.every:
+            return row
+
+        self._update()
+        for group in self.groups:
+            row[f"a_{group}"] = self.a[group]
+        row["a_sum"] = sum(self.a.values())
+        row["alloc_updates"] = self.updates
+        return row
+
+    def _update(self):
+        """One slow-loop step. Integrate, shrink, re-centre, clip."""
+        if any(self.tau[group] is None for group in self.groups):
+            self.skipped += 1
+            return
+        logs = {group: math.log(max(self.tau[group], _TENSION_FLOOR))
+                for group in self.groups}
+        if not all(math.isfinite(value) for value in logs.values()):
+            # Refusing to update is the right failure: an allocation built from a
+            # nan is silently wrong for the rest of the run, and the counter says
+            # it happened.
+            self.skipped += 1
+            return
+        mean_log = sum(logs.values()) / len(self.groups)
+
+        # High tension means anchor-limited, which wants a SMALLER lambda_g, so
+        # the deviation enters with a minus.
+        for group in self.groups:
+            self.a[group] -= (self.beta_a * (logs[group] - mean_log)
+                              + self.gamma * self.a[group])
+
+        mean_a = sum(self.a.values()) / len(self.groups)
+        for group in self.groups:
+            self.a[group] -= mean_a
+
+        for group in self.groups:
+            clipped = max(-self.clip, min(self.clip, self.a[group]))
+            if clipped != self.a[group]:
+                self.clip_hits += 1
+            self.a[group] = clipped
+        self.updates += 1
+
+    # -- reporting and persistence -----------------------------------------
+
+    def summary(self):
+        out = {"anchor_alloc": self.mode, "alloc_updates": self.updates,
+               "alloc_skipped": self.skipped, "alloc_clip_hits": self.clip_hits,
+               "a_sum": sum(self.a.values())}
+        for group in self.groups:
+            out[f"a_{group}_final"] = self.a[group]
+            out[f"tau_{group}_final"] = (self.tau[group] if self.tau[group]
+                                         is not None else float("nan"))
+        return out
+
+    def describe(self):
+        if not self.active:
+            return "allocation: off (tension still measured and logged)"
+        return (f"allocation: adaptive over {len(self.groups)} groups, "
+                f"beta_a = {self.beta_a:g}, gamma = {self.gamma:g}, "
+                f"every {self.every} probes, |a| <= {self.clip:.3g}")
+
+    def state_dict(self):
+        return {"a": dict(self.a), "tau": dict(self.tau),
+                "updates": self.updates, "skipped": self.skipped,
+                "clip_hits": self.clip_hits, "probes": self._probes}
+
+    def load_state_dict(self, state):
+        if set(state["a"]) != set(self.groups):
+            raise SystemExit(
+                f"!! this checkpoint's allocation is over "
+                f"{sorted(state['a'])} but this run's groups are "
+                f"{sorted(self.groups)}. Resuming would carry an allocation "
+                f"belonging to a different partition.")
+        self.a = dict(state["a"])
+        self.tau = dict(state["tau"])
+        self.updates = state["updates"]
+        self.skipped = state.get("skipped", 0)
+        self.clip_hits = state.get("clip_hits", 0)
+        self._probes = state["probes"]
 
 
 def _load_replay(cfg):

@@ -386,6 +386,74 @@ def plot_anchor(run, outdir):
     return path
 
 
+def plot_alloc(run, outdir):
+    """What the allocation did, and whether it was entitled to.
+
+    Four panels. The two on the left are the allocation itself: a_g in log space,
+    which is the controller's own coordinate, and the lambda_g it produces once
+    the level is folded back in. The two on the right are the evidence -- the
+    tension each group reported, which is what the slow loop integrates, and the
+    per-group drift, which is what it is ultimately spending.
+
+    Drawn for the single-lambda arms too, where every a_g is flat at zero by
+    construction. That is not a wasted figure: the d_g and tau_g panels are then
+    the picture of how differently the groups behave under ONE lambda, which is
+    the entire premise of allocating at all. If those two panels are flat as
+    well, the allocation has nothing to find and the honest result is that it
+    changes nothing.
+    """
+    import matplotlib.pyplot as plt
+
+    probes = run.get("probes") or []
+    groups = (run.get("runs") or [{}])[0].get("anchor_groups")
+    if not probes or not groups:
+        return None
+    cfg = run["config"]
+
+    fig, axes = plt.subplots(2, 2, figsize=(11.5, 7.0))
+    (ax_a, ax_lam), (ax_tau, ax_d) = axes
+    fig.subplots_adjust(wspace=0.24, hspace=0.42, top=0.90)
+
+    panels = ((ax_a, "a", "allocation a_g  (log lambda offset)", False),
+              (ax_lam, "lam", "lambda_g", True),
+              (ax_tau, "tau", "tension tau_g = |grad_g| |w0_g|^2 / "
+                              "(lambda_g |w_g - w0_g|)", True),
+              (ax_d, "d", "per-group drift d_g", False))
+    for ax, prefix, title, log in panels:
+        drawn = False
+        for index, group in enumerate(groups):
+            drawn |= _draw_steps(ax, probes, f"{prefix}_{group}",
+                                 CYCLE[index % len(CYCLE)], group)
+        ax.set_title(title)
+        ax.set_xlabel("step")
+        if log and drawn:
+            ax.set_yscale("log")
+        if drawn:
+            ax.legend(ncol=2)
+        else:
+            _blank(ax)
+
+    # The line a_g cannot cross, and the line it must not drift off. Both are
+    # invariants of the update rather than outcomes, so a plot that violates
+    # either is a bug and not a finding.
+    clip = float(cfg.get("anchor_alloc_clip_decades", 1.0)) * math.log(10.0)
+    for sign in (-1.0, 1.0):
+        ax_a.axhline(sign * clip, color=MUTED, lw=0.8, ls=":")
+    ax_a.axhline(0.0, color="#0b0b0b", lw=0.8)
+
+    fig.suptitle(f"{run['name']}  --  allocation "
+                 f"{cfg.get('anchor_alloc', 'off')}, every "
+                 f"{cfg.get('anchor_alloc_every', '?')} probes, beta_a = "
+                 f"{cfg.get('anchor_alloc_beta_frac', 0) * cfg.get('anchor_beta', 0):.3g}"
+                 f", gamma {cfg.get('anchor_alloc_shrink', 0):g}",
+                 x=0.5, y=0.975, fontsize=11)
+
+    path = os.path.join(outdir, "alloc.png")
+    fig.savefig(path)
+    plt.close(fig)
+    return path
+
+
 def _blank(ax):
     """An empty panel that reads as "nothing to show" rather than as a plot that
     failed to draw."""
@@ -721,7 +789,7 @@ def main():
     made = []
     if len(runs) == 1:
         made += [plot_curves(runs[0], outdir), plot_per_class(runs[0], outdir),
-                 plot_anchor(runs[0], outdir),
+                 plot_anchor(runs[0], outdir), plot_alloc(runs[0], outdir),
                  plot_drift_validation(runs[0], outdir)]
     else:
         made.append(plot_compare(runs, outdir))
@@ -731,7 +799,8 @@ def main():
             sub = os.path.join(run["dir"], "figures")
             os.makedirs(sub, exist_ok=True)
             made += [plot_curves(run, sub), plot_per_class(run, sub),
-                     plot_anchor(run, sub), plot_drift_validation(run, sub)]
+                     plot_anchor(run, sub), plot_alloc(run, sub),
+                     plot_drift_validation(run, sub)]
 
     print()
     for path in made:

@@ -60,9 +60,12 @@ ckpt_every: 20
 
 per_class: true
 
-# A ladder around the middle of §6's stability bracket. For lr = 0.1 and
-# T = 39000 steps that bracket is [2.6e-4, 5], so 1e-3 is near-inert, 1e-1 is
-# firm, and 1e-2 sits where a useful anchor should live if one exists at all.
+# A ladder around the middle of §6's stability bracket. The penalty is now
+# normalised by ||w0_g||^2, so lambda is dimensionless and the bracket is
+# [min_g ||w0_g||^2 / (lr T), 0.5 min_g ||w0_g||^2 / lr] rather than
+# [1/(lr T), 0.5/lr] -- a few times wider at this width, and printed verbatim by
+# controller.describe() at the top of every run. Read it off the log rather than
+# from this comment if the width or the lr moves.
 arms:
   - {name: baseline_wd, anchor_mode: "off", weight_decay: 5.0e-4}
   - {name: anchor_1e-3, anchor_lambda: 0.001}

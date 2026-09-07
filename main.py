@@ -58,7 +58,9 @@ def main():
     print(f"config '{cfg['config']}': {cfg['arch']}, {cfg['epochs']} epochs, "
           f"seeds {seeds}" + (f", {len(arms)} arms" if arms[0][0] else ""))
 
-    device = pick_device()
+    # True forces the allowance on; None leaves it to CIFAR_ALLOW_CPU, which is
+    # how a local run still opts in from the command line.
+    device = pick_device(True if cfg["allow_cpu"] else None)
 
     if cfg["selfcheck"]:
         # Before any GPU quota is spent. A gate that fails here is a bug in the

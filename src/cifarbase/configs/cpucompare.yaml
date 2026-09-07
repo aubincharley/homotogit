@@ -1,0 +1,83 @@
+# Push 2 of the CPU experiment: baseline against the method, and against the
+# method's own control.
+#
+# Three arms, and all three are needed:
+#
+#   baseline_wd   weight decay, no anchor. The thing to beat.
+#   anchor        the closed loop, ONE shared lambda (anchor_alloc off).
+#   alloc         the closed loop, lambda per group (anchor_alloc adaptive).
+#
+# `alloc` beating `baseline_wd` says nothing on its own -- `anchor` might have
+# done the same. The per-group claim is `alloc` vs `anchor`, and that is the only
+# comparison this config exists to make. Everything else about the two is
+# identical, so the difference is attributable to the allocation.
+#
+# Identical to cpupilot.yaml in width, subset, epochs, lr and schedule, so the
+# pilot's fitted beta and D_max describe THIS plant. They do not transfer to the
+# width-64 100-epoch recipe, and anchor.yaml / alloc.yaml keep their own.
+#
+# SHIPS REFUSING TO RUN. anchor_beta and anchor_dmax are 0, which config.py
+# rejects for an adaptive arm. Fill them from `make pull-cpu && python analyze.py
+# out-cpu --pilot` after push 1 finishes.
+
+seeds: "0"
+allow_cpu: true
+
+batch_size: 128
+eval_batch_size: 500
+train_subset: 10000
+val_size: 0
+augment: true
+
+arch: resnet18
+width: 16
+zero_init_residual: true
+
+epochs: 18
+optimizer: sgd
+lr: 0.05
+momentum: 0.9
+nesterov: true
+weight_decay: 0.0         # per-arm; only baseline_wd carries decay
+schedule: cosine
+warmup_epochs: 1
+grad_clip: 0.0
+label_smoothing: 0.0
+
+anchor_mode: adaptive
+anchor_beta: 0.0          # <- from push 1
+anchor_dmax: 0.0          # <- from push 1
+anchor_lambda_max_frac: 0.5
+anchor_hold_steps: 100
+anchor_rho: 0.9
+anchor_rate_limit: 0.1
+anchor_ratio_bn: 1.0
+anchor_ratio_head: 1.0
+
+anchor_normalize: true
+anchor_alloc: "off"       # per-arm
+# 1404 steps at probe_every 50 is 28 probes, and the first two fall inside the
+# hold window, so the slow loop fires every 4 probes rather than every 10. The
+# two-timescale ratio is what matters and 4 is still a clear separation; at 10 the
+# allocation would get two updates in the whole run and the arm would be measuring
+# its initial condition rather than the loop.
+anchor_alloc_every: 4
+anchor_alloc_beta_frac: 0.2
+anchor_alloc_shrink: 0.01
+anchor_alloc_clip_decades: 1.0
+anchor_tau_rho: 0.9
+
+probe_every: 50
+probe_batch: 50
+probe_tangents: 4
+probe_kernel: ntk
+probe_group_every: 7
+hessian_every: 0
+
+ckpt_every: 0
+per_class: false
+
+arms:
+  - {name: baseline_wd, anchor_mode: "off", weight_decay: 5.0e-4}
+  - {name: anchor,      anchor_alloc: "off"}
+  - {name: alloc,       anchor_alloc: adaptive}

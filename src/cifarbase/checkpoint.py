@@ -14,6 +14,7 @@ file, or not at all:
     K_0           the reference sketches, verbatim
     probe set     the indices, and the tangent seed they were drawn with
     controller    u, d_ema, the monitor windows, the clip count
+    allocator     a_g, the tension EMAs, the slow-loop probe counter
     RNG           all four streams, so the batch order continues rather than restarts
 
 torch.save of a dict rather than anything cleverer: this has to be readable by a
@@ -23,11 +24,27 @@ import os
 
 import torch
 
-FORMAT = 1
+# Bumped from 1: `reference` gained the per-group sketches, which are a nested
+# dict, and `allocator` is new. A format-1 checkpoint has neither and resuming one
+# into this build would restart the allocation from uniform without saying so.
+FORMAT = 2
+
+
+def _to_cpu(value):
+    """Sketches to CPU, through the one level of nesting reference now has."""
+    if isinstance(value, dict):
+        return {key: _to_cpu(item) for key, item in value.items()}
+    return value.detach().to("cpu")
+
+
+def _to_device(value, device):
+    if isinstance(value, dict):
+        return {key: _to_device(item, device) for key, item in value.items()}
+    return value.to(device)
 
 
 def save(path, *, cfg, seed, epoch, step, model, optimizer, controller,
-         reference, probe_index, history, probes, generator):
+         allocator, reference, probe_index, history, probes, generator):
     """Write one checkpoint atomically. Returns the path."""
     payload = {
         "format": FORMAT,
@@ -38,14 +55,13 @@ def save(path, *, cfg, seed, epoch, step, model, optimizer, controller,
         "model": model.state_dict(),
         "optimizer": optimizer.state_dict(),
         "controller": controller.state_dict(),
+        "allocator": allocator.state_dict(),
         # float64 on the CPU: the reference sketches are what every later d_t is
         # measured against, so a lossy round-trip here would move the whole curve.
         # None is legal: a checkpoint written before the reference step has no K_0
         # yet, and inventing one at w_k is exactly the corruption this file exists
         # to prevent.
-        "reference": (None if reference is None else
-                      {name: tensor.detach().to("cpu")
-                       for name, tensor in reference.items()}),
+        "reference": (None if reference is None else _to_cpu(reference)),
         "probe_index": probe_index.detach().to("cpu"),
         "history": history,
         "probes": probes,
@@ -66,7 +82,8 @@ def save(path, *, cfg, seed, epoch, step, model, optimizer, controller,
     return path
 
 
-def load(path, model, optimizer, controller, anchor, device, generator, cfg):
+def load(path, model, optimizer, controller, anchor, device, generator, cfg,
+         *, allocator=None):
     """Restore in place and return what the training loop needs to continue.
 
     The shape assertion runs after the weights land: a checkpoint from a
@@ -84,8 +101,12 @@ def load(path, model, optimizer, controller, anchor, device, generator, cfg):
     # can see that: the loss keeps falling and the lr column looks like a valid
     # schedule, just not the one the checkpoint was produced on. Caught here
     # rather than left to be discovered in a comparison plot.
+    # anchor_grouping is in this list for a different reason than the rest: the
+    # allocator's a_g and tension EMAs are keyed BY GROUP NAME, so a resume that
+    # changed the partition would load an allocation belonging to groups that no
+    # longer exist -- silently, since load_state_dict just takes the dict.
     for key in ("epochs", "batch_size", "arch", "width", "schedule",
-                "warmup_epochs", "lr", "train_subset"):
+                "warmup_epochs", "lr", "train_subset", "anchor_grouping"):
         before, now = payload["config"].get(key), cfg.get(key)
         if before != now:
             raise SystemExit(
@@ -98,6 +119,8 @@ def load(path, model, optimizer, controller, anchor, device, generator, cfg):
     model.load_state_dict(payload["model"])
     optimizer.load_state_dict(payload["optimizer"])
     controller.load_state_dict(payload["controller"])
+    if allocator is not None:
+        allocator.load_state_dict(payload["allocator"])
     anchor.assert_shapes()
 
     torch.set_rng_state(payload["rng"]["torch"].to("cpu", torch.uint8))
@@ -107,8 +130,7 @@ def load(path, model, optimizer, controller, anchor, device, generator, cfg):
     generator.set_state(payload["rng"]["data"].to("cpu", torch.uint8))
 
     reference = (None if payload["reference"] is None else
-                 {name: tensor.to(device)
-                  for name, tensor in payload["reference"].items()})
+                 _to_device(payload["reference"], device))
     print(f"resumed from {path}: seed {payload['seed']}, epoch "
           f"{payload['epoch']}, step {payload['step']}, "
           f"lambda {controller.lam(payload['step']):.4g}")

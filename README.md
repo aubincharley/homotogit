@@ -158,12 +158,21 @@ The question: instead of decaying weights toward zero, anchor them to their
 initialisation, and choose the anchor's strength by measuring how much feature
 learning has actually happened rather than by picking a number.
 
-The penalty is `lambda(t)/2 * ||w - w0||^2`, applied **decoupled** -- straight to
-the update, after `optimizer.step()`, never through the loss:
+The penalty is applied **per parameter group**, normalised by the group's anchor
+norm, and **decoupled** -- straight to the update, after `optimizer.step()`, never
+through the loss:
 
 ```
-w <- w - eta_k * grad(L)  -  eta_k * lambda_k * (w - w0)
+F(w) = L(w) + sum_g (lambda_g/2) ||w_g - w0_g||^2 / ||w0_g||^2
+
+w_g <- w_g - eta_k * grad(L)  -  eta_k * lambda_g * (w_g - w0_g) / ||w0_g||^2
 ```
+
+The `1/||w0_g||^2` is what makes `lambda_g` dimensionless, and therefore
+comparable across depth. Without it the same numeric lambda is a hundred times
+stronger on the stem than on stage 4 purely because the two groups hold different
+numbers of parameters at different scales, and any allocation learned on top would
+mostly be reading that back.
 
 Every `probe_every` steps a fixed, class-balanced probe batch is pushed through
 the network and the empirical NTK is sketched on it with `R` forward-mode JVPs.
@@ -185,6 +194,70 @@ Drifting faster than the schedule tightens the anchor; slower loosens it. So the
 homotopy parameter is no longer an arbitrary knob: it is *how much feature
 learning has been spent*, which is measured every hundred steps and plotted.
 
+### Per group: two loops on two timescales
+
+`u` is the **level**. On top of it sits an **allocation** `a_g`, one offset per
+group, so that
+
+```
+log lambda_g = u + a_g,      sum_g a_g = 0
+```
+
+The constraint is what keeps the two separable: the allocation can only ever
+redistribute the anchor between groups, never strengthen or weaken it overall.
+That remains the level's job, and the level's transfer function is therefore
+unchanged by anything the allocation does.
+
+The groups (`anchor.py`) are set by `anchor_grouping`, coarse to fine:
+
+| `anchor_grouping` | groups |
+| --- | --- |
+| `trunk` | `trunk` (stem + all four stages), `head`, `bn_affine` |
+| `coarse` | `early` (stem, stages 1-2), `late` (stages 3-4), `head`, `bn_affine` |
+| `stage` (default) | `stem`, `stage1..stage4`, `head`, `bn_affine` |
+
+Biases are never anchored. Per tensor is deliberately not on the menu: 62 groups
+of a plant this coupled is not a control problem. Which of the three is
+admissible is decided by the coupling gate below, not by preference -- coarsening
+removes a coupling, where loosening the gate only hides one.
+
+The allocation is driven by **tension**, not by per-group drift. For group `g`,
+
+```
+tau_g = ||grad_g L|| * ||w0_g||^2 / (lambda_g * ||w_g - w0_g|| + eps)
+```
+
+the ratio of the gradient force pulling the group away from `w0` to the anchor
+force holding it there. `tau_g > 1` means the group is anchor-limited: the data
+wants it to move and the anchor is what is stopping it, so it should get more of
+the budget. The update is a log-space integrator on the deviation of `log tau_g`
+from its mean across groups, with a shrinkage term toward uniform:
+
+```
+a_g <- a_g - beta_a (log tau_g - mean_m log tau_m) - gamma a_g
+a_g <- a_g - mean_m a_m                       # re-centre: sum a_g = 0
+a_g <- clip(a_g, -log 10, +log 10)
+```
+
+with `beta_a = beta/5` and `gamma = 0.01`, fired **once every ten probes** where
+the level fires every probe. That two-timescale separation is the entire
+stability argument: the fast loop is entitled to treat the allocation as constant
+while it converges, and the slow loop to treat the level as converged when it
+moves. Run them at the same rate and neither assumption holds -- the two
+integrators chase each other, and because both live in `log lambda` the result is
+a lambda trace that looks like a controller working.
+
+**Why tension and not `d_g`.** The per-group drifts are measured and logged
+(`kernel.ntk_sketch_by_group` masks each frozen tangent to one group, costing
+`L*R` JVPs on top of the global sketch's `R`). But they make a poor regressand for a diagonal
+controller: `d_g` responds to `lambda_m` for every `m`, and steering each `d_g` by
+its own `lambda_g` is exactly the diagonal-control-on-a-non-diagonal-plant failure
+that gate H7 exists to detect. Tension is local by construction -- both of its
+terms are properties of group `g` alone.
+
+`anchor_alloc: off` holds `a_g = 0` and reproduces the single-lambda behaviour
+exactly. That arm is the control, and `make anchor` is how it is run.
+
 ### The protocol, in order
 
 Each stage gates the next. Every failure they catch produces a run that looks
@@ -194,8 +267,13 @@ entirely normal, which is why they are cheap and come first.
 make selfcheck     # stage 0: correctness gates. No dataset needed, no GPU needed.
 make pilot         # stage 1: fixed-lambda sweep. THE go/no-go for the design.
 make pilot-check   # stage 2: monotone separation, then beta and D_max
-make anchor        # stage 3: the method, 5 seeds
+make anchor        # stage 3: one shared lambda, 5 seeds -- the control
+make alloc         # stage 3: lambda per group, 5 seeds -- the method
 ```
+
+`alloc` without `anchor` answers nothing: a win for the per-group arm has to be a
+win over the single-lambda loop, not over the unanchored baseline, or it is just
+the anchor working.
 
 `make pilot` trains at fixed `lambda` over four decades and asks whether the
 `d(t)` trajectories separate monotonically in `lambda`. If they do not, `lambda`
@@ -336,7 +414,27 @@ H6  a resume continues, not restarts      2 epochs == 1 + resume + 1, bit for bi
                                           across the weights, w0, K_0, the probe
                                           indices, the controller state and the
                                           whole probe stream
+H7  the per-group plant is diagonally     G_lm = -d(d_l)/d(log lambda_m) by
+    dominant                              central differences, one group pushed
+                                          at a time. Requires a positive diagonal
+                                          (more anchor, less drift) and
+                                          |G_ll| > sum_{m!=l} |G_lm| on every row
 ```
+
+H1 also certifies the normalisation itself: it re-runs the tightest sweep point
+with `anchor_normalize` on and `lambda_g = 0.99 ||w0_g||^2 / lr`, which is the
+same realised pull, and requires the same residual. A divisor applied to the
+wrong group, or to the live norm instead of `w0`'s, misses that immediately.
+
+**H7 is the gate that decides how fine the grouping may be**, and it is the reason
+the partition is seven groups rather than per tensor. A per-group controller is a
+diagonal controller on a MIMO plant: it moves `lambda_m` and reads back `d_m` as
+though the two were paired, when in fact every lambda changes the whole network's
+function and therefore every block of the kernel. Diagonal control on a strongly
+non-diagonal `G` oscillates -- slowly, and with a lambda trace that looks like a
+controller working. If H7 fails, the remedies are coarsening the partition or
+cutting `anchor_alloc_beta_frac` by another factor of five. Not loosening the
+criterion, which is the one change that would make the failure invisible again.
 
 The gates have already paid for themselves three times on this branch.
 
@@ -428,9 +526,11 @@ src/cifarbase/
   model.py                  BasicBlock, ResNet, resnet18/34
   train.py                  build_optimizer, lr_at, train_once
   metrics.py                evaluate
-  anchor.py                 w0, the role partition, the decoupled pull
-  kernel.py                 the NTK sketch and the drift estimator
-  controller.py             lambda(t): the closed loop and the open-loop arms
+  anchor.py                 w0, the seven-group partition, the decoupled pull
+  kernel.py                 the NTK sketch, its per-group decomposition, and the
+                            drift estimator
+  controller.py             lambda(t): the level's closed loop, the allocation's
+                            slow loop, and the open-loop arms
   hessian.py                lambda_min(H) by Lanczos
   checkpoint.py             save/restore, including w0, K_0 and controller state
   selfcheck.py              the gates

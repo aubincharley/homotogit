@@ -1,5 +1,6 @@
-.PHONY: build run quick baseline selfcheck pilot pilot-check anchor resume \
-        push status pull clean runs plot help
+.PHONY: build run quick baseline selfcheck pilot pilot-check anchor alloc \
+        resume push push-cpu status status-cpu pull pull-cpu clean runs plot \
+        results help
 
 # The lambda sweep for stage 1. 0 is included deliberately: it is the free drift
 # curve, and D_max is only interpretable as a fraction of it.
@@ -9,6 +10,13 @@ PILOT_LAMBDAS ?= 0 0.0001 0.001 0.01 0.1 1
 # first push, not from `id` in kernel-metadata.json -- `id` only routes pushes to
 # a kernel that already exists. Renaming the title later does not move the slug.
 KERNEL = aubincharley/cifar-10-anchored-l2-vs-baseline
+# A second, separate kernel for the CPU-scale experiments, so a CPU push never
+# overwrites the GPU kernel's code or its run history.
+KERNEL_CPU = aubincharley/cifar-10-per-layer-l2-cpu
+# Which recipe the CPU kernel runs. A script kernel is handed no argv and no
+# environment, so the config name has to be baked into the bundle -- push-cpu
+# stamps it into KAGGLE_CONFIG, builds, pushes, and puts main.py back.
+CPU_CONFIG ?= cpupilot
 # Override if the venv is not activated: make quick PYTHON=.venv/bin/python
 PYTHON ?= python3
 DIR ?= runs/latest
@@ -42,8 +50,11 @@ pilot:          ## stage 1: fixed-lambda sweep. The go/no-go for the whole desig
 pilot-check:    ## stage 2: monotone separation, then beta and D_max for anchor.yaml
 	$(PYTHON) analyze.py runs --pilot
 
-anchor:         ## stage 3: the method. Refuses until beta and D_max are set.
+anchor:         ## stage 3: one shared lambda. Refuses until beta and D_max are set.
 	$(PYTHON) main.py --config anchor
+
+alloc:          ## stage 3: lambda per group. Run `anchor` too -- it is the control.
+	$(PYTHON) main.py --config alloc
 
 # Stage 3 is ~2.4 h per arm on a T4 and does not fit one Kaggle session. Split it
 # with --stop-after-epoch, never by lowering --epochs: total_steps and therefore
@@ -57,14 +68,36 @@ push: build     ## rebuild, then push the kernel to Kaggle
 	@echo "NOTE: a push resets the accelerator. Set GPU T4 x2 in the UI, then Save & Run All."
 	kaggle kernels push -p .
 
+# The stamp is a round trip on purpose: KAGGLE_CONFIG belongs to the GPU kernel,
+# and leaving it pointing at a CPU recipe is how the next `make push` silently
+# runs the wrong experiment. The trap restores main.py even if the push fails.
+push-cpu: ## rebuild with CPU_CONFIG stamped in, push the CPU kernel  (CPU_CONFIG=cpupilot)
+	@cp main.py main.py.bak
+	@trap 'mv -f main.py.bak main.py' EXIT; \
+	 $(PYTHON) -c "import pathlib,sys; p=pathlib.Path('main.py'); s=p.read_text(); \
+	   old='KAGGLE_CONFIG = \"compare\"'; \
+	   sys.exit('!! KAGGLE_CONFIG line not found in main.py') if old not in s else None; \
+	   p.write_text(s.replace(old, 'KAGGLE_CONFIG = \"$(CPU_CONFIG)\"', 1))"; \
+	 $(PYTHON) build.py; \
+	 mkdir -p kaggle/cpu && cp dist/main.py kaggle/cpu/main.py; \
+	 kaggle kernels push -p kaggle/cpu
+	@echo "pushed $(KERNEL_CPU) running config '$(CPU_CONFIG)'. It is a CPU kernel:"
+	@echo "no accelerator to set, so Save & Run All from the UI is all it needs."
+
 status:         ## last kernel run status
 	kaggle kernels status $(KERNEL)
+
+status-cpu:     ## last CPU kernel run status
+	kaggle kernels status $(KERNEL_CPU)
 
 pull:           ## fetch the finished run log, results.json and history.* into out/
 	mkdir -p out && kaggle kernels output $(KERNEL) -p out/
 
+pull-cpu:       ## fetch the CPU kernel's output into out-cpu/
+	mkdir -p out-cpu && kaggle kernels output $(KERNEL_CPU) -p out-cpu/
+
 clean:          ## drop generated artifacts -- deliberately NOT runs/
-	rm -rf dist out
+	rm -rf dist out out-cpu kaggle/cpu/main.py
 	find src -name __pycache__ -type d -exec rm -rf {} +
 
 # Inline rather than a separate script: it is a listing, not a tool, and a
@@ -90,6 +123,9 @@ runs:           ## one line per run: which config, how many seeds, what accuracy
 
 plot:           ## plot the last run  (make plot DIR=runs to compare them all)
 	$(PYTHON) analyze.py $(DIR)
+
+results:        ## regenerate RESULTS.md's figures and the numbers it quotes
+	$(PYTHON) results.py
 
 help:           ## this list
 	@grep -hE '^[a-z-]+:.*##' $(MAKEFILE_LIST) \

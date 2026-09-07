@@ -28,7 +28,7 @@ import torch.nn.functional as F
 from cifarbase import anchor as anchor_mod
 from cifarbase import checkpoint as ckpt_mod
 from cifarbase import kernel
-from cifarbase.controller import DriftController
+from cifarbase.controller import Allocator, DriftController
 from cifarbase.data import class_balanced_indices
 from cifarbase.hessian import lanczos_extremes
 from cifarbase.metrics import evaluate
@@ -111,8 +111,18 @@ def train_once(cfg, train, val, test, device, seed, run=None, verbose=True,
     eval_bs = cfg["eval_batch_size"]
     probe_every = int(cfg["probe_every"])
     hessian_every = int(cfg["hessian_every"])
+    probe_group_every = int(cfg["probe_group_every"])
 
-    controller = DriftController(cfg, total_steps)
+    # The bracket is on lambda_g / ||w0_g||^2, so converting it to a bracket on
+    # lambda needs the anchor's norms -- which is why the controller is built
+    # after the anchor and not beside it.
+    controller = DriftController(cfg, total_steps, anchor.min_w0_sq)
+    allocator = Allocator(cfg, anchor.anchored, cfg["anchor_beta"])
+    # The partition the kernel decomposition uses, taken from the anchor so the
+    # two can never disagree about what a group is. None disables the per-group
+    # sketch entirely, including for the reference.
+    group_of = (anchor_mod.group_of_names(model, anchor.grouping)
+                if probe_group_every else None)
     probe_index = class_balanced_indices(train, int(cfg["probe_batch"]),
                                          PROBE_INDEX_SEED)
     probe_x, probe_y = train.take(probe_index)
@@ -133,7 +143,7 @@ def train_once(cfg, train, val, test, device, seed, run=None, verbose=True,
         reference_step = int(cfg["anchor_hold_steps"])
     reference = None
     if reference_step == 0:
-        reference, _ = kernel.measure(model, probe_x, cfg)
+        reference, _ = kernel.measure(model, probe_x, cfg, group_of=group_of)
 
     generator = torch.Generator(device=device).manual_seed(seed)
     best = {"val_acc": -1.0, "epoch": -1, "state": None}
@@ -143,7 +153,8 @@ def train_once(cfg, train, val, test, device, seed, run=None, verbose=True,
 
     if cfg["resume"]:
         state = ckpt_mod.load(cfg["resume"], model, optimizer, controller,
-                              anchor, device, generator, cfg)
+                              anchor, device, generator, cfg,
+                              allocator=allocator)
         start_epoch, step = state["epoch"] + 1, state["step"]
         reference, probe_index = state["reference"], state["probe_index"]
         probe_x, probe_y = train.take(probe_index)
@@ -152,9 +163,13 @@ def train_once(cfg, train, val, test, device, seed, run=None, verbose=True,
     if verbose:
         print(f"  {anchor.describe()}")
         print(f"  {controller.describe()}")
+        print(f"  {allocator.describe()}")
+        groups_note = (f", per-group every {probe_group_every} probes "
+                       f"({len(anchor.all)}x the JVPs on those)"
+                       if probe_group_every else ", no per-group sketch")
         print(f"  probe: {len(probe_index)} fixed images, every {probe_every} "
               f"steps, {cfg['probe_tangents']} tangents, kernel "
-              f"{cfg['probe_kernel']}  ({total_steps} steps total)")
+              f"{cfg['probe_kernel']}{groups_note}  ({total_steps} steps total)")
         print(f"  K_0 taken at step {reference_step}"
               + ("  (w0 itself; §7 literally)" if reference_step == 0 else
                  "  (end of the hold window: w0 is a ReLU-kink degeneracy, "
@@ -186,14 +201,25 @@ def train_once(cfg, train, val, test, device, seed, run=None, verbose=True,
             loss.backward()
             if cfg["grad_clip"] > 0:
                 torch.nn.utils.clip_grad_norm_(model.parameters(), cfg["grad_clip"])
+            # The tension's numerator, read here and nowhere else: after the clip,
+            # so it is the gradient the step actually applies, and before the
+            # step, after which .grad describes weights the model no longer has.
+            # Only on probe steps -- it is seven reductions over the whole net.
+            grad_norms = anchor.grad_norms() if step % probe_every == 0 else None
             optimizer.step()
             # After the step and after the clip, never before either. Clipping
             # first means a large gradient cannot cancel the anchor pull; being
             # outside optimizer.step() means the pull never enters the momentum
             # buffer, so a change in lambda takes effect at once instead of
             # bleeding through the velocity for several more steps.
+            # log lambda_g = log lam + a_g. Taking the level from lam rather than
+            # from the controller's u means every open-loop arm -- const, exp,
+            # critical, replay -- gets the allocation for free and on the same
+            # code path.
+            lambdas = (anchor.lambdas(math.log(lam), allocator.offsets())
+                       if lam > 0.0 else {g: 0.0 for g in anchor.anchored})
             if lam > 0.0:
-                anchor.pull(anchor.lambdas(lam), lr_now)
+                anchor.pull(lambdas, lr_now)
 
             running += float(loss.detach()) * y.numel()
             correct += int((logits.detach().argmax(1) == y).sum())
@@ -202,12 +228,14 @@ def train_once(cfg, train, val, test, device, seed, run=None, verbose=True,
 
             if step % probe_every == 0:
                 if reference is None and step >= reference_step:
-                    reference, _ = kernel.measure(model, probe_x, cfg)
+                    reference, _ = kernel.measure(model, probe_x, cfg,
+                                                  group_of=group_of)
                     if verbose:
                         print(f"  K_0 captured at step {step}")
                 latest = _probe(model, probe_x, probe_y, cfg, anchor, controller,
-                                reference, seed, epoch, step, lr_now, lam,
-                                hessian_every)
+                                allocator, reference, seed, epoch, step, lr_now,
+                                lam, lambdas, grad_norms, hessian_every,
+                                group_of, probe_group_every)
                 probes.append(latest)
                 if run is not None:
                     run.log({f"s{seed}/probe/{k}": v for k, v in latest.items()
@@ -261,6 +289,7 @@ def train_once(cfg, train, val, test, device, seed, run=None, verbose=True,
             ckpt_mod.save(f"{out}/ckpt_s{seed}.pt", cfg=cfg, seed=seed,
                           epoch=epoch, step=step, model=model,
                           optimizer=optimizer, controller=controller,
+                          allocator=allocator,
                           reference=reference, probe_index=probe_index,
                           history=history, probes=probes, generator=generator)
         if stopping:
@@ -311,6 +340,7 @@ def train_once(cfg, train, val, test, device, seed, run=None, verbose=True,
         "per_class": final.get("per_class"),
     }
     summary.update(controller.summary())
+    summary.update(allocator.summary())
     if probes:
         # .get, because a run shorter than anchor_reference_step never captures
         # K_0 and so has no drift columns at all -- which is a legitimate state
@@ -319,6 +349,13 @@ def train_once(cfg, train, val, test, device, seed, run=None, verbose=True,
                         for k in ("d", "d_ntk", "d_feature", "a_ntk",
                                   "a_feature", "scale_ntk", "scale_feature",
                                   "dist", "dist_rel") if k in probes[-1]})
+        summary.update({f"{k}_{g}_final": probes[-1][f"{k}_{g}"]
+                        for g in anchor.anchored
+                        for k in ("lam", "d", "dist", "dist_rel", "share")
+                        if f"{k}_{g}" in probes[-1]})
+    summary["anchor_grouping"] = anchor.grouping
+    summary["anchor_groups"] = list(anchor.anchored)
+    summary["anchor_w0_sq"] = {g: anchor.w0_sq_true[g] for g in anchor.anchored}
     # The names behind the w_norms / eta_eff vectors, recorded once per run: the
     # vectors are useless six months later without them.
     summary["anchor_layers"] = anchor.layer_names
@@ -337,6 +374,7 @@ def train_once(cfg, train, val, test, device, seed, run=None, verbose=True,
         ckpt_mod.save(f"{out}/ckpt_s{seed}.pt", cfg=cfg, seed=seed,
                       epoch=cfg["epochs"] - 1, step=step, model=model,
                       optimizer=optimizer, controller=controller,
+                      allocator=allocator,
                       reference=reference, probe_index=probe_index,
                       history=history, probes=probes, generator=generator)
     return summary, history, probes
@@ -347,11 +385,26 @@ def train_once(cfg, train, val, test, device, seed, run=None, verbose=True,
 # history row by sixty columns.
 _EPOCH_KEYS = ("lam", "d", "d_ema", "d_target", "d_ntk", "d_feature", "a_ntk",
                "scale_ntk", "dist", "dist_rel", "eta_eff_mean",
-               "hessian_lambda_min")
+               "hessian_lambda_min", "a_sum", "alloc_updates")
 
 
-def _probe(model, probe_x, probe_y, cfg, anchor, controller, reference, seed,
-           epoch, step, lr_now, lam_applied, hessian_every):
+def _allocate(allocator, anchor, step, lambdas, grad_norms):
+    """One slow-loop observation. Returns the a_g / tau_g columns.
+
+    grad_norms is None on a step that is not a probe, which cannot happen here --
+    but a zeroed reading would quietly drive the allocation toward uniform, so it
+    is an assertion rather than a default.
+    """
+    if grad_norms is None:
+        raise ValueError("the allocator was handed no gradient norms: they must "
+                         "be read after the clip and before optimizer.step()")
+    return allocator.observe(step, lambdas, grad_norms, anchor.delta_norms(),
+                             anchor.w0_sq)
+
+
+def _probe(model, probe_x, probe_y, cfg, anchor, controller, allocator,
+           reference, seed, epoch, step, lr_now, lam_applied, lambdas,
+           grad_norms, hessian_every, group_of, probe_group_every):
     """One row of the anchor stream. Read-only with respect to the model.
 
     Nothing in here may touch a global RNG: with anchor_mode off this whole path
@@ -359,10 +412,19 @@ def _probe(model, probe_x, probe_y, cfg, anchor, controller, reference, seed,
     from their own generator, the probe indices from theirs, and the Lanczos
     start vector is a constant.
     """
-    _, drift = kernel.measure(model, probe_x, cfg, reference=reference)
+    # The per-group sketch costs L times the JVPs, so it runs on its own cadence.
+    # It is a diagnostic and the coupling gate's regressand -- the slow loop
+    # steers by tension -- so skipping it changes nothing that is controlled.
+    take_groups = (group_of if probe_group_every and reference is not None
+                   and "ntk_groups" in reference
+                   and (step // max(int(cfg["probe_every"]), 1))
+                   % probe_group_every == 0 else None)
+    _, drift = kernel.measure(model, probe_x, cfg, reference=reference,
+                              group_of=take_groups)
     row = {"seed": seed, "epoch": epoch, "step": step,
            "progress": step / max(controller.total_steps, 1),
            "lr": lr_now, "lam_applied": lam_applied}
+    row.update({f"lam_{g}": v for g, v in lambdas.items()})
     row.update(drift)
     # Before K_0 exists there is no drift to report, and feeding the controller a
     # zero would look to it like a run that is not learning at all. The rows are
@@ -370,10 +432,15 @@ def _probe(model, probe_x, probe_y, cfg, anchor, controller, reference, seed,
     # with the drift columns simply absent.
     if not drift:
         row["lam"] = controller.lam(step)
+        row.update(_allocate(allocator, anchor, step, lambdas, grad_norms))
         row.update(anchor.distance(lr_now))
         return row
     row["d"] = kernel.selected(drift, cfg["probe_kernel"], cfg["probe_signal"])
     row.update(controller.observe(step, row["d"]))
+    # After the level, so the tension is read against the lambda that was
+    # actually applied over the window just measured, not the one the fast loop
+    # has this instant decided on.
+    row.update(_allocate(allocator, anchor, step, lambdas, grad_norms))
     row.update(anchor.distance(lr_now))
     if hessian_every and step % hessian_every == 0:
         row.update(lanczos_extremes(model, probe_x, probe_y,

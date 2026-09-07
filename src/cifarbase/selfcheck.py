@@ -14,7 +14,9 @@ run on a laptop with no dataset mounted, which is where they are most useful.
 
     python main.py --selfcheck
 """
+import json
 import math
+import os
 import tempfile
 
 import torch
@@ -39,7 +41,10 @@ def run_gates(cfg, device):
              ("H3  the estimator is deterministic", _gate_determinism),
              ("H4  a probe does not move BatchNorm", _gate_bn),
              ("H5  the homotopy is the closed form", _gate_closed_form),
-             ("H6  a resume continues rather than restarts", _gate_resume)]
+             ("H6  a resume continues rather than restarts", _gate_resume),
+             ("H7  the per-group plant is diagonally dominant",
+              lambda device: _gate_coupling(
+                  device, cfg.get("anchor_grouping", "stage")))]
 
     print("\n" + "=" * 78)
     print("SELFCHECK -- the anchor's correctness gates")
@@ -93,9 +98,22 @@ def _fixture(device, count=32, zero_init_residual=False):
 
 
 def _probe_cfg(**over):
+    """The anchor keys the gates need, with normalisation OFF by default.
+
+    The mechanism gates set lambda = 0.99/lr so the pull closes a known fraction
+    of the distance per step, and that arithmetic is only literal for the raw
+    penalty. The normalised path is certified separately, inside H1, by pushing
+    lambda_g = 0.99 * ||w0_g||^2 / lr and requiring the same residual -- which is
+    a direct check that the divisor is applied, per group, where it says it is.
+    """
     cfg = {"probe_tangents": 4, "probe_deterministic": False,
            "anchor_w0_dtype": "fp32", "anchor_ratio_bn": 1.0,
-           "anchor_ratio_head": 1.0}
+           "anchor_ratio_head": 1.0, "anchor_normalize": False,
+           "probe_every": 1, "probe_group_every": 1,
+           "anchor_alloc": "off", "anchor_alloc_every": 1,
+           "anchor_alloc_beta_frac": 0.2, "anchor_alloc_shrink": 0.01,
+           "anchor_alloc_clip_decades": 1.0, "anchor_tau_rho": 0.0,
+           "anchor_hold_steps": 0}
     cfg.update(over)
     return cfg
 
@@ -234,7 +252,7 @@ def _gate_pull(device):
             optimizer.zero_grad(set_to_none=True)
             F.cross_entropy(model(x), y).backward()
             optimizer.step()
-            anchor.pull(anchor.lambdas(lam), lr)
+            anchor.pull(anchor.lambdas(math.log(lam)), lr)
 
         _, drift_free = kernel.measure(model, x, cfg, reference=reference)
         with torch.no_grad():
@@ -279,9 +297,36 @@ def _gate_pull(device):
     lines.append(f"at the tightest lambda: ||w-w0||/||w0|| = {tightest['dist']:.3e} "
                  f"(want < 1e-5), d = {tightest['d']:.3e} (want < 5e-3)")
 
+    # The normalised penalty, run at the same realised pull. lambda_g is now
+    # dimensionless, so reproducing a per-step factor of 0.99 means asking for
+    # lambda_g = 0.99 * ||w0_g||^2 / lr -- and the residual has to come out where
+    # the un-normalised sweep put it. A divisor applied to the wrong group, or to
+    # the live norm instead of w0's, moves this immediately.
+    lr = 1e-4
+    model, x, y = _fixture(device)
+    cfg = _probe_cfg(anchor_normalize=True)
+    anchor = anchor_mod.Anchor(model, cfg)
+    optimizer = torch.optim.SGD(anchor_mod.build_param_groups(
+        model, {"weight_decay": 0.0}), lr=lr, momentum=0.9)
+    scaled = {g: 0.99 * anchor.w0_sq[g] / lr for g in anchor.anchored}
+    model.train()
+    for _ in range(40):
+        optimizer.zero_grad(set_to_none=True)
+        F.cross_entropy(model(x), y).backward()
+        optimizer.step()
+        anchor.pull(scaled, lr)
+    normalised = anchor.distance(lr)["dist_rel"]
+    # Same physical pull, so the same residual to within the noise of a different
+    # weight trajectory; an order of magnitude is a generous band and a misapplied
+    # divisor misses it by many.
+    agrees = 0.1 < normalised / max(tightest["dist"], 1e-300) < 10.0
+    lines.append(f"normalised penalty at lambda_g = 0.99||w0_g||^2/lr: "
+                 f"||w-w0||/||w0|| = {normalised:.3e} vs {tightest['dist']:.3e} "
+                 f"un-normalised  (want within 10x)  {agrees}")
+
     return (tightest["dist"] < 1e-5 and tightest["d"] < 5e-3
             and all(r > 5.0 for r in ratios)
-            and 0.35 < exponent < 1.15), lines
+            and 0.35 < exponent < 1.15 and agrees), lines
 
 
 def _gate_inert(device):
@@ -329,7 +374,9 @@ def _gate_inert(device):
             F.cross_entropy(model(x), y).backward()
             optimizer.step()
             if anchored:
-                anchor.pull(anchor.lambdas(0.0), 0.05)
+                # An explicit zero, not lambdas(0.0): the argument is now
+                # log lambda, and log lambda = 0 is lambda = 1.
+                anchor.pull({g: 0.0 for g in anchor.anchored}, 0.05)
                 if step % 5 == 0:
                     kernel.measure(model, x, cfg, reference=reference)
         return [p.detach().clone() for p in model.parameters()]
@@ -498,8 +545,7 @@ def _gate_resume(device):
     checks["K_0 (the drift reference)"] = (
         straight["reference"] is not None
         and resumed["reference"] is not None
-        and all(torch.equal(straight["reference"][k], resumed["reference"][k])
-                for k in straight["reference"]))
+        and _sketches_equal(straight["reference"], resumed["reference"]))
     checks["probe indices"] = torch.equal(straight["probe_index"],
                                           resumed["probe_index"])
     checks["controller u and d_ema"] = (
@@ -685,3 +731,238 @@ def _gate_closed_form(device):
     magnitude_ok = all(errors[lam] < 1e-3 for lam in lambdas)
     trend_ok = -1.5 < slope < -0.2
     return converged_ok and magnitude_ok and trend_ok, lines
+
+
+# ---------------------------------------------------------------------------
+
+
+def _sketches_equal(left, right):
+    """Bitwise equality through the one level of nesting the reference has: the
+    per-group sketches live under `ntk_groups` as a dict of their own."""
+    if set(left) != set(right):
+        return False
+    return all(_sketches_equal(left[key], right[key])
+               if isinstance(left[key], dict) else torch.equal(left[key], right[key])
+               for key in left)
+
+
+def _gate_coupling(device, grouping="stage"):
+    """Is the plant diagonal enough for a diagonal allocation to steer it?
+
+    This gate exists only because the anchor now has one lambda per group. A
+    per-group controller is a diagonal controller on a MIMO plant: it moves
+    lambda_m and reads back d_m, as though d_m depended on lambda_m alone. It does
+    not. Every lambda changes the whole network's function and therefore every
+    block of the kernel, so the true plant is the matrix
+
+        G_lm = -d(d_l) / d(log lambda_m)
+
+    and diagonal control on a strongly non-diagonal G oscillates -- slowly, and
+    with a lambda trace that looks like a controller working. The condition that
+    rules that out is row-wise diagonal dominance, |G_ll| > sum_{m != l} |G_lm|.
+
+    Measured by finite differences: perturb one group's log lambda by +-0.5,
+    train 200 steps from the same init on the same batches, and difference the
+    per-group drifts. Central differences rather than one-sided, because the
+    baseline trajectory is not a fixed point and a one-sided difference would
+    charge the whole 200 steps of ordinary drift to the perturbation.
+
+    THE OPERATING POINT IS THE WHOLE MEASUREMENT. The per-step pull fraction is
+    lr*lambda_g/||w0_g||^2, and (1 - f)^steps is what is left of the distance to
+    w0 at the end of the window. The first version of this gate sat at f = 0.2,
+    where (1 - f)^200 is 4e-20: every group was glued to w0 in BOTH the + and the
+    - run, d_l was a difference of two noise floors, and the gate reported
+    off/diag ratios up to 178 that were pure estimator noise. It read exactly like
+    a design that could not work. So f is set to 1/steps, which leaves 37% of the
+    displacement standing at the baseline and 55%/19% at the two perturbations --
+    the anchor is doing something, and something different on each side, which is
+    the only regime in which a derivative with respect to it means anything.
+
+    TWO PLANTS, and the distinction is load-bearing. The protocol states this gate
+    on G_lm = -d(d_l)/d(log lambda_m), the DRIFT plant. But the slow loop as
+    specified in the same protocol integrates log tau_l, not d_l, so the plant it
+    actually closes around is
+
+        T_lm = -d(log tau_l) / d(log lambda_m)
+
+    and those are different matrices with different structure. The drift plant is
+    a positive matrix -- tightening ANY group's anchor reduces total movement and
+    so reduces every block's drift -- which makes raw diagonal dominance close to
+    unreachable for it by construction rather than by accident. The tension plant
+    has an explicit lambda_l in tau_l's denominator, which puts a structural +1 on
+    T's diagonal before anything else happens.
+
+    Both are measured here, from the same runs, and both are reported. The gate's
+    verdict is the drift plant, because that is what the protocol says. The
+    tension plant is what a stability argument about THIS loop has to be made on,
+    and it is printed so the two can be argued about separately instead of one
+    quietly standing in for the other.
+
+    TWO CRITERIA, because the allocation does not live in the whole space. G's raw
+    row dominance is reported first and is the honest headline. But a_g is
+    constrained to sum to zero, so the allocation can only ever move along the
+    zero-sum subspace, and what it actually sees is P G P with
+    P = I - (1/L) 11^T. A G whose off-diagonal mass is common mode -- every lambda
+    moving every d_l the same way -- is a G the allocation is structurally unable
+    to excite, and the projected operator is what decides stability. Both are
+    printed; the gate passes on the projected one and says so.
+
+    This is the gate that says how fine the grouping may be. If it fails, the
+    remedies are coarsening the partition or cutting anchor_alloc_beta_frac by
+    another factor of five -- NOT loosening the criterion, which is the one thing
+    that would make the failure invisible again.
+    """
+    groups = anchor_mod.anchored_groups(grouping)
+    steps, delta, lr = 200, 0.5, 0.02
+    # The pull closes 1/steps of the distance to w0 per step, so 37% of the
+    # displacement is still standing when the window ends. See the docstring: at a
+    # stiffer setting both perturbations land on w0 and the gate measures noise.
+    fraction = 1.0 / steps
+    base_level = math.log(fraction / lr)
+    lines = [f"grouping {grouping!r}: {len(groups)} groups "
+             f"({', '.join(groups)}), +-{delta} in log lambda, {steps} steps, "
+             f"central differences",
+             f"per-step pull fraction {fraction:.4g} at the base point "
+             f"({fraction * math.exp(-delta):.4g} .. {fraction * math.exp(delta):.4g} "
+             f"across the sweep); (1-f)^{steps} leaves "
+             f"{(1 - fraction * math.exp(delta)) ** steps:.2f} .. "
+             f"{(1 - fraction * math.exp(-delta)) ** steps:.2f} of the "
+             f"displacement standing"]
+
+    def run(shifted, sign):
+        """Returns (per-group drift, per-group tension) after `steps` steps."""
+        model, x, y = _fixture(device)
+        cfg = _probe_cfg(anchor_normalize=True, anchor_grouping=grouping)
+        anchor = anchor_mod.Anchor(model, cfg)
+        optimizer = torch.optim.SGD(anchor_mod.build_param_groups(
+            model, {"weight_decay": 0.0, "anchor_grouping": grouping}),
+            lr=lr, momentum=0.9)
+        group_of = anchor_mod.group_of_names(model, grouping)
+        reference, _ = kernel.measure(model, x, cfg, group_of=group_of)
+        offsets = {g: 0.0 for g in groups}
+        if shifted is not None:
+            offsets[shifted] = sign * delta
+        # Raw lambda_g scaled back up by the group's anchor norm, so every group
+        # sits at the same realised pull before the perturbation. Otherwise the
+        # diagonal would mostly report which group happens to have the largest
+        # ||w0||.
+        lambdas = {g: math.exp(base_level + offsets[g]) * anchor.w0_sq[g]
+                   for g in groups}
+        model.train()
+        for _ in range(steps):
+            optimizer.zero_grad(set_to_none=True)
+            F.cross_entropy(model(x), y).backward()
+            optimizer.step()
+            anchor.pull(lambdas, lr)
+        _, drift = kernel.measure(model, x, cfg, reference=reference,
+                                  group_of=group_of)
+        # One more backward, purely to read the tension the slow loop would see:
+        # tau needs the gradient the next step would apply.
+        optimizer.zero_grad(set_to_none=True)
+        F.cross_entropy(model(x), y).backward()
+        grads, deltas = anchor.grad_norms(), anchor.delta_norms()
+        tension = {g: (grads[g] * anchor.w0_sq[g]
+                       / (lambdas[g] * deltas[g] + 1e-12)) for g in groups}
+        return {g: drift[f"d_{g}"] for g in groups}, tension
+
+    base_d, base_tau = run(None, 0.0)
+    lines.append("baseline d_l:   "
+                 + "  ".join(f"{g}={base_d[g]:.3e}" for g in groups))
+    lines.append("baseline tau_l: "
+                 + "  ".join(f"{g}={base_tau[g]:.3e}" for g in groups)
+                 + "   (tau = 1 is gradient force balancing anchor force)")
+
+    columns, tension_cols = {}, {}
+    for shifted in groups:
+        (up_d, up_t), (down_d, down_t) = run(shifted, +1.0), run(shifted, -1.0)
+        # G = -d(d)/d(log lambda): tightening the anchor must REDUCE drift, so a
+        # correct plant has a positive diagonal here.
+        columns[shifted] = {g: -(up_d[g] - down_d[g]) / (2.0 * delta)
+                            for g in groups}
+        tension_cols[shifted] = {
+            g: -(math.log(max(up_t[g], 1e-300)) - math.log(max(down_t[g], 1e-300)))
+               / (2.0 * delta) for g in groups}
+
+    def dominance(matrix, label):
+        worst, where = 0.0, None
+        for row in groups:
+            diagonal = matrix[row][row]
+            off = sum(abs(matrix[col][row]) for col in groups if col != row)
+            ratio = off / max(abs(diagonal), 1e-300)
+            # Signed, deliberately. A negative diagonal means tightening a group's
+            # own anchor INCREASED its own drift, which is a different failure from
+            # a merely crowded row and has to be visible without re-running.
+            lines.append(f"  {label} row {row:<9} G_ll = {diagonal:+.3e}   "
+                         f"sum|G_lm| = {off:.3e}   off/diag = {ratio:7.2f}"
+                         + ("   DOMINANT" if ratio < 1.0 else ""))
+            if ratio > worst:
+                worst, where = ratio, row
+        return worst, where
+
+    lines.append("raw G (reported, not the criterion -- the allocation cannot "
+                 "excite G's common mode):")
+    raw_worst, raw_row = dominance(columns, "raw ")
+
+    # P G P with P = I - (1/L) 11^T: G restricted to the zero-sum subspace the
+    # allocation actually moves in. Column-centre then row-centre.
+    size = len(groups)
+    centred = {}
+    for col in groups:
+        mean = sum(columns[col][row] for row in groups) / size
+        centred[col] = {row: columns[col][row] - mean for row in groups}
+    projected = {}
+    for col in groups:
+        projected[col] = {}
+    for row in groups:
+        mean = sum(centred[col][row] for col in groups) / size
+        for col in groups:
+            projected[col][row] = centred[col][row] - mean
+
+    lines.append("projected P G P (the criterion):")
+    worst_ratio, worst_row = dominance(projected, "proj")
+
+    lines.append("tension plant T = -d(log tau_l)/d(log lambda_m) -- what the slow "
+                 "loop actually closes around (reported, not the verdict):")
+    tau_worst, tau_row = dominance(tension_cols, "tau ")
+    tau_signs = sum(1 for g in groups if tension_cols[g][g] > 0.0)
+    lines.append(f"  tension diagonal entries with the physical sign: "
+                 f"{tau_signs}/{len(groups)}; worst row {tau_row} at "
+                 f"off/diag = {tau_worst:.2f}")
+
+    raw_signs = sum(1 for g in groups if columns[g][g] > 0.0)
+    signs = sum(1 for g in groups if projected[g][g] > 0.0)
+    positive = sum(1 for c in groups for r in groups if columns[c][r] > 0.0)
+    lines.append(f"raw G entries that are positive (more anchor, less drift): "
+                 f"{positive}/{size * size}. A plant where EVERY entry has the "
+                 f"same sign is one big common mode, and raw row dominance is "
+                 f"then unreachable by construction rather than by accident.")
+    lines.append(f"raw diagonal entries with the physical sign: "
+                 f"{raw_signs}/{len(groups)}")
+    common = 1.0 - (sum(projected[c][r] ** 2 for c in groups for r in groups)
+                    / max(sum(columns[c][r] ** 2 for c in groups
+                              for r in groups), 1e-300)) ** 0.5
+    lines.append(f"common-mode share of ||G||_F: {common:.2f}  (the part the "
+                 f"zero-sum allocation cannot reach)")
+    lines.append(f"projected diagonal entries with the physical sign (more "
+                 f"anchor, less drift): {signs}/{len(groups)}")
+    lines.append(f"worst projected row: {worst_row} at off/diag = "
+                 f"{worst_ratio:.2f} (want < 1); raw worst was {raw_row} at "
+                 f"{raw_worst:.2f}")
+    if worst_ratio >= 1.0 or signs != len(groups):
+        lines.append("coarsen the grouping, or cut anchor_alloc_beta_frac by "
+                     "another 5x. Do not loosen this criterion.")
+
+    # The whole matrix, so a failure can be argued about without paying for the
+    # measurement again. Written next to the run rather than printed: 49 numbers
+    # is a file, not a log line.
+    path = os.path.join(tempfile.gettempdir(), f"coupling_G_{grouping}.json")
+    with open(path, "w") as fh:
+        json.dump({"groups": list(groups), "steps": steps, "delta": delta,
+                   "lr": lr, "base_fraction": fraction,
+                   "baseline_d": base_d, "baseline_tau": base_tau,
+                   "grouping": grouping,
+                   "G": {c: columns[c] for c in groups},
+                   "T_tension": {c: tension_cols[c] for c in groups},
+                   "PGP": {c: projected[c] for c in groups}}, fh, indent=1)
+    lines.append(f"the full matrix is in {path}")
+    return worst_ratio < 1.0 and signs == len(groups), lines

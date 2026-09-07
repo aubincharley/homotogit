@@ -19,6 +19,9 @@ width: 16
 
 epochs: 2
 lr: 0.05
+# Per-arm, as in compare.yaml: only the unanchored arm carries decay, because
+# config.py refuses decay and an anchor in the same arm.
+weight_decay: 0.0
 warmup_epochs: 0
 schedule: cosine
 
@@ -35,3 +38,17 @@ anchor_hold_steps: 5
 hessian_every: 20
 hessian_iters: 4
 ckpt_every: 1
+probe_group_every: 2
+anchor_alloc_every: 2
+
+# Three arms, so the smoke test actually walks the code it exists to check: the
+# unanchored path, the open-loop pull, and the closed loop with the allocation
+# on. beta and dmax here are ARBITRARY -- 1.0 because it is a number, not because
+# anything fitted it. That is admissible only here: this config asserts that the
+# plumbing runs, never that a controller is calibrated. Every real anchored
+# config refuses to start until the pilot has produced both.
+arms:
+  - {name: baseline_wd, weight_decay: 5.0e-4}
+  - {name: const, anchor_mode: const, anchor_lambda: 0.01}
+  - {name: alloc, anchor_mode: adaptive, anchor_beta: 1.0, anchor_dmax: 1.0,
+     anchor_alloc: adaptive}

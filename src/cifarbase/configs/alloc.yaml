@@ -1,0 +1,73 @@
+# Stage 3 for the per-group method: the same adaptive anchor as anchor.yaml, with
+# the allocation loop on.
+#
+# Identical to anchor.yaml in every respect except anchor_alloc, so a difference
+# between the two is attributable to the allocation and to nothing else. Run both
+# -- anchor.yaml is the control, and without it a win here cannot be told apart
+# from a win the single-lambda loop would have got anyway.
+#
+# anchor_beta and anchor_dmax are deliberately left at 0, which makes this config
+# REFUSE TO RUN, exactly as anchor.yaml does. Both are outputs of the pilot, and
+# beta_a = anchor_alloc_beta_frac * beta, so a guessed beta misconfigures both
+# loops at once.
+#
+# Do not run this before selfcheck's H7 passes. A diagonal allocation on a plant
+# that is not diagonally dominant oscillates slowly and produces a lambda trace
+# that looks like a controller working.
+
+seeds: "0,1,2,3,4"
+
+batch_size: 128
+val_size: 0
+augment: true
+
+arch: resnet18
+width: 64
+zero_init_residual: true
+
+epochs: 100
+optimizer: sgd
+lr: 0.1
+momentum: 0.9
+nesterov: true
+weight_decay: 0.0
+schedule: cosine
+warmup_epochs: 5
+grad_clip: 0.0
+label_smoothing: 0.0
+
+anchor_mode: adaptive
+anchor_beta: 0.0          # <- from the pilot
+anchor_dmax: 0.0          # <- from the pilot
+anchor_lambda_max_frac: 0.5
+anchor_hold_steps: 500
+anchor_rho: 0.9
+anchor_rate_limit: 0.1
+anchor_ratio_bn: 1.0
+anchor_ratio_head: 1.0
+
+# The allocation. Ten times rarer than the level and five times shyer: the
+# two-timescale separation is the only stability argument the pair has, and
+# closing either gap is how a slow oscillation gets in.
+anchor_normalize: true
+anchor_alloc: adaptive
+anchor_alloc_every: 10
+anchor_alloc_beta_frac: 0.2
+anchor_alloc_shrink: 0.01
+anchor_alloc_clip_decades: 1.0
+anchor_tau_rho: 0.9
+
+probe_every: 100
+probe_batch: 250
+probe_tangents: 8
+probe_kernel: ntk
+# The per-group sketch costs 8x the JVPs of the global one. Every fifth probe is
+# enough for the d_g trace and for the post-hoc coupling check, and it keeps the
+# probe's share of wall clock in the same place anchor.yaml has it.
+probe_group_every: 5
+hessian_every: 1000
+hessian_iters: 10
+
+ckpt_every: 10
+
+per_class: true
