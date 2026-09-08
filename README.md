@@ -190,12 +190,27 @@ capability against `torch.cuda.get_arch_list()` when they do not match.
 
 ### Where the data comes from on Kaggle
 
-With nothing mounted, `data.py` downloads CIFAR-10 into `/kaggle/working`, which
-is also the kernel's output -- so the 170 MB archive and its extracted batches
-end up attached to the run and `make pull` will fetch them. To avoid that, mount
-a dataset containing `cifar-10-batches-py` (add it to `dataset_sources` in
-`kernel-metadata.json`); `_load_raw` finds it under `/kaggle/input` before it
-considers downloading.
+CIFAR-10 is mounted, not downloaded. `aubincharley/cifar10-python` is a private
+Kaggle dataset holding the six pickled batches flat in one folder, listed in
+`dataset_sources`, so `_load_raw` finds it under `/kaggle/input` at step 2 of its
+five and never reaches the download.
+
+This matters beyond the two minutes it saves. Without it, the 170 MB archive and
+its extracted batches land in `/kaggle/working`, which is also the kernel's
+*output* -- so every run would attach ~350 MB of dataset to its results and
+`make pull` would drag it all back down.
+
+To recreate it from a local `cifar-10-batches-py`:
+
+```sh
+cp cifar-10-batches-py/{data_batch_?,test_batch,batches.meta} data/
+make dataset          # first time; afterwards: make dataset-version MSG="..."
+```
+
+The folder must stay **flat**. `kaggle datasets create` defaults to
+`--dir-mode skip`, which silently ignores subdirectories -- ship
+`data/cifar-10-batches-py/` and you get an empty dataset and no error. `-t`
+keeps the pickles raw instead of letting Kaggle try to convert them to CSV.
 
 ## Layout
 

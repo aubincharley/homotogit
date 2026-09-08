@@ -1,9 +1,10 @@
-.PHONY: build run quick baseline push status pull clean runs plot
+.PHONY: build run quick baseline push status pull clean runs plot dataset dataset-version
 
 KERNEL = aubincharley/cifar10-resnet
 # Override if the venv is not activated: make quick PYTHON=.venv/bin/python
 PYTHON ?= python3
 DIR ?= runs/latest
+MSG ?= update data
 
 build:          ## bundle src/ + main.py into dist/main.py
 	$(PYTHON) build.py
@@ -16,6 +17,14 @@ quick:          ## CPU smoke test: resnet18 w=16, 4k images, 2 epochs, 1 seed
 
 baseline:       ## the reference recipe, one seed -- for timing a change
 	$(PYTHON) main.py --seeds 0
+
+dataset:        ## create the CIFAR-10 dataset on Kaggle (first time only)
+	@echo "178 MB, private. -t keeps the pickles raw; the folder is flat so the"
+	@echo "default --dir-mode skip has no subdirectory to silently drop."
+	kaggle datasets create -p data -t --ignore-patterns "*.part"
+
+dataset-version: ## push a new version of the dataset (MSG="what changed")
+	kaggle datasets version -p data -t -m "$(MSG)" --ignore-patterns "*.part"
 
 push: build     ## rebuild, then push the kernel to Kaggle
 	@echo "NOTE: a push resets the accelerator. Set GPU T4 x2 in the UI, then Save & Run All."
