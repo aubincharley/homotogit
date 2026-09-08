@@ -1,0 +1,37 @@
+# Arm F -- the control arm, and the one that can kill the hypothesis.
+# dL/dtheta_F is proportional to s, so the homotopy is partly just a schedule on
+# the residual branch learning rate. This applies that schedule to the lr and
+# leaves the forward pass at s=1. If it reproduces arm B, arm B was an lr trick.
+#
+# Everything except the s_* keys is baseline.yaml verbatim. It has to be: the
+# comparison is worthless if anything else moved.
+
+seeds: "0,1,2"
+
+batch_size: 128
+val_size: 0
+augment: true
+
+arch: resnet18
+width: 64
+zero_init_residual: true
+
+epochs: 60
+optimizer: sgd
+lr: 0.1
+momentum: 0.9
+nesterov: true
+weight_decay: 5.0e-4
+schedule: cosine
+warmup_epochs: 5
+
+s_schedule: linear
+s_min: 0.0
+s_max: 1.0
+s_ramp_start: 0.0
+s_ramp_end: 0.5
+
+lr_gate_control: true
+ckpt_every: 5
+diag_every: 5
+per_class: true

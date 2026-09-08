@@ -1,9 +1,11 @@
-.PHONY: build run quick baseline push status pull clean runs plot
+.PHONY: build run quick baseline push status pull clean runs plot test \
+        homotopy-quick homotopy explore
 
 KERNEL = aubincharley/cifar10-resnet
 # Override if the venv is not activated: make quick PYTHON=.venv/bin/python
 PYTHON ?= python3
 DIR ?= runs/latest
+CONFIG ?= homotopy_linear
 
 build:          ## bundle src/ + main.py into dist/main.py
 	$(PYTHON) build.py
@@ -16,6 +18,18 @@ quick:          ## CPU smoke test: resnet18 w=16, 4k images, 2 epochs, 1 seed
 
 baseline:       ## the reference recipe, one seed -- for timing a change
 	$(PYTHON) main.py --seeds 0
+
+test:           ## unit tests: the homotopy gate and the landscape maths
+	$(PYTHON) -m pytest tests/ -q
+
+homotopy-quick: ## CPU smoke test of the homotopy path: does s move, do ckpts land
+	CIFAR_ALLOW_CPU=1 $(PYTHON) main.py --config homotopy_quick --no-wandb
+
+homotopy:       ## one arm of the pilot, e.g. make homotopy CONFIG=homotopy_linear
+	$(PYTHON) main.py --config $(CONFIG)
+
+explore:        ## loss-landscape figures for a run trained with ckpt_every > 0
+	$(PYTHON) explore.py $(DIR)
 
 push: build     ## rebuild, then push the kernel to Kaggle
 	@echo "NOTE: a push resets the accelerator. Set GPU T4 x2 in the UI, then Save & Run All."

@@ -1,0 +1,36 @@
+# Arm B -- the global residual homotopy, the thing the project is about.
+# s rises linearly from 0 to 1 over the first half of training; the second half
+# trains the actual ResNet, which is what makes the final accuracy comparable to
+# baseline.yaml at all.
+#
+# Everything except the s_* keys is baseline.yaml verbatim. It has to be: the
+# comparison is worthless if anything else moved.
+
+seeds: "0,1,2"
+
+batch_size: 128
+val_size: 0
+augment: true
+
+arch: resnet18
+width: 64
+zero_init_residual: true
+
+epochs: 60
+optimizer: sgd
+lr: 0.1
+momentum: 0.9
+nesterov: true
+weight_decay: 5.0e-4
+schedule: cosine
+warmup_epochs: 5
+
+s_schedule: linear
+s_min: 0.0
+s_max: 1.0
+s_ramp_start: 0.0
+s_ramp_end: 0.5
+
+ckpt_every: 5
+diag_every: 5
+per_class: true

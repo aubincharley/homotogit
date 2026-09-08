@@ -64,6 +64,43 @@ CONFIG = {
     "grad_clip": 0.0,           # 0 disables
     "label_smoothing": 0.0,
 
+    # ---- residual homotopy -----------------------------------------------
+    # h_out = shortcut(x) + s*F(x), with s driven 0 -> 1 during training. The
+    # default is const at s_max=1, which IS the baseline: leaving these alone
+    # gives byte-identical behaviour to before they existed.
+    "s_schedule": "const",      # const|linear|cosine|staircase|sequential
+    "s_min": 0.0,               # s at the start of the ramp. 0 freezes the
+                                # residual branches outright (dL/dtheta_F ~ s),
+                                # which is a choice, not an accident.
+    "s_max": 1.0,
+    "s_ramp_start": 0.0,        # fraction of training before the ramp begins
+    "s_ramp_end": 0.5,          # fraction by which s has reached s_max. The tail
+                                # after it trains the actual ResNet, which is
+                                # what makes the accuracy comparable at all.
+    "s_stairs": 0,              # staircase only: how many plateaus
+    "s_lr_restart": False,      # staircase only: give every plateau its own
+                                # warmup and decay. This is what turns the
+                                # staircase into continuation rather than
+                                # decoration -- under one global cosine the early
+                                # plateaus never settle and the late ones cannot
+                                # move, so theta never tracks theta*(s).
+    "s_granularity": "step",    # step|epoch
+    "lr_gate_control": False,   # the control arm: apply the s profile to the
+                                # residual branch's learning rate instead of to
+                                # the forward pass. If this reproduces the
+                                # homotopy's effect, the homotopy was a learning
+                                # rate schedule in disguise.
+
+    # ---- landscape -------------------------------------------------------
+    "ckpt_every": 0,            # >0 saves theta every N epochs, which is what
+                                # explore.py needs to draw a trajectory
+    "diag_every": 0,            # >0 measures the per-block residual ratio and
+                                # gradient norms every N epochs, during the run.
+                                # The same numbers explore.py derives afterwards
+                                # from checkpoints -- but having them live is
+                                # what lets you tell a run that is doing what you
+                                # asked from one that is not, before it finishes.
+
     # ---- reporting -------------------------------------------------------
     "per_class": True,
     "wandb": True,              # falls back to NullRun when unavailable anyway
@@ -149,6 +186,49 @@ def build_parser():
     return parser
 
 
+def _validate_homotopy(cfg):
+    """The homotopy keys, checked hard enough that a bad sweep fails at launch.
+
+    The one that matters is s_ramp_end < 1: a run whose s never reaches s_max
+    trained a different model than the baseline, so its accuracy is not
+    comparable to the baseline's -- and nothing downstream would ever say so.
+    """
+    from cifarbase.homotopy import SCHEDULES
+
+    if cfg["s_schedule"] not in SCHEDULES:
+        raise SystemExit(f"!! unknown s_schedule {cfg['s_schedule']!r}: "
+                         f"pick one of {', '.join(SCHEDULES)}")
+    if cfg["s_granularity"] not in ("step", "epoch"):
+        raise SystemExit(f"!! unknown s_granularity {cfg['s_granularity']!r}: "
+                         f"pick step or epoch")
+    if not 0.0 <= cfg["s_min"] <= cfg["s_max"] <= 1.0:
+        raise SystemExit(f"!! need 0 <= s_min <= s_max <= 1, got "
+                         f"s_min={cfg['s_min']}, s_max={cfg['s_max']}")
+    if cfg["s_schedule"] != "const":
+        if not 0.0 <= cfg["s_ramp_start"] < cfg["s_ramp_end"] < 1.0:
+            raise SystemExit(
+                f"!! need 0 <= s_ramp_start < s_ramp_end < 1, got "
+                f"{cfg['s_ramp_start']} and {cfg['s_ramp_end']}. ramp_end must "
+                f"leave a tail of training at s_max, or the run never trains "
+                f"the model its accuracy will be compared against.")
+        if cfg["s_schedule"] == "staircase" and cfg["s_stairs"] < 1:
+            raise SystemExit(f"!! staircase needs s_stairs >= 1, got "
+                             f"{cfg['s_stairs']}")
+    if cfg["s_lr_restart"] and cfg["s_schedule"] != "staircase":
+        raise SystemExit(
+            f"!! s_lr_restart needs s_schedule=staircase, not "
+            f"{cfg['s_schedule']!r}: restarting the lr only means something "
+            f"where s is held still long enough for a phase to converge.")
+    if cfg["lr_gate_control"] and cfg["s_schedule"] == "const":
+        raise SystemExit("!! lr_gate_control with s_schedule=const applies a "
+                         "constant multiplier and is just a different lr: set a "
+                         "real schedule, or turn the control off")
+    for key in ("ckpt_every", "diag_every"):
+        if cfg[key] < 0:
+            raise SystemExit(f"!! {key} must be >= 0, got {cfg[key]}")
+    return cfg
+
+
 def _validate(cfg):
     # Imported here, not at module scope, so `--help` works on a machine with no
     # torch installed.
@@ -170,6 +250,7 @@ def _validate(cfg):
     if cfg["warmup_epochs"] > cfg["epochs"]:
         raise SystemExit(f"!! warmup_epochs ({cfg['warmup_epochs']}) exceeds "
                          f"epochs ({cfg['epochs']}): the lr would never decay")
+    _validate_homotopy(cfg)
     if not seed_list(cfg):
         raise SystemExit("!! seeds is empty: give a comma-separated list, e.g. 0,1,2")
     return cfg

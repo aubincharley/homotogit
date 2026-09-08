@@ -64,7 +64,8 @@ def main():
     try:
         for seed in seeds:
             print(f"\n--- seed {seed} ---")
-            summary, rows = train_once(cfg, train, val, test, device, seed, run)
+            summary, rows = train_once(cfg, train, val, test, device, seed, run,
+                                       out_dir=out)
             runs.append(summary)
             history.extend(rows)
     finally:

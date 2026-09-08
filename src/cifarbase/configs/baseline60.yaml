@@ -1,0 +1,31 @@
+# Arm A-60 -- the reference, at the pilot budget.
+# baseline.yaml is 100 epochs; every homotopy arm here runs 60. Comparing a
+# 60-epoch homotopy against a 100-epoch baseline would compare budgets, not
+# homotopies, so the control needs its own file at the same budget.
+#
+# Everything except the s_* keys is baseline.yaml verbatim. It has to be: the
+# comparison is worthless if anything else moved.
+
+seeds: "0,1,2"
+
+batch_size: 128
+val_size: 0
+augment: true
+
+arch: resnet18
+width: 64
+zero_init_residual: true
+
+epochs: 60
+optimizer: sgd
+lr: 0.1
+momentum: 0.9
+nesterov: true
+weight_decay: 5.0e-4
+schedule: cosine
+warmup_epochs: 5
+
+
+ckpt_every: 5
+diag_every: 5
+per_class: true

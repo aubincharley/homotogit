@@ -1,0 +1,45 @@
+# A plumbing check for the homotopy path, not an experiment.
+#
+# Does s actually move, does the gate reach exactly 1 before the end, do the
+# checkpoints land on disk, does history.csv grow the s columns? A narrow net on
+# 4k images answers all of that on a CPU in a few minutes and proves nothing
+# about accuracy.
+#
+# 20 epochs rather than the handful a smoke test strictly needs, for two
+# reasons: the ramp lasts 10 epochs instead of 2, so s moving is actually
+# visible in the log rather than something you have to take on faith; and
+# ckpt_every=1 then leaves 21 checkpoints, which is enough for the continuation
+# plane and the projected trajectory to be worth drawing. Below about a dozen
+# checkpoints those figures are three points and a guess.
+#
+# Pair it with CIFAR_ALLOW_CPU=1 (see `make homotopy-quick`).
+
+seeds: "0"
+quick: false          # this file IS the small config
+
+batch_size: 128
+eval_batch_size: 500
+train_subset: 4000
+val_size: 0
+augment: true
+
+arch: resnet18
+width: 16
+zero_init_residual: false   # at the default, gamma_bn2 starts at 0 and F == 0,
+                            # so a smoke test could not tell a working gate from
+                            # a broken one
+
+epochs: 20
+lr: 0.05
+warmup_epochs: 0
+schedule: cosine
+
+s_schedule: linear
+s_min: 0.0
+s_max: 1.0
+s_ramp_start: 0.0
+s_ramp_end: 0.5
+
+ckpt_every: 1
+diag_every: 1
+per_class: false

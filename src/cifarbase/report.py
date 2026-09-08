@@ -132,6 +132,15 @@ def print_report(cfg, runs, stats, test_n=10000):
           f"wd={cfg['weight_decay']} bs={cfg['batch_size']} "
           f"{cfg['schedule']}+{cfg['warmup_epochs']}ep warmup, "
           f"augment={bool(cfg['augment'])}")
+    # Printed only when there is a homotopy to describe, so a baseline report
+    # stays byte-identical to the one the README quotes.
+    if cfg.get("s_schedule", "const") != "const" or cfg.get("lr_gate_control"):
+        print(f"homotopy: s {cfg['s_schedule']} {cfg['s_min']}->{cfg['s_max']} "
+              f"over [{cfg['s_ramp_start']}, {cfg['s_ramp_end']}] of training"
+              + (f", {cfg['s_stairs']} stairs"
+                 if cfg["s_schedule"] == "staircase" else "")
+              + (" -- LR CONTROL ARM, forward stays at s=1"
+                 if cfg["lr_gate_control"] else ""))
     print("=" * 78)
 
     print("\nper seed:")

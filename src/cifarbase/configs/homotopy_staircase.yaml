@@ -1,0 +1,55 @@
+# Arm C -- continuation: hold s still, let theta settle, then step.
+#
+# The arm that attempts to track theta*(s_k) -> theta*(s_{k+1}). The linear arm
+# only rides past that path; this one tries to stay on it. Three settings make
+# the difference, and all three are needed:
+#
+#   s_lr_restart   each plateau gets its own warmup and decay. Without it a
+#                  single global cosine runs the early plateaus too hot to
+#                  settle and the late ones too cold to move, and the staircase
+#                  is decoration.
+#   s_ramp_end     0.8, not the 0.5 the other arms use, so the six phases are
+#                  roughly equal: five plateaus of ~9.6 epochs plus a 12-epoch
+#                  tail at s=1. At 0.5 the plateaus got 6 epochs each and the
+#                  tail got 30, which is not a continuation, it is a warmup.
+#   diag_every     the grad_norm_total logged at each phase boundary is how you
+#                  check the phase actually settled instead of assuming it.
+#
+# Honest caveat: ~9.6 epochs is still not convergence for a ResNet-18. This arm
+# is a better approximation of continuation than the others, not the real thing.
+# If the phase-boundary gradient norms come out large, that is the finding, and
+# the fix is more epochs per phase rather than more plateaus.
+#
+# Everything except the s_* keys is baseline.yaml verbatim. It has to be: the
+# comparison is worthless if anything else moved.
+
+seeds: "0,1,2"
+
+batch_size: 128
+val_size: 0
+augment: true
+
+arch: resnet18
+width: 64
+zero_init_residual: true
+
+epochs: 60
+optimizer: sgd
+lr: 0.1
+momentum: 0.9
+nesterov: true
+weight_decay: 5.0e-4
+schedule: cosine
+warmup_epochs: 5
+
+s_schedule: staircase
+s_stairs: 5
+s_lr_restart: true
+s_min: 0.0
+s_max: 1.0
+s_ramp_start: 0.0
+s_ramp_end: 0.8
+
+ckpt_every: 5
+diag_every: 5
+per_class: true
