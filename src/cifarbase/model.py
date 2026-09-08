@@ -61,12 +61,24 @@ class Activation(nn.Module):
 
 
 class BasicBlock(nn.Module):
-    """conv-bn-act-conv-bn, plus the identity, then act."""
+    """conv-bn-act-conv-bn, plus the identity, then act.
+
+    `use_residual=False` drops the `+ x` and the projection that exists only to
+    make x addable, turning the stack into a PlainNet block. Nothing else
+    changes: same channels, same strides, same BatchNorm, same activations, so
+    the presence of the skip is the single variable of the ablation.
+
+    That matters because residual connections are what make a deep network's
+    loss surface look convex (Li et al. 2018). A homotopy that starts from a
+    near-linear network has little left to fix on a ResNet; on a PlainNet the
+    surface is chaotic again, and that is where it has to prove itself.
+    """
 
     expansion = 1
 
-    def __init__(self, in_ch, out_ch, stride=1):
+    def __init__(self, in_ch, out_ch, stride=1, use_residual=True):
         super().__init__()
+        self.use_residual = use_residual
         self.conv1 = conv3x3(in_ch, out_ch, stride)
         self.bn1 = nn.BatchNorm2d(out_ch)
         self.conv2 = conv3x3(out_ch, out_ch)
@@ -80,7 +92,12 @@ class BasicBlock(nn.Module):
 
         # A projection only where the identity cannot be added as-is: a stride
         # change or a channel change. Everywhere else the shortcut is free.
-        if stride != 1 or in_ch != out_ch * self.expansion:
+        # With no residual there is nothing to add, so the attribute is absent
+        # rather than an unused Identity -- a shortcut left in place would hold
+        # parameters, take gradient, and show up in the count.
+        if not use_residual:
+            pass
+        elif stride != 1 or in_ch != out_ch * self.expansion:
             self.shortcut = nn.Sequential(
                 nn.Conv2d(in_ch, out_ch * self.expansion, 1, stride=stride, bias=False),
                 nn.BatchNorm2d(out_ch * self.expansion))
@@ -90,14 +107,18 @@ class BasicBlock(nn.Module):
     def forward(self, x):
         out = self.act1(self.bn1(self.conv1(x)))
         out = self.bn2(self.conv2(out))
+        if not self.use_residual:
+            return self.act2(out)
         return self.act2(out + self.shortcut(x))
 
 
 class ResNet(nn.Module):
     """Four stages at 32/16/8/4 resolution, global average pool, linear head."""
 
-    def __init__(self, blocks, num_classes=10, width=64, zero_init_residual=True):
+    def __init__(self, blocks, num_classes=10, width=64, zero_init_residual=True,
+                 use_residual=True):
         super().__init__()
+        self.use_residual = use_residual
         widths = [width * 2 ** i for i in range(4)]
         self.in_ch = widths[0]
 
@@ -123,6 +144,11 @@ class ResNet(nn.Module):
         # exactly the identity, so a deep stack begins well-conditioned instead of
         # relying on the init to be small. Worth a few tenths of a point, and it
         # has to happen after the loop above resets every gamma to one.
+        #
+        # It is fatal without the skips: with no x to add back, gamma_bn2 = 0
+        # makes every block output exactly zero and the network collapses to a
+        # constant. config._validate refuses the combination rather than letting
+        # a run spend an hour producing 10% accuracy.
         if zero_init_residual:
             for module in self.modules():
                 if isinstance(module, BasicBlock):
@@ -131,7 +157,8 @@ class ResNet(nn.Module):
     def _stage(self, out_ch, count, stride):
         layers = []
         for block_stride in [stride] + [1] * (count - 1):
-            layers.append(BasicBlock(self.in_ch, out_ch, block_stride))
+            layers.append(BasicBlock(self.in_ch, out_ch, block_stride,
+                                     use_residual=self.use_residual))
             self.in_ch = out_ch * BasicBlock.expansion
         return nn.Sequential(*layers)
 
@@ -157,8 +184,10 @@ def build_model(cfg, device, quiet=False):
     if arch not in ARCHS:
         raise ValueError(f"unknown arch {arch!r}: pick one of {', '.join(ARCHS)}")
     model = ResNet(ARCHS[arch], num_classes=10, width=cfg.get("width", 64),
-                   zero_init_residual=bool(cfg.get("zero_init_residual", True)))
+                   zero_init_residual=bool(cfg.get("zero_init_residual", True)),
+                   use_residual=bool(cfg.get("use_residual", True)))
     model = model.to(device)
     if not quiet:
-        print(f"model: {arch}, {count_params(model) / 1e6:.2f}M params")
+        kind = arch if model.use_residual else f"plain-{arch} (no skips)"
+        print(f"model: {kind}, {count_params(model) / 1e6:.2f}M params")
     return model

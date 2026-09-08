@@ -277,7 +277,12 @@ def plot(runs, outdir, key, spread=True):
                 for run_values in per_seed.values():
                     if all(v is not None for v in run_values):
                         ax.plot(steps, run_values, color=colour, lw=0.6, alpha=0.55)
-        loss_keys.add(resolve_metric(run, "comparable_loss"))
+        # An arm is only reading a stale loss if it *has* a homotopy and still
+        # fell back to test_loss. A baseline has no alpha to reset, so its
+        # test_loss already is the alpha=0 loss and the panel is comparable.
+        if (_axis(run["cfg"]) != "baseline"
+                and resolve_metric(run, "comparable_loss") == "test_loss"):
+            loss_keys.add("stale")
 
         # Overfitting, on the axis the arms are actually comparable on.
         steps, train_acc = series(run, "train_acc_batchwise")
@@ -304,9 +309,10 @@ def plot(runs, outdir, key, spread=True):
     # Says which column it actually drew: on a run predating test_loss_at_a0
     # there is only the at-its-own-alpha loss, and the panel must not claim to
     # be comparable when it is not.
-    stale = "test_loss" in loss_keys
-    ax_tloss.set_title("test loss  --  " + ("at each arm's own alpha (NOT comparable)"
-                                            if stale else "read as the full ReLU ResNet"))
+    stale = "stale" in loss_keys
+    ax_tloss.set_title("test loss  --  " + (
+        "at each arm's own alpha (NOT comparable)" if stale
+        else "read as the full ReLU ResNet (comparable)"))
     ax_tloss.set_ylabel("test loss")
     ax_tloss.set_yscale("log")
     ax_tloss.legend(loc="lower left", fontsize=7)

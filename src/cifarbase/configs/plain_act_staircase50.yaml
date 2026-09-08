@@ -1,0 +1,70 @@
+# PlainNet-18 -- the residual homotopy experiment run where it should matter.
+#
+# The finding that motivates this: on a ResNet-18 the activation homotopy is
+# worse than the baseline, and the anchor does nothing measurable. Residual
+# connections are what make a deep loss surface look convex (Li et al. 2018),
+# so an optimiser starting from a near-linear network has little left to fix.
+# Strip the skips and the surface is chaotic again -- the regime the homotopy
+# was designed for, and where the baseline itself is in trouble.
+#
+# The ablation is exactly one thing: use_residual: false. Same channels, same
+# strides, same BatchNorms, same activations, same recipe (lr 0.1, nesterov,
+# weight decay 5e-4, cosine with a 5-epoch warmup). 11.00M parameters instead
+# of 11.17M -- the only ones that go are the three 1x1 projections and their
+# BatchNorms, which exist solely to make x addable.
+#
+# Seed 1 first, for one clean signal before spending on three.
+#
+# RUN 4 -- discrete continuation with the anchor. Five plateaus of ten epochs,
+# alpha in [1.0, 0.75, 0.5, 0.25, 0.0], each warm-started from the last.
+#
+# a_ramp_end is 1.0, which continuous schedules are forbidden: a staircase is
+# allowed it because its final plateau already sits at a_end, so the run ends
+# on the ReLU network by construction. That is what makes the five plateaus
+# exactly ten epochs each.
+#
+# a_lr_restart gives each plateau its own warmup and cosine, so theta can
+# settle before alpha steps. Known confounder, measured on the ResNet run: the
+# final phase then trains under a full cosine from lr=0.1 while the baseline is
+# in the tail of its own at lr<0.02. There it cost nothing net -- the arm
+# closed 0.5 points of relative gap during that phase -- but it means the
+# comparison carries a schedule difference as well as a homotopy one.
+
+seeds: "1"
+
+batch_size: 128
+eval_batch_size: 1000
+val_size: 0
+augment: true
+
+arch: resnet18
+width: 64
+use_residual: false        # PlainNet-18: the `+ x` removed, nothing else
+zero_init_residual: false  # MANDATORY here -- gamma_bn2 = 0 with no x to add
+                           # back makes every block output zero and the network
+                           # a constant. config refuses the combination.
+
+epochs: 50
+optimizer: sgd
+lr: 0.1
+momentum: 0.9
+nesterov: true
+weight_decay: 5.0e-4
+schedule: cosine
+warmup_epochs: 5
+
+a_bn_batches: 64
+
+ckpt_every: 10
+diag_every: 5
+per_class: true
+
+a_schedule: staircase
+a_stairs: 5
+a_lr_restart: true
+a_start: 1.0
+a_end: 0.0
+a_ramp_start: 0.0
+a_ramp_end: 1.0
+
+anchor_lambda: 1.0e-4

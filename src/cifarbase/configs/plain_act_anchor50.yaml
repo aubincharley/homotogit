@@ -1,0 +1,65 @@
+# PlainNet-18 -- the residual homotopy experiment run where it should matter.
+#
+# The finding that motivates this: on a ResNet-18 the activation homotopy is
+# worse than the baseline, and the anchor does nothing measurable. Residual
+# connections are what make a deep loss surface look convex (Li et al. 2018),
+# so an optimiser starting from a near-linear network has little left to fix.
+# Strip the skips and the surface is chaotic again -- the regime the homotopy
+# was designed for, and where the baseline itself is in trouble.
+#
+# The ablation is exactly one thing: use_residual: false. Same channels, same
+# strides, same BatchNorms, same activations, same recipe (lr 0.1, nesterov,
+# weight decay 5e-4, cosine with a 5-epoch warmup). 11.00M parameters instead
+# of 11.17M -- the only ones that go are the three 1x1 projections and their
+# BatchNorms, which exist solely to make x addable.
+#
+# Seed 1 first, for one clean signal before spending on three.
+#
+# RUN 3 -- the same ramp, with the anchor. RUN 3 minus RUN 2 is the anchor's
+# contribution and nothing else.
+#
+#   L = L_CE + 1e-4 * (alpha/2) * ||theta - theta_0||^2   over conv and linear
+#
+# lambda is pinned, never calibrated in-run, so every arm and every seed
+# minimises the same function. Caveat carried over from the ResNet sweep: at
+# 1e-4 the penalty came to ~5% of the loss but only ~0.5% of the gradient,
+# which is what actually matters for conditioning. It may well be inert here
+# too -- but 1e-4 is the pre-registered value and moving it now, after seeing
+# results, is how a result stops being trustworthy.
+
+seeds: "1"
+
+batch_size: 128
+eval_batch_size: 1000
+val_size: 0
+augment: true
+
+arch: resnet18
+width: 64
+use_residual: false        # PlainNet-18: the `+ x` removed, nothing else
+zero_init_residual: false  # MANDATORY here -- gamma_bn2 = 0 with no x to add
+                           # back makes every block output zero and the network
+                           # a constant. config refuses the combination.
+
+epochs: 50
+optimizer: sgd
+lr: 0.1
+momentum: 0.9
+nesterov: true
+weight_decay: 5.0e-4
+schedule: cosine
+warmup_epochs: 5
+
+a_bn_batches: 64
+
+ckpt_every: 10
+diag_every: 5
+per_class: true
+
+a_schedule: linear
+a_start: 1.0
+a_end: 0.0
+a_ramp_start: 0.0
+a_ramp_end: 0.5
+
+anchor_lambda: 1.0e-4

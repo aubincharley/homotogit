@@ -50,6 +50,13 @@ CONFIG = {
     "arch": "resnet18",         # resnet18 (the baseline) | resnet34
     "width": 64,                # channels in stage 1; stages double from here
     "zero_init_residual": True,
+    "use_residual": True,       # False strips the `+ x` from every block,
+                                # giving a PlainNet-18 with the same channels,
+                                # strides, BatchNorms and activations. Residual
+                                # connections are what make a deep network's
+                                # loss surface look convex (Li et al. 2018), so
+                                # this is the ablation that puts the activation
+                                # homotopy in the regime it was meant for.
 
     # ---- optimisation ----------------------------------------------------
     "epochs": 100,
@@ -406,6 +413,12 @@ def _validate(cfg):
     # torch installed.
     from cifarbase.model import ARCHS
 
+    if not cfg["use_residual"] and cfg["zero_init_residual"]:
+        raise SystemExit(
+            "!! use_residual=False with zero_init_residual=True: gamma_bn2 "
+            "starts at 0 and there is no x to add back, so every block outputs "
+            "exactly zero and the network is a constant. Set "
+            "zero_init_residual: false on any plain config.")
     if cfg["arch"] not in ARCHS:
         raise SystemExit(f"!! unknown arch {cfg['arch']!r}: "
                          f"pick one of {', '.join(ARCHS)}")
