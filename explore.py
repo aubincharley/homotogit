@@ -735,6 +735,10 @@ def plot_branch(record_, run_name, outdir):
     twin = ax_step.twinx()
     twin.plot(epochs, [row["alpha_to"] for row in series], color=TEST, lw=1.2,
               ls="--", label="alpha")
+    # The theme hides the right spine, which leaves this axis's tick marks
+    # floating next to their labels and reading as minus signs on a quantity
+    # that is never negative. The twin needs its spine back.
+    twin.spines["right"].set_visible(True)
     twin.set_ylabel("alpha")
     ax_step.set_xlabel("epoch")
     ax_step.set_title("step size between consecutive checkpoints")
