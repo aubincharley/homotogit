@@ -1,0 +1,40 @@
+# FAST sweep -- 10k training images instead of 50k, so a 50-epoch run takes
+# about 12 minutes instead of 50 and lambda can be swept rather than guessed.
+#
+# The accuracy ceiling drops with the data (expect mid-80s, not 94%), so these
+# numbers are NOT comparable to baseline50 or to the README. They are only
+# comparable to each other, which is the point: every arm here shares the same
+# subset, the same recipe and the same seed, hence the same theta_0.
+#
+# Plateaus of five epochs. a_ramp_end 0.5 puts alpha at 1.0, 0.75, 0.50, 0.25
+# over epochs 0-19 and leaves epochs 20-49 at alpha=0 -- thirty epochs on the
+# real ReLU problem, against ten under a full-span staircase. The path is the
+# same; the budget spent at the target is three times larger.
+#
+# THE CONTROL. Plain ReLU, no homotopy, no anchor.
+
+seeds: "0"
+
+batch_size: 128
+eval_batch_size: 1000
+train_subset: 10000
+val_size: 0
+augment: true
+
+arch: resnet18
+width: 64
+zero_init_residual: true
+
+epochs: 50
+optimizer: sgd
+lr: 0.1
+momentum: 0.9
+nesterov: true
+weight_decay: 5.0e-4
+schedule: cosine
+warmup_epochs: 5
+
+ckpt_every: 5
+diag_every: 5
+per_class: false
+
