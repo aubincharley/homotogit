@@ -1,0 +1,765 @@
+{
+  "experiment": "exp0_fixed_gaussian_levels",
+  "levels_planned": [
+    0,
+    0.5,
+    1,
+    2,
+    3
+  ],
+  "levels_run": [
+    0,
+    0.5,
+    1,
+    2,
+    3
+  ],
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "base_config": {
+    "run": {
+      "name": "exp0_gaussian",
+      "seed": 0,
+      "device": "auto",
+      "out_dir": "results",
+      "deterministic": true,
+      "log_every": 50,
+      "num_workers": 0
+    },
+    "data": {
+      "dataset": "cifar10",
+      "root": "data",
+      "num_val": 5000,
+      "split_seed": 12345,
+      "stratified": true,
+      "download": true
+    },
+    "model": {
+      "arch": "resnet20_gn",
+      "width": 16,
+      "channels_per_group": 8,
+      "shortcut": "A",
+      "zero_init_residual": false
+    },
+    "optim": {
+      "optimizer": "sgd",
+      "lr": 0.1,
+      "momentum": 0.9,
+      "weight_decay": 0.0005,
+      "nesterov": false,
+      "batch_size": 128,
+      "total_steps": 14040,
+      "lr_schedule": "cosine",
+      "warmup_steps": 400,
+      "min_lr": 0.0,
+      "milestones": [],
+      "gamma": 0.1,
+      "grad_clip": null
+    },
+    "transform": {
+      "family": "gaussian",
+      "params": {
+        "sigma_max": 3.0,
+        "truncate": 4.0,
+        "padding": "reflect"
+      }
+    },
+    "schedule": {
+      "kind": "constant",
+      "params": {
+        "value": 0.0
+      }
+    },
+    "evaluation": {
+      "eval_every": 500,
+      "eval_at_step_zero": true,
+      "train_probe_size": 5000,
+      "probe_seed": 777,
+      "eval_batch_size": 500,
+      "transform_stats_size": 512,
+      "save_final_checkpoint": true,
+      "checkpoint_every": null
+    },
+    "sweep": {
+      "levels": [
+        0,
+        0.5,
+        1,
+        2,
+        3
+      ],
+      "seeds": [
+        0,
+        1,
+        2
+      ]
+    },
+    "notes": "Pre-declared grid and budget. The grid was fixed after the visual/pilot phase and before the main comparison; no per-condition tuning, and the official test set is untouched.\n"
+  },
+  "split": {
+    "n_train": 45000,
+    "n_val": 5000,
+    "n_test": 10000,
+    "train_idx_blake2b": "f89c840d9bc15046",
+    "val_idx_blake2b": "3532184a4c87ee45",
+    "val_class_counts": [
+      500,
+      500,
+      500,
+      500,
+      500,
+      500,
+      500,
+      500,
+      500,
+      500
+    ],
+    "channel_mean": [
+      0.49118823,
+      0.48212275,
+      0.44643784
+    ],
+    "channel_std": [
+      0.2470552,
+      0.24351363,
+      0.2615779
+    ]
+  },
+  "started": "2026-09-07T11:28:40",
+  "runs": [
+    {
+      "name": "level_0__seed_0",
+      "level": 0,
+      "seed": 0,
+      "status": "completed",
+      "dir": "results\\exp0_gaussian\\level_0__seed_0",
+      "final": {
+        "step": 14040,
+        "epoch": 40,
+        "parameter_name": "sigma",
+        "parameter": 0.0,
+        "is_target_endpoint": true,
+        "transformed_train_probe": {
+          "ce": 0.0028635445594787597,
+          "accuracy": 1.0,
+          "n": 5000
+        },
+        "transformed_val": {
+          "ce": 0.6752853454589843,
+          "accuracy": 0.8464,
+          "n": 5000
+        },
+        "target_train_probe": {
+          "ce": 0.0028635445594787597,
+          "accuracy": 1.0,
+          "n": 5000
+        },
+        "target_val": {
+          "ce": 0.6752853454589843,
+          "accuracy": 0.8464,
+          "n": 5000
+        },
+        "eval_seconds": 0.7215
+      },
+      "timing": {
+        "train_seconds": 449.83,
+        "eval_seconds": 22.156,
+        "transform_seconds_train": 0.383,
+        "transform_seconds_eval": 0.011,
+        "note": "equal update counts control the optimization budget, not the total computational cost"
+      }
+    },
+    {
+      "name": "level_0__seed_1",
+      "level": 0,
+      "seed": 1,
+      "status": "completed",
+      "dir": "results\\exp0_gaussian\\level_0__seed_1",
+      "final": {
+        "step": 14040,
+        "epoch": 40,
+        "parameter_name": "sigma",
+        "parameter": 0.0,
+        "is_target_endpoint": true,
+        "transformed_train_probe": {
+          "ce": 0.004046648454666138,
+          "accuracy": 0.9998,
+          "n": 5000
+        },
+        "transformed_val": {
+          "ce": 0.6533213714599609,
+          "accuracy": 0.8422,
+          "n": 5000
+        },
+        "target_train_probe": {
+          "ce": 0.004046648454666138,
+          "accuracy": 0.9998,
+          "n": 5000
+        },
+        "target_val": {
+          "ce": 0.6533213714599609,
+          "accuracy": 0.8422,
+          "n": 5000
+        },
+        "eval_seconds": 0.7196
+      },
+      "timing": {
+        "train_seconds": 447.967,
+        "eval_seconds": 21.691,
+        "transform_seconds_train": 0.343,
+        "transform_seconds_eval": 0.01,
+        "note": "equal update counts control the optimization budget, not the total computational cost"
+      }
+    },
+    {
+      "name": "level_0__seed_2",
+      "level": 0,
+      "seed": 2,
+      "status": "completed",
+      "dir": "results\\exp0_gaussian\\level_0__seed_2",
+      "final": {
+        "step": 14040,
+        "epoch": 40,
+        "parameter_name": "sigma",
+        "parameter": 0.0,
+        "is_target_endpoint": true,
+        "transformed_train_probe": {
+          "ce": 0.003209384799003601,
+          "accuracy": 1.0,
+          "n": 5000
+        },
+        "transformed_val": {
+          "ce": 0.6979821899414063,
+          "accuracy": 0.8346,
+          "n": 5000
+        },
+        "target_train_probe": {
+          "ce": 0.003209384799003601,
+          "accuracy": 1.0,
+          "n": 5000
+        },
+        "target_val": {
+          "ce": 0.6979821899414063,
+          "accuracy": 0.8346,
+          "n": 5000
+        },
+        "eval_seconds": 1.6713
+      },
+      "timing": {
+        "train_seconds": 465.388,
+        "eval_seconds": 22.974,
+        "transform_seconds_train": 0.364,
+        "transform_seconds_eval": 0.011,
+        "note": "equal update counts control the optimization budget, not the total computational cost"
+      }
+    },
+    {
+      "name": "level_0p5__seed_0",
+      "level": 0.5,
+      "seed": 0,
+      "status": "completed",
+      "dir": "results\\exp0_gaussian\\level_0p5__seed_0",
+      "final": {
+        "step": 14040,
+        "epoch": 40,
+        "parameter_name": "sigma",
+        "parameter": 0.5,
+        "is_target_endpoint": false,
+        "transformed_train_probe": {
+          "ce": 0.003414380407333374,
+          "accuracy": 1.0,
+          "n": 5000
+        },
+        "transformed_val": {
+          "ce": 0.6982598327636719,
+          "accuracy": 0.8364,
+          "n": 5000
+        },
+        "target_train_probe": {
+          "ce": 0.01823531265258789,
+          "accuracy": 0.9974,
+          "n": 5000
+        },
+        "target_val": {
+          "ce": 0.7433518249511719,
+          "accuracy": 0.8258,
+          "n": 5000
+        },
+        "eval_seconds": 1.8886
+      },
+      "timing": {
+        "train_seconds": 794.312,
+        "eval_seconds": 62.172,
+        "transform_seconds_train": 14.138,
+        "transform_seconds_eval": 0.248,
+        "note": "equal update counts control the optimization budget, not the total computational cost"
+      }
+    },
+    {
+      "name": "level_0p5__seed_1",
+      "level": 0.5,
+      "seed": 1,
+      "status": "completed",
+      "dir": "results\\exp0_gaussian\\level_0p5__seed_1",
+      "final": {
+        "step": 14040,
+        "epoch": 40,
+        "parameter_name": "sigma",
+        "parameter": 0.5,
+        "is_target_endpoint": false,
+        "transformed_train_probe": {
+          "ce": 0.0029409572839736936,
+          "accuracy": 1.0,
+          "n": 5000
+        },
+        "transformed_val": {
+          "ce": 0.6754129272460937,
+          "accuracy": 0.8388,
+          "n": 5000
+        },
+        "target_train_probe": {
+          "ce": 0.02254469404220581,
+          "accuracy": 0.9944,
+          "n": 5000
+        },
+        "target_val": {
+          "ce": 0.7512602172851562,
+          "accuracy": 0.8248,
+          "n": 5000
+        },
+        "eval_seconds": 1.4931
+      },
+      "timing": {
+        "train_seconds": 7445.726,
+        "eval_seconds": 93.633,
+        "transform_seconds_train": 31.473,
+        "transform_seconds_eval": 0.238,
+        "note": "equal update counts control the optimization budget, not the total computational cost"
+      }
+    },
+    {
+      "name": "level_0p5__seed_2",
+      "level": 0.5,
+      "seed": 2,
+      "status": "completed",
+      "dir": "results\\exp0_gaussian\\level_0p5__seed_2",
+      "final": {
+        "step": 14040,
+        "epoch": 40,
+        "parameter_name": "sigma",
+        "parameter": 0.5,
+        "is_target_endpoint": false,
+        "transformed_train_probe": {
+          "ce": 0.00297015962600708,
+          "accuracy": 1.0,
+          "n": 5000
+        },
+        "transformed_val": {
+          "ce": 0.7061767639160156,
+          "accuracy": 0.8314,
+          "n": 5000
+        },
+        "target_train_probe": {
+          "ce": 0.02485617322921753,
+          "accuracy": 0.9948,
+          "n": 5000
+        },
+        "target_val": {
+          "ce": 0.7461347717285156,
+          "accuracy": 0.8258,
+          "n": 5000
+        },
+        "eval_seconds": 1.5087
+      },
+      "timing": {
+        "train_seconds": 484.677,
+        "eval_seconds": 45.032,
+        "transform_seconds_train": 9.68,
+        "transform_seconds_eval": 0.184,
+        "note": "equal update counts control the optimization budget, not the total computational cost"
+      }
+    },
+    {
+      "name": "level_1__seed_0",
+      "level": 1,
+      "seed": 0,
+      "status": "completed",
+      "dir": "results\\exp0_gaussian\\level_1__seed_0",
+      "final": {
+        "step": 14040,
+        "epoch": 40,
+        "parameter_name": "sigma",
+        "parameter": 1.0,
+        "is_target_endpoint": false,
+        "transformed_train_probe": {
+          "ce": 0.004610946035385132,
+          "accuracy": 1.0,
+          "n": 5000
+        },
+        "transformed_val": {
+          "ce": 0.8027249816894532,
+          "accuracy": 0.809,
+          "n": 5000
+        },
+        "target_train_probe": {
+          "ce": 0.6827557983398438,
+          "accuracy": 0.8176,
+          "n": 5000
+        },
+        "target_val": {
+          "ce": 1.1976968139648438,
+          "accuracy": 0.736,
+          "n": 5000
+        },
+        "eval_seconds": 1.5076
+      },
+      "timing": {
+        "train_seconds": 484.567,
+        "eval_seconds": 45.156,
+        "transform_seconds_train": 9.631,
+        "transform_seconds_eval": 0.177,
+        "note": "equal update counts control the optimization budget, not the total computational cost"
+      }
+    },
+    {
+      "name": "level_1__seed_1",
+      "level": 1,
+      "seed": 1,
+      "status": "completed",
+      "dir": "results\\exp0_gaussian\\level_1__seed_1",
+      "final": {
+        "step": 14040,
+        "epoch": 40,
+        "parameter_name": "sigma",
+        "parameter": 1.0,
+        "is_target_endpoint": false,
+        "transformed_train_probe": {
+          "ce": 0.004369354200363159,
+          "accuracy": 1.0,
+          "n": 5000
+        },
+        "transformed_val": {
+          "ce": 0.8157339660644531,
+          "accuracy": 0.8078,
+          "n": 5000
+        },
+        "target_train_probe": {
+          "ce": 0.9051555603027344,
+          "accuracy": 0.7788,
+          "n": 5000
+        },
+        "target_val": {
+          "ce": 1.5167744262695313,
+          "accuracy": 0.6886,
+          "n": 5000
+        },
+        "eval_seconds": 1.507
+      },
+      "timing": {
+        "train_seconds": 484.875,
+        "eval_seconds": 45.23,
+        "transform_seconds_train": 9.628,
+        "transform_seconds_eval": 0.179,
+        "note": "equal update counts control the optimization budget, not the total computational cost"
+      }
+    },
+    {
+      "name": "level_1__seed_2",
+      "level": 1,
+      "seed": 2,
+      "status": "completed",
+      "dir": "results\\exp0_gaussian\\level_1__seed_2",
+      "final": {
+        "step": 14040,
+        "epoch": 40,
+        "parameter_name": "sigma",
+        "parameter": 1.0,
+        "is_target_endpoint": false,
+        "transformed_train_probe": {
+          "ce": 0.004286146521568298,
+          "accuracy": 1.0,
+          "n": 5000
+        },
+        "transformed_val": {
+          "ce": 0.8588961059570313,
+          "accuracy": 0.8022,
+          "n": 5000
+        },
+        "target_train_probe": {
+          "ce": 0.6706833435058593,
+          "accuracy": 0.8168,
+          "n": 5000
+        },
+        "target_val": {
+          "ce": 1.2853700073242187,
+          "accuracy": 0.7152,
+          "n": 5000
+        },
+        "eval_seconds": 1.4799
+      },
+      "timing": {
+        "train_seconds": 630.669,
+        "eval_seconds": 53.576,
+        "transform_seconds_train": 11.543,
+        "transform_seconds_eval": 0.208,
+        "note": "equal update counts control the optimization budget, not the total computational cost"
+      }
+    },
+    {
+      "name": "level_2__seed_0",
+      "level": 2,
+      "seed": 0,
+      "status": "completed",
+      "dir": "results\\exp0_gaussian\\level_2__seed_0",
+      "final": {
+        "step": 14040,
+        "epoch": 40,
+        "parameter_name": "sigma",
+        "parameter": 2.0,
+        "is_target_endpoint": false,
+        "transformed_train_probe": {
+          "ce": 0.011614508152008056,
+          "accuracy": 0.9998,
+          "n": 5000
+        },
+        "transformed_val": {
+          "ce": 1.063854266357422,
+          "accuracy": 0.7426,
+          "n": 5000
+        },
+        "target_train_probe": {
+          "ce": 2.4023727294921877,
+          "accuracy": 0.4748,
+          "n": 5000
+        },
+        "target_val": {
+          "ce": 2.573298193359375,
+          "accuracy": 0.449,
+          "n": 5000
+        },
+        "eval_seconds": 1.5026
+      },
+      "timing": {
+        "train_seconds": 486.893,
+        "eval_seconds": 45.12,
+        "transform_seconds_train": 10.79,
+        "transform_seconds_eval": 0.28,
+        "note": "equal update counts control the optimization budget, not the total computational cost"
+      }
+    },
+    {
+      "name": "level_2__seed_1",
+      "level": 2,
+      "seed": 1,
+      "status": "completed",
+      "dir": "results\\exp0_gaussian\\level_2__seed_1",
+      "final": {
+        "step": 14040,
+        "epoch": 40,
+        "parameter_name": "sigma",
+        "parameter": 2.0,
+        "is_target_endpoint": false,
+        "transformed_train_probe": {
+          "ce": 0.011294229888916015,
+          "accuracy": 1.0,
+          "n": 5000
+        },
+        "transformed_val": {
+          "ce": 1.045892724609375,
+          "accuracy": 0.744,
+          "n": 5000
+        },
+        "target_train_probe": {
+          "ce": 2.045566833496094,
+          "accuracy": 0.5314,
+          "n": 5000
+        },
+        "target_val": {
+          "ce": 2.296445166015625,
+          "accuracy": 0.4998,
+          "n": 5000
+        },
+        "eval_seconds": 1.5243
+      },
+      "timing": {
+        "train_seconds": 504.008,
+        "eval_seconds": 46.466,
+        "transform_seconds_train": 11.699,
+        "transform_seconds_eval": 0.34,
+        "note": "equal update counts control the optimization budget, not the total computational cost"
+      }
+    },
+    {
+      "name": "level_2__seed_2",
+      "level": 2,
+      "seed": 2,
+      "status": "completed",
+      "dir": "results\\exp0_gaussian\\level_2__seed_2",
+      "final": {
+        "step": 14040,
+        "epoch": 40,
+        "parameter_name": "sigma",
+        "parameter": 2.0,
+        "is_target_endpoint": false,
+        "transformed_train_probe": {
+          "ce": 0.01161461877822876,
+          "accuracy": 0.9998,
+          "n": 5000
+        },
+        "transformed_val": {
+          "ce": 1.0790818359375,
+          "accuracy": 0.7424,
+          "n": 5000
+        },
+        "target_train_probe": {
+          "ce": 1.9673792846679687,
+          "accuracy": 0.5352,
+          "n": 5000
+        },
+        "target_val": {
+          "ce": 2.2278421142578124,
+          "accuracy": 0.5008,
+          "n": 5000
+        },
+        "eval_seconds": 1.8387
+      },
+      "timing": {
+        "train_seconds": 525.018,
+        "eval_seconds": 48.787,
+        "transform_seconds_train": 11.02,
+        "transform_seconds_eval": 0.263,
+        "note": "equal update counts control the optimization budget, not the total computational cost"
+      }
+    },
+    {
+      "name": "level_3__seed_0",
+      "level": 3,
+      "seed": 0,
+      "status": "completed",
+      "dir": "results\\exp0_gaussian\\level_3__seed_0",
+      "final": {
+        "step": 14040,
+        "epoch": 40,
+        "parameter_name": "sigma",
+        "parameter": 3.0,
+        "is_target_endpoint": false,
+        "transformed_train_probe": {
+          "ce": 0.06510897216796875,
+          "accuracy": 0.9936,
+          "n": 5000
+        },
+        "transformed_val": {
+          "ce": 1.2415655029296875,
+          "accuracy": 0.6768,
+          "n": 5000
+        },
+        "target_train_probe": {
+          "ce": 2.455576318359375,
+          "accuracy": 0.4056,
+          "n": 5000
+        },
+        "target_val": {
+          "ce": 2.5276265380859373,
+          "accuracy": 0.3884,
+          "n": 5000
+        },
+        "eval_seconds": 1.4628
+      },
+      "timing": {
+        "train_seconds": 873.834,
+        "eval_seconds": 67.85,
+        "transform_seconds_train": 14.623,
+        "transform_seconds_eval": 0.235,
+        "note": "equal update counts control the optimization budget, not the total computational cost"
+      }
+    },
+    {
+      "name": "level_3__seed_1",
+      "level": 3,
+      "seed": 1,
+      "status": "completed",
+      "dir": "results\\exp0_gaussian\\level_3__seed_1",
+      "final": {
+        "step": 14040,
+        "epoch": 40,
+        "parameter_name": "sigma",
+        "parameter": 3.0,
+        "is_target_endpoint": false,
+        "transformed_train_probe": {
+          "ce": 0.05824835090637207,
+          "accuracy": 0.9952,
+          "n": 5000
+        },
+        "transformed_val": {
+          "ce": 1.2778804809570312,
+          "accuracy": 0.675,
+          "n": 5000
+        },
+        "target_train_probe": {
+          "ce": 2.5018530029296877,
+          "accuracy": 0.4178,
+          "n": 5000
+        },
+        "target_val": {
+          "ce": 2.6521902099609376,
+          "accuracy": 0.4072,
+          "n": 5000
+        },
+        "eval_seconds": 1.5149
+      },
+      "timing": {
+        "train_seconds": 498.289,
+        "eval_seconds": 45.454,
+        "transform_seconds_train": 11.651,
+        "transform_seconds_eval": 0.33,
+        "note": "equal update counts control the optimization budget, not the total computational cost"
+      }
+    },
+    {
+      "name": "level_3__seed_2",
+      "level": 3,
+      "seed": 2,
+      "status": "completed",
+      "dir": "results\\exp0_gaussian\\level_3__seed_2",
+      "final": {
+        "step": 14040,
+        "epoch": 40,
+        "parameter_name": "sigma",
+        "parameter": 3.0,
+        "is_target_endpoint": false,
+        "transformed_train_probe": {
+          "ce": 0.06666923217773438,
+          "accuracy": 0.9926,
+          "n": 5000
+        },
+        "transformed_val": {
+          "ce": 1.2980681640625,
+          "accuracy": 0.6704,
+          "n": 5000
+        },
+        "target_train_probe": {
+          "ce": 2.605019482421875,
+          "accuracy": 0.3914,
+          "n": 5000
+        },
+        "target_val": {
+          "ce": 2.738123876953125,
+          "accuracy": 0.37,
+          "n": 5000
+        },
+        "eval_seconds": 1.5586
+      },
+      "timing": {
+        "train_seconds": 498.575,
+        "eval_seconds": 45.982,
+        "transform_seconds_train": 10.833,
+        "transform_seconds_eval": 0.258,
+        "note": "equal update counts control the optimization budget, not the total computational cost"
+      }
+    }
+  ],
+  "finished": "2026-09-07T15:40:18"
+}

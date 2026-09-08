@@ -1,0 +1,159 @@
+{
+  "run_name": "arm_W__seed_2",
+  "seed": 2,
+  "family": "gaussian",
+  "parameter_name": "sigma",
+  "parameter": 0.0,
+  "schedule": {
+    "kind": "piecewise_constant",
+    "stagewise": true,
+    "total_steps": 14040,
+    "values": [
+      1.0,
+      0.0
+    ],
+    "steps_per_stage": [
+      1500,
+      12540
+    ],
+    "boundaries": [
+      1500,
+      14040
+    ],
+    "planned_steps": 14040,
+    "note": ""
+  },
+  "start_step": 1500,
+  "end_step": 14040,
+  "total_steps": 14040,
+  "updates_executed": 12540,
+  "transitions": [
+    1500
+  ],
+  "momentum_at_stage_boundary": "carry",
+  "lineage": {
+    "parent_checkpoint": "results\\exp1_gaussian_warmstart\\prefix_sigma_warm__seed_2\\checkpoint_step001500.pt",
+    "branched_at_step": 1500,
+    "parent_lineage": {
+      "parent_checkpoint": null,
+      "branched_at_step": null
+    }
+  },
+  "final_checkpoint": {
+    "path": "results\\exp1_gaussian_warmstart\\arm_W__seed_2\\checkpoint_final.pt",
+    "step": 14040,
+    "format": "full_state_v1"
+  },
+  "batch_size": 128,
+  "epochs_equivalent": 40.0,
+  "final": {
+    "step": 14040,
+    "epoch": 40,
+    "parameter_name": "sigma",
+    "parameter": 0.0,
+    "is_target_endpoint": true,
+    "phase": "checkpoint",
+    "stage": 1,
+    "lr": 1.3262060727381454e-09,
+    "transformed_train_probe": {
+      "ce": 0.002933331346511841,
+      "accuracy": 1.0,
+      "n": 5000
+    },
+    "transformed_val": {
+      "ce": 0.7400725341796875,
+      "accuracy": 0.8288,
+      "n": 5000
+    },
+    "target_train_probe": {
+      "ce": 0.002933331346511841,
+      "accuracy": 1.0,
+      "n": 5000
+    },
+    "target_val": {
+      "ce": 0.7400725341796875,
+      "accuracy": 0.8288,
+      "n": 5000
+    },
+    "eval_seconds": 0.717
+  },
+  "timing": {
+    "train_seconds": 409.347,
+    "eval_seconds": 25.321,
+    "transform_seconds_train": 0.343,
+    "transform_seconds_eval": 0.013,
+    "note": "equal update counts control the optimization budget, not the total computational cost"
+  },
+  "transform_stats": {
+    "start": {
+      "family": "gaussian",
+      "parameter_name": "sigma",
+      "parameter": 0.0,
+      "is_target_endpoint": true,
+      "n_images": 512,
+      "reconstruction_mse": {
+        "n": 512,
+        "mean": 0.0,
+        "std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "retained_tv_ratio": {
+        "n": 512,
+        "mean": 1.0,
+        "std": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "n_zero_tv_images": 0,
+      "tv_original": {
+        "n": 512,
+        "mean": 278.95692544197397,
+        "std": 87.33626411898227,
+        "min": 51.250065977935094,
+        "max": 544.2284307191935
+      },
+      "tv_transformed": {
+        "n": 512,
+        "mean": 278.95692544197397,
+        "std": 87.33626411898227,
+        "min": 51.250065977935094,
+        "max": 544.2284307191935
+      },
+      "tv_convention": {
+        "kind": "channelwise discrete isotropic total variation",
+        "differences": "forward",
+        "pixel_spacing": 1.0,
+        "boundary": "zero normal difference (Neumann) at last row/column",
+        "channel_coupling": "none; channels summed after the per-pixel square root",
+        "value_range": "[0,1] float image intensities"
+      },
+      "transform_info": {
+        "family": "gaussian",
+        "sigma": 0.0,
+        "heat_time": 0.0,
+        "radius": 12,
+        "kernel_size": 25,
+        "padding": "reflect",
+        "identity": true
+      }
+    }
+  },
+  "arm": "W",
+  "branch_check": {
+    "arm": "W",
+    "seed": 2,
+    "checkpoint": "results\\exp1_gaussian_warmstart\\prefix_sigma_warm__seed_2\\checkpoint_step001500.pt",
+    "checkpoint_kind": "full_resumable",
+    "global_step": 1500,
+    "sigma_before_branch": 1.0,
+    "sigma_after_branch": 0.0,
+    "lr_at_branch": 0.09840385594331022,
+    "lr_horizon_total_steps": 14040,
+    "optimizer_has_momentum_buffers": true,
+    "batch_stream_epoch": 5,
+    "batch_stream_pos": 96,
+    "amp_scaler_state": null,
+    "problems": []
+  }
+}

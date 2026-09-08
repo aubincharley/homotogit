@@ -1,0 +1,159 @@
+{
+  "run_name": "level_2__seed_0",
+  "seed": 0,
+  "family": "gaussian",
+  "parameter_name": "sigma",
+  "parameter": 2.0,
+  "schedule": {
+    "kind": "constant",
+    "stagewise": false,
+    "total_steps": 14040,
+    "value": 2.0
+  },
+  "total_steps": 14040,
+  "batch_size": 128,
+  "epochs_equivalent": 40.0,
+  "final": {
+    "step": 14040,
+    "epoch": 40,
+    "parameter_name": "sigma",
+    "parameter": 2.0,
+    "is_target_endpoint": false,
+    "transformed_train_probe": {
+      "ce": 0.011614508152008056,
+      "accuracy": 0.9998,
+      "n": 5000
+    },
+    "transformed_val": {
+      "ce": 1.063854266357422,
+      "accuracy": 0.7426,
+      "n": 5000
+    },
+    "target_train_probe": {
+      "ce": 2.4023727294921877,
+      "accuracy": 0.4748,
+      "n": 5000
+    },
+    "target_val": {
+      "ce": 2.573298193359375,
+      "accuracy": 0.449,
+      "n": 5000
+    },
+    "eval_seconds": 1.5026
+  },
+  "timing": {
+    "train_seconds": 486.893,
+    "eval_seconds": 45.12,
+    "transform_seconds_train": 10.79,
+    "transform_seconds_eval": 0.28,
+    "note": "equal update counts control the optimization budget, not the total computational cost"
+  },
+  "transform_stats": {
+    "start": {
+      "family": "gaussian",
+      "parameter_name": "sigma",
+      "parameter": 2.0,
+      "is_target_endpoint": false,
+      "n_images": 512,
+      "reconstruction_mse": {
+        "n": 512,
+        "mean": 0.009511389680724364,
+        "std": 0.005395950529583895,
+        "min": 0.0006689098414087479,
+        "max": 0.034940755727184664
+      },
+      "retained_tv_ratio": {
+        "n": 512,
+        "mean": 0.3504821474505766,
+        "std": 0.0881149798783266,
+        "min": 0.15060436356220513,
+        "max": 0.648878288338521
+      },
+      "n_zero_tv_images": 0,
+      "tv_original": {
+        "n": 512,
+        "mean": 278.95692544197397,
+        "std": 87.33626411898227,
+        "min": 51.250065977935094,
+        "max": 544.2284307191935
+      },
+      "tv_transformed": {
+        "n": 512,
+        "mean": 95.26476799790501,
+        "std": 31.45721277528102,
+        "min": 18.29997125601036,
+        "max": 204.44967076954822
+      },
+      "tv_convention": {
+        "kind": "channelwise discrete isotropic total variation",
+        "differences": "forward",
+        "pixel_spacing": 1.0,
+        "boundary": "zero normal difference (Neumann) at last row/column",
+        "channel_coupling": "none; channels summed after the per-pixel square root",
+        "value_range": "[0,1] float image intensities"
+      },
+      "transform_info": {
+        "family": "gaussian",
+        "sigma": 2.0,
+        "heat_time": 2.0,
+        "radius": 12,
+        "kernel_size": 25,
+        "padding": "reflect",
+        "identity": false
+      }
+    },
+    "target": {
+      "family": "gaussian",
+      "parameter_name": "sigma",
+      "parameter": 0.0,
+      "is_target_endpoint": true,
+      "n_images": 512,
+      "reconstruction_mse": {
+        "n": 512,
+        "mean": 0.0,
+        "std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "retained_tv_ratio": {
+        "n": 512,
+        "mean": 1.0,
+        "std": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "n_zero_tv_images": 0,
+      "tv_original": {
+        "n": 512,
+        "mean": 278.95692544197397,
+        "std": 87.33626411898227,
+        "min": 51.250065977935094,
+        "max": 544.2284307191935
+      },
+      "tv_transformed": {
+        "n": 512,
+        "mean": 278.95692544197397,
+        "std": 87.33626411898227,
+        "min": 51.250065977935094,
+        "max": 544.2284307191935
+      },
+      "tv_convention": {
+        "kind": "channelwise discrete isotropic total variation",
+        "differences": "forward",
+        "pixel_spacing": 1.0,
+        "boundary": "zero normal difference (Neumann) at last row/column",
+        "channel_coupling": "none; channels summed after the per-pixel square root",
+        "value_range": "[0,1] float image intensities"
+      },
+      "transform_info": {
+        "family": "gaussian",
+        "sigma": 0.0,
+        "heat_time": 0.0,
+        "radius": 12,
+        "kernel_size": 25,
+        "padding": "reflect",
+        "identity": true
+      }
+    }
+  }
+}

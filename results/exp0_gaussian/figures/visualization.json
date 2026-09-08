@@ -1,0 +1,62 @@
+{
+  "levels": [
+    0,
+    0.5,
+    1,
+    2,
+    3
+  ],
+  "example_indices_in_train_split": [
+    14069,
+    16264,
+    16752,
+    22158,
+    23268,
+    23977,
+    27811,
+    30987,
+    35936,
+    43986
+  ],
+  "original_dataset_indices": [
+    15671,
+    18089,
+    18626,
+    24647,
+    25865,
+    26662,
+    30887,
+    34431,
+    39933,
+    48888
+  ],
+  "labels": [
+    "ship",
+    "cat",
+    "dog",
+    "truck",
+    "horse",
+    "airplane",
+    "bird",
+    "deer",
+    "automobile",
+    "frog"
+  ],
+  "transform": {
+    "family": "gaussian",
+    "parameter_name": "sigma",
+    "parameter_units": "pixels",
+    "target_parameter": 0.0,
+    "config": {
+      "sigma_max": 3.0,
+      "truncate": 4.0,
+      "padding": "reflect",
+      "radius": 12,
+      "kernel_size": 25,
+      "separable": true,
+      "normalized": "taps renormalized to sum 1 on the fixed support",
+      "identity_at": "sigma == 0 (exact passthrough)",
+      "value_space": "float [0,1], pre-normalization, no requantization"
+    }
+  }
+}

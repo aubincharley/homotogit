@@ -1,0 +1,83 @@
+# Experiment 1: Gaussian warm starts and an intermediate continuation stage.
+#
+# Every setting outside the `sweep` block is copied unchanged from
+# configs/exp0_gaussian.yaml so that arm A (the sigma=0 baseline) can be reused
+# from Experiment 0 without rerunning it.  Do not edit these to "improve" the
+# runs: any change here invalidates the reuse of arm A.
+
+run:
+  name: exp1_gaussian_warmstart
+  seed: 0                 # overridden per run
+  device: auto
+  out_dir: results
+  deterministic: true
+  log_every: 50           # minibatch training losses every 50 updates
+
+data:
+  dataset: cifar10
+  root: data
+  num_val: 5000
+  split_seed: 12345       # identical split to Experiment 0
+  stratified: true
+  download: true
+
+model:
+  arch: resnet20_gn
+  width: 16
+  channels_per_group: 8
+  shortcut: A
+  zero_init_residual: false
+
+optim:
+  optimizer: sgd
+  lr: 0.1
+  momentum: 0.9
+  weight_decay: 0.0005
+  nesterov: false
+  batch_size: 128
+  total_steps: 14040      # B; the LR horizon, never compressed for a prefix
+  lr_schedule: cosine     # smooth; no discrete drops. Indexed by GLOBAL update.
+  warmup_steps: 400
+  min_lr: 0.0
+  grad_clip: null
+
+transform:
+  family: gaussian
+  params:
+    sigma_max: 3.0        # unchanged, so kernel truncation matches Experiment 0
+    truncate: 4.0
+    padding: reflect
+
+schedule:
+  kind: constant          # overridden per arm by continuation.experiments.exp1
+  params:
+    value: 0.0
+    momentum_at_stage_boundary: carry   # explicit: momentum is CARRIED at both
+                                        # transitions. Resetting would be a
+                                        # different experiment.
+
+evaluation:
+  eval_every: 500         # common grid used for all paired cross-arm claims
+  eval_at_step_zero: true
+  train_probe_size: 5000  # same fixed probe subset as Experiment 0
+  probe_seed: 777
+  eval_batch_size: 500
+  transform_stats_size: 512
+  save_final_checkpoint: true
+  checkpoint_every: null
+  dense_every: 100        # adaptation curves: every 100 updates for 1,000
+  dense_window: 1000      # updates after each transformation change
+
+sweep:
+  seeds: [0, 1, 2]
+  total_steps: 14040
+  warm_steps: 1500        # stage 1 length, fixed before seeing any exp1 result
+  mid_steps: 1500         # stage 2 length (arm P only)
+  warm_sigma: 1.0
+  mid_sigma: 0.5
+  baseline_dir: results/exp0_gaussian   # arm A is read from here, read-only
+
+notes: >
+  Stage lengths are pragmatic pilot choices fixed in advance. They are not
+  estimates of an optimal switch time derived from Experiment 0's validation
+  peaks, and were not tuned per seed or adjusted after seeing results.

@@ -1,0 +1,72 @@
+# Experiment 0: independent training from scratch at fixed Gaussian levels.
+#
+# Everything except the transformation level and the seed is held fixed across
+# the comparison: architecture, batch size, optimizer settings, learning-rate
+# schedule and the gradient-update budget.
+
+run:
+  name: exp0_gaussian
+  seed: 0                 # overridden per run by the sweep
+  device: auto
+  out_dir: results
+  deterministic: true
+  log_every: 50
+
+data:
+  dataset: cifar10        # switch to cifar100 without touching anything else
+  root: data
+  num_val: 5000           # 45,000 train / 5,000 val, stratified
+  split_seed: 12345
+  stratified: true
+  download: true
+
+model:
+  arch: resnet20_gn
+  width: 16
+  channels_per_group: 8   # 2/4/8 GroupNorm groups at widths 16/32/64
+  shortcut: A             # parameter-free CIFAR-ResNet shortcut
+  zero_init_residual: false
+
+optim:
+  optimizer: sgd
+  lr: 0.1
+  momentum: 0.9
+  weight_decay: 0.0005    # fixed across every condition; excluded from reported CE
+  nesterov: false
+  batch_size: 128
+  total_steps: 14040      # 40 epochs at 351 updates/epoch -- see docs/experiment0.md
+  lr_schedule: cosine     # indexed by GLOBAL step, never restarted per stage
+  warmup_steps: 400
+  min_lr: 0.0
+  grad_clip: null
+
+transform:
+  family: gaussian
+  params:
+    sigma_max: 3.0        # fixed support sized once for the whole grid
+    truncate: 4.0         # radius = ceil(4 * 3) = 12 -> 25-tap separable kernel
+    padding: reflect
+
+schedule:
+  kind: constant          # Experiment 0 = the fixed-parameter special case
+  params:
+    value: 0.0            # overridden per run by the sweep
+
+evaluation:
+  eval_every: 500         # shared checkpoints, in gradient updates
+  eval_at_step_zero: true
+  train_probe_size: 5000  # fixed class-balanced probe subset of the train split
+  probe_seed: 777         # independent of split / init / batch-order seeds
+  eval_batch_size: 500
+  transform_stats_size: 512
+  save_final_checkpoint: true
+  checkpoint_every: null
+
+sweep:
+  levels: [0, 0.5, 1, 2, 3]   # sigma in pixels; the pre-declared candidate grid
+  seeds: [0, 1, 2]            # paired seeds; raise to 5+ for the fuller study
+
+notes: >
+  Pre-declared grid and budget. The grid was fixed after the visual/pilot phase
+  and before the main comparison; no per-condition tuning, and the official test
+  set is untouched.

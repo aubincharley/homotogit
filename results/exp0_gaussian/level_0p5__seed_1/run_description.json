@@ -1,0 +1,183 @@
+{
+  "config": {
+    "run": {
+      "name": "level_0p5__seed_1",
+      "seed": 1,
+      "device": "auto",
+      "out_dir": "results\\exp0_gaussian\\level_0p5__seed_1",
+      "deterministic": true,
+      "log_every": 50,
+      "num_workers": 0
+    },
+    "data": {
+      "dataset": "cifar10",
+      "root": "data",
+      "num_val": 5000,
+      "split_seed": 12345,
+      "stratified": true,
+      "download": true
+    },
+    "model": {
+      "arch": "resnet20_gn",
+      "width": 16,
+      "channels_per_group": 8,
+      "shortcut": "A",
+      "zero_init_residual": false
+    },
+    "optim": {
+      "optimizer": "sgd",
+      "lr": 0.1,
+      "momentum": 0.9,
+      "weight_decay": 0.0005,
+      "nesterov": false,
+      "batch_size": 128,
+      "total_steps": 14040,
+      "lr_schedule": "cosine",
+      "warmup_steps": 400,
+      "min_lr": 0.0,
+      "milestones": [],
+      "gamma": 0.1,
+      "grad_clip": null
+    },
+    "transform": {
+      "family": "gaussian",
+      "params": {
+        "sigma_max": 3.0,
+        "truncate": 4.0,
+        "padding": "reflect"
+      }
+    },
+    "schedule": {
+      "kind": "constant",
+      "params": {
+        "value": 0.5
+      }
+    },
+    "evaluation": {
+      "eval_every": 500,
+      "eval_at_step_zero": true,
+      "train_probe_size": 5000,
+      "probe_seed": 777,
+      "eval_batch_size": 500,
+      "transform_stats_size": 512,
+      "save_final_checkpoint": true,
+      "checkpoint_every": null
+    },
+    "sweep": {},
+    "notes": "Pre-declared grid and budget. The grid was fixed after the visual/pilot phase and before the main comparison; no per-condition tuning, and the official test set is untouched.\n"
+  },
+  "device": "cuda",
+  "determinism": {
+    "requested": true,
+    "use_deterministic_algorithms": "True(warn_only)",
+    "cudnn.benchmark": false,
+    "cudnn.deterministic": true
+  },
+  "model": {
+    "arch": "resnet20_gn",
+    "total": 269722,
+    "trainable": 269722
+  },
+  "optimizer": {
+    "optimizer": "sgd",
+    "lr": 0.1,
+    "momentum": 0.9,
+    "weight_decay": 0.0005,
+    "nesterov": false,
+    "batch_size": 128,
+    "total_steps": 14040,
+    "lr_schedule": "cosine",
+    "warmup_steps": 400,
+    "min_lr": 0.0,
+    "milestones": [],
+    "gamma": 0.1,
+    "grad_clip": null,
+    "lr_indexing": "global optimization step (never restarted per stage)",
+    "weight_decay_note": "weight decay is fixed across all conditions and is NOT part of the reported cross-entropy objective"
+  },
+  "schedule": {
+    "kind": "constant",
+    "stagewise": false,
+    "total_steps": 14040,
+    "value": 0.5
+  },
+  "pipeline": {
+    "order": [
+      "uint8/255 -> float[0,1]",
+      "T_eta on the original image",
+      "channel normalization"
+    ],
+    "transform": {
+      "family": "gaussian",
+      "parameter_name": "sigma",
+      "parameter_units": "pixels",
+      "target_parameter": 0.0,
+      "config": {
+        "sigma_max": 3.0,
+        "truncate": 4.0,
+        "padding": "reflect",
+        "radius": 12,
+        "kernel_size": 25,
+        "separable": true,
+        "normalized": "taps renormalized to sum 1 on the fixed support",
+        "identity_at": "sigma == 0 (exact passthrough)",
+        "value_space": "float [0,1], pre-normalization, no requantization"
+      }
+    },
+    "normalization": {
+      "mean": [
+        0.49118823,
+        0.48212275,
+        0.44643784
+      ],
+      "std": [
+        0.2470552,
+        0.24351363,
+        0.2615779
+      ],
+      "fitted_on": "training subset only, unfiltered images",
+      "applied": "after the transformation"
+    }
+  },
+  "target_parameter": 0.0,
+  "seeds": {
+    "run_seed": 1,
+    "init_stream": 1123714455,
+    "batch_stream": 281516097,
+    "split_seed": 12345,
+    "probe_seed": 777
+  },
+  "eval_subsets": {
+    "train_probe_size": 5000,
+    "train_probe_idx_first10": [
+      3,
+      10,
+      31,
+      37,
+      39,
+      41,
+      42,
+      58,
+      64,
+      73
+    ],
+    "val_size": 5000,
+    "transform_stats_size": 512,
+    "note": "probe indices are positions within the training split, which is itself pinned by data.split_seed"
+  },
+  "batches_per_epoch": 351,
+  "environment": {
+    "python": "3.12.1",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 154 Stepping 3, GenuineIntel",
+    "torch": "2.5.1+cu121",
+    "cuda_available": true,
+    "cuda_version": "12.1",
+    "cudnn_version": 90100,
+    "torchvision": "0.20.1+cu121",
+    "numpy": "1.26.3",
+    "gpu_name": "NVIDIA GeForce RTX 3050 Laptop GPU",
+    "gpu_total_memory_mb": 4096,
+    "gpu_capability": "8.6"
+  }
+}

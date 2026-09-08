@@ -1,0 +1,216 @@
+{
+  "run_name": "arm_P__seed_1",
+  "seed": 1,
+  "family": "gaussian",
+  "parameter_name": "sigma",
+  "parameter": 0.5,
+  "schedule": {
+    "kind": "piecewise_constant",
+    "stagewise": true,
+    "total_steps": 14040,
+    "values": [
+      1.0,
+      0.5,
+      0.0
+    ],
+    "steps_per_stage": [
+      1500,
+      1500,
+      11040
+    ],
+    "boundaries": [
+      1500,
+      3000,
+      14040
+    ],
+    "planned_steps": 14040,
+    "note": ""
+  },
+  "start_step": 1500,
+  "end_step": 14040,
+  "total_steps": 14040,
+  "updates_executed": 12540,
+  "transitions": [
+    1500,
+    3000
+  ],
+  "momentum_at_stage_boundary": "carry",
+  "lineage": {
+    "parent_checkpoint": "results\\exp1_gaussian_warmstart\\prefix_sigma_warm__seed_1\\checkpoint_step001500.pt",
+    "branched_at_step": 1500,
+    "parent_lineage": {
+      "parent_checkpoint": null,
+      "branched_at_step": null
+    }
+  },
+  "final_checkpoint": {
+    "path": "results\\exp1_gaussian_warmstart\\arm_P__seed_1\\checkpoint_final.pt",
+    "step": 14040,
+    "format": "full_state_v1"
+  },
+  "batch_size": 128,
+  "epochs_equivalent": 40.0,
+  "final": {
+    "step": 14040,
+    "epoch": 40,
+    "parameter_name": "sigma",
+    "parameter": 0.0,
+    "is_target_endpoint": true,
+    "phase": "checkpoint",
+    "stage": 2,
+    "lr": 1.3262060727381454e-09,
+    "transformed_train_probe": {
+      "ce": 0.003128793954849243,
+      "accuracy": 1.0,
+      "n": 5000
+    },
+    "transformed_val": {
+      "ce": 0.6833358520507813,
+      "accuracy": 0.8352,
+      "n": 5000
+    },
+    "target_train_probe": {
+      "ce": 0.003128793954849243,
+      "accuracy": 1.0,
+      "n": 5000
+    },
+    "target_val": {
+      "ce": 0.6833358520507813,
+      "accuracy": 0.8352,
+      "n": 5000
+    },
+    "eval_seconds": 0.7257
+  },
+  "timing": {
+    "train_seconds": 499.574,
+    "eval_seconds": 42.274,
+    "transform_seconds_train": 1.529,
+    "transform_seconds_eval": 0.147,
+    "note": "equal update counts control the optimization budget, not the total computational cost"
+  },
+  "transform_stats": {
+    "start": {
+      "family": "gaussian",
+      "parameter_name": "sigma",
+      "parameter": 0.5,
+      "is_target_endpoint": false,
+      "n_images": 512,
+      "reconstruction_mse": {
+        "n": 512,
+        "mean": 0.00040443315268251794,
+        "std": 0.0002468169566251405,
+        "min": 2.642785560285746e-05,
+        "max": 0.001452285439904832
+      },
+      "retained_tv_ratio": {
+        "n": 512,
+        "mean": 0.8200099403158814,
+        "std": 0.03681508471530335,
+        "min": 0.7144453195006976,
+        "max": 0.9130615929943933
+      },
+      "n_zero_tv_images": 0,
+      "tv_original": {
+        "n": 512,
+        "mean": 278.95692544197397,
+        "std": 87.33626411898227,
+        "min": 51.250065977935094,
+        "max": 544.2284307191935
+      },
+      "tv_transformed": {
+        "n": 512,
+        "mean": 228.20790114598492,
+        "std": 70.21034147525334,
+        "min": 44.67095821144339,
+        "max": 421.82097989808767
+      },
+      "tv_convention": {
+        "kind": "channelwise discrete isotropic total variation",
+        "differences": "forward",
+        "pixel_spacing": 1.0,
+        "boundary": "zero normal difference (Neumann) at last row/column",
+        "channel_coupling": "none; channels summed after the per-pixel square root",
+        "value_range": "[0,1] float image intensities"
+      },
+      "transform_info": {
+        "family": "gaussian",
+        "sigma": 0.5,
+        "heat_time": 0.125,
+        "radius": 12,
+        "kernel_size": 25,
+        "padding": "reflect",
+        "identity": false
+      }
+    },
+    "target": {
+      "family": "gaussian",
+      "parameter_name": "sigma",
+      "parameter": 0.0,
+      "is_target_endpoint": true,
+      "n_images": 512,
+      "reconstruction_mse": {
+        "n": 512,
+        "mean": 0.0,
+        "std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "retained_tv_ratio": {
+        "n": 512,
+        "mean": 1.0,
+        "std": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "n_zero_tv_images": 0,
+      "tv_original": {
+        "n": 512,
+        "mean": 278.95692544197397,
+        "std": 87.33626411898227,
+        "min": 51.250065977935094,
+        "max": 544.2284307191935
+      },
+      "tv_transformed": {
+        "n": 512,
+        "mean": 278.95692544197397,
+        "std": 87.33626411898227,
+        "min": 51.250065977935094,
+        "max": 544.2284307191935
+      },
+      "tv_convention": {
+        "kind": "channelwise discrete isotropic total variation",
+        "differences": "forward",
+        "pixel_spacing": 1.0,
+        "boundary": "zero normal difference (Neumann) at last row/column",
+        "channel_coupling": "none; channels summed after the per-pixel square root",
+        "value_range": "[0,1] float image intensities"
+      },
+      "transform_info": {
+        "family": "gaussian",
+        "sigma": 0.0,
+        "heat_time": 0.0,
+        "radius": 12,
+        "kernel_size": 25,
+        "padding": "reflect",
+        "identity": true
+      }
+    }
+  },
+  "arm": "P",
+  "branch_check": {
+    "arm": "P",
+    "seed": 1,
+    "checkpoint": "results\\exp1_gaussian_warmstart\\prefix_sigma_warm__seed_1\\checkpoint_step001500.pt",
+    "checkpoint_kind": "full_resumable",
+    "global_step": 1500,
+    "sigma_before_branch": 1.0,
+    "sigma_after_branch": 0.5,
+    "lr_at_branch": 0.09840385594331022,
+    "lr_horizon_total_steps": 14040,
+    "optimizer_has_momentum_buffers": true,
+    "batch_stream_epoch": 5,
+    "batch_stream_pos": 96,
+    "amp_scaler_state": null,
+    "problems": []
+  }
+}

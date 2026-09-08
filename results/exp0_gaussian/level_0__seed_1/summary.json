@@ -1,0 +1,106 @@
+{
+  "run_name": "level_0__seed_1",
+  "seed": 1,
+  "family": "gaussian",
+  "parameter_name": "sigma",
+  "parameter": 0.0,
+  "schedule": {
+    "kind": "constant",
+    "stagewise": false,
+    "total_steps": 14040,
+    "value": 0.0
+  },
+  "total_steps": 14040,
+  "batch_size": 128,
+  "epochs_equivalent": 40.0,
+  "final": {
+    "step": 14040,
+    "epoch": 40,
+    "parameter_name": "sigma",
+    "parameter": 0.0,
+    "is_target_endpoint": true,
+    "transformed_train_probe": {
+      "ce": 0.004046648454666138,
+      "accuracy": 0.9998,
+      "n": 5000
+    },
+    "transformed_val": {
+      "ce": 0.6533213714599609,
+      "accuracy": 0.8422,
+      "n": 5000
+    },
+    "target_train_probe": {
+      "ce": 0.004046648454666138,
+      "accuracy": 0.9998,
+      "n": 5000
+    },
+    "target_val": {
+      "ce": 0.6533213714599609,
+      "accuracy": 0.8422,
+      "n": 5000
+    },
+    "eval_seconds": 0.7196
+  },
+  "timing": {
+    "train_seconds": 447.967,
+    "eval_seconds": 21.691,
+    "transform_seconds_train": 0.343,
+    "transform_seconds_eval": 0.01,
+    "note": "equal update counts control the optimization budget, not the total computational cost"
+  },
+  "transform_stats": {
+    "start": {
+      "family": "gaussian",
+      "parameter_name": "sigma",
+      "parameter": 0.0,
+      "is_target_endpoint": true,
+      "n_images": 512,
+      "reconstruction_mse": {
+        "n": 512,
+        "mean": 0.0,
+        "std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "retained_tv_ratio": {
+        "n": 512,
+        "mean": 1.0,
+        "std": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "n_zero_tv_images": 0,
+      "tv_original": {
+        "n": 512,
+        "mean": 278.95692544197397,
+        "std": 87.33626411898227,
+        "min": 51.250065977935094,
+        "max": 544.2284307191935
+      },
+      "tv_transformed": {
+        "n": 512,
+        "mean": 278.95692544197397,
+        "std": 87.33626411898227,
+        "min": 51.250065977935094,
+        "max": 544.2284307191935
+      },
+      "tv_convention": {
+        "kind": "channelwise discrete isotropic total variation",
+        "differences": "forward",
+        "pixel_spacing": 1.0,
+        "boundary": "zero normal difference (Neumann) at last row/column",
+        "channel_coupling": "none; channels summed after the per-pixel square root",
+        "value_range": "[0,1] float image intensities"
+      },
+      "transform_info": {
+        "family": "gaussian",
+        "sigma": 0.0,
+        "heat_time": 0.0,
+        "radius": 12,
+        "kernel_size": 25,
+        "padding": "reflect",
+        "identity": true
+      }
+    }
+  }
+}
