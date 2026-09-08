@@ -461,14 +461,23 @@ def residual_ratio(model, x, gate=None):
                 # running while producing an entirely plausible number.
                 branch = block.bn2(block.conv2(
                     block.act1(block.bn1(block.conv1(h)))))
-                skip = block.shortcut(h)
+                # A PlainNet block has no shortcut attribute at all -- it is
+                # removed rather than disabled -- so there is nothing to divide
+                # by and the ratio is undefined, not zero. Reported as nan so a
+                # plot shows a hole rather than a plausible flat line, and the
+                # branch magnitude is still measured, which is the part that
+                # still means something without a skip.
+                skip = (block.shortcut(h) if getattr(block, "use_residual", True)
+                        else None)
                 # rms rather than a norm so blocks with different channel counts
                 # and resolutions are on the same scale.
                 f_rms = float(branch.pow(2).mean().sqrt())
-                skip_rms = float(skip.pow(2).mean().sqrt())
+                skip_rms = float(skip.pow(2).mean().sqrt()) if skip is not None else 0.0
+                ratio = (s_values[index] * f_rms / (skip_rms + EPS)
+                         if skip is not None else float("nan"))
                 rows.append({"block": index, "s": s_values[index],
                              "f_rms": f_rms, "skip_rms": skip_rms,
-                             "ratio": s_values[index] * f_rms / (skip_rms + EPS)})
+                             "ratio": ratio})
     finally:
         for handle in handles:
             handle.remove()

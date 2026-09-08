@@ -149,3 +149,30 @@ def test_a_plain_config_resolves():
     cfg = load_config(["--no-use-residual", "--no-zero-init-residual"],
                       default="baseline")
     assert cfg["use_residual"] is False and cfg["zero_init_residual"] is False
+
+
+# --------------------------------------------------------------------------
+# the diagnostics have to survive a model with no shortcuts
+# --------------------------------------------------------------------------
+
+def test_the_residual_ratio_does_not_crash_on_a_plain_net():
+    """residual_ratio recomputes each block's branch by hand and divides by
+    block.shortcut(h). A plain block has no shortcut at all, so this raised
+    AttributeError and killed every run with diag_every > 0 -- after the run
+    directory was written, so it looked like a silent death."""
+    from cifarbase.landscape import residual_ratio
+
+    rows = residual_ratio(make(use_residual=False), torch.randn(2, 3, 32, 32))["blocks"]
+    assert len(rows) == 8
+    assert all(r["f_rms"] > 0 for r in rows)          # the branch is measured
+    assert all(r["skip_rms"] == 0.0 for r in rows)    # there is no skip
+    assert all(r["ratio"] != r["ratio"] for r in rows)  # nan: undefined, not zero
+
+
+def test_the_gradient_diagnostic_still_works_on_a_plain_net():
+    from cifarbase.landscape import grad_norm_per_block
+
+    x = torch.randn(2, 3, 32, 32)
+    y = torch.randint(0, 10, (2,))
+    out = grad_norm_per_block(make(use_residual=False), x, y)
+    assert len(out["blocks"]) == 8 and out["total"] > 0
