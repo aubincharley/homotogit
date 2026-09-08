@@ -34,13 +34,18 @@ from cifarbase.train import train_once
 from cifarbase.utils.device import pick_device
 
 # The recipe a Kaggle push runs. A script kernel is handed no argv and no
-# environment, so this constant is the only way to choose one there.
+# environment, so these two constants are the only way to choose one there.
+# `make push-act` stamps them, which is why a pushed arm carries its own config
+# and its own overrides rather than needing a YAML edited per push.
 KAGGLE_CONFIG = "baseline"
+KAGGLE_ARGV = []
 
 
 def main():
     print(f"cifar10-resnet {__version__}")
-    cfg = load_config(default=KAGGLE_CONFIG)
+    # A real command line always wins; KAGGLE_ARGV only fills in where there
+    # is none, which is exactly the kernel case. So this is invisible locally.
+    cfg = load_config(sys.argv[1:] or KAGGLE_ARGV or None, default=KAGGLE_CONFIG)
     seeds = seed_list(cfg)
     print(f"config '{cfg['config']}': {cfg['arch']}, {cfg['epochs']} epochs, "
           f"seeds {seeds}")
