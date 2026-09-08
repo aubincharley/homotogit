@@ -697,3 +697,28 @@ def test_the_readout_reports_loss_as_well_as_accuracy():
     assert set(out) == {"acc", "loss"}
     assert 0.0 <= out["acc"] <= 1.0
     assert out["loss"] > 0.0
+
+
+def test_a_staircase_may_span_the_whole_run():
+    """The tail rule exists so a run always ends on the model its accuracy is
+    compared against. A staircase's last plateau *is* a_end -- progress past
+    ramp_end returns the same level -- so the guarantee is structural and the
+    ramp may cover the whole run. That is what lets five plateaus be exactly
+    ten epochs each in a fifty-epoch budget, instead of four short ones and a
+    long tail."""
+    cfg = load_config(["--a-schedule", "staircase", "--a-stairs", "5",
+                       "--a-ramp-end", "1.0"], default="baseline")
+    assert cfg["a_ramp_end"] == 1.0
+    levels = [alpha_at_cfg(e / 50, 1, cfg)[0] for e in range(50)]
+    assert sorted(set(levels), reverse=True) == pytest.approx([1.0, .75, .5, .25, 0.0])
+    assert levels.count(0.0) == 10                  # ten epochs of real ReLU
+    assert levels[-1] == 0.0
+
+
+def test_a_continuous_ramp_still_may_not_span_the_whole_run():
+    """The relaxation is for staircase only: under a linear ramp, ramp_end=1
+    means alpha reaches 0 on the very last epoch and the target problem is
+    never optimised at all."""
+    with pytest.raises(SystemExit, match="tail"):
+        load_config(["--a-schedule", "linear", "--a-ramp-end", "1.0"],
+                    default="baseline")

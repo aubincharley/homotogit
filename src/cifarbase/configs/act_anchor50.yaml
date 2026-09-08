@@ -1,0 +1,73 @@
+# One of the four GRDH arms. All four share baseline.yaml's recipe verbatim --
+# lr 0.1, nesterov, weight decay 5e-4, cosine with a 5-epoch warmup -- at a
+# 50-epoch budget, from the same seed and therefore the same theta_0. Only the
+# a_* and anchor_* keys differ between them; anything else moving would make
+# the comparison a comparison of recipes.
+#
+# RUN 3 -- continuous homotopy WITH the anchor. Identical to act_linear50 but
+# for the penalty, which is the point: the pair isolates one term.
+#
+#   L = L_CE + anchor_lambda * (alpha/2) * ||theta - theta_0||^2
+#
+# over conv and linear weights only. At alpha = 1 the network is affine and a
+# deep linear network is invariant under W1 -> W1*G, W2 -> G^-1*W2, so its
+# Hessian is singular by construction and theta*(1) is a manifold rather than a
+# point -- the branch is not well posed there. The quadratic picks one point
+# out of that manifold. The alpha coefficient makes the penalty vanish at
+# alpha = 0, so the last 25 epochs minimise exactly RUN 1's objective.
+#
+# lambda is PINNED at 1e-4, derived offline rather than calibrated in-run, so
+# the anchor acts from step 0 and every seed and both anchored arms minimise
+# exactly the same function. How it was chosen, measured on real checkpoints:
+#
+#   ||theta - theta_0||^2 grows 5.4 -> 5449 over the first ten epochs, so the
+#   penalty/CE ratio spans four orders of magnitude during a run and a single
+#   early reading is meaningless. Calibrating at step 50 gave lambda = 2.94,
+#   which by epoch 5 makes the penalty 3656x the cross-entropy -- the network
+#   would be frozen at theta_0. Measured mid-ramp instead:
+#
+#     lambda    penalty/CE at ep 5 / 10 / 15     curvature floor at alpha=1
+#     1e-5      0.01x  0.02x  0.01x              too weak to lift anything
+#     1e-4      0.05x  0.15x  0.13x              1e-4
+#     1e-3      0.54x  1.52x  1.32x              the anchor swamps the CE
+#
+#   1e-4 is ~10% of the CE where the anchor acts, and adds a floor of 1e-4 to
+#   every Hessian eigenvalue: ~300x the mean eigenvalue at init (trace/N = 3e-7,
+#   so the near-null directions are genuinely lifted) while moving the top one
+#   (0.55) by 0.018%. It breaks the degeneracy without distorting the
+#   well-conditioned directions.
+#
+#   To re-derive it after a change of recipe: set anchor_target: 0.1 and
+#   anchor_calibrate_at: 0.25 with a single seed, then pin what it prints.
+
+seeds: "0"
+
+batch_size: 128
+val_size: 0
+augment: true
+
+arch: resnet18
+width: 64
+zero_init_residual: true
+
+epochs: 50
+optimizer: sgd
+lr: 0.1
+momentum: 0.9
+nesterov: true
+weight_decay: 5.0e-4
+schedule: cosine
+warmup_epochs: 5
+
+a_schedule: linear
+a_start: 1.0
+a_end: 0.0
+a_ramp_start: 0.0
+a_ramp_end: 0.5
+
+anchor_lambda: 1.0e-4
+
+ckpt_every: 5
+diag_every: 5
+per_class: true
+

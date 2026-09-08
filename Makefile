@@ -1,5 +1,5 @@
 .PHONY: build run quick baseline push status pull clean runs plot test \
-        homotopy-quick homotopy act-quick act push-act explore
+        homotopy-quick homotopy act-quick act push-act grdh push-grdh explore
 
 KERNEL = idrisselkhamlichi/cifar10-resnet
 # Override if the venv is not activated: make quick PYTHON=.venv/bin/python
@@ -7,6 +7,7 @@ PYTHON ?= python3
 DIR ?= runs/latest
 CONFIG ?= homotopy_linear
 ACT ?= act_linear
+GRDH ?= baseline50 act_linear50 act_anchor50 act_anchor_steps50
 # One seed by default: push-act is a screen, not the 3-seed measurement.
 # A trailing comment on this line would become part of the value.
 SEEDS ?= 0
@@ -37,6 +38,12 @@ act-quick:      ## CPU smoke test of the activation homotopy: does alpha move
 
 act:            ## one arm of the activation pilot, e.g. make act ACT=act_jump
 	$(PYTHON) main.py --config $(ACT)
+
+grdh:           ## the four GRDH arms, locally and in order
+	@for arm in $(GRDH); do $(PYTHON) main.py --config $$arm || exit 1; done
+
+push-grdh:      ## push the four GRDH arms as four kernels
+	@for arm in $(GRDH); do $(MAKE) push-act ACT=$$arm PYTHON=$(PYTHON) || exit 1; done
 
 push-act:       ## push one arm as its own kernel, e.g. make push-act ACT=act_jump
 	@$(PYTHON) -c "$$STAGE_ARM" $(ACT) "$(SEEDS)"

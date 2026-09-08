@@ -18,6 +18,8 @@ import torch
 import torch.nn.functional as F
 
 from cifarbase.activation import ActivationGate, build_activation_gate
+from cifarbase.anchor import (anchor_coefficient, anchor_distance,
+                              anchor_penalty, calibrate_lambda, get_theta_0)
 from cifarbase.homotopy import (ResidualGate, alpha_at_cfg, other_parameters,
                                 phase_at, phase_bounds, residual_parameters,
                                 s_at_cfg)
@@ -212,6 +214,14 @@ def train_once(cfg, train, val, test, device, seed, run=None, verbose=True,
     a_values = None if a_gate is None else a_gate.set(alpha_at_cfg(0.0,
                                                                   len(a_gate),
                                                                   cfg))
+    # theta_0 is captured before the first step, from the weights the seed
+    # produced. Every arm of a comparison must start from the same theta_0, so
+    # this only holds while the seed and the model config are held fixed --
+    # which is what seed_everything above guarantees.
+    anchored = bool(cfg["anchor_lambda"] or cfg["anchor_target"])
+    theta_0 = get_theta_0(model) if anchored else None
+    anchor_lambda = float(cfg["anchor_lambda"])
+    ce_loss = penalty_value = 0.0
     started = time.time()
 
     # One fixed, un-augmented batch, drawn once. Diagnostics measured on a
@@ -272,6 +282,37 @@ def train_once(cfg, train, val, test, device, seed, run=None, verbose=True,
             logits = model(x)
             loss = F.cross_entropy(logits, y,
                                    label_smoothing=cfg["label_smoothing"])
+            ce_loss = float(loss.detach())
+            penalty_value = 0.0
+
+            if theta_0 is not None:
+                penalty = anchor_penalty(model, theta_0)
+                penalty_value = float(penalty.detach())
+                # Calibration happens once, at anchor_calibrate_at, and never
+                # near step 0: ||theta - theta_0||^2 grows by three orders of
+                # magnitude over the first ten epochs, so a ratio taken early
+                # yields a lambda thousands of times too large later and the
+                # network freezes at theta_0. The arms pin lambda instead;
+                # this path is for re-deriving it when the setup changes.
+                calibrate_step = int(cfg["anchor_calibrate_at"] * total_steps)
+                if cfg["anchor_target"] and step == calibrate_step:
+                    anchor_lambda = calibrate_lambda(
+                        ce_loss, penalty_value,
+                        sum(a_values) / len(a_values), cfg["anchor_target"])
+                    if verbose:
+                        print(f"  [seed {seed}] anchor calibrated at step "
+                              f"{step}: lambda = {anchor_lambda:.6g}  "
+                              f"(penalty {penalty_value:.4g} is "
+                              f"{cfg['anchor_target']:.0%} of CE {ce_loss:.4g})")
+                        print(f"  [seed {seed}] pin it: put `anchor_lambda: "
+                              f"{anchor_lambda:.6g}` in the YAML, drop "
+                              f"anchor_target, and use it for every seed and "
+                              f"every other anchored arm.")
+                coefficient = anchor_coefficient(
+                    sum(a_values) / len(a_values), anchor_lambda)
+                if coefficient:
+                    loss = loss + coefficient * penalty
+
             loss.backward()
             if cfg["grad_clip"] > 0:
                 torch.nn.utils.clip_grad_norm_(model.parameters(), cfg["grad_clip"])
@@ -295,6 +336,17 @@ def train_once(cfg, train, val, test, device, seed, run=None, verbose=True,
                # would describe none of them.
                "s_blocks": list(s_values),
                "phase": phase_at(progress, bounds)[0] if bounds else 0}
+
+        if theta_0 is not None:
+            # The three numbers the anchor is read through: how much of the
+            # loss it accounts for, and how far theta has been allowed to
+            # travel from where it started.
+            row["ce_loss"] = ce_loss
+            row["penalty_loss"] = penalty_value
+            row["anchor_lambda"] = anchor_lambda
+            row["anchor_term"] = anchor_coefficient(
+                sum(a_values) / len(a_values), anchor_lambda) * penalty_value
+            row["theta_dist"] = anchor_distance(model, theta_0)
 
         if a_values is not None:
             row["alpha_mean"] = sum(a_values) / len(a_values)
@@ -387,8 +439,14 @@ def train_once(cfg, train, val, test, device, seed, run=None, verbose=True,
             # like a schedule that broke.
             settled = (f", grad norm {row['grad_norm_total']:.3f} leaving the "
                        f"last phase" if "grad_norm_total" in row else "")
+            # Whichever axis drove the phase. Printing s on an activation
+            # staircase reports 1.000 at every boundary and makes the
+            # continuation look like a schedule that never moved.
+            driver = (f"alpha={row['alpha_mean']:.3f}" if a_values is not None
+                      and cfg["a_schedule"] == "staircase"
+                      else f"s={row['s_mean']:.3f}")
             print(f"  [seed {seed}] --- phase {row['phase']} begins, "
-                  f"s={row['s_mean']:.3f}{settled}")
+                  f"{driver}{settled}")
             previous_phase = row["phase"]
         if verbose:
             val_part = f"val={row['val_acc']:.4f}  " if val is not None else ""
@@ -398,6 +456,9 @@ def train_once(cfg, train, val, test, device, seed, run=None, verbose=True,
             if a_values is not None:
                 s_part += (f"a={row['alpha_mean']:.2f}  "
                            f"a0={row['test_acc_at_a0']:.4f}  ")
+            if theta_0 is not None:
+                s_part += (f"pen={row['anchor_term']:.4f}  "
+                           f"|dth|={row['theta_dist']:.1f}  ")
             print(f"  [seed {seed}] epoch {epoch:03d}  lr={row['lr']:.4f}  "
                   f"{s_part}loss={row['train_loss']:.4f}  {val_part}"
                   f"test={row['test_acc']:.4f}  {row['epoch_s']:.1f}s")
@@ -442,6 +503,12 @@ def train_once(cfg, train, val, test, device, seed, run=None, verbose=True,
         "a_scope": cfg["a_scope"],
         "alpha_final": (sum(a_values) / len(a_values)
                         if a_values is not None else 0.0),
+        # Recorded whether calibrated or pinned, so results.json states the
+        # objective the run actually minimised rather than the one its config
+        # asked for.
+        "anchor_lambda": anchor_lambda,
+        "theta_dist_final": (anchor_distance(model, theta_0)
+                             if theta_0 is not None else 0.0),
     }
     gate.close()
     if a_gate is not None:

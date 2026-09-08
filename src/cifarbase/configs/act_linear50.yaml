@@ -1,0 +1,43 @@
+# One of the four GRDH arms. All four share baseline.yaml's recipe verbatim --
+# lr 0.1, nesterov, weight decay 5e-4, cosine with a 5-epoch warmup -- at a
+# 50-epoch budget, from the same seed and therefore the same theta_0. Only the
+# a_* and anchor_* keys differ between them; anything else moving would make
+# the comparison a comparison of recipes.
+#
+# RUN 2 -- continuous homotopy, NO anchor. The pure ablation: it isolates what
+# the alpha path does on its own, so RUN 3 minus RUN 2 is the anchor's effect.
+#
+# The ramp spans the first 25 epochs and the remaining 25 run at alpha = 0
+# exactly. A ramp of alpha(e) = 1 - e/50 would end at alpha = 0.02 and never
+# train the ReLU network at all -- its accuracy would not be comparable to
+# RUN 1, and RUN 4 would get ten epochs of ReLU against its zero.
+
+seeds: "0"
+
+batch_size: 128
+val_size: 0
+augment: true
+
+arch: resnet18
+width: 64
+zero_init_residual: true
+
+epochs: 50
+optimizer: sgd
+lr: 0.1
+momentum: 0.9
+nesterov: true
+weight_decay: 5.0e-4
+schedule: cosine
+warmup_epochs: 5
+
+a_schedule: linear
+a_start: 1.0
+a_end: 0.0
+a_ramp_start: 0.0
+a_ramp_end: 0.5
+
+ckpt_every: 5
+diag_every: 5
+per_class: true
+

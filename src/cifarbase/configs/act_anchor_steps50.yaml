@@ -1,0 +1,81 @@
+# One of the four GRDH arms. All four share baseline.yaml's recipe verbatim --
+# lr 0.1, nesterov, weight decay 5e-4, cosine with a 5-epoch warmup -- at a
+# 50-epoch budget, from the same seed and therefore the same theta_0. Only the
+# a_* and anchor_* keys differ between them; anything else moving would make
+# the comparison a comparison of recipes.
+#
+# RUN 4 -- DISCRETE homotopy with the anchor: path-following by plateaus.
+#
+# Five levels, alpha in [1.0, 0.75, 0.5, 0.25, 0.0], ten epochs each. The
+# weights at the end of one plateau are the initialisation of the next, which
+# is what "warm start" means here -- there is one run and nothing is
+# re-initialised.
+#
+# a_ramp_end is 1.0, which every continuous schedule is forbidden: a staircase
+# is allowed it because its last plateau already sits at a_end, so the run ends
+# on the ReLU network by construction rather than by leaving room after the
+# ramp. That is what makes the five plateaus exactly ten epochs each.
+#
+# a_lr_restart gives every plateau its own warmup and cosine decay. Without it
+# a single global cosine runs the early plateaus too hot to settle and the late
+# ones too cold to move, and theta never tracks theta*(alpha) -- the staircase
+# becomes decoration. grad_norm_total at each phase boundary is how you check
+# a plateau actually settled instead of assuming it.
+#
+# lambda is PINNED at 1e-4, derived offline rather than calibrated in-run, so
+# the anchor acts from step 0 and every seed and both anchored arms minimise
+# exactly the same function. How it was chosen, measured on real checkpoints:
+#
+#   ||theta - theta_0||^2 grows 5.4 -> 5449 over the first ten epochs, so the
+#   penalty/CE ratio spans four orders of magnitude during a run and a single
+#   early reading is meaningless. Calibrating at step 50 gave lambda = 2.94,
+#   which by epoch 5 makes the penalty 3656x the cross-entropy -- the network
+#   would be frozen at theta_0. Measured mid-ramp instead:
+#
+#     lambda    penalty/CE at ep 5 / 10 / 15     curvature floor at alpha=1
+#     1e-5      0.01x  0.02x  0.01x              too weak to lift anything
+#     1e-4      0.05x  0.15x  0.13x              1e-4
+#     1e-3      0.54x  1.52x  1.32x              the anchor swamps the CE
+#
+#   1e-4 is ~10% of the CE where the anchor acts, and adds a floor of 1e-4 to
+#   every Hessian eigenvalue: ~300x the mean eigenvalue at init (trace/N = 3e-7,
+#   so the near-null directions are genuinely lifted) while moving the top one
+#   (0.55) by 0.018%. It breaks the degeneracy without distorting the
+#   well-conditioned directions.
+#
+#   To re-derive it after a change of recipe: set anchor_target: 0.1 and
+#   anchor_calibrate_at: 0.25 with a single seed, then pin what it prints.
+
+seeds: "0"
+
+batch_size: 128
+val_size: 0
+augment: true
+
+arch: resnet18
+width: 64
+zero_init_residual: true
+
+epochs: 50
+optimizer: sgd
+lr: 0.1
+momentum: 0.9
+nesterov: true
+weight_decay: 5.0e-4
+schedule: cosine
+warmup_epochs: 5
+
+a_schedule: staircase
+a_stairs: 5
+a_lr_restart: true
+a_start: 1.0
+a_end: 0.0
+a_ramp_start: 0.0
+a_ramp_end: 1.0
+
+anchor_lambda: 1.0e-4
+
+ckpt_every: 5
+diag_every: 5
+per_class: true
+

@@ -127,6 +127,34 @@ CONFIG = {
                                 # alpha=0 readout. 0 skips the recompute, which
                                 # makes that column an artefact -- see train.py.
 
+    # ---- anchor penalty (GRDH eq. 12) -------------------------------------
+    # L = L_CE + anchor_lambda * (alpha/2) * ||theta - theta_0||^2, over conv
+    # and linear weights only. At alpha=1 the network is affine and its Hessian
+    # is singular by construction, so theta*(1) is a manifold and the branch is
+    # not well posed there; the quadratic picks one point out of it. The alpha
+    # coefficient makes the penalty vanish at alpha=0, so the tail of training
+    # minimises the baseline objective exactly.
+    #
+    # BatchNorm is deliberately outside the anchor: zero_init_residual starts
+    # every bn2 gamma at 0, and anchoring that would pin the residual branches
+    # off for the whole descent.
+    "anchor_lambda": 0.0,       # 0 disables the anchor. A positive value is
+                                # used as-is and recorded in results.json.
+    "anchor_target": 0.0,       # >0 derives anchor_lambda so the penalty is
+                                # this share of the cross-entropy, measured at
+                                # anchor_calibrate_at. A tool for re-deriving
+                                # lambda when the setup changes -- the arms pin
+                                # the number instead, so the anchor acts from
+                                # step 0 and every seed minimises the same
+                                # function.
+    "anchor_calibrate_at": 0.25,  # fraction of training at which to measure.
+                                # NOT near 0: ||theta - theta_0||^2 grows by
+                                # three orders of magnitude over the first ten
+                                # epochs (5.4 -> 5449 measured), so a ratio
+                                # taken at step 50 gives a lambda that is
+                                # thousands of times too large by epoch 5.
+                                # Mid-ramp is where the anchor actually acts.
+
     # ---- landscape -------------------------------------------------------
     "ckpt_every": 0,            # >0 saves theta every N epochs, which is what
                                 # explore.py needs to draw a trajectory
@@ -292,7 +320,18 @@ def _validate_activation(cfg):
     if cfg["a_schedule"] == "none":
         return cfg
     if cfg["a_schedule"] != "const":
-        if not 0.0 <= cfg["a_ramp_start"] < cfg["a_ramp_end"] < 1.0:
+        # A staircase may span the whole run. The tail rule exists so training
+        # always ends on the model the accuracy is compared against, and a
+        # staircase's last plateau already sits at a_end -- progress past
+        # ramp_end returns that same level -- so the guarantee holds by
+        # construction rather than by leaving room after the ramp. It is what
+        # lets five plateaus be exactly ten epochs each in a fifty-epoch
+        # budget. Every continuous schedule still needs the room: at
+        # ramp_end=1 a linear ramp reaches a_end on the final epoch and the
+        # target problem is never actually optimised.
+        end = cfg["a_ramp_end"]
+        spans_run = end <= 1.0 if cfg["a_schedule"] == "staircase" else end < 1.0
+        if not (0.0 <= cfg["a_ramp_start"] < end and spans_run):
             raise SystemExit(
                 f"!! need 0 <= a_ramp_start < a_ramp_end < 1, got "
                 f"{cfg['a_ramp_start']} and {cfg['a_ramp_end']}. a_ramp_end "
@@ -321,6 +360,47 @@ def _validate_activation(cfg):
     return cfg
 
 
+def _validate_anchor(cfg):
+    """The anchor keys. Two refusals, both of a config that would do nothing.
+
+    An anchor without a homotopy is a no-op, because the coefficient is
+    lambda*alpha/2 and alpha never leaves 0. And a lambda given alongside a
+    target is ambiguous: one of the two would be silently ignored, and
+    results.json would record a number the run did not use.
+    """
+    if cfg["anchor_lambda"] < 0 or cfg["anchor_target"] < 0:
+        raise SystemExit(f"!! anchor_lambda and anchor_target must be >= 0, got "
+                         f"{cfg['anchor_lambda']} and {cfg['anchor_target']}")
+    if cfg["anchor_lambda"] and cfg["anchor_target"]:
+        raise SystemExit(
+            f"!! anchor_lambda={cfg['anchor_lambda']} and "
+            f"anchor_target={cfg['anchor_target']} both set: pick one. A "
+            f"lambda is used as given; a target derives it after "
+            f"anchor_calibrate_steps.")
+    if (cfg["anchor_lambda"] or cfg["anchor_target"]) and \
+            cfg["a_schedule"] in ("none", "const"):
+        raise SystemExit(
+            f"!! the anchor needs a moving alpha, but a_schedule is "
+            f"{cfg['a_schedule']!r}: the coefficient is lambda*alpha/2, so "
+            f"with no homotopy the penalty is identically zero.")
+    if cfg["anchor_target"] and len(seed_list(cfg)) > 1:
+        raise SystemExit(
+            f"!! anchor_target with {len(seed_list(cfg))} seeds: train_once "
+            f"runs once per seed and would derive a different lambda for each, "
+            f"so the seeds would optimise different objectives and the spread "
+            f"would mix seed variance with a hyperparameter change.\n"
+            f"   Calibrate on one seed, then pin the lambda it reports:\n"
+            f"     python main.py --config <name> --seeds 0\n"
+            f"     # then put `anchor_lambda: <value>` in the YAML, drop "
+            f"anchor_target, and run every seed and every other arm with it.")
+    if not 0.0 < cfg["anchor_calibrate_at"] < 1.0:
+        raise SystemExit(f"!! anchor_calibrate_at must be in (0, 1), got "
+                         f"{cfg['anchor_calibrate_at']}: it is a fraction of "
+                         f"training, and at 0 theta is still theta_0 and there "
+                         f"is nothing to scale against.")
+    return cfg
+
+
 def _validate(cfg):
     # Imported here, not at module scope, so `--help` works on a machine with no
     # torch installed.
@@ -344,6 +424,7 @@ def _validate(cfg):
                          f"epochs ({cfg['epochs']}): the lr would never decay")
     _validate_homotopy(cfg)
     _validate_activation(cfg)
+    _validate_anchor(cfg)
     if not seed_list(cfg):
         raise SystemExit("!! seeds is empty: give a comma-separated list, e.g. 0,1,2")
     return cfg
