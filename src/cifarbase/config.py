@@ -91,6 +91,42 @@ CONFIG = {
                                 # homotopy's effect, the homotopy was a learning
                                 # rate schedule in disguise.
 
+    # ---- activation homotopy ---------------------------------------------
+    # phi_alpha(x) = max(x, alpha*x), with alpha driven 1 -> 0 during training.
+    # alpha=0 is exactly ReLU; alpha=1 makes the network affine. The default
+    # a_schedule="none" builds no gate at all, so leaving these alone is
+    # byte-identical to before they existed.
+    #
+    # Orthogonal to the s_* keys -- one deforms the residual branch, the other
+    # the nonlinearity -- and both can run at once, though the pilot runs one
+    # axis at a time.
+    "a_schedule": "none",       # none|const|linear|cosine|staircase|sequential
+    "a_start": 1.0,             # alpha where the ramp begins. 1.0 makes the
+                                # network affine, whose optimum is a linear
+                                # classifier (~40%) and whose Hessian is
+                                # singular by construction. Deliberate, but a
+                                # poor place to *start a continuation* from,
+                                # which is why arms that track theta*(alpha)
+                                # use 0.9 instead.
+    "a_end": 0.0,               # alpha where it ends. Anything but 0 trains a
+                                # LeakyReLU network, not the baseline's.
+    "a_ramp_start": 0.0,        # fraction of training before the ramp begins
+    "a_ramp_end": 0.5,          # fraction by which alpha has reached a_end
+    "a_stairs": 0,              # staircase only: how many plateaus. 2 plateaus
+                                # IS the jump control -- alpha held at a_start,
+                                # then dropped to a_end with no path between.
+    "a_lr_restart": False,      # staircase only: give every plateau its own
+                                # warmup and decay, so theta can settle at each
+                                # alpha_k before the continuation steps
+    "a_scope": "global",        # global|stage|block|site -- what moves together
+    "a_reverse": False,         # sequential only: stagger from the head down
+                                # instead of from the stem up
+    "a_sites": "all",           # all|act1|act2 -- which ReLUs take part. Only
+                                # "all" makes the network affine at alpha=1.
+    "a_bn_batches": 32,         # batches used to re-estimate BatchNorm for the
+                                # alpha=0 readout. 0 skips the recompute, which
+                                # makes that column an artefact -- see train.py.
+
     # ---- landscape -------------------------------------------------------
     "ckpt_every": 0,            # >0 saves theta every N epochs, which is what
                                 # explore.py needs to draw a trajectory
@@ -229,6 +265,62 @@ def _validate_homotopy(cfg):
     return cfg
 
 
+def _validate_activation(cfg):
+    """The a_* keys, checked hard enough that a bad sweep fails at launch.
+
+    Two of these refuse a config that would silently do nothing rather than
+    fail, which is the failure mode that costs a day per arm: a_reverse under a
+    schedule that hands every group the same value, and a_reverse under a scope
+    with only one group.
+    """
+    from cifarbase.activation import SCOPES, SITES
+    from cifarbase.homotopy import SCHEDULES
+
+    if cfg["a_schedule"] not in ("none",) + SCHEDULES:
+        raise SystemExit(f"!! unknown a_schedule {cfg['a_schedule']!r}: pick "
+                         f"one of none, {', '.join(SCHEDULES)}")
+    if cfg["a_scope"] not in SCOPES:
+        raise SystemExit(f"!! unknown a_scope {cfg['a_scope']!r}: "
+                         f"pick one of {', '.join(SCOPES)}")
+    if cfg["a_sites"] not in SITES:
+        raise SystemExit(f"!! unknown a_sites {cfg['a_sites']!r}: "
+                         f"pick one of {', '.join(SITES)}")
+    if not 0.0 <= cfg["a_end"] <= cfg["a_start"] <= 1.0:
+        raise SystemExit(f"!! need 0 <= a_end <= a_start <= 1, got "
+                         f"a_start={cfg['a_start']}, a_end={cfg['a_end']}: "
+                         f"alpha runs downhill, from a_start to a_end.")
+    if cfg["a_schedule"] == "none":
+        return cfg
+    if cfg["a_schedule"] != "const":
+        if not 0.0 <= cfg["a_ramp_start"] < cfg["a_ramp_end"] < 1.0:
+            raise SystemExit(
+                f"!! need 0 <= a_ramp_start < a_ramp_end < 1, got "
+                f"{cfg['a_ramp_start']} and {cfg['a_ramp_end']}. a_ramp_end "
+                f"must leave a tail of training at a_end, or the run never "
+                f"trains the model its accuracy will be compared against.")
+        if cfg["a_schedule"] == "staircase" and cfg["a_stairs"] < 1:
+            raise SystemExit(f"!! staircase needs a_stairs >= 1, got "
+                             f"{cfg['a_stairs']}")
+    if cfg["a_lr_restart"] and cfg["a_schedule"] != "staircase":
+        raise SystemExit(
+            f"!! a_lr_restart needs a_schedule=staircase, not "
+            f"{cfg['a_schedule']!r}: restarting the lr only means something "
+            f"where alpha is held still long enough for a phase to converge.")
+    if cfg["a_reverse"]:
+        if cfg["a_schedule"] != "sequential":
+            raise SystemExit(
+                f"!! a_reverse needs a_schedule=sequential, not "
+                f"{cfg['a_schedule']!r}: every other schedule hands all groups "
+                f"the same alpha, so reversing their order does nothing.")
+        if cfg["a_scope"] == "global":
+            raise SystemExit("!! a_reverse with a_scope=global reverses a "
+                             "single group: pick a scope with more than one, "
+                             "or turn the reversal off")
+    if cfg["a_bn_batches"] < 0:
+        raise SystemExit(f"!! a_bn_batches must be >= 0, got {cfg['a_bn_batches']}")
+    return cfg
+
+
 def _validate(cfg):
     # Imported here, not at module scope, so `--help` works on a machine with no
     # torch installed.
@@ -251,6 +343,7 @@ def _validate(cfg):
         raise SystemExit(f"!! warmup_epochs ({cfg['warmup_epochs']}) exceeds "
                          f"epochs ({cfg['epochs']}): the lr would never decay")
     _validate_homotopy(cfg)
+    _validate_activation(cfg)
     if not seed_list(cfg):
         raise SystemExit("!! seeds is empty: give a comma-separated list, e.g. 0,1,2")
     return cfg

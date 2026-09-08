@@ -1,9 +1,11 @@
 """The residual homotopy: h_out = shortcut(x) + s * F(x), with s driven from 0 to 1.
 
-Two things live here and nothing else:
+Three things live here and nothing else:
 
   ResidualGate   the mechanism -- how s gets applied to a model
   s_at           the policy    -- what s should be at a given point in training
+  alpha_at_cfg   the same policy, read in the coordinate the *activation*
+                 homotopy needs (see activation.py for its mechanism)
 
 `model.py` is untouched by both. The gate installs a forward hook on each block's
 `bn2`, whose output is exactly F(x) before the residual add, and returns a scaled
@@ -226,9 +228,52 @@ def s_at_cfg(progress, n_blocks, cfg):
                 stairs=cfg["s_stairs"])
 
 
+def alpha_at_cfg(progress, n_groups, cfg):
+    """alpha per group for the activation homotopy, from a resolved config.
+
+    alpha falls 1 -> 0 while s rises 0 -> 1, so rather than write a second
+    policy this reads the schedule in
+
+        tau = 1 - alpha
+
+    the "nonlinearity level", which rises 0 -> 1 exactly as s does. Every
+    schedule, ramp window, staircase and stagger above therefore applies to
+    alpha unchanged, along with the tests that pin them down. alpha is what
+    configs and logs speak in; tau never leaves this function.
+
+    The tau endpoints are inverted as well as the values -- a_start is where
+    alpha begins, so it is tau's *minimum* -- which is why this cannot be a
+    prefix argument to s_at_cfg.
+    """
+    if cfg["a_schedule"] == "none":
+        return [0.0] * n_groups
+    tau = s_at(progress, n_groups, schedule=cfg["a_schedule"],
+               s_min=1.0 - cfg["a_start"], s_max=1.0 - cfg["a_end"],
+               ramp_start=cfg["a_ramp_start"], ramp_end=cfg["a_ramp_end"],
+               stairs=cfg["a_stairs"])
+    return [1.0 - t for t in tau]
+
+
 # --------------------------------------------------------------------------
 # continuation phases
 # --------------------------------------------------------------------------
+
+def _staircase_axes(cfg):
+    """The homotopy axes asking for phases of their own, as
+    (ramp_start, ramp_end, stairs, value_at).
+
+    `.get` rather than `[...]`: a cfg predating the activation keys, or a
+    hand-built one in a test, must still resolve to the residual axis alone.
+    """
+    axes = []
+    if cfg["s_schedule"] == "staircase" and cfg.get("s_lr_restart"):
+        axes.append((cfg["s_ramp_start"], cfg["s_ramp_end"], cfg["s_stairs"],
+                     lambda progress: s_at_cfg(progress, 1, cfg)[0]))
+    if cfg.get("a_schedule") == "staircase" and cfg.get("a_lr_restart"):
+        axes.append((cfg["a_ramp_start"], cfg["a_ramp_end"], cfg["a_stairs"],
+                     lambda progress: alpha_at_cfg(progress, 1, cfg)[0]))
+    return axes
+
 
 def phase_bounds(cfg):
     """Where the continuation changes problem, as fractions of training.
@@ -245,15 +290,22 @@ def phase_bounds(cfg):
     small to move. So each plateau becomes its own optimisation problem, with its
     own warmup and its own decay, warm-started from where the last one stopped.
 
+    Either homotopy can ask for phases, and the boundaries are the union of
+    what each asks for: two staircases running at once change problem at every
+    edge either of them steps over. In practice the pilot runs one axis at a
+    time and the union is that axis's own edges.
+
     Returns () when the run is a single problem, which leaves lr_at untouched and
     every existing arm bit-identical to before this function existed.
     """
-    if cfg["s_schedule"] != "staircase" or not cfg.get("s_lr_restart"):
+    axes = _staircase_axes(cfg)
+    if not axes:
         return ()
-    start, end, stairs = cfg["s_ramp_start"], cfg["s_ramp_end"], cfg["s_stairs"]
-    candidates = {0.0, 1.0, float(start), float(end)}
-    for index in range(stairs + 1):
-        candidates.add(start + (end - start) * index / stairs)
+    candidates = {0.0, 1.0}
+    for start, end, stairs, _ in axes:
+        candidates.update((float(start), float(end)))
+        for index in range(stairs + 1):
+            candidates.add(start + (end - start) * index / stairs)
     ordered = sorted(e for e in candidates if 0.0 <= e <= 1.0)
 
     # A phase is a maximal interval on which s does not change, so an edge only
@@ -263,9 +315,8 @@ def phase_bounds(cfg):
     # rate in the middle of one optimisation for no reason.
     kept = [ordered[0]]
     for edge in ordered[1:-1]:
-        before = s_at_cfg(edge - 1e-9, 1, cfg)[0]
-        after = s_at_cfg(edge + 1e-9, 1, cfg)[0]
-        if abs(before - after) > 1e-12:
+        if any(abs(value(edge - 1e-9) - value(edge + 1e-9)) > 1e-12
+               for *_, value in axes):
             kept.append(edge)
     kept.append(ordered[-1])
     return tuple(kept)

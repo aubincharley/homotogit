@@ -1,0 +1,42 @@
+# Arm G -- the same homotopy, started away from the degenerate end.
+#
+# alpha = 1 is a linear classifier: a weak place to warm-start from, and a
+# singular point of the solution branch. This arm starts at 0.5, where the
+# network is already a real nonlinear ResNet with a soft nonlinearity, and asks
+# whether the useful part of the path was ever near alpha = 1.
+#
+# If G beats B, the interesting regime is the middle of the path and the affine
+# endpoint is a distraction. If B beats G, the near-linear start is doing the
+# work and that is worth saying plainly.
+#
+# Everything except the a_* keys is baseline40.yaml verbatim.
+
+seeds: "0,1,2"
+
+batch_size: 128
+val_size: 0
+augment: true
+
+arch: resnet18
+width: 64
+zero_init_residual: true
+
+epochs: 40
+optimizer: sgd
+lr: 0.1
+momentum: 0.9
+nesterov: true
+weight_decay: 5.0e-4
+schedule: cosine
+warmup_epochs: 5
+
+a_schedule: linear
+a_start: 0.5
+a_end: 0.0
+a_ramp_start: 0.0
+a_ramp_end: 0.5
+
+ckpt_every: 5
+diag_every: 5
+per_class: true
+

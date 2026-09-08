@@ -1,0 +1,56 @@
+# Arm D -- continuation: hold alpha still, let theta settle, then step.
+#
+# The arm that attempts to track theta*(alpha_k) -> theta*(alpha_{k+1}). The
+# linear arm only rides past that path; this one tries to stay on it. Three
+# settings make the difference:
+#
+#   a_lr_restart   each plateau gets its own warmup and decay. Without it a
+#                  single global cosine runs the early plateaus too hot to
+#                  settle and the late ones too cold to move.
+#   a_start 0.9    NOT 1.0. A deep linear network is invariant under
+#                  W1 -> W1*G, W2 -> G^-1*W2, so the Hessian at alpha = 1 has a
+#                  large null space by construction and theta*(1) is a manifold
+#                  rather than an isolated point. A continuation started
+#                  exactly there starts on a singular point of its own branch.
+#   a_stairs 4     four plateaus of 8 epochs over [0, 0.8], plus an 8-epoch
+#                  tail at alpha=0. alpha visits 0.9, 0.6, 0.3, 0.0.
+#
+# Honest caveat, inherited from homotopy_staircase.yaml and sharper at 40
+# epochs: 8 epochs is not convergence for a ResNet-18. This arm approximates
+# continuation, it is not continuation. If grad_norm_total at the phase
+# boundaries comes out large, that is the finding, and the fix is more epochs
+# per phase rather than more plateaus.
+#
+# Everything except the a_* keys is baseline40.yaml verbatim.
+
+seeds: "0,1,2"
+
+batch_size: 128
+val_size: 0
+augment: true
+
+arch: resnet18
+width: 64
+zero_init_residual: true
+
+epochs: 40
+optimizer: sgd
+lr: 0.1
+momentum: 0.9
+nesterov: true
+weight_decay: 5.0e-4
+schedule: cosine
+warmup_epochs: 5
+
+a_schedule: staircase
+a_stairs: 4
+a_lr_restart: true
+a_start: 0.9
+a_end: 0.0
+a_ramp_start: 0.0
+a_ramp_end: 0.8
+
+ckpt_every: 5
+diag_every: 5
+per_class: true
+

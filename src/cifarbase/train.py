@@ -17,9 +17,12 @@ import time
 import torch
 import torch.nn.functional as F
 
-from cifarbase.homotopy import (ResidualGate, other_parameters, phase_at,
-                                phase_bounds, residual_parameters, s_at_cfg)
-from cifarbase.landscape import (grad_norm_per_block, record, residual_ratio,
+from cifarbase.activation import ActivationGate, build_activation_gate
+from cifarbase.homotopy import (ResidualGate, alpha_at_cfg, other_parameters,
+                                phase_at, phase_bounds, residual_parameters,
+                                s_at_cfg)
+from cifarbase.landscape import (activation_stats, grad_norm_per_block,
+                                 record, recompute_bn, residual_ratio,
                                  save_checkpoint)
 from cifarbase.metrics import evaluate
 from cifarbase.model import build_model, count_params
@@ -83,7 +86,52 @@ def lr_at(step, total_steps, cfg, bounds=()):
     return 1.0
 
 
-def diagnose(model, gate, probe, out_dir, seed, epoch, s_values):
+def _batchnorm_buffers(model):
+    """Every BatchNorm's running statistics, cloned."""
+    return [(m, m.running_mean.clone(), m.running_var.clone(),
+             m.num_batches_tracked.clone())
+            for m in model.modules() if isinstance(m, torch.nn.BatchNorm2d)]
+
+
+def _restore_batchnorm(saved):
+    with torch.no_grad():
+        for module, mean, var, count in saved:
+            module.running_mean.copy_(mean)
+            module.running_var.copy_(var)
+            module.num_batches_tracked.copy_(count)
+
+
+def readout_at_alpha_zero(model, gate, train_split, test_split, cfg):
+    """Test accuracy of the ReLU network these weights define.
+
+    The activation homotopy's answer to test_acc_at_s1, and unlike that one it
+    cannot skip recompute_bn. Dropping alpha to 0 removes the entire negative
+    mass of every activation, so the running statistics accumulated at alpha>0
+    describe a distribution the network no longer produces. Reading through
+    them produces exactly the shape of a failed transfer -- a good homotopy
+    that looks like it collapses at alpha=0 -- which is a bug being read as a
+    result. landscape.recompute_bn documents the same trap for interpolation
+    between solutions, where the literature has fallen into it more than once.
+
+    The training run's own statistics are put back afterwards: this is a
+    measurement, and a measurement that changes the next step is not one.
+    a_bn_batches=0 skips the recompute and gives the stale reading, which is
+    there to be compared against, not to be used.
+    """
+    saved = _batchnorm_buffers(model)
+    was_training = model.training
+    try:
+        with gate.at(0.0):
+            if cfg["a_bn_batches"]:
+                recompute_bn(model, train_split, n_batches=cfg["a_bn_batches"])
+            return evaluate(model, test_split, cfg["eval_batch_size"])["acc"]
+    finally:
+        _restore_batchnorm(saved)
+        model.train(was_training)
+
+
+def diagnose(model, gate, probe, out_dir, seed, epoch, s_values,
+             a_gate=None):
     """Per-block residual ratio and gradient norm, written out mid-run.
 
     Two numbers per block, and between them they say whether the homotopy is
@@ -110,6 +158,13 @@ def diagnose(model, gate, probe, out_dir, seed, epoch, s_values):
                "skip_rms": [b["skip_rms"] for b in ratio["blocks"]],
                "grad_norm": [b["grad_norm"] for b in grads["blocks"]],
                "grad_norm_total": grads["total"]}
+    if a_gate is not None:
+        sites = activation_stats(model, x)["sites"]
+        payload["alpha"] = [row["alpha"] for row in sites]
+        payload["linear_gap"] = [row["linear_gap"] for row in sites]
+        payload["neg_frac"] = [row["neg_frac"] for row in sites]
+        payload["dead_frac"] = [row["dead_frac"] for row in sites]
+        payload["act_rms"] = [row["rms"] for row in sites]
     if out_dir:
         record(out_dir, payload)
     return payload
@@ -121,6 +176,9 @@ def train_once(cfg, train, val, test, device, seed, run=None, verbose=True,
     model = build_model(cfg, device, quiet=not verbose)
     optimizer = build_optimizer(model, cfg)
     gate = ResidualGate(model)
+    # None when a_schedule is "none", and then nothing below touches an alpha:
+    # a baseline run is exactly the run it was before this axis existed.
+    a_gate = build_activation_gate(model, cfg)
 
     # batches() drops the last partial batch, so a split shorter than one batch
     # yields nothing at all and the epoch would divide by zero a long way from
@@ -141,12 +199,25 @@ def train_once(cfg, train, val, test, device, seed, run=None, verbose=True,
     step = 0
     images = 0
     s_values = gate.get()
+    # Set before the init checkpoint is written, not on the first step: the
+    # checkpoint records the alpha its weights are about to be trained at, and
+    # a meta saying 0.0 for weights headed into an affine network would make
+    # every branch measurement start from a point that never existed.
+    a_values = None if a_gate is None else a_gate.set(alpha_at_cfg(0.0,
+                                                                  len(a_gate),
+                                                                  cfg))
     started = time.time()
 
     # One fixed, un-augmented batch, drawn once. Diagnostics measured on a
     # different batch every epoch would move for reasons that have nothing to do
     # with training, and the series is the whole point of measuring them.
     probe = next(train.chunks(cfg["batch_size"])) if cfg["diag_every"] else None
+
+    if a_gate is not None and verbose:
+        print(f"  [seed {seed}] activation homotopy: alpha "
+              f"{cfg['a_start']} -> {cfg['a_end']} ({cfg['a_schedule']}), "
+              f"{len(a_gate)} group(s) over {len(a_gate.sites)} sites "
+              f"({cfg['a_scope']}/{cfg['a_sites']})")
 
     bounds = phase_bounds(cfg)
     previous_phase = None
@@ -159,7 +230,8 @@ def train_once(cfg, train, val, test, device, seed, run=None, verbose=True,
     # it is the one checkpoint that cannot be recovered afterwards.
     if out_dir and cfg["ckpt_every"]:
         save_checkpoint(model, out_dir, f"seed{seed}_init",
-                        meta={"seed": seed, "epoch": -1, "s": s_values})
+                        meta={"seed": seed, "epoch": -1, "s": s_values,
+                              "alpha": a_values})
 
     model.train()
 
@@ -179,6 +251,10 @@ def train_once(cfg, train, val, test, device, seed, run=None, verbose=True,
             gate.set(1.0 if cfg["lr_gate_control"] else s_values)
             gated_scale = (sum(s_values) / len(s_values)
                            if cfg["lr_gate_control"] else 1.0)
+
+            if a_gate is not None:
+                a_values = alpha_at_cfg(progress, len(a_gate), cfg)
+                a_gate.set(a_values)
 
             for group, base in zip(optimizer.param_groups, base_lrs, strict=True):
                 scale = lr_at(step, total_steps, cfg, bounds)
@@ -214,6 +290,15 @@ def train_once(cfg, train, val, test, device, seed, run=None, verbose=True,
                "s_blocks": list(s_values),
                "phase": phase_at(progress, bounds)[0] if bounds else 0}
 
+        if a_values is not None:
+            row["alpha_mean"] = sum(a_values) / len(a_values)
+            row["alpha_min_group"] = min(a_values)
+            row["alpha_max_group"] = max(a_values)
+            # The whole vector, for the same reason s_blocks is kept whole:
+            # under a staggered scope the groups hold different alphas all
+            # through the ramp and a mean describes none of them.
+            row["alpha_groups"] = list(a_values)
+
         if val is not None:
             val_metrics = evaluate(model, val, eval_bs)
             row["val_loss"] = val_metrics["loss"]
@@ -241,10 +326,21 @@ def train_once(cfg, train, val, test, device, seed, run=None, verbose=True,
         else:
             with gate.at(1.0):
                 row["test_acc_at_s1"] = evaluate(model, test, eval_bs)["acc"]
+        # The counterpart of test_acc_at_s1 on the activation axis: the ReLU
+        # ResNet these weights define, which is the only number comparable to a
+        # baseline. Skipped when alpha is already 0, so the tail of a run costs
+        # nothing extra.
+        if a_values is not None:
+            if max(a_values) == 0.0:
+                row["test_acc_at_a0"] = row["test_acc"]
+            else:
+                row["test_acc_at_a0"] = readout_at_alpha_zero(
+                    model, a_gate, train, test, cfg)
+
         if cfg["diag_every"] and (epoch % cfg["diag_every"] == 0
                                   or epoch == cfg["epochs"] - 1):
             diagnostics = diagnose(model, gate, probe, out_dir, seed, epoch,
-                                   s_values)
+                                   s_values, a_gate)
             # Summaries into the epoch row as well, so the two numbers that
             # matter show up in history.csv without anyone having to open the
             # jsonl. The per-block detail stays in landscape.jsonl.
@@ -254,6 +350,16 @@ def train_once(cfg, train, val, test, device, seed, run=None, verbose=True,
             row["grad_norm_mean"] = (sum(diagnostics["grad_norm"])
                                      / len(diagnostics["grad_norm"]))
             row["grad_norm_total"] = diagnostics["grad_norm_total"]
+            if "linear_gap" in diagnostics:
+                # The number that says whether the homotopy is doing anything.
+                # Flat while alpha falls means the network shifted its
+                # pre-activations positive and routed around it.
+                gaps = diagnostics["linear_gap"]
+                row["linear_gap_mean"] = sum(gaps) / len(gaps)
+                row["neg_frac_mean"] = (sum(diagnostics["neg_frac"])
+                                        / len(diagnostics["neg_frac"]))
+                row["dead_frac_mean"] = (sum(diagnostics["dead_frac"])
+                                         / len(diagnostics["dead_frac"]))
             model.train()               # diagnose() evaluates, so put it back
 
         history.append(row)
@@ -262,6 +368,7 @@ def train_once(cfg, train, val, test, device, seed, run=None, verbose=True,
                 epoch % cfg["ckpt_every"] == 0 or epoch == cfg["epochs"] - 1):
             save_checkpoint(model, out_dir, f"seed{seed}_epoch{epoch:03d}",
                             meta={"seed": seed, "epoch": epoch, "s": s_values,
+                                  "alpha": a_values,
                                   "test_acc": row["test_acc"]})
 
         if run is not None:
@@ -280,6 +387,9 @@ def train_once(cfg, train, val, test, device, seed, run=None, verbose=True,
             s_part = (f"s={row['s_mean']:.2f}  "
                       if row["s_mean"] != 1.0 or cfg["s_schedule"] != "const"
                       else "")
+            if a_values is not None:
+                s_part += (f"a={row['alpha_mean']:.2f}  "
+                           f"a0={row['test_acc_at_a0']:.4f}  ")
             print(f"  [seed {seed}] epoch {epoch:03d}  lr={row['lr']:.4f}  "
                   f"{s_part}loss={row['train_loss']:.4f}  {val_part}"
                   f"test={row['test_acc']:.4f}  {row['epoch_s']:.1f}s")
@@ -320,8 +430,14 @@ def train_once(cfg, train, val, test, device, seed, run=None, verbose=True,
         # reconstruct what the schedule was doing when the number was taken.
         "s_schedule": cfg["s_schedule"],
         "s_final": sum(s_values) / len(s_values),
+        "a_schedule": cfg["a_schedule"],
+        "a_scope": cfg["a_scope"],
+        "alpha_final": (sum(a_values) / len(a_values)
+                        if a_values is not None else 0.0),
     }
     gate.close()
+    if a_gate is not None:
+        a_gate.close()
     if verbose:
         print(f"  [seed {seed}] {wall:.0f}s  "
               f"test_final={summary['test_acc_final']:.4f}  "

@@ -35,6 +35,22 @@ What each figure is for:
                   reparametrised away.
   curvature.png   Top Hessian eigenvalues and trace along the trajectory.
   loss_vs_s.png   L_s(theta_t) at fixed theta, swept over s.
+  alpha.png       Per activation site over training: how far each nonlinearity
+                  actually is from linear, against the alpha the schedule asked
+                  for. The activation axis's answer to ratio.png, and the test
+                  for the escape alpha leaves open -- alpha cannot be scaled
+                  away, but BatchNorm can shift beta positive until phi_alpha
+                  is the identity whatever alpha says.
+  loss_vs_alpha.png
+                  L_alpha(theta_t) at fixed theta, swept over alpha. Drawn for
+                  a baseline run too, where it shows the same slice through a
+                  network that never travelled it.
+  branch.png      How much the network changes between consecutive checkpoints,
+                  each read at the alpha it was trained at: parameter distance
+                  against functional distance. A branch theta*(alpha) that is
+                  continuous moves smoothly in both; a jump in the functional
+                  measure is a bifurcation candidate, and is the finding this
+                  axis is most likely to produce.
 
 Every loss here is measured on a fixed subset (--max-images), not the whole
 split: a surface is hundreds of evaluations. The figures say so in their titles,
@@ -51,7 +67,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "src
 from analyze import CYCLE, MUTED, TEST, TRAIN, _theme
 
 FIGURES = ("surface", "plane", "s_alpha", "loss_vs_s", "ratio", "curvature",
-           "barrier")
+           "alpha", "loss_vs_alpha", "branch", "barrier")
 
 # Loss spans orders of magnitude across a surface, so contours are log-spaced:
 # linear levels put every line inside the basin and leave the walls blank.
@@ -73,6 +89,7 @@ def load_invocation(directory):
 
 def prepare(directory, split_name, seed=None):
     """Model, data split and checkpoints for a run. Imports torch lazily."""
+    from cifarbase.activation import ActivationGate
     from cifarbase.data import load_cifar10
     from cifarbase.homotopy import ResidualGate
     from cifarbase.landscape import list_checkpoints, load_checkpoint
@@ -96,13 +113,18 @@ def prepare(directory, split_name, seed=None):
     device = pick_device()
     model = build_model(cfg, device, quiet=True)
     gate = ResidualGate(model)
+    # Global scope regardless of what the run used, and built even for a
+    # baseline: these figures sweep alpha as a coordinate, and a run that never
+    # moved along it is exactly the comparison the sweep is drawn against.
+    a_gate = ActivationGate(model, scope="global")
     train, _, test = load_cifar10(device, cfg)
     split = train if split_name == "train" else test
 
     # The last checkpoint is theta at the end of training: the point every
     # surface is centred on unless something else is asked for.
     load_checkpoint(checkpoints[-1]["path"], model, device)
-    return {"cfg": cfg, "model": model, "gate": gate, "split": split,
+    return {"cfg": cfg, "model": model, "gate": gate, "a_gate": a_gate,
+            "split": split,
             "train": train, "device": device, "checkpoints": checkpoints,
             "seed": seed, "dir": directory, "split_name": split_name,
             "name": os.path.basename(os.path.normpath(os.path.realpath(directory)))}
@@ -117,6 +139,14 @@ def _weights_of(run, checkpoint):
 def _mean_s(checkpoint):
     s = checkpoint.get("s", 1.0)
     return sum(s) / len(s) if isinstance(s, (list, tuple)) else float(s)
+
+
+def _alpha_of(checkpoint):
+    """The alpha a checkpoint was written at. Absent means the ReLU network."""
+    alpha = checkpoint.get("alpha")
+    if alpha is None:
+        return 0.0
+    return sum(alpha) / len(alpha) if isinstance(alpha, (list, tuple)) else float(alpha)
 
 
 def _anchors(checkpoints):
@@ -272,6 +302,95 @@ def compute_ratio(run, args):
                      "grad_norm": [b["grad_norm"] for b in grads["blocks"]]})
     payload = {"kind": "ratio_series", "series": rows,
                "probe_batch": args.probe_batch}
+    record(run["dir"], payload)
+    return payload
+
+
+def compute_alpha(run, args):
+    """Per-site linear_gap, neg_frac and dead_frac at every checkpoint.
+
+    The figure that says whether the activation homotopy did anything. alpha is
+    scale-rigid, so the network cannot absorb it into a weight norm the way it
+    could absorb s into gamma_bn2 -- but it can shift its pre-activations
+    positive and make phi_alpha the identity for free. linear_gap flat while
+    alpha falls is that happening.
+    """
+    from cifarbase.landscape import activation_stats, record
+
+    x, _ = next(run["split"].chunks(args.probe_batch))
+    rows = []
+    for checkpoint in run["checkpoints"]:
+        _weights_of(run, checkpoint)
+        run["a_gate"].set(_alpha_of(checkpoint))
+        stats = activation_stats(run["model"], x)
+        rows.append({"epoch": checkpoint.get("epoch"),
+                     "alpha": _alpha_of(checkpoint), "sites": stats["sites"]})
+    payload = {"kind": "alpha_series", "series": rows,
+               "probe_batch": args.probe_batch}
+    record(run["dir"], payload)
+    return payload
+
+
+def compute_loss_vs_alpha(run, args):
+    """The activation slice at a handful of checkpoints along the trajectory."""
+    from cifarbase.landscape import loss_vs_alpha, record
+
+    alphas = [i / (args.s_grid - 1) for i in range(args.s_grid)]
+    rows = []
+    for checkpoint in _spread(run["checkpoints"], args.probes):
+        _weights_of(run, checkpoint)
+        out = loss_vs_alpha(run["model"], run["split"], alphas, run["a_gate"],
+                            batch_size=args.batch_size,
+                            max_images=args.max_images)
+        out.update(epoch=checkpoint.get("epoch"),
+                   alpha_trained=_alpha_of(checkpoint))
+        rows.append(out)
+        print(f"  loss_vs_alpha: epoch {checkpoint.get('epoch')}, "
+              f"loss {min(out['loss']):.3f}..{max(out['loss']):.3f}", flush=True)
+    payload = {"kind": "loss_vs_alpha_series", "series": rows,
+               "split": run["split_name"], "max_images": args.max_images}
+    record(run["dir"], payload)
+    return payload
+
+
+def compute_branch(run, args):
+    """Consecutive checkpoints compared as the networks they define.
+
+    Each endpoint is read at the alpha it was trained at, because that is the
+    network theta*(alpha_k) *is*; reading both at a common alpha would compare
+    two models neither of which was trained.
+
+    Two numbers per step, and the gap between them is the point: under
+    BatchNorm the loss is invariant to the scale of every conv weight, so a
+    large parameter distance can be a gauge choice rather than a change of
+    function. A branch that is continuous moves smoothly in the functional
+    measure. A jump there, with no matching jump in alpha, is where the branch
+    stops being one -- a bifurcation candidate, and the result this axis is
+    most likely to produce.
+    """
+    from cifarbase.landscape import functional_distance, record
+
+    checkpoints = run["checkpoints"]
+    if len(checkpoints) < 2:
+        raise SystemExit("!! branch needs at least two checkpoints: "
+                         "re-run with ckpt_every > 0")
+    rows = []
+    previous = _weights_of(run, checkpoints[0])
+    for earlier, later in zip(checkpoints, checkpoints[1:], strict=False):
+        current = _weights_of(run, later)
+        out = functional_distance(
+            run["model"], previous, current, run["split"],
+            alpha=(_alpha_of(earlier), _alpha_of(later)), gate=run["a_gate"],
+            batch_size=args.batch_size, max_images=args.max_images)
+        out.update(epoch=later.get("epoch"), epoch_from=earlier.get("epoch"),
+                   alpha_from=_alpha_of(earlier), alpha_to=_alpha_of(later))
+        rows.append(out)
+        print(f"  branch: epochs {earlier.get('epoch')}->{later.get('epoch')}, "
+              f"alpha {out['alpha_from']:.2f}->{out['alpha_to']:.2f}, "
+              f"disagree {out['disagreement']:.3f}", flush=True)
+        previous = current
+    payload = {"kind": "branch_series", "series": rows,
+               "split": run["split_name"], "max_images": args.max_images}
     record(run["dir"], payload)
     return payload
 
@@ -528,6 +647,115 @@ def plot_ratio(record_, run_name, outdir):
     return _save(fig, outdir, "ratio.png")
 
 
+def plot_alpha(record_, run_name, outdir):
+    import matplotlib.pyplot as plt
+    import numpy as np
+
+    series = record_["series"]
+    epochs = [row["epoch"] for row in series]
+    alphas = np.asarray([row["alpha"] for row in series])
+    gaps = np.asarray([[s["linear_gap"] for s in row["sites"]] for row in series])
+    negs = np.asarray([[s["neg_frac"] for s in row["sites"]] for row in series])
+
+    fig, (ax_gap, ax_neg, ax_line) = plt.subplots(
+        1, 3, figsize=(13.5, 4.0),
+        gridspec_kw={"width_ratios": [1, 1, 0.8], "wspace": 0.28})
+
+    for ax, values, title in (
+            (ax_gap, gaps, "linear_gap = rms(phi(h) - h) / rms(h)"),
+            (ax_neg, negs, "fraction of pre-activations below zero")):
+        mesh = ax.pcolormesh(epochs, range(values.shape[1]), values.T,
+                             cmap=CMAP, shading="nearest")
+        fig.colorbar(mesh, ax=ax, pad=0.02, fraction=0.046).ax.tick_params(
+            labelsize=7)
+        ax.set_xlabel("epoch")
+        ax.set_ylabel("activation site (forward order)")
+        ax.set_title(title)
+
+    ax_line.plot(epochs, alphas, color=MUTED, lw=1.6, ls="--", label="alpha")
+    ax_line.plot(epochs, gaps.mean(axis=1), color=TRAIN, lw=1.6,
+                 label="mean linear_gap")
+    ax_line.plot(epochs, negs.mean(axis=1), color=TEST, lw=1.6,
+                 label="mean neg_frac")
+    ax_line.set_xlabel("epoch")
+    ax_line.set_title("asked for, versus delivered")
+    ax_line.legend(fontsize=7)
+
+    # The right-hand panel is the one that answers the question: linear_gap has
+    # to rise as alpha falls. Flat means the network shifted its pre-activations
+    # positive and phi_alpha became the identity regardless of alpha -- the
+    # homotopy was routed around, and no accuracy from this run means anything.
+    fig.suptitle(f"{run_name}  --  how far each activation is from linear, and "
+                 f"whether alpha is doing the work", x=0.5, y=1.03, fontsize=11)
+    return _save(fig, outdir, "alpha.png")
+
+
+def plot_loss_vs_alpha(record_, run_name, outdir):
+    import matplotlib.pyplot as plt
+
+    series = record_["series"]
+    fig, (ax_loss, ax_acc) = plt.subplots(1, 2, figsize=(10.5, 4.0),
+                                          gridspec_kw={"wspace": 0.24})
+    for index, row in enumerate(series):
+        colour = CYCLE[index % len(CYCLE)]
+        label = f"epoch {row['epoch']} (a={row['alpha_trained']:.2f})"
+        ax_loss.plot(row["alphas"], row["loss"], color=colour, lw=1.4, label=label)
+        ax_acc.plot(row["alphas"], row["acc"], color=colour, lw=1.4)
+        ax_loss.axvline(row["alpha_trained"], color=colour, lw=0.7, ls=":",
+                        alpha=0.6)
+    ax_loss.set_xlabel("alpha")
+    ax_loss.set_ylabel(f"{record_['split']} loss")
+    ax_loss.set_title("L_alpha(theta_t)")
+    ax_loss.legend(fontsize=7)
+    ax_acc.set_xlabel("alpha")
+    ax_acc.set_ylabel("accuracy")
+    ax_acc.set_title("accuracy along the same slice")
+    # The dotted line marks where each theta was actually trained. A curve that
+    # is flat around it means the weights are good across the path rather than
+    # only at the alpha they saw.
+    fig.suptitle(f"{run_name}  --  the same weights read along the activation "
+                 f"homotopy  ({record_['max_images']} images)",
+                 x=0.5, y=1.02, fontsize=11)
+    return _save(fig, outdir, "loss_vs_alpha.png")
+
+
+def plot_branch(record_, run_name, outdir):
+    import matplotlib.pyplot as plt
+
+    series = record_["series"]
+    epochs = [row["epoch"] for row in series]
+    fig, (ax_step, ax_scatter) = plt.subplots(1, 2, figsize=(10.5, 4.0),
+                                              gridspec_kw={"wspace": 0.3})
+
+    ax_step.plot(epochs, [row["weight_distance_rel"] for row in series],
+                 color=MUTED, lw=1.5, marker="o", ms=3,
+                 label="||dtheta|| / ||theta||")
+    ax_step.plot(epochs, [row["disagreement"] for row in series],
+                 color=TRAIN, lw=1.5, marker="o", ms=3, label="disagreement")
+    twin = ax_step.twinx()
+    twin.plot(epochs, [row["alpha_to"] for row in series], color=TEST, lw=1.2,
+              ls="--", label="alpha")
+    twin.set_ylabel("alpha")
+    ax_step.set_xlabel("epoch")
+    ax_step.set_title("step size between consecutive checkpoints")
+    ax_step.legend(fontsize=7, loc="upper right")
+
+    ax_scatter.scatter([row["weight_distance_rel"] for row in series],
+                       [row["sym_kl"] for row in series],
+                       c=[row["alpha_to"] for row in series], cmap=CMAP, s=26)
+    ax_scatter.set_xlabel("relative parameter distance")
+    ax_scatter.set_ylabel("symmetric KL")
+    ax_scatter.set_yscale("log")
+    ax_scatter.set_title("parameter motion vs functional motion")
+
+    # A branch that is continuous moves a little in both per step. A step that
+    # is small in parameters and large in function is where theta*(alpha) stops
+    # being a branch.
+    fig.suptitle(f"{run_name}  --  does theta*(alpha) move continuously?",
+                 x=0.5, y=1.02, fontsize=11)
+    return _save(fig, outdir, "branch.png")
+
+
 def plot_curvature(record_, run_name, outdir):
     import matplotlib.pyplot as plt
 
@@ -618,6 +846,9 @@ def draw_all(directory, outdir, run_name):
     drawers = [("surface_2d", plot_surface), ("plane", plot_plane),
                ("surface_s_alpha", plot_s_alpha),
                ("loss_vs_s_series", plot_loss_vs_s), ("ratio_series", plot_ratio),
+               ("alpha_series", plot_alpha),
+               ("loss_vs_alpha_series", plot_loss_vs_alpha),
+               ("branch_series", plot_branch),
                ("curvature_series", plot_curvature)]
     for kind, drawer in drawers:
         if kind in latest:
@@ -685,7 +916,10 @@ def main():
               f"{run['seed']}, epochs "
               f"{run['checkpoints'][0].get('epoch')}.."
               f"{run['checkpoints'][-1].get('epoch')}")
-        steps = [("ratio", compute_ratio), ("loss_vs_s", compute_loss_vs_s),
+        steps = [("ratio", compute_ratio), ("alpha", compute_alpha),
+                 ("loss_vs_s", compute_loss_vs_s),
+                 ("loss_vs_alpha", compute_loss_vs_alpha),
+                 ("branch", compute_branch),
                  ("curvature", compute_curvature), ("surface", compute_surface),
                  ("plane", compute_plane), ("s_alpha", compute_s_alpha)]
         # Cheapest first, so an interrupted sweep still leaves the diagnostics

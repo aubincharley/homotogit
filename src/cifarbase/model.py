@@ -10,6 +10,12 @@ reachable; the ImageNet stem costs several points.
 The blocks are post-activation (He et al. 2015), i.e. the residual add happens
 before the last ReLU. layer-l2-homotopy uses pre-activation blocks instead --
 that is a different model, not a refactor of this one.
+
+Every ReLU is an `Activation` submodule rather than an `F.relu` call. That is
+the one concession this file makes to the activation homotopy, and it is what
+makes the homotopy reachable at all: `ResidualGate` can hook `bn2` because bn2
+is a module, but a functional call has nothing to attach to. The submodules
+carry no state, so the model is otherwise exactly what it was.
 """
 import torch
 import torch.nn.functional as F
@@ -22,8 +28,40 @@ def conv3x3(in_ch, out_ch, stride=1):
     return nn.Conv2d(in_ch, out_ch, 3, stride=stride, padding=1, bias=False)
 
 
+class Activation(nn.Module):
+    """phi_alpha(x) = max(x, alpha*x): a LeakyReLU whose slope is the homotopy.
+
+        alpha = 0  ->  ReLU, the target network
+        alpha = 1  ->  the identity, which makes the whole ResNet affine
+
+    alpha is a plain float, not a parameter and not a buffer, so state_dict()
+    is unchanged by this class existing: a checkpoint written before it does
+    still loads, and a homotopy model and a baseline model share a state_dict.
+    That is the same invariant ResidualGate maintains for s, and it is what
+    makes an accuracy measured here comparable to a baseline number.
+
+    alpha == 0 dispatches to F.relu rather than to F.leaky_relu(x, 0.0). The
+    two agree mathematically, but leaky_relu returns -0.0 on negative inputs
+    and runs a different kernel; the branch is what makes alpha=0 bit-identical
+    to the baseline rather than merely equal to it.
+    """
+
+    def __init__(self, inplace=True):
+        super().__init__()
+        self.alpha = 0.0
+        self.inplace = inplace
+
+    def forward(self, x):
+        if self.alpha == 0.0:
+            return F.relu(x, inplace=self.inplace)
+        return F.leaky_relu(x, self.alpha, inplace=self.inplace)
+
+    def extra_repr(self):
+        return f"alpha={self.alpha}"
+
+
 class BasicBlock(nn.Module):
-    """conv-bn-relu-conv-bn, plus the identity, then relu."""
+    """conv-bn-act-conv-bn, plus the identity, then act."""
 
     expansion = 1
 
@@ -33,6 +71,12 @@ class BasicBlock(nn.Module):
         self.bn1 = nn.BatchNorm2d(out_ch)
         self.conv2 = conv3x3(out_ch, out_ch)
         self.bn2 = nn.BatchNorm2d(out_ch)
+        # act1 is the residual branch's nonlinearity, act2 the main path's.
+        # They are separable on purpose: alpha on act1 alone leaves the block
+        # nonlinear, alpha on act2 alone leaves F nonlinear, and only both at
+        # once make the network affine.
+        self.act1 = Activation()
+        self.act2 = Activation()
 
         # A projection only where the identity cannot be added as-is: a stride
         # change or a channel change. Everywhere else the shortcut is free.
@@ -44,9 +88,9 @@ class BasicBlock(nn.Module):
             self.shortcut = nn.Identity()
 
     def forward(self, x):
-        out = F.relu(self.bn1(self.conv1(x)), inplace=True)
+        out = self.act1(self.bn1(self.conv1(x)))
         out = self.bn2(self.conv2(out))
-        return F.relu(out + self.shortcut(x), inplace=True)
+        return self.act2(out + self.shortcut(x))
 
 
 class ResNet(nn.Module):
@@ -60,6 +104,7 @@ class ResNet(nn.Module):
         # The CIFAR stem: 3x3, stride 1, and no maxpool after it.
         self.conv1 = conv3x3(3, widths[0])
         self.bn1 = nn.BatchNorm2d(widths[0])
+        self.act0 = Activation()
         self.layer1 = self._stage(widths[0], blocks[0], stride=1)
         self.layer2 = self._stage(widths[1], blocks[1], stride=2)
         self.layer3 = self._stage(widths[2], blocks[2], stride=2)
@@ -91,7 +136,7 @@ class ResNet(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        out = F.relu(self.bn1(self.conv1(x)), inplace=True)
+        out = self.act0(self.bn1(self.conv1(x)))
         out = self.layer4(self.layer3(self.layer2(self.layer1(out))))
         out = F.adaptive_avg_pool2d(out, 1).flatten(1)
         return self.fc(out)

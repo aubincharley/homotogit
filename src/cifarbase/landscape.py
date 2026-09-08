@@ -40,6 +40,7 @@ import os
 import torch
 import torch.nn.functional as F
 
+from cifarbase.activation import activation_sites
 from cifarbase.homotopy import residual_blocks
 
 EPS = 1e-10
@@ -454,8 +455,12 @@ def residual_ratio(model, x, gate=None):
             model(x)
             for index, block in enumerate(blocks):
                 h = captured[index]
+                # block.act1, never F.relu: under the activation homotopy the
+                # branch's nonlinearity is a LeakyReLU of slope alpha, and a
+                # hardcoded relu here would measure a network that is not
+                # running while producing an entirely plausible number.
                 branch = block.bn2(block.conv2(
-                    F.relu(block.bn1(block.conv1(h)))))
+                    block.act1(block.bn1(block.conv1(h)))))
                 skip = block.shortcut(h)
                 # rms rather than a norm so blocks with different channel counts
                 # and resolutions are on the same scale.
@@ -505,6 +510,153 @@ def grad_norm_per_block(model, x, y, gate=None):
         model.zero_grad(set_to_none=True)
         model.train(was_training)
     return {"kind": "grad_norm_per_block", "blocks": rows, "total": overall}
+
+
+@torch.no_grad()
+def activation_stats(model, x, which="all"):
+    """Per activation site: how far from linear this nonlinearity actually is.
+
+        linear_gap = rms(phi_alpha(h) - h) / rms(h)
+                   = (1 - alpha) * rms(relu(-h)) / rms(h)
+
+    the exact analogue of residual_ratio, and it answers the same question: is
+    the homotopy deforming the network, or has the network routed around it?
+
+    alpha cannot be scaled away -- phi_alpha is positively homogeneous -- but it
+    can be *shifted* away: BatchNorm need only push beta positive until nearly
+    every pre-activation is positive, and phi_alpha is then the identity for
+    every alpha. linear_gap and neg_frac are how that shows up. A run whose
+    linear_gap stays flat while alpha falls is a baseline wearing a costume,
+    and finding that out after sixty epochs costs a day per arm.
+
+    Also reported:
+      neg_frac    P(h < 0) -- the shift, measured directly
+      dead_frac   channels whose pre-activation never rises above 0 on this
+                  batch; at alpha>0 they still pass gradient, at alpha=0 they
+                  are dead, so this is the cost of arriving at ReLU
+      rms         activation scale, which is where a Kaiming gain calibrated
+                  for ReLU shows up if alpha=1 has thrown it off
+
+    The statistics are taken *inside* the pre-forward hook, not from a stashed
+    tensor. Activation is inplace by default, so a tensor measured after the
+    forward has already had its negatives erased and every one of these numbers
+    would read zero.
+    """
+    sites = activation_sites(model, which)
+    rows = {}
+
+    def capture(index, stage, block):
+        def hook(module, inputs):
+            h = inputs[0]
+            rms = float(h.pow(2).mean().sqrt())
+            negative = float(F.relu(-h).pow(2).mean().sqrt())
+            channels = tuple(d for d in range(h.dim()) if d != 1)
+            rows[index] = {
+                "site": index, "stage": stage, "block": block,
+                "alpha": float(module.alpha), "rms": rms,
+                "neg_frac": float((h < 0).to(h.dtype).mean()),
+                "linear_gap": (1.0 - float(module.alpha)) * negative / (rms + EPS),
+                "dead_frac": float((h.amax(dim=channels) <= 0).to(h.dtype).mean()),
+            }
+        return hook
+
+    handles = [site.register_forward_pre_hook(capture(index, stage, block))
+               for index, (site, stage, block) in enumerate(sites)]
+    was_training = model.training
+    model.eval()
+    try:
+        model(x)
+    finally:
+        for handle in handles:
+            handle.remove()
+        model.train(was_training)
+    return {"kind": "activation_stats",
+            "sites": [rows[index] for index in range(len(sites))]}
+
+
+def loss_vs_alpha(model, split, alphas, gate, batch_size=1000, max_images=5000):
+    """The activation homotopy slice at fixed theta: L_alpha(theta_t), 1 -> 0.
+
+    Cheap, and the first thing to look at. It says whether the weights being
+    held are good only at the alpha they were trained at, or across the whole
+    path -- the difference between following theta*(alpha) and merely riding it.
+
+    No BatchNorm recompute: this is one set of weights read at several alphas,
+    so the stored statistics are the convention that makes the curve internally
+    comparable. The alpha=0 *readout* in train.py is a different measurement
+    and does recompute -- see the note there.
+    """
+    batches = eval_batches(split, batch_size, max_images)
+    losses, accs = [], []
+    was_training = model.training
+    model.eval()
+    previous = gate.get()
+    try:
+        for alpha in alphas:
+            gate.set(float(alpha))
+            loss, acc, _ = _measure(model, batches)
+            losses.append(loss)
+            accs.append(acc)
+    finally:
+        gate.set(previous)
+        model.train(was_training)
+    return {"kind": "loss_vs_alpha", "alphas": list(map(float, alphas)),
+            "loss": losses, "acc": accs}
+
+
+@torch.no_grad()
+def functional_distance(model, w_a, w_b, split, alpha=None, gate=None,
+                        batch_size=1000, max_images=5000):
+    """How differently two weight vectors classify, rather than how far apart
+    they are.
+
+    The continuity measure a solution branch actually needs. Two points on
+    theta*(alpha) can be far apart in parameter space and compute nearly the
+    same function -- under BatchNorm the loss is invariant to the scale of
+    every conv weight, so ||theta_a - theta_b|| is partly measuring a gauge
+    choice. Disagreement and symmetric KL are not.
+
+    Both endpoints are evaluated with their own stored BatchNorm statistics,
+    which is correct here precisely because neither is an interpolated point:
+    they are two trained solutions, each with statistics that describe it.
+
+    `alpha` may be one value for both endpoints, or a pair -- one each. The
+    pair is what a branch measurement wants: theta*(alpha_k) is the network it
+    is at alpha_k, and comparing it to theta*(alpha_{k+1}) read at the *same*
+    alpha would measure a network that was never trained.
+    """
+    if alpha is None or isinstance(alpha, (int, float)):
+        alphas = (alpha, alpha)
+    else:
+        alphas = tuple(alpha)
+        if len(alphas) != 2:
+            raise ValueError(f"alpha must be a scalar or a pair, got {alpha!r}")
+
+    saved = get_weights(model).clone()
+    batches = eval_batches(split, batch_size, max_images)
+    was_training = model.training
+    model.eval()
+    try:
+        outputs = []
+        for weights, value in zip((w_a, w_b), alphas, strict=True):
+            set_weights(model, weights)
+            with (gate.at(value) if (gate is not None and value is not None)
+                  else contextlib.nullcontext()):
+                outputs.append(torch.cat([model(x) for x, _ in batches]))
+    finally:
+        set_weights(model, saved)
+        model.train(was_training)
+
+    log_a = F.log_softmax(outputs[0], dim=1)
+    log_b = F.log_softmax(outputs[1], dim=1)
+    sym_kl = float(((log_a.exp() - log_b.exp()) * (log_a - log_b)).sum(1).mean())
+    disagreement = float((outputs[0].argmax(1) != outputs[1].argmax(1))
+                         .to(log_a.dtype).mean())
+    return {"kind": "functional_distance", "disagreement": disagreement,
+            "sym_kl": sym_kl, "n": int(outputs[0].shape[0]),
+            "alpha": list(alphas),
+            "weight_distance": float((w_a - w_b).norm()),
+            "weight_distance_rel": float((w_a - w_b).norm() / (w_a.norm() + EPS))}
 
 
 # --------------------------------------------------------------------------

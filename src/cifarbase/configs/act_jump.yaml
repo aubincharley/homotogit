@@ -1,0 +1,43 @@
+# Arm C -- the warm-start control, and the one that can kill the hypothesis.
+#
+# alpha is held at 1 for the first 30% of training and then dropped straight to
+# 0, with no path in between. If this matches arm B, then what helps is
+# *starting from a near-linear network*, and the continuous path buys nothing:
+# the finding is an initialisation effect, not a homotopy. B vs C is the
+# experiment; everything else contextualises it.
+#
+# No mechanism of its own: a staircase with two levels holds alpha at a_start
+# and then steps to a_end, and a ramp spanning [0, 0.6] puts the step at 0.3.
+#
+# Everything except the a_* keys is baseline40.yaml verbatim.
+
+seeds: "0,1,2"
+
+batch_size: 128
+val_size: 0
+augment: true
+
+arch: resnet18
+width: 64
+zero_init_residual: true
+
+epochs: 40
+optimizer: sgd
+lr: 0.1
+momentum: 0.9
+nesterov: true
+weight_decay: 5.0e-4
+schedule: cosine
+warmup_epochs: 5
+
+a_schedule: staircase
+a_stairs: 2
+a_start: 1.0
+a_end: 0.0
+a_ramp_start: 0.0
+a_ramp_end: 0.6
+
+ckpt_every: 5
+diag_every: 5
+per_class: true
+

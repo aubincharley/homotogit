@@ -22,8 +22,14 @@ The trap this file exists to avoid:
     reading.
 
     So the loss panel is drawn with the ramp shaded, and it is not the panel to
-    conclude from. `test_acc_at_s1` is: it evaluates every arm as the full
-    ResNet, which is the one model all of them are trying to produce.
+    conclude from. The readout is: it evaluates every arm as the full ResNet,
+    which is the one model all of them are trying to produce.
+
+The readout column depends on which axis the arm drove -- `test_acc_at_s1` for
+the residual homotopy, `test_acc_at_a0` for the activation one -- so `--metric`
+defaults to "comparable", which picks per run. Naming one of them explicitly
+would silently fall back to `test_acc` on the arms that do not have it, and
+during an activation ramp `test_acc` is the accuracy of an affine network.
 """
 import argparse
 import json
@@ -59,11 +65,47 @@ def load(directory):
     return {"dir": directory, "cfg": cfg, "rows": rows, "seeds": seeds,
             "per_epoch": per_epoch,
             "name": os.path.basename(os.path.normpath(os.path.realpath(directory))),
-            "label": f"{cfg['config']} ({cfg['s_schedule']})"}
+            "label": f"{cfg['config']} ({_axis(cfg)})"}
+
+
+def _axis(cfg):
+    """Which homotopy this run drove, for the label and the sort.
+
+    A run is a baseline when neither axis moves. Labelling an activation arm by
+    its s_schedule would print "const" next to a run whose alpha swept 1 -> 0,
+    and the comparison table would then sort it in with the controls.
+    """
+    residual = cfg.get("s_schedule", "const") != "const"
+    activation = cfg.get("a_schedule", "none") not in ("none", "const")
+    parts = []
+    if residual:
+        parts.append(f"s:{cfg['s_schedule']}")
+    if activation:
+        parts.append(f"a:{cfg['a_schedule']}")
+    return "+".join(parts) or "baseline"
+
+
+# The comparable readout, most specific first. An activation arm writes both
+# columns and must be read at alpha=0; a residual arm has only the s=1 one; a
+# baseline has test_acc_at_s1 equal to test_acc, so it lands in the same place
+# either way.
+COMPARABLE = ("test_acc_at_a0", "test_acc_at_s1")
+
+
+def resolve_metric(run, key):
+    """The column to read for this run. "comparable" picks it per arm."""
+    if key != "comparable":
+        return key
+    present = {name for row in run["rows"] for name in row}
+    for candidate in COMPARABLE:
+        if candidate in present:
+            return candidate
+    return "test_acc"
 
 
 def series(run, key):
     """(updates, mean across seeds) for one metric, epochs in order."""
+    key = resolve_metric(run, key)
     by_epoch = {}
     for row in run["rows"]:
         value = row.get(key)
@@ -107,8 +149,8 @@ def updates_to_reach(run, key, target):
 
 def table(runs, targets, key):
     print(f"\nupdates de gradient pour atteindre un niveau de `{key}`")
-    print(f"  (mesure comme le ResNet complet, s=1 -- la seule lecture "
-          f"comparable entre bras)\n")
+    print(f"  (mesure comme le ResNet ReLU complet -- s=1 ou alpha=0 selon "
+          f"l'axe -- la seule lecture comparable entre bras)\n")
     header = f"{'run':<34}" + "".join(f"{t:>12.0%}" for t in targets) + f"{'final':>10}"
     print(header)
     print("-" * len(header))
@@ -155,7 +197,11 @@ def plot(runs, outdir, key):
             steps, values = series(run, metric)
             if steps:
                 ax.plot(steps, values, color=colour, lw=1.7, label=run["label"])
-        steps, values = series(run, "s_mean")
+        # Whichever axis this arm drove. A flat s on an activation run would
+        # say the schedule did nothing, which is true of s and false of the run.
+        schedule_key = ("alpha_mean" if _axis(run["cfg"]).startswith("a:")
+                        else "s_mean")
+        steps, values = series(run, schedule_key)
         ax_s.plot(steps, values, color=colour, lw=1.7, label=run["label"])
 
         # Where the arm stops being a different model from the baseline.
@@ -166,19 +212,19 @@ def plot(runs, outdir, key):
     # Titles stay short: two panels side by side at this width run their
     # titles into each other, and the long-form warning belongs in the module
     # docstring, not overprinted on the figure.
-    ax_cmp.set_title(f"{key}  --  read as the full ResNet  (comparable)")
-    ax_cmp.set_ylabel("accuracy at s=1")
+    ax_cmp.set_title("read as the full ReLU ResNet  (the comparable panel)")
+    ax_cmp.set_ylabel("accuracy at s=1 / alpha=0")
     ax_cmp.legend(loc="lower right", fontsize=7)
 
     ax_loss.set_title("train loss  --  NOT comparable while s < 1")
     ax_loss.set_ylabel("loss")
     ax_loss.set_yscale("log")
 
-    ax_raw.set_title("test accuracy at each arm's own s")
+    ax_raw.set_title("test accuracy at each arm's own s / alpha")
     ax_raw.set_ylabel("accuracy")
 
-    ax_s.set_title("s  (dotted line marks where it reaches 1)")
-    ax_s.set_ylabel("s")
+    ax_s.set_title("the homotopy parameter  (s rising, or alpha falling)")
+    ax_s.set_ylabel("s  /  alpha")
     ax_s.set_ylim(-0.05, 1.05)
 
     for ax in axes.flat:
@@ -200,8 +246,10 @@ def main():
         description="Overlay finished runs against gradient updates.")
     parser.add_argument("folders", nargs="+",
                         help="run directories, or one folder holding them")
-    parser.add_argument("--metric", default="test_acc_at_s1",
-                        help="the comparable curve (default: test_acc_at_s1)")
+    parser.add_argument("--metric", default="comparable",
+                        help="the comparable curve. The default picks per arm: "
+                             "test_acc_at_a0 for an activation run, "
+                             "test_acc_at_s1 otherwise.")
     parser.add_argument("--target", type=float, action="append", default=None,
                         help="accuracy level for the table; repeatable")
     parser.add_argument("--out", default="runs/figures",
@@ -227,7 +275,7 @@ def main():
         raise SystemExit("!! no finished run found: need results.json and "
                          "history.jsonl, which are only written when a run ends")
     # Baseline arms first, so the relative table is expressed against one.
-    found.sort(key=lambda r: (r["cfg"]["s_schedule"] != "const", r["name"]))
+    found.sort(key=lambda r: (_axis(r["cfg"]) != "baseline", r["name"]))
 
     print(f"{len(found)} run(s):")
     for run in found:

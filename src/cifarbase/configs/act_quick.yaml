@@ -1,0 +1,42 @@
+# A plumbing check for the activation homotopy, not an experiment.
+#
+# Does alpha actually move, does it reach exactly 0 before the end, does
+# linear_gap fall with it, does test_acc_at_a0 get written, do the checkpoints
+# land on disk? A narrow net on 4k images answers all of that on a CPU in a few
+# minutes and proves nothing about accuracy.
+#
+# zero_init_residual is off so act1 sees a branch that does something: at the
+# default, gamma_bn2 starts at 0 and F == 0, and alpha on the residual branch
+# would be untestable for the first epochs.
+#
+# Pair it with CIFAR_ALLOW_CPU=1 (see `make act-quick`).
+
+seeds: "0"
+quick: false          # this file IS the small config
+
+batch_size: 128
+eval_batch_size: 500
+train_subset: 4000
+val_size: 0
+augment: true
+
+arch: resnet18
+width: 16
+zero_init_residual: false
+
+epochs: 20
+lr: 0.05
+warmup_epochs: 0
+schedule: cosine
+
+a_schedule: linear
+a_start: 1.0
+a_end: 0.0
+a_ramp_start: 0.0
+a_ramp_end: 0.5
+a_bn_batches: 8       # 4k images, so a full 32 batches would be a third of the
+                      # training set on every diagnostic epoch
+
+ckpt_every: 1
+diag_every: 1
+per_class: false

@@ -116,6 +116,43 @@ means the code never branches on whether logging is available. The key rides in
 the `aubincharley/wandb-secret` dataset as `wandb_key.txt` and is never in the
 source.
 
+## The two homotopies
+
+Both deform the network along a scalar and drive it during training. They are
+independent axes, they share the schedule machinery, and each is off by default
+-- a config that sets neither is byte-identical to the plain baseline.
+
+```
+residual     h_out = shortcut(x) + s * F(x)        s : 0 -> 1     s_* keys
+activation   phi_alpha(x) = max(x, alpha * x)      alpha : 1 -> 0  a_* keys
+```
+
+`s = 1` and `alpha = 0` are both exactly the baseline ResNet. `s = 0` leaves a
+shortcut-only network; `alpha = 1` leaves an **affine** one, whose optimum on
+CIFAR-10 is a linear classifier at around 40%. That asymmetry matters when
+reading a run: during the ramp, `test_acc` is the accuracy of whatever network
+is currently running, and `test_acc_at_a0` is the ReLU ResNet those weights
+define. Only the second is comparable to a baseline number.
+
+```sh
+make act-quick                  # CPU plumbing check: does alpha move at all
+make act ACT=act_linear         # one arm of the pilot
+python explore.py runs/latest --only alpha,loss_vs_alpha,branch
+```
+
+The arms are `baseline40` (the matched control), `act_linear`, `act_jump`,
+`act_staircase`, `act_stagewise` and `act_half`; `ACTIVATION_PROTOCOL.md` says
+what each one is for and what would count as a result. **`act_jump` is the arm
+that can kill the hypothesis**: it holds alpha at 1 and then drops it to 0 with
+no path in between, so if it matches `act_linear`, the near-linear start was an
+initialisation and the continuous path bought nothing.
+
+`alpha.png` is the figure to check first on any activation run. `linear_gap`
+must rise as alpha falls. If it stays flat, BatchNorm shifted the
+pre-activations positive, `phi_alpha` became the identity whatever alpha said,
+and the run is a baseline wearing a costume -- no accuracy from it means
+anything.
+
 ## Configuration
 
 Four layers. Later wins:
@@ -208,7 +245,10 @@ src/cifarbase/
   config.py                 the four-layer resolution, and CONFIG itself
   configs/*.yaml            recipes; bundled to Kaggle because they are under src/
   data.py                   CIFAR-10, resident on the GPU as uint8
-  model.py                  BasicBlock, ResNet, resnet18/34
+  model.py                  Activation, BasicBlock, ResNet, resnet18/34
+  homotopy.py               ResidualGate, the s/alpha schedules, continuation phases
+  activation.py             ActivationGate, the sites and the scopes that group them
+  landscape.py              loss surfaces, curvature, diagnostics, checkpoints
   train.py                  build_optimizer, lr_at, train_once
   metrics.py                evaluate
   report.py                 summarise, print_report, run_dir, dump, dump_history

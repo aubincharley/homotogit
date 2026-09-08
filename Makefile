@@ -1,11 +1,12 @@
 .PHONY: build run quick baseline push status pull clean runs plot test \
-        homotopy-quick homotopy explore
+        homotopy-quick homotopy act-quick act explore
 
 KERNEL = aubincharley/cifar10-resnet
 # Override if the venv is not activated: make quick PYTHON=.venv/bin/python
 PYTHON ?= python3
 DIR ?= runs/latest
 CONFIG ?= homotopy_linear
+ACT ?= act_linear
 
 build:          ## bundle src/ + main.py into dist/main.py
 	$(PYTHON) build.py
@@ -27,6 +28,12 @@ homotopy-quick: ## CPU smoke test of the homotopy path: does s move, do ckpts la
 
 homotopy:       ## one arm of the pilot, e.g. make homotopy CONFIG=homotopy_linear
 	$(PYTHON) main.py --config $(CONFIG)
+
+act-quick:      ## CPU smoke test of the activation homotopy: does alpha move
+	CIFAR_ALLOW_CPU=1 $(PYTHON) main.py --config act_quick --no-wandb
+
+act:            ## one arm of the activation pilot, e.g. make act ACT=act_jump
+	$(PYTHON) main.py --config $(ACT)
 
 explore:        ## loss-landscape figures for a run trained with ckpt_every > 0
 	$(PYTHON) explore.py $(DIR)

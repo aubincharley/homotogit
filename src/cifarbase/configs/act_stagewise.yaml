@@ -1,0 +1,42 @@
+# Arm E -- depth continuation on the nonlinearity: stages become nonlinear one
+# after another, stem first. Midway through the ramp the network is a nonlinear
+# early feature extractor followed by an affine map, and the nonlinear depth
+# grows from there. The parameter count never changes.
+#
+# a_scope: stage bundles the 17 activation sites into 5 groups (the stem and
+# the four stages); sequential gives each group its own window of the ramp. Set
+# a_reverse: true for the top-down version, where the head becomes nonlinear
+# first.
+#
+# Everything except the a_* keys is baseline40.yaml verbatim.
+
+seeds: "0,1,2"
+
+batch_size: 128
+val_size: 0
+augment: true
+
+arch: resnet18
+width: 64
+zero_init_residual: true
+
+epochs: 40
+optimizer: sgd
+lr: 0.1
+momentum: 0.9
+nesterov: true
+weight_decay: 5.0e-4
+schedule: cosine
+warmup_epochs: 5
+
+a_schedule: sequential
+a_scope: stage
+a_start: 1.0
+a_end: 0.0
+a_ramp_start: 0.0
+a_ramp_end: 0.5
+
+ckpt_every: 5
+diag_every: 5
+per_class: true
+

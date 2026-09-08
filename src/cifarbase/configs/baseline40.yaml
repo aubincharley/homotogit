@@ -1,0 +1,31 @@
+# Arm A-40 -- the reference, at the activation pilot's budget.
+# baseline.yaml is 100 epochs and baseline60.yaml is 60; every act_* arm here
+# runs 40. Comparing a 40-epoch homotopy against a 60-epoch baseline would
+# compare budgets, not homotopies, so this axis needs its own control.
+#
+# Everything except the a_* keys is baseline.yaml verbatim. It has to be: the
+# comparison is worthless if anything else moved.
+
+seeds: "0,1,2"
+
+batch_size: 128
+val_size: 0
+augment: true
+
+arch: resnet18
+width: 64
+zero_init_residual: true
+
+epochs: 40
+optimizer: sgd
+lr: 0.1
+momentum: 0.9
+nesterov: true
+weight_decay: 5.0e-4
+schedule: cosine
+warmup_epochs: 5
+
+ckpt_every: 5
+diag_every: 5
+per_class: true
+

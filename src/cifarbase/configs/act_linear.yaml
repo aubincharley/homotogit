@@ -1,0 +1,42 @@
+# Arm B -- the global activation homotopy, the thing this axis is about.
+# phi_alpha(x) = max(x, alpha*x) with alpha falling 1 -> 0 linearly over the
+# first half of training; the second half trains the actual ReLU ResNet, which
+# is what makes the final accuracy comparable to baseline40.yaml at all.
+#
+# At alpha = 1 the network is affine. That is a far stronger starting
+# degeneracy than s = 0 was on the residual axis -- s = 0 left a real shallow
+# ConvNet, alpha = 1 leaves a linear classifier whose optimum on CIFAR-10 is
+# around 40%. Read test_acc_at_a0 in history.csv, not test_acc, for the first
+# half of this run: only the former is a number about a ResNet.
+#
+# Everything except the a_* keys is baseline40.yaml verbatim.
+
+seeds: "0,1,2"
+
+batch_size: 128
+val_size: 0
+augment: true
+
+arch: resnet18
+width: 64
+zero_init_residual: true
+
+epochs: 40
+optimizer: sgd
+lr: 0.1
+momentum: 0.9
+nesterov: true
+weight_decay: 5.0e-4
+schedule: cosine
+warmup_epochs: 5
+
+a_schedule: linear
+a_start: 1.0
+a_end: 0.0
+a_ramp_start: 0.0
+a_ramp_end: 0.5
+
+ckpt_every: 5
+diag_every: 5
+per_class: true
+
