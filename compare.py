@@ -68,6 +68,30 @@ def load(directory):
             "label": f"{cfg['config']} ({_axis(cfg)})"}
 
 
+def homotopy_distance(run):
+    """(updates, distance from the target ResNet) for one arm.
+
+    The two axes run in opposite directions -- s rises 0 -> 1, alpha falls
+    1 -> 0 -- and both reach the plain ReLU ResNet at their own end. Plotting
+    each in its own coordinate put a baseline at 1.0 and a finished activation
+    arm at 0.0 while they were the same network, which is unreadable. This is
+    the one quantity that means the same thing for every arm:
+
+        alpha            on the activation axis
+        1 - s            on the residual axis
+        0                for a baseline, which is already the target
+
+    Zero always means "this is the network every arm is trying to produce".
+    """
+    steps, values = series(run, "alpha_mean")
+    if steps:
+        return steps, values
+    steps, values = series(run, "s_mean")
+    if steps:
+        return steps, [1.0 - v for v in values]
+    return [], []
+
+
 def _axis(cfg):
     """Which homotopy this run drove, for the label and the sort.
 
@@ -125,6 +149,39 @@ def series(run, key):
     updates = [(e + 1) * run["per_epoch"] for e in epochs]
     means = [sum(by_epoch[e]) / len(by_epoch[e]) for e in epochs]
     return updates, means
+
+
+def series_spread(run, key):
+    """(updates, mean, std, [per-seed series]) for one metric.
+
+    series() collapses the seeds into a mean, which is what the table needs and
+    what hides the thing a reader most needs to judge: whether a gap between
+    two arms is larger than the gap between two seeds of the same arm. This
+    keeps the individual runs so the figure can show both.
+
+    The std is over seeds at each epoch, with 1/(n-1). At n=3 that is a coarse
+    estimate -- it is drawn as a band to be read as "roughly this wide", not as
+    a confidence interval.
+    """
+    key = resolve_metric(run, key)
+    by_epoch = {}
+    for row in run["rows"]:
+        value = row.get(key)
+        if value is not None:
+            by_epoch.setdefault(row["epoch"], {})[row["seed"]] = value
+    epochs = sorted(by_epoch)
+    if not epochs:
+        return [], [], [], {}
+    updates = [(e + 1) * run["per_epoch"] for e in epochs]
+    means, stds = [], []
+    for e in epochs:
+        values = list(by_epoch[e].values())
+        m = sum(values) / len(values)
+        means.append(m)
+        stds.append((sum((v - m) ** 2 for v in values) / (len(values) - 1)) ** 0.5
+                    if len(values) > 1 else 0.0)
+    per_seed = {seed: [by_epoch[e].get(seed) for e in epochs] for seed in run["seeds"]}
+    return updates, means, stds, per_seed
 
 
 def ramp_end_update(run):
@@ -192,7 +249,7 @@ def table(runs, targets, key):
             print(f"{run['label']:<34}" + "".join(cells))
 
 
-def plot(runs, outdir, key):
+def plot(runs, outdir, key, spread=True):
     import matplotlib.pyplot as plt
 
     fig, axes = plt.subplots(2, 3, figsize=(16.5, 7.6))
@@ -205,9 +262,21 @@ def plot(runs, outdir, key):
 
         for ax, metric in ((ax_cmp, key), (ax_tloss, "comparable_loss"),
                            (ax_loss, "train_loss"), (ax_raw, "test_acc")):
-            steps, values = series(run, metric)
-            if steps:
-                ax.plot(steps, values, color=colour, lw=1.7, label=run["label"])
+            steps, values, stds, per_seed = series_spread(run, metric)
+            if not steps:
+                continue
+            ax.plot(steps, values, color=colour, lw=1.7, label=run["label"])
+            if spread and len(per_seed) > 1:
+                # Both, and deliberately: the band says how wide the seed
+                # spread is, the thin lines say whether it is three runs
+                # scattered or one outlier -- a band alone cannot distinguish
+                # those, and at n=3 the difference decides what the gap means.
+                ax.fill_between(steps, [m - s for m, s in zip(values, stds)],
+                                [m + s for m, s in zip(values, stds)],
+                                color=colour, alpha=0.15, linewidth=0)
+                for run_values in per_seed.values():
+                    if all(v is not None for v in run_values):
+                        ax.plot(steps, run_values, color=colour, lw=0.6, alpha=0.55)
         loss_keys.add(resolve_metric(run, "comparable_loss"))
 
         # Overfitting, on the axis the arms are actually comparable on.
@@ -216,12 +285,9 @@ def plot(runs, outdir, key):
         if steps:
             ax_gap.plot(steps, [a - b for a, b in zip(train_acc, test_acc)],
                         color=colour, lw=1.7, label=run["label"])
-        # Whichever axis this arm drove. A flat s on an activation run would
-        # say the schedule did nothing, which is true of s and false of the run.
-        schedule_key = ("alpha_mean" if _axis(run["cfg"]).startswith("a:")
-                        else "s_mean")
-        steps, values = series(run, schedule_key)
-        ax_s.plot(steps, values, color=colour, lw=1.7, label=run["label"])
+        steps, values = homotopy_distance(run)
+        if steps:
+            ax_s.plot(steps, values, color=colour, lw=1.7, label=run["label"])
 
         # Where the arm stops being a different model from the baseline.
         if end is not None:
@@ -255,16 +321,19 @@ def plot(runs, outdir, key):
     ax_raw.set_title("test accuracy at each arm's own s / alpha")
     ax_raw.set_ylabel("accuracy")
 
-    ax_s.set_title("the homotopy parameter  (s rising, or alpha falling)")
-    ax_s.set_ylabel("s  /  alpha")
+    ax_s.set_title("distance from the target ResNet  (0 = the plain ReLU net)")
+    ax_s.set_ylabel("alpha,  or 1 - s")
     ax_s.set_ylim(-0.05, 1.05)
 
     for ax in axes.flat:
         ax.set_xlabel("gradient updates")
         ax.grid(alpha=0.15, linewidth=0.5)
+    seeded = [r for r in runs if len(r["seeds"]) > 1]
+    note = (f"  --  thick line is the mean over seeds, band is +-1 std, thin "
+            f"lines are the individual runs" if spread and seeded else "")
     fig.suptitle("continuation vs baseline, against gradient updates  --  "
                  "each arm minimises its own objective, so read the top-left "
-                 "panel first", x=0.5, y=1.02, fontsize=10)
+                 f"panel first{note}", x=0.5, y=1.02, fontsize=10)
 
     os.makedirs(outdir, exist_ok=True)
     path = os.path.join(outdir, "compare_updates.png")
@@ -286,6 +355,10 @@ def main():
                         help="accuracy level for the table; repeatable")
     parser.add_argument("--out", default="runs/figures",
                         help="where compare_updates.png goes")
+    parser.add_argument("--spread", action=argparse.BooleanOptionalAction,
+                        default=True,
+                        help="draw the per-seed runs and a +-1 std band behind "
+                             "the mean (default: on when a run has >1 seed)")
     args = parser.parse_args()
 
     found = []
@@ -320,7 +393,7 @@ def main():
     import matplotlib
     matplotlib.use("Agg")
     _theme(matplotlib)
-    print(f"\nwrote {plot(found, args.out, args.metric)}")
+    print(f"\nwrote {plot(found, args.out, args.metric, args.spread)}")
 
 
 if __name__ == "__main__":

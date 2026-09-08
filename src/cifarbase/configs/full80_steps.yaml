@@ -1,0 +1,57 @@
+# FULL protocol -- the whole 50k training set, 80 epochs, three seeds.
+#
+# The fast sweep ran on 10k images, where the baseline memorises outright
+# (train 99.9%, generalisation gap +16.2%). Everything that slows learning
+# helps the test loss there, so the -17% the staircase won could be nothing
+# more than "training less regularises". At 50k the baseline gap is +5.9%,
+# so that explanation largely goes away -- and this is the run that separates
+# the two readings.
+#
+# What it is measured against, from exp3_3seeds (10k, 50 epochs, 3 seeds):
+#   test acc    baseline 0.8374 +- 0.0014   staircase 0.8278 +- 0.0024  (-0.96%, 3.4 sigma)
+#   test loss   baseline 0.7080 +- 0.0115   staircase 0.5886 +- 0.0074  (-17%,   8.7 sigma)
+#
+# No anchor. The lambda sweep put it to rest: lambda over two orders of
+# magnitude moved the accuracy by 0.38%, non-monotonically.
+#
+# The discrete continuation, at the same proportions as fast_steps_l0: ten
+# plateaus over the first 80% of the run, then the tail at alpha=0. At eighty
+# epochs that is 6.4 epochs a plateau and about 22 epochs on the real ReLU
+# problem -- the same 28% of the budget the fast protocol spent there.
+#
+# The plateaus are not whole epochs, and that is fine: the schedule is read
+# from the step counter, not the epoch, so the boundaries are exact in the
+# coordinate that drives them. a_lr_restart gives each plateau its own warmup
+# and decay so theta can settle before alpha steps.
+
+seeds: "0,1,2"
+
+batch_size: 128
+eval_batch_size: 1000
+val_size: 0
+augment: true
+
+arch: resnet18
+width: 64
+zero_init_residual: true
+
+epochs: 80
+optimizer: sgd
+lr: 0.1
+momentum: 0.9
+nesterov: true
+weight_decay: 5.0e-4
+schedule: cosine
+warmup_epochs: 5
+
+ckpt_every: 20
+diag_every: 5
+per_class: true
+
+a_schedule: staircase
+a_stairs: 10
+a_lr_restart: true
+a_start: 1.0
+a_end: 0.0
+a_ramp_start: 0.0
+a_ramp_end: 0.8
