@@ -102,7 +102,7 @@ def _restore_batchnorm(saved):
 
 
 def readout_at_alpha_zero(model, gate, train_split, test_split, cfg):
-    """Test accuracy of the ReLU network these weights define.
+    """Test accuracy and loss of the ReLU network these weights define.
 
     The activation homotopy's answer to test_acc_at_s1, and unlike that one it
     cannot skip recompute_bn. Dropping alpha to 0 removes the entire negative
@@ -124,7 +124,13 @@ def readout_at_alpha_zero(model, gate, train_split, test_split, cfg):
         with gate.at(0.0):
             if cfg["a_bn_batches"]:
                 recompute_bn(model, train_split, n_batches=cfg["a_bn_batches"])
-            return evaluate(model, test_split, cfg["eval_batch_size"])["acc"]
+            # Both numbers, from the one forward pass that already happened.
+            # Without the loss, the only test loss on record is the one at the
+            # arm's current alpha -- which during the ramp belongs to a network
+            # that is not the ResNet, and is no more comparable across arms
+            # than train_loss is.
+            metrics = evaluate(model, test_split, cfg["eval_batch_size"])
+            return {"acc": metrics["acc"], "loss": metrics["loss"]}
     finally:
         _restore_batchnorm(saved)
         model.train(was_training)
@@ -333,9 +339,11 @@ def train_once(cfg, train, val, test, device, seed, run=None, verbose=True,
         if a_values is not None:
             if max(a_values) == 0.0:
                 row["test_acc_at_a0"] = row["test_acc"]
+                row["test_loss_at_a0"] = row["test_loss"]
             else:
-                row["test_acc_at_a0"] = readout_at_alpha_zero(
-                    model, a_gate, train, test, cfg)
+                readout = readout_at_alpha_zero(model, a_gate, train, test, cfg)
+                row["test_acc_at_a0"] = readout["acc"]
+                row["test_loss_at_a0"] = readout["loss"]
 
         if cfg["diag_every"] and (epoch % cfg["diag_every"] == 0
                                   or epoch == cfg["epochs"] - 1):

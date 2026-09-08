@@ -91,16 +91,26 @@ def _axis(cfg):
 # either way.
 COMPARABLE = ("test_acc_at_a0", "test_acc_at_s1")
 
+# The same idea for the loss. test_loss is measured at the arm's *current*
+# alpha, so during a ramp it belongs to a network that is not the ResNet and is
+# no more comparable across arms than train_loss is. test_loss_at_a0 is the
+# honest column; runs made before it existed fall back to test_loss, and the
+# panel says which one it drew.
+COMPARABLE_LOSS = ("test_loss_at_a0", "test_loss_at_s1", "test_loss")
+
+_FALLBACKS = {"comparable": COMPARABLE, "comparable_loss": COMPARABLE_LOSS}
+
 
 def resolve_metric(run, key):
     """The column to read for this run. "comparable" picks it per arm."""
-    if key != "comparable":
+    candidates = _FALLBACKS.get(key)
+    if candidates is None:
         return key
     present = {name for row in run["rows"] for name in row}
-    for candidate in COMPARABLE:
+    for candidate in candidates:
         if candidate in present:
             return candidate
-    return "test_acc"
+    return candidates[-1]
 
 
 def series(run, key):
@@ -185,18 +195,27 @@ def table(runs, targets, key):
 def plot(runs, outdir, key):
     import matplotlib.pyplot as plt
 
-    fig, axes = plt.subplots(2, 2, figsize=(12.5, 7.6))
-    (ax_cmp, ax_loss), (ax_raw, ax_s) = axes
+    fig, axes = plt.subplots(2, 3, figsize=(16.5, 7.6))
+    (ax_cmp, ax_tloss, ax_loss), (ax_raw, ax_gap, ax_s) = axes
+    loss_keys = set()
 
     for index, run in enumerate(runs):
         colour = CYCLE[index % len(CYCLE)]
         end = ramp_end_update(run)
 
-        for ax, metric in ((ax_cmp, key), (ax_loss, "train_loss"),
-                           (ax_raw, "test_acc")):
+        for ax, metric in ((ax_cmp, key), (ax_tloss, "comparable_loss"),
+                           (ax_loss, "train_loss"), (ax_raw, "test_acc")):
             steps, values = series(run, metric)
             if steps:
                 ax.plot(steps, values, color=colour, lw=1.7, label=run["label"])
+        loss_keys.add(resolve_metric(run, "comparable_loss"))
+
+        # Overfitting, on the axis the arms are actually comparable on.
+        steps, train_acc = series(run, "train_acc_batchwise")
+        _, test_acc = series(run, "test_acc")
+        if steps:
+            ax_gap.plot(steps, [a - b for a, b in zip(train_acc, test_acc)],
+                        color=colour, lw=1.7, label=run["label"])
         # Whichever axis this arm drove. A flat s on an activation run would
         # say the schedule did nothing, which is true of s and false of the run.
         schedule_key = ("alpha_mean" if _axis(run["cfg"]).startswith("a:")
@@ -216,6 +235,19 @@ def plot(runs, outdir, key):
     ax_cmp.set_ylabel("accuracy at s=1 / alpha=0")
     ax_cmp.legend(loc="lower right", fontsize=7)
 
+    # Says which column it actually drew: on a run predating test_loss_at_a0
+    # there is only the at-its-own-alpha loss, and the panel must not claim to
+    # be comparable when it is not.
+    stale = "test_loss" in loss_keys
+    ax_tloss.set_title("test loss  --  " + ("at each arm's own alpha (NOT comparable)"
+                                            if stale else "read as the full ReLU ResNet"))
+    ax_tloss.set_ylabel("test loss")
+    ax_tloss.set_yscale("log")
+    ax_tloss.legend(loc="lower left", fontsize=7)
+
+    ax_gap.set_title("generalisation gap  --  train acc minus test acc")
+    ax_gap.set_ylabel("gap")
+
     ax_loss.set_title("train loss  --  NOT comparable while s < 1")
     ax_loss.set_ylabel("loss")
     ax_loss.set_yscale("log")
@@ -231,8 +263,8 @@ def plot(runs, outdir, key):
         ax.set_xlabel("gradient updates")
         ax.grid(alpha=0.15, linewidth=0.5)
     fig.suptitle("continuation vs baseline, against gradient updates  --  "
-                 "each arm minimises its own L_s, so only the top-left panel "
-                 "compares like with like", x=0.5, y=1.02, fontsize=10)
+                 "each arm minimises its own objective, so read the top-left "
+                 "panel first", x=0.5, y=1.02, fontsize=10)
 
     os.makedirs(outdir, exist_ok=True)
     path = os.path.join(outdir, "compare_updates.png")

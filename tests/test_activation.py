@@ -680,3 +680,20 @@ def test_functional_distance_compares_each_endpoint_at_its_own_alpha():
     assert across["sym_kl"] > 1e-4
     assert across["weight_distance"] == 0.0     # the weights never moved
     assert gate.get() == [0.0]
+
+
+def test_the_readout_reports_loss_as_well_as_accuracy():
+    """test_acc_at_a0 has no loss counterpart, so the only test loss on record
+    is measured at the arm's current alpha -- which during the ramp is the loss
+    of a network that is not the ResNet, and is no more comparable across arms
+    than train_loss is. Both numbers come from the same forward pass, so there
+    is no reason to throw one away."""
+    model, split = make_model(), make_split()
+    model.train()
+    gate = ActivationGate(model)
+    gate.set(0.8)
+    out = readout_at_alpha_zero(model, gate, split, split,
+                                {"eval_batch_size": 32, "a_bn_batches": 2})
+    assert set(out) == {"acc", "loss"}
+    assert 0.0 <= out["acc"] <= 1.0
+    assert out["loss"] > 0.0
