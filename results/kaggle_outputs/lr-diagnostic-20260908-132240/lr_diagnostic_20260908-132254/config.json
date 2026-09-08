@@ -1,0 +1,31 @@
+{
+  "name": "lr_diagnostic",
+  "subset_seed": 0,
+  "per_class": 500,
+  "n_subset": 5000,
+  "seeds": [
+    0
+  ],
+  "probe_seed": 0,
+  "train_probe": 200,
+  "updates": 600,
+  "warmup": 30,
+  "cont_end": 300,
+  "effective_batch": 128,
+  "microbatch": 32,
+  "eval_every": 50,
+  "runs": [
+    {
+      "label": "plain_lr0p02",
+      "kind": "none",
+      "seed": 0,
+      "lr": 0.02
+    },
+    {
+      "label": "plain_lr0p005",
+      "kind": "none",
+      "seed": 0,
+      "lr": 0.005
+    }
+  ]
+}

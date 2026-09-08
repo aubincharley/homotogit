@@ -29,8 +29,12 @@ Discrete implementation and its conventions
 * **Truncation renormalization**: taps are ``exp(-d^2 / (2 sigma^2))`` for
   ``d = -radius..radius``, divided by their sum.  The discrete kernel therefore
   sums to exactly 1 (up to float rounding) and preserves constant images.
-* **Reflection padding** (``torch.nn.functional.pad(mode="reflect")``) by
-  ``radius`` on each side, so the output has the input's spatial size.
+* **Reflection padding** by ``radius`` on each side, so the output has the
+  input's spatial size.  ``torch.nn.functional.pad(mode="reflect")`` is used when
+  it applies; it requires ``pad < axis length``, so for small feature maps (e.g.
+  a radius-4 kernel on a 4x4 map) an explicit whole-sample reflection gather is
+  used instead -- see :func:`reflected_indices`.  Both give identical values
+  where both are defined, and both are differentiable.
   Reflection is exact for constant images and introduces the usual mirror-symmetry
   bias near borders: structure within ``radius`` pixels of an edge is smoothed
   against its own mirror image rather than against unseen content.  With
@@ -80,6 +84,44 @@ def gaussian_kernel_1d(sigma: float, radius: int, dtype=torch.float32, device=No
         k = torch.exp(-(d ** 2) / (2.0 * float(sigma) ** 2))
     k = k / k.sum()
     return k.to(dtype)
+
+
+def reflected_indices(n: int, pad: int, device=None) -> torch.Tensor:
+    """Whole-sample reflection indices for ``i = -pad .. n+pad-1``.
+
+    With ``P = 2(n-1)`` and ``m = i mod P``, the reflected index is
+    ``r_n(i) = min(m, P - m)``: reflection *without* repeating the boundary
+    sample.  For ``n = 4, pad = 4`` this yields
+    ``[2, 3, 2, 1, 0, 1, 2, 3, 2, 1, 0, 1]``.
+
+    PyTorch's native ``mode="reflect"`` requires ``pad < n``; this gather has no
+    such limit, so a radius-4 kernel remains well defined on a 4x4 feature map.
+    """
+    if n < 1:
+        raise ValueError("axis length must be >= 1, got %d" % n)
+    i = torch.arange(-pad, n + pad, device=device)
+    if n == 1:
+        return torch.zeros_like(i)
+    period = 2 * (n - 1)
+    m = torch.remainder(i, period)
+    return torch.minimum(m, period - m)
+
+
+def reflect_pad_axis(x: torch.Tensor, pad: int, dim: int) -> torch.Tensor:
+    """Reflection-pad one spatial axis by ``pad`` on both sides.
+
+    Uses PyTorch's native reflect padding when it is supported (``pad < n``) and
+    an explicit ``index_select`` gather otherwise.  Both paths are differentiable
+    and produce the same values wherever both are available.
+    """
+    if pad == 0:
+        return x
+    n = x.shape[dim]
+    if pad < n:
+        pad4 = (pad, pad, 0, 0) if dim in (-1, x.dim() - 1) else (0, 0, pad, pad)
+        return F.pad(x, pad4, mode="reflect")
+    idx = reflected_indices(n, pad, device=x.device)
+    return torch.index_select(x, dim, idx)
 
 
 class GaussianSmoothing(ImageTransform):
@@ -173,18 +215,17 @@ class GaussianSmoothing(ImageTransform):
             return TransformResult(x, info)
 
         n, c, h, w = x.shape
-        if self.radius >= h or self.radius >= w:
-            raise ValueError(
-                "reflection padding radius %d must be smaller than the image size "
-                "(H=%d, W=%d); reduce sigma_max or truncate." % (self.radius, h, w)
-            )
         k = self.kernel(sigma, dtype=x.dtype, device=x.device)
         kx = k.view(1, 1, 1, -1).expand(c, 1, 1, self.kernel_size)
         ky = k.view(1, 1, -1, 1).expand(c, 1, self.kernel_size, 1)
-        y = F.pad(x, (self.radius, self.radius, 0, 0), mode="reflect")
-        y = F.conv2d(y, kx, groups=c)
-        y = F.pad(y, (0, 0, self.radius, self.radius), mode="reflect")
-        y = F.conv2d(y, ky, groups=c)
+        # Pad each axis separately: native reflect where supported, explicit
+        # whole-sample reflection indexing where the radius reaches or exceeds
+        # the axis length (small feature maps).  Convolution adds no padding.
+        y = F.conv2d(reflect_pad_axis(x, self.radius, -1), kx, groups=c)
+        y = F.conv2d(reflect_pad_axis(y, self.radius, -2), ky, groups=c)
+        info["padding_path"] = {
+            "w": "native" if self.radius < w else "explicit_reflect_index",
+            "h": "native" if self.radius < h else "explicit_reflect_index"}
         return TransformResult(y, info)
 
 

@@ -1,0 +1,55 @@
+{
+  "device": "cuda",
+  "effective_batch": 128,
+  "total_updates": 14040,
+  "s": 0.5,
+  "torch": "2.5.1+cu121",
+  "placement": "forward hook on every 3x3 conv output, before GN/ReLU; shortcuts untouched; temporary, not a training design",
+  "variants": {
+    "baseline": {
+      "microbatch": 128,
+      "accumulation_steps": 1,
+      "n_hooks": 0,
+      "forward_ms": 9.172849997412413,
+      "forward_backward_ms": 26.607000007061288,
+      "peak_mb": 210.21923828125,
+      "ms_per_effective_batch_128": 26.607000007061288,
+      "compute_only_hours_14040_updates": 0.10376730002753902
+    },
+    "gaussian_sigma1": {
+      "microbatch": 128,
+      "accumulation_steps": 1,
+      "n_hooks": 19,
+      "forward_ms": 23.275299987290055,
+      "forward_backward_ms": 56.076299981214106,
+      "peak_mb": 651.38232421875,
+      "ms_per_effective_batch_128": 56.076299981214106,
+      "compute_only_hours_14040_updates": 0.218697569926735
+    },
+    "wavelet_db2": {
+      "microbatch": 64,
+      "accumulation_steps": 2,
+      "n_hooks": 19,
+      "forward_ms": 874.7251000022516,
+      "forward_backward_ms": 66808.3228500036,
+      "peak_mb": 8712.2001953125,
+      "ms_per_effective_batch_128": 133616.6457000072,
+      "compute_only_hours_14040_updates": 521.1049182300281
+    },
+    "wavelet_haar": {
+      "microbatch": 64,
+      "accumulation_steps": 2,
+      "n_hooks": 19,
+      "forward_ms": 856.2899499956984,
+      "forward_backward_ms": 55503.72680000146,
+      "peak_mb": 8447.93994140625,
+      "ms_per_effective_batch_128": 111007.45360000292,
+      "compute_only_hours_14040_updates": 432.92906904001137
+    }
+  },
+  "gpu": {
+    "name": "NVIDIA GeForce RTX 3050 Laptop GPU",
+    "total_vram_mb": 4096
+  },
+  "estimate_excludes": "data loading, evaluation/validation, optimizer step and its state, checkpoint I/O"
+}

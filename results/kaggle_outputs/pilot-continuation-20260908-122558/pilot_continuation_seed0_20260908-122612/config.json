@@ -1,0 +1,16 @@
+{
+  "seed": 0,
+  "n_subset": 5000,
+  "per_class": 500,
+  "updates": 600,
+  "continuation_end": 300,
+  "effective_batch": 128,
+  "microbatch": 32,
+  "warmup": 30,
+  "eval_every": 50,
+  "s0": 0.5,
+  "schedule": "r_k = max(1-k/300,0); sigma_k = r_k; s_k = 1-(1-s0) r_k",
+  "insertion_points": "19 spatial 3x3 conv outputs, before GN/ReLU",
+  "worker_limit_s": 2400,
+  "n_gpu": 2
+}

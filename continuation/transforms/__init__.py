@@ -27,13 +27,16 @@ from .gaussian import (
     sigma_from_heat_time,
 )
 from .tv import TVBudgetTransform, TVHminus1, TVL2, solve_tv_budget, tv_value
+from .wavelet import WaveletShrinkage, wavelet_shrink, swt2_analysis, swt2_synthesis
 from . import gaussian as _gaussian
 from . import tv as _tv
+from . import wavelet as _wavelet
 
 _BUILDERS = {
     "gaussian": _gaussian.build,
     "tv_l2": _tv.build_l2,
     "tv_hminus1": _tv.build_hminus1,
+    "wavelet": _wavelet.build,
 }
 
 
@@ -56,5 +59,6 @@ __all__ = [
     "GaussianSmoothing", "gaussian_kernel_1d",
     "heat_time_from_sigma", "sigma_from_heat_time",
     "TVBudgetTransform", "TVL2", "TVHminus1", "solve_tv_budget", "tv_value",
+    "WaveletShrinkage", "wavelet_shrink", "swt2_analysis", "swt2_synthesis",
     "build_transform", "available_families",
 ]

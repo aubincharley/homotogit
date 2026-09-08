@@ -1,0 +1,61 @@
+[
+  {
+    "variant": "plain",
+    "updates_completed": 600,
+    "incomplete": false,
+    "microbatch": 32,
+    "accumulation": 4,
+    "s0": 0.5,
+    "controller": {
+      "kind": "none",
+      "s0": 0.5,
+      "gaussian_kernel": null
+    },
+    "full_val_ce_unfiltered": 2.2970833740234373,
+    "full_val_acc_unfiltered": 0.1412,
+    "n_val": 5000,
+    "wall_seconds": 23.051964886000007,
+    "gpu": "Tesla T4"
+  },
+  {
+    "variant": "gaussian",
+    "updates_completed": 600,
+    "incomplete": false,
+    "microbatch": 32,
+    "accumulation": 4,
+    "s0": 0.5,
+    "controller": {
+      "kind": "gaussian",
+      "s0": 0.5,
+      "gaussian_kernel": {
+        "kernel_size": 9,
+        "radius": 4,
+        "sigma_max": 1.0,
+        "truncate": 4.0
+      }
+    },
+    "full_val_ce_unfiltered": 2.077787353515625,
+    "full_val_acc_unfiltered": 0.2062,
+    "n_val": 5000,
+    "wall_seconds": 31.23686779899998,
+    "gpu": "Tesla T4"
+  },
+  {
+    "variant": "db2",
+    "updates_completed": 600,
+    "incomplete": false,
+    "microbatch": 32,
+    "accumulation": 4,
+    "s0": 0.5,
+    "controller": {
+      "kind": "db2",
+      "s0": 0.5,
+      "gaussian_kernel": null
+    },
+    "full_val_ce_unfiltered": 1.9896815002441406,
+    "full_val_acc_unfiltered": 0.2334,
+    "n_val": 5000,
+    "wall_seconds": 648.095081294,
+    "gpu": "Tesla T4"
+  }
+]

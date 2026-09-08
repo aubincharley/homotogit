@@ -1,0 +1,38 @@
+{
+  "checks": [
+    {
+      "device": "cpu",
+      "dtype": "torch.float64",
+      "batch": 128,
+      "microbatch": 32,
+      "accumulation": 4,
+      "lr": 0.02666666666666667,
+      "step": 7,
+      "grad_relative_error": 3.969324545897438e-16,
+      "update_relative_error": 8.563118519969175e-16,
+      "grad_norm_full": 39.45373190498798,
+      "grad_norm_accumulated": 39.453731904987976,
+      "grad_norm_relative_error": 1.8009519035391149e-16,
+      "tolerance": 1e-12,
+      "passed": true
+    },
+    {
+      "device": "cuda",
+      "dtype": "torch.float32",
+      "batch": 128,
+      "microbatch": 32,
+      "accumulation": 4,
+      "lr": 0.02666666666666667,
+      "step": 7,
+      "grad_relative_error": 0.0006007020128890872,
+      "update_relative_error": 0.0006007065530866385,
+      "grad_norm_full": 39.46488952636719,
+      "grad_norm_accumulated": 39.46517562866211,
+      "grad_norm_relative_error": 7.2495399925223415e-06,
+      "tolerance": 0.002,
+      "passed": true
+    }
+  ],
+  "conclusion": "accumulation is mathematically exact (float64 to round-off); the float32 CUDA gap is cuDNN reduction order differing between batch 32 and batch 128, not a defect",
+  "passed": true
+}

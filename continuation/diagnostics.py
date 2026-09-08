@@ -87,22 +87,31 @@ def retained_tv_ratio(transformed: torch.Tensor, original: torch.Tensor):
     return ratio, valid
 
 
-def retained_contrast(transformed: torch.Tensor, original: torch.Tensor):
+def retained_contrast(transformed: torch.Tensor, original: torch.Tensor,
+                      center: str = "original"):
     r"""``rho = ||z - mean(x)||_2 / ||x - mean(x)||_2`` per image, with the
     per-channel mean of the **original** image removed from both.
 
     Distinguishes spatial simplification from a plain loss of contrast: a
     transformation can keep TV low by flattening structure (rho falls) or by
-    reorganising it (rho stays near 1).  Returns ``(rho, valid_mask)``; images
+    reorganising it (rho stays near 1).
+
+    ``center="original"`` (default) subtracts the original's per-channel spatial
+    mean from both terms.  ``center="own"`` subtracts each image's own mean, i.e.
+    ``||z - zbar|| / ||x - xbar||``; the two agree whenever the transformation
+    preserves channel means.  Returns ``(rho, valid_mask)``; images
     that are spatially constant in every channel have a zero denominator, so
     their ratio is ``nan`` and they are marked invalid rather than being given a
     fabricated value.
     """
+    if center not in ("original", "own"):
+        raise ValueError("center must be 'original' or 'own', got %r" % (center,))
     x = original.to(torch.float64)
     z = transformed.to(torch.float64)
     mean = x.mean(dim=(2, 3), keepdim=True)
+    z_mean = mean if center == "original" else z.mean(dim=(2, 3), keepdim=True)
     denom = (x - mean).flatten(1).norm(dim=1)
-    numer = (z - mean).flatten(1).norm(dim=1)
+    numer = (z - z_mean).flatten(1).norm(dim=1)
     valid = denom > 0
     rho = torch.full_like(denom, float("nan"))
     rho[valid] = numer[valid] / denom[valid]

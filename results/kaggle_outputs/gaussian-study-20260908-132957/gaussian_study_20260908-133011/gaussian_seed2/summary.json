@@ -1,0 +1,28 @@
+{
+  "label": "gaussian_seed2",
+  "kind": "gaussian",
+  "seed": 2,
+  "lr": 0.005,
+  "updates": 1200,
+  "warmup": 60,
+  "effective_batch": 128,
+  "microbatch": 32,
+  "accumulation": 4,
+  "controller": {
+    "kind": "gaussian",
+    "s0": 1.0,
+    "cont_end": 600,
+    "gaussian_kernel": {
+      "kernel_size": 9,
+      "radius": 4,
+      "sigma_max": 1.0
+    }
+  },
+  "final_train_probe_ce_bypassed": 1.4275318603515625,
+  "final_val_ce": 1.4801121826171875,
+  "final_val_acc": 0.4628,
+  "n_val": 5000,
+  "wall_seconds": 57.86530361300004,
+  "peak_mem_mib": 435.09375,
+  "gpu": "Tesla T4"
+}

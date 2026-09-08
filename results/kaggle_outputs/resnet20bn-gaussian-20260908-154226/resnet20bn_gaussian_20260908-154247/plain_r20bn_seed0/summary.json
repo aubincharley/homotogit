@@ -1,0 +1,58 @@
+{
+  "label": "plain_r20bn_seed0",
+  "kind": "none",
+  "seed": 0,
+  "lr": 0.005,
+  "updates": 2400,
+  "warmup": 60,
+  "effective_batch": 128,
+  "microbatch": 32,
+  "accumulation": 4,
+  "controller": {
+    "kind": "none",
+    "s0": 1.0,
+    "cont_end": 1700,
+    "piecewise": [
+      [
+        0,
+        1.0
+      ],
+      [
+        250,
+        0.85
+      ],
+      [
+        500,
+        0.7
+      ],
+      [
+        750,
+        0.6
+      ],
+      [
+        1000,
+        0.5
+      ],
+      [
+        1250,
+        0.4
+      ],
+      [
+        1500,
+        0.3
+      ],
+      [
+        1700,
+        0.0
+      ]
+    ]
+  },
+  "final_train_probe_ce_bypassed": 0.75102587890625,
+  "final_train_probe_acc_bypassed": 0.73,
+  "final_val_ce": 1.2334814575195312,
+  "final_val_acc": 0.5536,
+  "n_val": 5000,
+  "wall_seconds": 119.19869513999998,
+  "peak_mem_mib": 394.19482421875,
+  "gpu": "Tesla T4"
+}

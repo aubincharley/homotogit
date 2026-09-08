@@ -1,0 +1,63 @@
+{
+  "label": "gaussian_r20bn_seed0",
+  "kind": "gaussian",
+  "seed": 0,
+  "lr": 0.005,
+  "updates": 2400,
+  "warmup": 60,
+  "effective_batch": 128,
+  "microbatch": 32,
+  "accumulation": 4,
+  "controller": {
+    "kind": "gaussian",
+    "s0": 1.0,
+    "cont_end": 1700,
+    "piecewise": [
+      [
+        0,
+        1.0
+      ],
+      [
+        250,
+        0.85
+      ],
+      [
+        500,
+        0.7
+      ],
+      [
+        750,
+        0.6
+      ],
+      [
+        1000,
+        0.5
+      ],
+      [
+        1250,
+        0.4
+      ],
+      [
+        1500,
+        0.3
+      ],
+      [
+        1700,
+        0.0
+      ]
+    ],
+    "gaussian_kernel": {
+      "kernel_size": 9,
+      "radius": 4,
+      "sigma_max": 1.0
+    }
+  },
+  "final_train_probe_ce_bypassed": 0.8886505737304687,
+  "final_train_probe_acc_bypassed": 0.694,
+  "final_val_ce": 1.1075391357421875,
+  "final_val_acc": 0.5962,
+  "n_val": 5000,
+  "wall_seconds": 173.99369955299994,
+  "peak_mem_mib": 466.94921875,
+  "gpu": "Tesla T4"
+}

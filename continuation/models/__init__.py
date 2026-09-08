@@ -11,10 +11,14 @@ import torch
 
 from ..config import ModelConfig
 from ..seeding import derive_seed
+from .resnet18_bn import ResNet18BNCifar, resnet18_bn_cifar
+from .resnet20_bn import ResNet20BNCifar, resnet20_bn_cifar
 from .resnet_gn import ResNetCifarGN, resnet20_gn
 
 _BUILDERS = {
     "resnet20_gn": resnet20_gn,
+    "resnet18_bn_cifar": resnet18_bn_cifar,
+    "resnet20_bn_cifar": resnet20_bn_cifar,
 }
 
 
@@ -46,5 +50,5 @@ def count_parameters(model: torch.nn.Module) -> dict:
     return {"total": int(total), "trainable": int(trainable)}
 
 
-__all__ = ["ResNetCifarGN", "resnet20_gn", "build_model", "available_models",
-           "count_parameters"]
+__all__ = ["ResNetCifarGN", "resnet20_gn", "ResNet18BNCifar", "resnet18_bn_cifar",
+           "build_model", "available_models", "count_parameters"]

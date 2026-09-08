@@ -1,0 +1,53 @@
+[
+  {
+    "label": "plain_r18_seed0",
+    "kind": "none",
+    "seed": 0,
+    "lr": 0.005,
+    "updates": 1200,
+    "warmup": 60,
+    "effective_batch": 128,
+    "microbatch": 32,
+    "accumulation": 4,
+    "controller": {
+      "kind": "none",
+      "s0": 1.0,
+      "cont_end": 600
+    },
+    "final_train_probe_ce_bypassed": 0.05295893096923828,
+    "final_val_ce": 1.5071331909179688,
+    "final_val_acc": 0.5426,
+    "n_val": 5000,
+    "wall_seconds": 150.70183232400007,
+    "peak_mem_mib": 1438.5458984375,
+    "gpu": "Tesla T4"
+  },
+  {
+    "label": "gaussian_r18_seed0",
+    "kind": "gaussian",
+    "seed": 0,
+    "lr": 0.005,
+    "updates": 1200,
+    "warmup": 60,
+    "effective_batch": 128,
+    "microbatch": 32,
+    "accumulation": 4,
+    "controller": {
+      "kind": "gaussian",
+      "s0": 1.0,
+      "cont_end": 600,
+      "gaussian_kernel": {
+        "kernel_size": 9,
+        "radius": 4,
+        "sigma_max": 1.0
+      }
+    },
+    "final_train_probe_ce_bypassed": 0.09872648620605469,
+    "final_val_ce": 1.101879638671875,
+    "final_val_acc": 0.6216,
+    "n_val": 5000,
+    "wall_seconds": 197.43078995399992,
+    "peak_mem_mib": 1441.7138671875,
+    "gpu": "Tesla T4"
+  }
+]

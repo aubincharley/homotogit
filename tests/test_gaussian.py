@@ -218,3 +218,49 @@ def test_cache_key_separates_parameter_config_and_image():
     assert T.cache_key(1.0, "img7") != T.cache_key(2.0, "img7")
     assert T.cache_key(1.0, "img7") != T.cache_key(1.0, "img8")
     assert T.cache_key(1.0, "img7") != T2.cache_key(1.0, "img7")   # config differs
+
+
+# -------------------------------------------------------------------------
+# Explicit whole-sample reflection for small feature maps (pad >= axis length)
+# -------------------------------------------------------------------------
+
+def test_reflected_indices_match_the_specified_sequence():
+    from continuation.transforms.gaussian import reflected_indices
+    assert reflected_indices(4, 4).tolist() == [2, 3, 2, 1, 0, 1, 2, 3, 2, 1, 0, 1]
+    # no repeated boundary sample: r(-1) == 1, not 0
+    assert reflected_indices(8, 4)[3].item() == 1
+    assert reflected_indices(1, 4).tolist() == [0] * 9          # degenerate axis
+
+
+def test_explicit_reflection_agrees_with_native_where_both_apply():
+    """Values and input gradients must match the native path when pad < n."""
+    from continuation.transforms.gaussian import reflect_pad_axis, reflected_indices
+    import torch.nn.functional as F
+
+    x = torch.rand(2, 3, 16, 16, dtype=torch.float64, requires_grad=True)
+    for dim, pad4 in ((-1, (4, 4, 0, 0)), (-2, (0, 0, 4, 4))):
+        native = F.pad(x, pad4, mode="reflect")
+        idx = reflected_indices(x.shape[dim], 4)
+        explicit = torch.index_select(x, dim, idx)
+        assert torch.allclose(native, explicit, atol=1e-12), dim
+        gn = torch.autograd.grad(native.pow(2).sum(), x, retain_graph=True)[0]
+        ge = torch.autograd.grad(explicit.pow(2).sum(), x, retain_graph=True)[0]
+        assert torch.allclose(gn, ge, atol=1e-12), dim
+        # the dispatcher picks native here and returns the same thing
+        assert torch.allclose(reflect_pad_axis(x, 4, dim), native, atol=1e-12)
+
+
+def test_radius_four_gaussian_works_on_a_four_by_four_map():
+    T = GaussianSmoothing(sigma_max=1.0, truncate=4.0)
+    assert T.radius == 4 and T.kernel_size == 9
+    x = torch.rand(2, 512, 4, 4, dtype=torch.float64, requires_grad=True)
+    out = T.apply(x, 1.0)
+    y = out.images
+    assert y.shape == x.shape                                   # shape preserved
+    assert out.info["padding_path"] == {"w": "explicit_reflect_index",
+                                        "h": "explicit_reflect_index"}
+    const = torch.full((1, 8, 4, 4), 0.37, dtype=torch.float64)
+    assert torch.allclose(T(const, 1.0), const, atol=1e-12)     # constants preserved
+    g = torch.autograd.grad(y.pow(2).sum(), x)[0]               # finite backward
+    assert torch.isfinite(g).all() and float(g.abs().max()) > 0
+    assert T(x, 0.0) is x                                       # exact identity bypass

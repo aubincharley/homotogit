@@ -1,0 +1,32 @@
+{
+  "name": "resnet18_gaussian",
+  "subset_seed": 0,
+  "per_class": 1000,
+  "n_subset": 10000,
+  "seeds": [
+    0
+  ],
+  "probe_seed": 0,
+  "train_probe": 500,
+  "updates": 1200,
+  "warmup": 60,
+  "cont_end": 600,
+  "effective_batch": 128,
+  "microbatch": 32,
+  "eval_every": 200,
+  "arch": "resnet18_bn_cifar",
+  "runs": [
+    {
+      "label": "plain_r18_seed0",
+      "kind": "none",
+      "seed": 0,
+      "lr": 0.005
+    },
+    {
+      "label": "gaussian_r18_seed0",
+      "kind": "gaussian",
+      "seed": 0,
+      "lr": 0.005
+    }
+  ]
+}

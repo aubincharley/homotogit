@@ -1,0 +1,63 @@
+{
+  "microbatch": 4,
+  "shape": [
+    4,
+    3,
+    32,
+    32
+  ],
+  "dtype": "float32",
+  "s": 0.5,
+  "sigma": 1.0,
+  "timeout_s": 240,
+  "elapsed_s": 8.1,
+  "timed_out": false,
+  "environment": {
+    "device": "NVIDIA GeForce RTX 3050 Laptop GPU",
+    "total_vram_mib": 4096,
+    "allocator_fraction": 0.6
+  },
+  "results": [
+    {
+      "variant": "plain",
+      "n_hooks": 0,
+      "median_fwd_bwd_ms": 10.094899975229055,
+      "times_ms": [
+        9.452099970076233,
+        10.094899975229055,
+        11.388699989765882
+      ],
+      "status": "ok",
+      "peak_allocated_mib": 24.1103515625,
+      "peak_reserved_mib": 28.0
+    },
+    {
+      "variant": "gaussian_sigma1",
+      "n_hooks": 19,
+      "median_fwd_bwd_ms": 17.29200000409037,
+      "times_ms": [
+        17.29200000409037,
+        16.044999996665865,
+        18.818799988366663
+      ],
+      "status": "ok",
+      "peak_allocated_mib": 37.98583984375,
+      "peak_reserved_mib": 42.0
+    },
+    {
+      "variant": "wavelet_db2_fused",
+      "n_hooks": 19,
+      "median_fwd_bwd_ms": 163.6513999546878,
+      "times_ms": [
+        163.6513999546878,
+        158.3089000196196,
+        166.1108999978751
+      ],
+      "status": "ok",
+      "peak_allocated_mib": 578.02783203125,
+      "peak_reserved_mib": 616.0
+    }
+  ],
+  "not_measured": [],
+  "note": "stalled or failed variants are reported as-is; no training-time extrapolation is made from them"
+}

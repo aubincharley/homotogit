@@ -1,8 +1,17 @@
 # Datasets: re-downloadable, 341 MB
 data/
 
-# Model/optimizer checkpoints: 60 MB of binaries, regenerable from configs+seeds
+# Model/optimizer checkpoints: regenerable from configs + seeds
 *.pt
+
+# Generated Kaggle job bundles (base64 payload, regenerable by kaggle_run.py)
+kaggle_jobs/
+
+# Kaggle downloads: keep the scientific record (metrics/summaries/configs and
+# figures), drop the bulky regenerable parts.
+results/kaggle_outputs/**/_repo/
+results/kaggle_outputs/**/*.log
+results/kaggle_outputs/**/*.npz
 
 __pycache__/
 *.pyc
