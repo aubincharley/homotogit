@@ -112,9 +112,16 @@ produce numbers; reading them is a local activity.
 `out/`. Delete old runs yourself when you mean to.
 
 W&B is used when a key is mounted and skipped otherwise; `wandb_setup.NullRun`
-means the code never branches on whether logging is available. The key rides in
-the `aubincharley/wandb-secret` dataset as `wandb_key.txt` and is never in the
-source.
+means the code never branches on whether logging is available. The key would
+ride in a mounted dataset as `wandb_key.txt` and is never in the source; with no
+such dataset attached, `init_run` sets `WANDB_MODE=offline` and the run logs
+into `/kaggle/working`, which `make pull` brings back. Nothing is lost, and
+nothing has to be configured to run.
+
+`kernel-metadata.json` mounts `idrisselkhamlichi/cifar-10-python` -- the pickled
+batches, uploaded once. `data.py` globs `/kaggle/input/**` for `data_batch_1`,
+so the mount is found wherever Kaggle puts it and the 170 MB download never
+happens again.
 
 ## The two homotopies
 

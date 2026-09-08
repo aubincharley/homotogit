@@ -1,7 +1,7 @@
 .PHONY: build run quick baseline push status pull clean runs plot test \
         homotopy-quick homotopy act-quick act explore
 
-KERNEL = aubincharley/cifar10-resnet
+KERNEL = idrisselkhamlichi/cifar10-resnet
 # Override if the venv is not activated: make quick PYTHON=.venv/bin/python
 PYTHON ?= python3
 DIR ?= runs/latest
