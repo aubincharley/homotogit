@@ -6,10 +6,17 @@
 # comparable to each other, which is the point: every arm here shares the same
 # subset, the same recipe and the same seed, hence the same theta_0.
 #
-# Plateaus of five epochs. a_ramp_end 0.5 puts alpha at 1.0, 0.75, 0.50, 0.25
-# over epochs 0-19 and leaves epochs 20-49 at alpha=0 -- thirty epochs on the
-# real ReLU problem, against ten under a full-span staircase. The path is the
-# same; the budget spent at the target is three times larger.
+# Ten plateaus of four epochs, spread over the first forty. alpha visits
+# 1.000, 0.889, 0.778, 0.667, 0.556, 0.444, 0.333, 0.222, 0.111, 0.000 -- a
+# step every four epochs rather than a quick slide to zero and a long flat
+# tail. Five plateaus over the first half put alpha at 0 by epoch 20 and left
+# thirty epochs that were simply the baseline; that traces no path.
+#
+# The cost is explicit: ten epochs at alpha=0 instead of thirty. Every epoch
+# spent above zero is an epoch not spent on the target problem, and the
+# accuracy will show it. What this arm buys is a continuation fine enough that
+# theta can actually track theta*(alpha) between steps, which is the thing
+# being tested.
 #
 # Discrete continuation, NO anchor. Isolates what the alpha staircase does on
 # its own, so every anchored arm minus this one is the anchor's contribution.
@@ -40,10 +47,10 @@ diag_every: 5
 per_class: false
 
 a_schedule: staircase
-a_stairs: 5
+a_stairs: 10
 a_lr_restart: true
 a_start: 1.0
 a_end: 0.0
 a_ramp_start: 0.0
-a_ramp_end: 0.5
+a_ramp_end: 0.8
 

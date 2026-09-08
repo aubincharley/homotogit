@@ -6,10 +6,8 @@
 # comparable to each other, which is the point: every arm here shares the same
 # subset, the same recipe and the same seed, hence the same theta_0.
 #
-# Plateaus of five epochs. a_ramp_end 0.5 puts alpha at 1.0, 0.75, 0.50, 0.25
-# over epochs 0-19 and leaves epochs 20-49 at alpha=0 -- thirty epochs on the
-# real ReLU problem, against ten under a full-span staircase. The path is the
-# same; the budget spent at the target is three times larger.
+# THE CONTROL for the staircase arms: same subset, same recipe, same seed,
+# alpha nailed at 0 for all fifty epochs.
 #
 # THE CONTROL. Plain ReLU, no homotopy, no anchor.
 

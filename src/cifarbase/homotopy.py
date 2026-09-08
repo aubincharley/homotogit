@@ -210,7 +210,13 @@ def s_at(progress, n_blocks, schedule="const", s_min=0.0, s_max=1.0,
             raise ValueError("staircase needs stairs >= 1")
         if stairs == 1:
             return [s_max] * n_blocks
-        index = min(int(u * stairs), stairs - 1)
+        # The epsilon is not cosmetic. u = (progress - start) / (end - start)
+        # lands a float hair below k/stairs at an exact plateau boundary, so
+        # int() returns k-1 and the level steps one epoch late -- while
+        # phase_bounds, which computes the same edges analytically, has already
+        # restarted the learning rate. On a four-epoch plateau that is a
+        # quarter of it spent at the old alpha under the new phase's lr.
+        index = min(int(u * stairs + 1e-9), stairs - 1)
         return [s_min + span * index / (stairs - 1)] * n_blocks
 
     # sequential: depth continuation. Block k ramps over the k-th of n_blocks

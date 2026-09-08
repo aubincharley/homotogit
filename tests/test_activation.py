@@ -722,3 +722,30 @@ def test_a_continuous_ramp_still_may_not_span_the_whole_run():
     with pytest.raises(SystemExit, match="tail"):
         load_config(["--a-schedule", "linear", "--a-ramp-end", "1.0"],
                     default="baseline")
+
+
+def test_staircase_boundaries_land_where_the_lr_restarts_do():
+    """s_at reads the level as int(u * stairs), and at exactly u = k/stairs
+    float division lands a hair below and returns k-1. phase_bounds computes
+    the same edges analytically, so alpha would step one epoch after its own
+    lr restart -- a quarter of a four-epoch plateau spent at the previous
+    level with the new phase's learning rate."""
+    cfg = load_config(["--a-schedule", "staircase", "--a-stairs", "10",
+                       "--a-ramp-end", "0.8", "--a-lr-restart",
+                       "--epochs", "50"], default="baseline")
+    bounds = phase_bounds(cfg)
+    for edge in bounds[1:-1]:
+        before = alpha_at_cfg(edge - 1e-6, 1, cfg)[0]
+        at = alpha_at_cfg(edge, 1, cfg)[0]
+        assert at != pytest.approx(before), f"alpha still at {before} on edge {edge}"
+
+
+def test_every_staircase_plateau_gets_the_same_number_of_epochs():
+    cfg = load_config(["--a-schedule", "staircase", "--a-stairs", "10",
+                       "--a-ramp-end", "0.8", "--epochs", "50"],
+                      default="baseline")
+    per_epoch = [alpha_at_cfg(e / 50, 1, cfg)[0] for e in range(50)]
+    lengths = {}
+    for value in per_epoch[:36]:                 # the ramp, before the tail
+        lengths[value] = lengths.get(value, 0) + 1
+    assert set(lengths.values()) == {4}, lengths
