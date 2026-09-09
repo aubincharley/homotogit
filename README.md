@@ -1,17 +1,50 @@
-# Continuation through image simplification
+# Continuation through image and feature simplification
 
 A small, reproducible research codebase for studying **continuation methods for
-neural-network training**, where the continuation parameter controls an
-**input-image transformation** that progressively relaxes a simplification or
-complexity constraint.
-
-The first transformation family is **Gaussian input smoothing**. Later families
-(a total-variation budget, and possibly an operational compression budget) are
-specified in [`docs/extensions.md`](docs/extensions.md) but are **not implemented
-in this phase**.
+neural-network training**, where the continuation parameter controls a
+transformation that progressively relaxes a simplification constraint.
 
 The priority is understanding optimization behaviour and transfer to the
 original classification problem — not state-of-the-art CIFAR accuracy.
+
+Two distinct families of experiment have been run, and they must not be
+conflated:
+
+1. **Input-space continuation** — filter the *images*, anneal toward identity.
+2. **Feature-space continuation** — filter the *activations* after every 3×3
+   convolution, i.e. the placement used by *Curriculum by Smoothing*.
+
+**[`docs/HANDOVER.md`](docs/HANDOVER.md) is the authoritative record**: every
+phase, exact numbers, verification results, hardware gotchas and open threads.
+Read it before quoting any past result or re-running anything.
+
+## Current state (one-line summary)
+
+| intervention | effect on final test accuracy | cost |
+|---|---|---|
+| Gaussian **input** blur, annealed | −3.45 pp (GroupNorm, 3 seeds) | negligible |
+| Gaussian **feature** smoothing, annealed | **+3.0 pp** (BatchNorm, 3 seeds, full data) | ~1.5× |
+| **Progressive input resolution** | **+4.47 pp** (1 seed) | 0.94× |
+| Progressive resolution + Gaussian | +4.83 pp vs plain (1 seed) | ~1.4× |
+| db2 wavelet feature shrinkage | +0.94 pp (1 seed) — set aside | ~61× |
+
+Current model is `resnet20_bn_cifar` (ResNet-20, BatchNorm, option-A shortcuts,
+269,722 params, 19 filter insertion points). Measured single-seed GPU
+nondeterminism is **~±0.1 pp** on final accuracy — compare small effects against
+it. Everything past the 3-seed campaign is one seed.
+
+## Two execution paths
+
+* **`continuation/` + `continuation.cli`** — the original input-space
+  experiments (Experiment 0 and Experiment 1), driven by YAML configs.
+* **`scripts/continuation_driver.py`** — the current feature-space and
+  progressive-resolution campaigns, driven by thin `scripts/job_*.py` configs and
+  launched on Kaggle GPUs via [`scripts/kaggle_run.py`](scripts/kaggle_run.py)
+  (see [`docs/kaggle_cli.md`](docs/kaggle_cli.md)).
+
+Campaign results land under `results/kaggle_outputs/<kernel-slug>/`; the metrics,
+summaries, configs and pairing proofs are committed, the checkpoints are not
+(regenerable from the configs and verified seeds).
 
 ## Three objects, kept separate
 
@@ -40,22 +73,34 @@ continuation/
   data.py          CIFAR-10/100, stratified split, deterministic batch stream
   transforms/      transformation-family registry
     base.py        ImageTransform interface, TransformResult, cache keys
-    gaussian.py    Gaussian input smoothing (the only implemented family)
+    gaussian.py    separable Gaussian + explicit reflection-padding fallback
+    tv.py          TV-L2 and TV-Hminus1 budget families (previews only)
+    wavelet.py     undecimated wavelet shrinkage (reference + fused paths)
   diagnostics.py   TV / MSE measurements + gradient-transition diagnostics
   schedules.py     constant, piecewise, linear-sigma, geometric, heat-time, budget
-  models/          ResNet-20 with GroupNorm
+  models/
+    resnet_gn.py       ResNet-20 + GroupNorm (original)
+    resnet18_bn.py     CIFAR ResNet-18 + BatchNorm (reference-style)
+    resnet20_bn.py     ResNet-20 + BatchNorm, corrected init  <-- current
   optim.py         SGD + LR schedule indexed by global step
-  pipeline.py      uint8 -> float[0,1] -> T_eta -> channel normalization
+  pipeline.py      uint8 -> float[0,1] -> [resize] -> T_eta -> normalization
   engine.py        Trainer / evaluator at any fixed transformation parameter
   metrics.py       JSONL logging, environment capture, checkpoints
   experiments/exp0.py  fixed-level sweep + aggregation
   experiments/exp1.py  warm-start / continuation branching + aggregation
   viz.py           transformation figures; plotting.py  result figures
   cli.py           command line
+scripts/
+  continuation_driver.py       current campaign driver (feature space + resolution)
+  kaggle_run.py                Kaggle launcher (ships repo, provenance, tags)
+  job_*.py                     thin per-experiment configs
+  verify_*.py                  operator / placement / pairing checks
+  plot_*.py                    campaign figures
 configs/           experiment configuration
-docs/              gaussian.md, extensions.md, experiment0.md, results.md,
-                   exp1_warmstart.md
-tests/             83 tests, no dataset download required
+docs/              HANDOVER.md (read first), gaussian.md, extensions.md,
+                   tv_budget.md, wavelet_shrinkage.md, experiment0.md,
+                   results.md, exp1_warmstart.md, kaggle_cli.md
+tests/             ~170 tests, no dataset download required
 ```
 
 ## Install and run
@@ -123,7 +168,34 @@ the other arms at equal global updates.  The learning-rate schedule is a pure
 function of the global update, so a 1,500-update prefix runs on the full
 14,040-update horizon rather than a compressed one.
 
-The official 10,000-image test set is untouched.
+The official 10,000-image test set is untouched by Experiments 0 and 1. From the
+full-data campaign onward it is used deliberately as the reported held-out set
+and labelled **test**, not validation; this is exploratory monitoring, with the
+protocol frozen before results are examined and no best-epoch selection.
+
+### Feature-space and progressive-resolution campaigns
+
+Run through `scripts/continuation_driver.py`, one `scripts/job_*.py` per
+experiment, launched on Kaggle T4s:
+
+```bash
+py scripts/kaggle_run.py scripts/job_progressive_resolution.py --gpu \
+  --accelerator NvidiaTeslaT4 --dataset pankrzysiu/cifar10-python \
+  --include continuation --include scripts
+```
+
+Filtering acts at the 19 main-path 3×3 convolution outputs, before
+normalization; inputs, shortcuts, pooled vectors and logits are never filtered.
+Arms are **paired by verification, not by seed number**: a job embeds sha256
+digests of the reference campaign's subset, probe indices, per-epoch
+permutations and initial weights, and aborts before training unless they
+reproduce exactly (`pairing_verification.json`).
+
+Every evaluation records two explicitly named paths — the **current path** (the
+configuration the weights and BN buffers were actually trained under, primary)
+and the **target path** (original 32×32, filters bypassed, diagnostic). While
+continuation is running the target path measures a premature configuration
+change including BatchNorm mismatch, and must not be read as predictor quality.
 
 ## What this codebase does not claim
 

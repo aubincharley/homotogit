@@ -16,7 +16,7 @@ optimization or generalization? Two distinct families of experiment emerged:
 
 1. **Input-space continuation** (phases 1–3): filter the *images*, anneal the
    filter toward identity. **Result: negative.**
-2. **Feature-space continuation** (phases 6–9, current): filter the *activations*
+2. **Feature-space continuation** (phases 6–12, current): filter the *activations*
    after every 3×3 convolution, anneal toward identity — i.e. the Curriculum by
    Smoothing (CBS) placement. **Result: positive and reproducible.**
 
@@ -45,7 +45,7 @@ continuation/
     resnet18_bn.py     CIFAR ResNet-18 + BatchNorm (reference-style)
     resnet20_bn.py     ResNet-20 + BatchNorm, corrected init  <-- CURRENT
   optim.py         SGD + LR schedule indexed by GLOBAL update
-  pipeline.py      uint8 -> float[0,1] -> T_eta -> channel normalization
+  pipeline.py      uint8 -> float[0,1] -> [resize] -> T_eta -> normalization
   engine.py        Trainer for the INPUT-space experiments (exp0/exp1)
   experiments/exp0.py, exp1.py
 scripts/
@@ -53,6 +53,8 @@ scripts/
   kaggle_run.py              Kaggle launcher (ships repo, provenance, tags)
   job_*.py                   thin per-phase configs
   audit_gaussian_placement.py, verify_grad_accumulation.py
+  verify_db2_operator.py, verify_progressive_resolution.py
+  plot_db2_pilot.py, plot_progressive_resolution.py
   tv_previews.py, wavelet_previews.py, wavelet_benchmark.py, ...
 docs/    gaussian.md, extensions.md, tv_budget.md, wavelet_shrinkage.md,
          experiment0.md, results.md, exp1_warmstart.md, kaggle_cli.md, HANDOVER.md
@@ -299,6 +301,112 @@ Trajectory: filtered arms trail plain for ~14 epochs, cross over at epochs 16–
 finish ahead; no discontinuity at the epoch-21 bypass. Runtimes 458 s (plain) /
 ~690 s (filtered) per run; 5,504 s total; peak 511–584 MiB.
 
+### Phase 11 — db2 wavelet pilot (one seed) — **thread closed**
+`results/kaggle_outputs/db2-pilot-r20bn-20260908-191741/`, `results/db2_pilot.png`,
+`scripts/job_db2_pilot.py`, `scripts/verify_db2_operator.py`
+
+The Gaussian pilot's configuration exactly (10,000 images, 2,400 updates, seed 0),
+with db2 shrinkage replacing the Gaussian at the same 19 insertion points.
+Frozen schedule on the zero-based update index `k` (the table lists **s**, not
+sigma; `s = 1` is the identity):
+
+```
+0–249 0.00 | 250–499 0.25 | 500–749 0.50 | 750–999 0.70
+1000–1249 0.85 | 1250–1499 0.95 | 1500–1699 0.99 | 1700–2399 1.00
+```
+
+The driver's db2 path previously supported only a linear ramp; it now reads a
+piecewise table as `s`, and `is_active` treats `s = 1` as inactive so the bypass
+phase is labelled correctly.
+
+**Pairing.** The campaign artifacts (1.9 MB) exceed the 900 KB kernel-source cap,
+so a fresh plain control ran in the same job. All pairing inputs were **bitwise
+identical** to the Gaussian pilot (subset, probe, `order_seed0`, all 116 init
+tensors, same torch build) — but the two plain runs did **not** reproduce
+bitwise: 0.5540 vs 0.5536 final accuracy, transient excursions to 0.011. That is
+float32 GPU reduction-order nondeterminism and gives a **measured single-seed
+noise floor of ~±0.1 pp final accuracy**, which is the number to compare small
+effects against.
+
+| arm | final test acc | test CE | train-probe CE |
+|---|---|---|---|
+| plain | 0.5540 | 1.2367 | 0.7561 |
+| **db2** | **0.5634** | **1.2007** | 1.0106 |
+| Gaussian (paired, earlier job) | 0.5962 | 1.1075 | 0.8887 |
+
+**db2 − plain = +0.94 pp**, but the sign flips at update 1200 (−0.70 pp) and the
+margin is small; not established at one seed. Gaussian on the same init was
+**+4.26 pp**, 4–5× larger and positive at every checkpoint. db2 fits the training
+data *worse* (probe CE 1.01 vs 0.76) yet generalizes slightly better.
+
+**Cost is the blocking finding.** T4, microbatch 32 x 4 accumulation:
+**2.06 s/update filtered vs 0.034 s bypassed — ~61x plain**, 4,553 MiB vs 394 MiB
+peak. Actual run 3,856 s vs 89 s. Extrapolated to the full-data campaign shape:
+**~48 h of T4 time**, versus 5,504 s for Gaussian. Not viable as specified.
+
+Operator checks (`results/db2_operator_verification.json`), all three stage
+shapes: reconstruction at `s=1` without bypass 4.8e-07–7.2e-07 max abs (~8e-08
+relative); adjointness 0.0–1.9e-07; finite forward/backward at every scheduled
+`s`; constant-per-channel input round-trips to ≤7.6e-06 with finite gradients;
+the `s=1` bypass is bitwise identical to disabling the hooks. **`nu` uses
+`sqrt(mean(d²) + 1e-12)`** rather than exact RMS (~5e-11 relative perturbation,
+present so all-zero bands get a finite zero gradient) and is **not detached** —
+against a detached-nu recomputation, input gradients differ by 0.458 max
+(norms 20.96 vs 22.91). The "~6% from coarse-only reconstruction at `s=0`" claim
+has no recorded measurement or normalization: **marked unverified**.
+
+**Decision: db2 set aside; no further optimization.**
+
+### Phase 12 — CURRENT: progressive resolution (one seed)
+`results/kaggle_outputs/progres-r20bn-20260909-075846/`,
+`results/progressive_resolution.png`, `scripts/job_progressive_resolution.py`,
+`scripts/verify_progressive_resolution.py`
+
+Two new arms on the campaign's exact protocol (50,000/10,000, 30 epochs, 11,730
+updates, seed 0), reusing `plain_seed0` and `plateau_seed0` as controls.
+Resolution `r(e)` = 16 for `e<6`, 24 for `6≤e<12`, 32 for `12≤e<30`, built from
+the original **float** image by bilinear resize (`align_corners=False`,
+`antialias=True`) **before** normalization; at `r=32` the original tensor passes
+through with no resize op. Same parameters at every resolution. The combined arm
+rescales the plateau schedule by `r(e)/32`, so effective sigma is deliberately
+**non-monotone** (0.425 → 0.525 at e6, 0.450 → 0.500 at e12).
+
+**Pairing was enforced, not assumed:** the four sha256 digests of the campaign's
+`subset`, `train_probe`, `perm_seed0` and `init_seed0` are embedded in the job and
+the study aborts before training unless they reproduce. All four matched
+(`pairing_verification.json`). This `VERIFY_SHARED` hook in `run_study` is the
+pattern to reuse.
+
+| arm | test acc | test CE | probe CE | training time |
+|---|---|---|---|---|
+| plain (campaign) | 0.7510 | 0.7592 | 0.2374 | 466 s |
+| Gaussian plateau (campaign) | 0.7827 | 0.6347 | 0.4029 | 689 s |
+| **progressive resolution** | **0.7957** | 0.6119 | 0.3505 | **436 s** |
+| **progressive res. + Gaussian** | **0.7993** | **0.5881** | 0.3457 | 651 s |
+
+Paired: **progres − plain = +4.47 pp**; **combined − plateau = +1.66 pp**;
+**combined − progres = +0.36 pp** (small against the ±0.1 pp noise floor —
+open question). Progressive resolution alone beats the Gaussian plateau by
+1.30 pp.
+
+**The 24% convolution-work reduction did not become wall time.** T4 per-update,
+no filter: r=16 **0.0328 s**, r=24 0.0340 s, r=32 **0.0324 s** — 16x16 with 16
+channels is far too small to saturate a T4, so the saving is hidden by launch and
+memory-traffic overhead. Measured wall time fell only 6.4% (436 s vs 466 s) and
+5.5% (651 s vs 689 s). Memory does scale (35 → 72 MiB unfiltered). Probe
+underestimates training time by ~12% (excludes indexing and checkpoint writes).
+
+Verification: stage sizes 16/8/4, 24/12/6, 32/16/8 as expected; **pooled output
+64-d at every resolution**; shortcut shapes match their main path; sigma=0 is a
+bitwise identity through the whole network at all three resolutions; the radius-4
+kernel applies to the 4x4 stage-3 maps via the existing explicit reflection.
+
+Trajectory: both new arms trail the controls through the low-resolution phase and
+overtake after the move to 32x32. Target-path gaps at epochs 6/12 (−21 pp, −38 pp)
+are BatchNorm mismatch, not predictor quality. At epoch 30 current and target
+paths are identical to the digit, confirming the final nine epochs run at the
+exact target configuration.
+
 ---
 
 ## 3. Headline conclusion so far
@@ -306,9 +414,15 @@ finish ahead; no discontinuity at the epoch-21 bypass. Runtimes 458 s (plain) /
 **Input-space** Gaussian continuation: negative (−3.45 pp with GroupNorm,
 −1.17 pp for warm starts). **Feature-space** Gaussian continuation with
 **BatchNorm**: consistently positive (+3.0 pp on full data, 3 seeds; +4.3 pp and
-+7.9 pp in pilots). The GroupNorm-vs-BatchNorm contrast is the most interesting
-unresolved variable — but data scale, duration and schedule changed alongside it,
-so **the cause is not isolated**.
++7.9 pp in pilots). **Progressive input resolution** is the largest single effect
+measured so far (**+4.47 pp** paired, one seed) and is nearly free; stacking
+Gaussian on top of it adds only +0.36 pp. **db2 wavelet shrinkage** is roughly
+neutral (+0.94 pp, one seed) at ~61x the cost — set aside.
+
+The GroupNorm-vs-BatchNorm contrast is the most interesting unresolved variable —
+but data scale, duration and schedule changed alongside it, so **the cause is not
+isolated**. Everything after phase 9 is **one seed**; the measured noise floor is
+~±0.1 pp on final accuracy.
 
 ---
 
@@ -326,6 +440,20 @@ so **the cause is not isolated**.
   per step. Always gate fit-tests on measured peak vs physical VRAM.
 * Evaluate in `eval()` and restore the prior mode; never update or recalibrate BN
   statistics during probes.
+* **Images are stored uint8.** Any resize must happen *after* the `/255` float
+  conversion — `F.interpolate` raises on Byte, and resizing 8-bit would be wrong
+  anyway. Progressive resolution therefore lives inside `InputPipeline`:
+  `uint8/255 -> float[0,1] -> resize -> T_eta -> normalize`.
+* **Plotting trap (cost a whole figure once).** The driver writes `None` into the
+  `*_filtered` metrics whenever no filter is active. Reading only those keys drops
+  the plain arm's curve entirely and truncates filtered arms at their bypass
+  epoch. Fall back to the bypassed metric — when nothing is active it *is* the
+  current path. Also: clip axes to the primary curves (BN-mismatch diagnostics
+  spike to ~9 and flatten everything), put every line style in the legend, and
+  read the rendered PNG back rather than trusting the script.
+* Single-seed GPU nondeterminism is **~±0.1 pp** on final accuracy (measured by
+  running the same paired plain configuration twice). Compare small effects
+  against it.
 
 ---
 
@@ -368,8 +496,17 @@ proximal operator for redundant wavelet analysis.
 
 ## 6. On hold / open threads
 
-* **db2 wavelet continuation** — configured, never launched
-  (`scripts/job_db2_study.py`). Estimated 45–70 min for 3 seeds.
+* **db2 wavelet continuation** — **closed** (phase 11): run at one seed, roughly
+  neutral (+0.94 pp) at ~61x plain per update. User instruction: *set db2 aside,
+  do not spend further time optimizing it.* `scripts/job_db2_study.py` (the older
+  3-seed 1,200-update config) was never launched and is now superseded by
+  `scripts/job_db2_pilot.py`.
+* **Additional seeds for phases 11–12** — everything after phase 9 is one seed.
+  The first thing worth settling is whether combined − progressive-resolution
+  (+0.36 pp) is real. Not authorized yet.
+* **Progressive resolution on hardware that is not launch-bound** — the accuracy
+  gain is large and the cost saving was not realized on a T4; a bigger model or
+  batch might realize it.
 * **TV-L2 / TV-Ḣ⁻¹** — previews only; far too slow (~10^4 iterations/image) for
   on-the-fly training. Would need offline caching per budget.
 * **CBS reference reproduction** — configuration specified (ResNet-18, BN,
