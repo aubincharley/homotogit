@@ -1,0 +1,366 @@
+{
+  "expected_stage_sizes": {
+    "16": [
+      16,
+      8,
+      4
+    ],
+    "24": [
+      24,
+      12,
+      6
+    ],
+    "32": [
+      32,
+      16,
+      8
+    ]
+  },
+  "resolutions": {
+    "16": {
+      "stage_sizes": [
+        16,
+        8,
+        4
+      ],
+      "matches_expected": true,
+      "pooled_dim": 64,
+      "pooled_is_64": true,
+      "shortcut_shapes_match_main_path": true,
+      "n_shortcut_outputs": 9,
+      "resize_is_identity_object_at_32": true,
+      "resize_shape": [
+        4,
+        3,
+        16,
+        16
+      ],
+      "gaussian_sigma0.5": {
+        "n_hooks": 19,
+        "out_shape": [
+          4,
+          10
+        ],
+        "out_finite": true,
+        "grad_finite": true,
+        "grad_norm": 0.41177132725715637
+      },
+      "gaussian_bypass": {
+        "n_hooks": 19,
+        "out_shape": [
+          4,
+          10
+        ],
+        "out_finite": true,
+        "grad_finite": true,
+        "grad_norm": 0.3945377767086029
+      },
+      "sigma0_bypass_max_abs_diff": 0.0,
+      "sigma0_is_exact_identity": true,
+      "stage3_map": {
+        "size": 4,
+        "kernel_size": 9,
+        "radius": 4,
+        "filter_shape_preserved": true,
+        "finite": true,
+        "sigma0_bitwise_identity": true
+      }
+    },
+    "24": {
+      "stage_sizes": [
+        24,
+        12,
+        6
+      ],
+      "matches_expected": true,
+      "pooled_dim": 64,
+      "pooled_is_64": true,
+      "shortcut_shapes_match_main_path": true,
+      "n_shortcut_outputs": 9,
+      "resize_is_identity_object_at_32": true,
+      "resize_shape": [
+        4,
+        3,
+        24,
+        24
+      ],
+      "gaussian_sigma0.5": {
+        "n_hooks": 19,
+        "out_shape": [
+          4,
+          10
+        ],
+        "out_finite": true,
+        "grad_finite": true,
+        "grad_norm": 0.26994115114212036
+      },
+      "gaussian_bypass": {
+        "n_hooks": 19,
+        "out_shape": [
+          4,
+          10
+        ],
+        "out_finite": true,
+        "grad_finite": true,
+        "grad_norm": 0.23250459134578705
+      },
+      "sigma0_bypass_max_abs_diff": 0.0,
+      "sigma0_is_exact_identity": true,
+      "stage3_map": {
+        "size": 6,
+        "kernel_size": 9,
+        "radius": 4,
+        "filter_shape_preserved": true,
+        "finite": true,
+        "sigma0_bitwise_identity": true
+      }
+    },
+    "32": {
+      "stage_sizes": [
+        32,
+        16,
+        8
+      ],
+      "matches_expected": true,
+      "pooled_dim": 64,
+      "pooled_is_64": true,
+      "shortcut_shapes_match_main_path": true,
+      "n_shortcut_outputs": 9,
+      "resize_is_identity_object_at_32": true,
+      "resize_shape": [
+        4,
+        3,
+        32,
+        32
+      ],
+      "gaussian_sigma0.5": {
+        "n_hooks": 19,
+        "out_shape": [
+          4,
+          10
+        ],
+        "out_finite": true,
+        "grad_finite": true,
+        "grad_norm": 0.15101976692676544
+      },
+      "gaussian_bypass": {
+        "n_hooks": 19,
+        "out_shape": [
+          4,
+          10
+        ],
+        "out_finite": true,
+        "grad_finite": true,
+        "grad_norm": 0.1855156570672989
+      },
+      "sigma0_bypass_max_abs_diff": 0.0,
+      "sigma0_is_exact_identity": true,
+      "stage3_map": {
+        "size": 8,
+        "kernel_size": 9,
+        "radius": 4,
+        "filter_shape_preserved": true,
+        "finite": true,
+        "sigma0_bitwise_identity": true
+      }
+    }
+  },
+  "params": {
+    "total": 269722,
+    "trainable": 269722
+  },
+  "schedule": [
+    {
+      "epoch": 0,
+      "resolution": 16,
+      "reference_sigma": 1.0,
+      "effective_sigma": 0.5
+    },
+    {
+      "epoch": 1,
+      "resolution": 16,
+      "reference_sigma": 1.0,
+      "effective_sigma": 0.5
+    },
+    {
+      "epoch": 2,
+      "resolution": 16,
+      "reference_sigma": 1.0,
+      "effective_sigma": 0.5
+    },
+    {
+      "epoch": 3,
+      "resolution": 16,
+      "reference_sigma": 0.85,
+      "effective_sigma": 0.425
+    },
+    {
+      "epoch": 4,
+      "resolution": 16,
+      "reference_sigma": 0.85,
+      "effective_sigma": 0.425
+    },
+    {
+      "epoch": 5,
+      "resolution": 16,
+      "reference_sigma": 0.85,
+      "effective_sigma": 0.425
+    },
+    {
+      "epoch": 6,
+      "resolution": 24,
+      "reference_sigma": 0.7,
+      "effective_sigma": 0.5249999999999999
+    },
+    {
+      "epoch": 7,
+      "resolution": 24,
+      "reference_sigma": 0.7,
+      "effective_sigma": 0.5249999999999999
+    },
+    {
+      "epoch": 8,
+      "resolution": 24,
+      "reference_sigma": 0.7,
+      "effective_sigma": 0.5249999999999999
+    },
+    {
+      "epoch": 9,
+      "resolution": 24,
+      "reference_sigma": 0.6,
+      "effective_sigma": 0.44999999999999996
+    },
+    {
+      "epoch": 10,
+      "resolution": 24,
+      "reference_sigma": 0.6,
+      "effective_sigma": 0.44999999999999996
+    },
+    {
+      "epoch": 11,
+      "resolution": 24,
+      "reference_sigma": 0.6,
+      "effective_sigma": 0.44999999999999996
+    },
+    {
+      "epoch": 12,
+      "resolution": 32,
+      "reference_sigma": 0.5,
+      "effective_sigma": 0.5
+    },
+    {
+      "epoch": 13,
+      "resolution": 32,
+      "reference_sigma": 0.5,
+      "effective_sigma": 0.5
+    },
+    {
+      "epoch": 14,
+      "resolution": 32,
+      "reference_sigma": 0.5,
+      "effective_sigma": 0.5
+    },
+    {
+      "epoch": 15,
+      "resolution": 32,
+      "reference_sigma": 0.4,
+      "effective_sigma": 0.4
+    },
+    {
+      "epoch": 16,
+      "resolution": 32,
+      "reference_sigma": 0.4,
+      "effective_sigma": 0.4
+    },
+    {
+      "epoch": 17,
+      "resolution": 32,
+      "reference_sigma": 0.4,
+      "effective_sigma": 0.4
+    },
+    {
+      "epoch": 18,
+      "resolution": 32,
+      "reference_sigma": 0.3,
+      "effective_sigma": 0.3
+    },
+    {
+      "epoch": 19,
+      "resolution": 32,
+      "reference_sigma": 0.3,
+      "effective_sigma": 0.3
+    },
+    {
+      "epoch": 20,
+      "resolution": 32,
+      "reference_sigma": 0.3,
+      "effective_sigma": 0.3
+    },
+    {
+      "epoch": 21,
+      "resolution": 32,
+      "reference_sigma": 0.0,
+      "effective_sigma": 0.0
+    },
+    {
+      "epoch": 22,
+      "resolution": 32,
+      "reference_sigma": 0.0,
+      "effective_sigma": 0.0
+    },
+    {
+      "epoch": 23,
+      "resolution": 32,
+      "reference_sigma": 0.0,
+      "effective_sigma": 0.0
+    },
+    {
+      "epoch": 24,
+      "resolution": 32,
+      "reference_sigma": 0.0,
+      "effective_sigma": 0.0
+    },
+    {
+      "epoch": 25,
+      "resolution": 32,
+      "reference_sigma": 0.0,
+      "effective_sigma": 0.0
+    },
+    {
+      "epoch": 26,
+      "resolution": 32,
+      "reference_sigma": 0.0,
+      "effective_sigma": 0.0
+    },
+    {
+      "epoch": 27,
+      "resolution": 32,
+      "reference_sigma": 0.0,
+      "effective_sigma": 0.0
+    },
+    {
+      "epoch": 28,
+      "resolution": 32,
+      "reference_sigma": 0.0,
+      "effective_sigma": 0.0
+    },
+    {
+      "epoch": 29,
+      "resolution": 32,
+      "reference_sigma": 0.0,
+      "effective_sigma": 0.0
+    }
+  ],
+  "schedule_checks": {
+    "resolution_matches_formula": true,
+    "boundaries": {
+      "e5": 16,
+      "e6": 24,
+      "e11": 24,
+      "e12": 32
+    },
+    "effective_equals_scaled_reference": true,
+    "final_nine_epochs_at_target": true,
+    "effective_sigma_is_not_monotone": true
+  }
+}

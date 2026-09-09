@@ -1,0 +1,128 @@
+[
+  {
+    "label": "plain_r20bn_seed0",
+    "kind": "none",
+    "seed": 0,
+    "lr": 0.005,
+    "updates": 2400,
+    "warmup": 60,
+    "effective_batch": 128,
+    "microbatch": 32,
+    "accumulation": 4,
+    "controller": {
+      "kind": "none",
+      "s0": 1.0,
+      "cont_end": 1700,
+      "piecewise": [
+        [
+          0,
+          0.0
+        ],
+        [
+          250,
+          0.25
+        ],
+        [
+          500,
+          0.5
+        ],
+        [
+          750,
+          0.7
+        ],
+        [
+          1000,
+          0.85
+        ],
+        [
+          1250,
+          0.95
+        ],
+        [
+          1500,
+          0.99
+        ],
+        [
+          1700,
+          1.0
+        ]
+      ],
+      "epoch_sigmas": null
+    },
+    "final_train_probe_ce_bypassed": 0.7560988159179688,
+    "final_train_probe_acc_bypassed": 0.736,
+    "final_val_ce": 1.2366917602539063,
+    "final_val_acc": 0.554,
+    "n_val": 5000,
+    "wall_seconds": 89.25485484199999,
+    "peak_mem_mib": 394.19482421875,
+    "gpu": "Tesla T4"
+  },
+  {
+    "label": "db2_r20bn_seed0",
+    "kind": "db2",
+    "seed": 0,
+    "lr": 0.005,
+    "updates": 2400,
+    "warmup": 60,
+    "effective_batch": 128,
+    "microbatch": 32,
+    "accumulation": 4,
+    "controller": {
+      "kind": "db2",
+      "s0": 1.0,
+      "cont_end": 1700,
+      "piecewise": [
+        [
+          0,
+          0.0
+        ],
+        [
+          250,
+          0.25
+        ],
+        [
+          500,
+          0.5
+        ],
+        [
+          750,
+          0.7
+        ],
+        [
+          1000,
+          0.85
+        ],
+        [
+          1250,
+          0.95
+        ],
+        [
+          1500,
+          0.99
+        ],
+        [
+          1700,
+          1.0
+        ]
+      ],
+      "epoch_sigmas": null,
+      "wavelet": {
+        "family": "db2",
+        "levels": 2,
+        "impl": "fast",
+        "bypass_identity": true,
+        "threshold": "lambda_{j,o} = 4 (1-s) 2^(1-j) nu_{j,o}",
+        "nu": "sqrt(mean(d^2) + 1e-12), per sample/channel/band, from unthresholded coefficients, not detached"
+      }
+    },
+    "final_train_probe_ce_bypassed": 1.01056689453125,
+    "final_train_probe_acc_bypassed": 0.622,
+    "final_val_ce": 1.2006733032226562,
+    "final_val_acc": 0.5634,
+    "n_val": 5000,
+    "wall_seconds": 3855.6102127199997,
+    "peak_mem_mib": 4553.1630859375,
+    "gpu": "Tesla T4"
+  }
+]

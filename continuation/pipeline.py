@@ -18,6 +18,20 @@ import time
 import torch
 
 
+def resize_unit_float(x: torch.Tensor, r: int) -> torch.Tensor:
+    """Bilinear resize of a float ``[0,1]`` batch to ``r x r``.
+
+    ``align_corners=False``, ``antialias=True``.  When ``r`` already equals the
+    spatial size the input tensor is returned unchanged -- no resize operation
+    is applied, so the target configuration is the exact original image.
+    """
+    if r is None or int(r) == int(x.shape[-1]):
+        return x
+    return torch.nn.functional.interpolate(
+        x, size=(int(r), int(r)), mode="bilinear",
+        align_corners=False, antialias=True)
+
+
 class ChannelNormalizer:
     """``(x - mean) / std`` per channel, with fixed constants."""
 
@@ -56,8 +70,13 @@ class InputPipeline:
             torch.cuda.synchronize(device)
 
     def __call__(self, images_uint8: torch.Tensor, eta: float,
-                 meta: dict | None = None) -> torch.Tensor:
+                 meta: dict | None = None, res: int | None = None) -> torch.Tensor:
         x = self.to_unit_float(images_uint8)
+        if res is not None:
+            # progressive resolution, built from the original *floating-point*
+            # image and before normalization, so the fixed per-channel constants
+            # are shared by every resolution.  res == H is an exact no-op.
+            x = resize_unit_float(x, res)
         self._sync(x.device)
         t0 = time.perf_counter()
         x = self.transform(x, eta, meta)
@@ -69,6 +88,10 @@ class InputPipeline:
         return {
             "order": ["uint8/255 -> float[0,1]", "T_eta on the original image",
                       "channel normalization"],
+            "optional_resize": ("when res is given: bilinear resize of the float "
+                                "[0,1] image to res x res (align_corners=False, "
+                                "antialias=True), between the float conversion "
+                                "and T_eta; a no-op when res equals the input size"),
             "transform": self.transform.describe(),
             "normalization": self.normalizer.describe(),
         }

@@ -38,11 +38,14 @@ from continuation.data import build_dataset, BatchIndexStream, fixed_subset_indi
 from continuation.seeding import numpy_generator
 from continuation.models import build_model, count_parameters
 from continuation.optim import build_optimizer, lr_at, set_lr
-from continuation.pipeline import ChannelNormalizer, InputPipeline
+from continuation.pipeline import (ChannelNormalizer, InputPipeline,
+                                   resize_unit_float)
 from continuation.transforms.gaussian import GaussianSmoothing
 from continuation.transforms.wavelet import wavelet_shrink
 
 WORK = Path(os.environ.get("STUDY_OUT", "/kaggle/working"))
+# optional job-supplied hook, run after build_shared; raise to abort the study
+VERIFY_SHARED = None
 T0 = time.perf_counter()
 
 
@@ -83,6 +86,12 @@ class Controller:
         self.gauss = GaussianSmoothing(sigma_max=1.0, truncate=4.0) if kind == "gaussian" else None
 
     def sigma_at(self, k):
+        """Value of the continuation parameter during update ``k``.
+
+        With a piecewise table the value is held flat inside each plateau; with
+        no table the legacy linear ramp is used.  The table is used for both
+        kinds -- for ``gaussian`` it lists sigma, for ``db2`` it lists ``s``.
+        """
         if self.piecewise is None:
             return max(1.0 - k / float(self.cont_end), 0.0)
         v = self.piecewise[0][1]
@@ -92,6 +101,14 @@ class Controller:
             else:
                 break
         return v
+
+    def is_active(self, value):
+        """True when the operator is not the exact identity at ``value``."""
+        if self.kind == "none" or value is None:
+            return False
+        if self.kind == "gaussian":
+            return float(value) > 0.0
+        return float(value) < 1.0            # db2: s == 1 bypasses exactly
 
     def set_epoch(self, e):
         """Sigma is fixed for the whole epoch (set before the epoch starts)."""
@@ -106,8 +123,11 @@ class Controller:
         if self.kind == "gaussian":
             self.value = self.sigma_at(k)
         elif self.kind == "db2":
-            r = max(1.0 - k / float(self.cont_end), 0.0)
-            self.value = 1.0 - (1.0 - self.s0) * r
+            if self.piecewise is not None:
+                self.value = self.sigma_at(k)          # table lists s directly
+            else:
+                r = max(1.0 - k / float(self.cont_end), 0.0)
+                self.value = 1.0 - (1.0 - self.s0) * r
         else:
             self.value = None
         return self.value
@@ -122,6 +142,12 @@ class Controller:
     def describe(self):
         d = {"kind": self.kind, "s0": self.s0, "cont_end": self.cont_end,
              "piecewise": self.piecewise, "epoch_sigmas": self.epoch_sigmas}
+        if self.kind == "db2":
+            d["wavelet"] = {"family": "db2", "levels": 2, "impl": "fast",
+                            "bypass_identity": True,
+                            "threshold": "lambda_{j,o} = 4 (1-s) 2^(1-j) nu_{j,o}",
+                            "nu": "sqrt(mean(d^2) + 1e-12), per sample/channel/band, "
+                                  "from unthresholded coefficients, not detached"}
         if self.gauss:
             d["gaussian_kernel"] = {"kernel_size": self.gauss.kernel_size,
                                     "radius": self.gauss.radius,
@@ -185,14 +211,20 @@ def build_shared(cfg, out_dir):
     return bundle
 
 
+# Progressive resolution lives in :class:`InputPipeline`, applied to the float
+# [0,1] image before normalization; ``resize_unit_float`` is re-exported here so
+# the checks and the timing probe use exactly the training path.
+resize_to = resize_unit_float
+
+
 @torch.no_grad()
-def evaluate(model, controller, images, labels, pipe, bypass, batch=500):
+def evaluate(model, controller, images, labels, pipe, bypass, batch=500, res=None):
     was, mode = controller.bypass_all, model.training
     controller.bypass_all = bypass
     model.eval()
     tot, correct, n = 0.0, 0, images.shape[0]
     for i in range(0, n, batch):
-        logits = model(pipe(images[i:i + batch], 0.0))
+        logits = model(pipe(images[i:i + batch], 0.0, res=res))
         tot += float(F.cross_entropy(logits, labels[i:i + batch], reduction="sum"))
         correct += int((logits.argmax(1) == labels[i:i + batch]).sum())
     if mode:
@@ -245,7 +277,7 @@ def train_run(spec, cfg, gpu_index, out_dir):
         # Active-filter metrics use the sigma of the most recently *completed*
         # update -- the setting the current weights were trained under.
         sigma_eval = ctrl.set_update(max(k - 1, 0))
-        active = bool(sigma_eval)
+        active = ctrl.is_active(sigma_eval)
         cur, cur_acc = (evaluate(model, ctrl, probe_imgs, probe_lbls, pipe, bypass=False)
                         if active else (None, None))
         byp, byp_acc = evaluate(model, ctrl, probe_imgs, probe_lbls, pipe, bypass=True)
@@ -372,41 +404,82 @@ def train_run_epochs(spec, cfg, gpu_index, out_dir):
     eval_epochs = sorted(set(list(range(0, epochs + 1, cfg.get("eval_every_epochs", 2)))
                              + list(cfg.get("eval_extra_epochs", [])) + [epochs]))
     ckpt_epochs = set(cfg.get("checkpoint_epochs", [epochs]))
+    # per-epoch input resolution; None means "no progressive resolution"
+    res_by_epoch = spec.get("resolution_by_epoch")
+    if res_by_epoch is not None:
+        res_by_epoch = [int(v) for v in res_by_epoch]
+        if len(res_by_epoch) != epochs:
+            raise ValueError("resolution_by_epoch has %d entries, need %d"
+                             % (len(res_by_epoch), epochs))
     metrics, t_start, gstep = [], time.perf_counter(), 0
+    eval_overhead = [0.0]                    # cumulative seconds spent in snapshots
 
     def snapshot(done_epochs):
-        # sigma of the most recently completed training update
-        sigma_eval = (ctrl.epoch_sigmas[max(done_epochs - 1, 0)]
-                      if ctrl.epoch_sigmas else None)
+        """Two explicitly named evaluation paths.
+
+        *current* (primary): the resolution and effective sigma used by the most
+        recently **completed** training update -- the configuration the weights
+        and BatchNorm buffers were actually trained under.
+        *target* (diagnostic): the original 32x32 input with the internal filter
+        bypassed exactly.  While continuation is running this measures a
+        premature change of input/operator, BatchNorm mismatch included; it is
+        not the quality of the current predictor.
+        """
+        last = max(done_epochs - 1, 0)
+        sigma_eval = ctrl.epoch_sigmas[last] if ctrl.epoch_sigmas else None
+        res_eval = res_by_epoch[last] if res_by_epoch else None
+        nxt = min(done_epochs, epochs - 1)
         prev = ctrl.value
         ctrl.value = sigma_eval
-        active = bool(sigma_eval)
-        cur, cur_acc = (evaluate(model, ctrl, probe_imgs, probe_lbls, pipe, bypass=False)
-                        if active else (None, None))
-        byp, byp_acc = evaluate(model, ctrl, probe_imgs, probe_lbls, pipe, bypass=True)
-        tce, tacc = evaluate(model, ctrl, held_imgs, held_lbls, pipe, bypass=True)
-        tce_f, tacc_f = (evaluate(model, ctrl, held_imgs, held_lbls, pipe, bypass=False)
-                         if active else (None, None))
+        active = ctrl.is_active(sigma_eval)
+        cur, cur_acc = evaluate(model, ctrl, probe_imgs, probe_lbls, pipe,
+                                bypass=not active, res=res_eval)
+        tce_f, tacc_f = evaluate(model, ctrl, held_imgs, held_lbls, pipe,
+                                 bypass=not active, res=res_eval)
+        byp, byp_acc = evaluate(model, ctrl, probe_imgs, probe_lbls, pipe,
+                                bypass=True, res=None)
+        tce, tacc = evaluate(model, ctrl, held_imgs, held_lbls, pipe,
+                             bypass=True, res=None)
         ctrl.value = prev
         rec = {"epoch": done_epochs, "update": gstep,
                "lr": lr_at(min(max(gstep - 1, 0), total_updates - 1), ocfg),
                "sigma_eval": sigma_eval, "filters_active_at_eval": active,
+               "resolution_eval": res_eval,
+               "eval_current_path": {"resolution": res_eval if res_eval else 32,
+                                     "sigma": sigma_eval,
+                                     "filter_bypassed": not active},
+               "eval_target_path": {"resolution": 32, "sigma": 0.0,
+                                    "filter_bypassed": True},
+               "next_sigma": (ctrl.epoch_sigmas[nxt] if ctrl.epoch_sigmas else None),
+               "next_resolution": (res_by_epoch[nxt] if res_by_epoch else None),
                "elapsed_s": time.perf_counter() - t_start,
+               "eval_overhead_s": eval_overhead[0],
+               "train_probe_ce_current": cur, "train_probe_acc_current": cur_acc,
+               "train_probe_ce_target": byp, "train_probe_acc_target": byp_acc,
+               "test_ce_current": tce_f, "test_acc_current": tacc_f,
+               "test_ce_target": tce, "test_acc_target": tacc,
                "train_probe_ce_filtered": cur, "train_probe_acc_filtered": cur_acc,
                "train_probe_ce_bypassed": byp, "train_probe_acc_bypassed": byp_acc,
                "test_ce_filtered": tce_f, "test_acc_filtered": tacc_f,
                "test_ce": tce, "test_acc": tacc}
         metrics.append(rec)
         (run_dir / "metrics.json").write_text(json.dumps(metrics, indent=2))
-        log("%-26s ep=%2d/%d sig=%-5s trCE(f)=%-8s trCE(b)=%.4f testCE=%.4f testAcc=%.4f  %.0fs"
+        log("%-26s ep=%2d/%d r=%-3s sig=%-5s | current CE=%.4f acc=%.4f | "
+            "target CE=%.4f acc=%.4f  %.0fs"
             % (label, done_epochs, epochs,
+               "-" if res_eval is None else str(res_eval),
                "-" if sigma_eval is None else "%.3f" % sigma_eval,
-               "-" if cur is None else "%.4f" % cur, byp, tce, tacc,
-               rec["elapsed_s"]))
+               tce_f, tacc_f, tce, tacc, rec["elapsed_s"]))
 
-    snapshot(0)
+    def timed_snapshot(n):
+        t0 = time.perf_counter()
+        snapshot(n)
+        eval_overhead[0] += time.perf_counter() - t0
+
+    timed_snapshot(0)
     for e in range(epochs):
         ctrl.set_epoch(e)                        # sigma fixed for the whole epoch
+        res_e = res_by_epoch[e] if res_by_epoch else None
         perm = perms[e]
         for start in range(0, n, B):
             batch = perm[start:start + B]
@@ -417,13 +490,15 @@ def train_run_epochs(spec, cfg, gpu_index, out_dir):
             for a in range(0, total, mb):
                 sl = idx[a:a + mb]
                 n_m = int(sl.numel())
-                loss = F.cross_entropy(model(pipe(tr_imgs[sl], 0.0)), tr_lbls[sl])
+                # uint8 -> float[0,1] -> resize to r(e) -> normalize
+                loss = F.cross_entropy(model(pipe(tr_imgs[sl], 0.0, res=res_e)),
+                                       tr_lbls[sl])
                 (loss * (n_m / total)).backward()
             opt.step()
             gstep += 1
         done = e + 1
         if done in eval_epochs:
-            snapshot(done)
+            timed_snapshot(done)
             ctrl.set_epoch(e)                    # restore the training sigma
         if done in ckpt_epochs:
             torch.save({"model_state": model.state_dict(),
@@ -432,8 +507,13 @@ def train_run_epochs(spec, cfg, gpu_index, out_dir):
                        run_dir / ("checkpoint_ep%02d.pt" % done))
 
     last = metrics[-1]
-    summary = {**{k: spec[k] for k in spec if k != "sigma_by_epoch"},
+    summary = {**{k: spec[k] for k in spec
+                  if k not in ("sigma_by_epoch", "resolution_by_epoch")},
                "sigma_by_epoch": spec.get("sigma_by_epoch"),
+               "resolution_by_epoch": res_by_epoch,
+               "resize": ("bilinear, align_corners=False, antialias=True; "
+                          "r=32 returns the original tensor with no resize op"),
+               "eval_overhead_s": eval_overhead[0],
                "epochs": epochs, "updates": gstep, "updates_per_epoch": per_epoch,
                "warmup": cfg["warmup"], "effective_batch": B, "microbatch": mb,
                "controller": ctrl.describe(),
@@ -450,9 +530,10 @@ def train_run_epochs(spec, cfg, gpu_index, out_dir):
                 "epoch": epochs, "update": gstep, "spec": spec},
                run_dir / "checkpoint_final.pt")
     (run_dir / "summary.json").write_text(json.dumps(summary, indent=2))
-    log("%-26s DONE testAcc=%.4f testCE=%.4f  %.0fs  peak %.0f MiB"
+    log("%-26s DONE testAcc=%.4f testCE=%.4f  %.0fs total (%.0fs eval)  peak %.0f MiB"
         % (label, summary["final_test_acc"], summary["final_test_ce"],
-           summary["wall_seconds"], summary["peak_mem_mib"] or 0))
+           summary["wall_seconds"], summary["eval_overhead_s"],
+           summary["peak_mem_mib"] or 0))
     return summary
 
 
@@ -481,6 +562,8 @@ def run_study(cfg):
         return run_dir
 
     build_shared(cfg, run_dir)
+    if VERIFY_SHARED is not None:
+        VERIFY_SHARED(run_dir)          # job-supplied pairing check; may raise
     specs = cfg["runs"]
     queues = [specs[i::max(ngpu, 1)] for i in range(max(ngpu, 1))]
     log("dispatching %d runs over %d GPU(s): %s"
