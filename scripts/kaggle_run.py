@@ -32,6 +32,7 @@ import argparse
 import base64
 import io
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -50,9 +51,49 @@ _TERMINAL_OK = ("complete",)
 _TERMINAL_BAD = ("error", "cancel", "fail")
 
 
+ACCOUNTS_DIR = Path.home() / ".kaggle-accounts"
+
+
+def available_accounts():
+    """Account names that have credentials under ``~/.kaggle-accounts``."""
+    if not ACCOUNTS_DIR.is_dir():
+        return []
+    return sorted(d.name for d in ACCOUNTS_DIR.iterdir()
+                  if (d / "kaggle.json").is_file())
+
+
+def select_account(name):
+    """Point the Kaggle CLI at one account's credentials.
+
+    Each account keeps its own ``kaggle.json`` in
+    ``~/.kaggle-accounts/<name>/``; selecting one exports ``KAGGLE_CONFIG_DIR``
+    for the CLI subprocesses.  With no name the default ``~/.kaggle`` is used,
+    so existing invocations are unchanged.
+
+    Kernels are owned by whichever account pushed them, and quotas are per
+    account -- so two accounts give two independent GPU budgets, but a run from
+    one is not visible to ``kernels list --mine`` on the other.
+    """
+    if name is None:
+        return None
+    cfg_dir = ACCOUNTS_DIR / name
+    if not (cfg_dir / "kaggle.json").is_file():
+        raise SystemExit(
+            "no credentials for account %r at %s (available: %s)"
+            % (name, cfg_dir / "kaggle.json", ", ".join(available_accounts()) or "none"))
+    os.environ["KAGGLE_CONFIG_DIR"] = str(cfg_dir)
+    return cfg_dir
+
+
+def _config_path() -> Path:
+    """The kaggle.json the CLI will actually use, honouring KAGGLE_CONFIG_DIR."""
+    override = os.environ.get("KAGGLE_CONFIG_DIR")
+    base = Path(override) if override else Path.home() / ".kaggle"
+    return base / "kaggle.json"
+
+
 def _kaggle_username() -> str:
-    cfg = Path.home() / ".kaggle" / "kaggle.json"
-    return json.loads(cfg.read_text())["username"]
+    return json.loads(_config_path().read_text())["username"]
 
 
 def _slugify(name: str) -> str:
@@ -191,7 +232,9 @@ def push_and_run(script_path: Path, *, gpu: bool = False, internet: bool = False
     kernel_id = f"{username}/{slug}"
 
     output_dir = REPO_ROOT / "results" / "kaggle_outputs" / slug
-    if output_dir.exists() and any(output_dir.iterdir()) and not overwrite:
+    existing = ([q for q in output_dir.iterdir() if q.name != "launch.json"]
+                if output_dir.exists() else [])
+    if existing and not overwrite:
         raise FileExistsError(
             f"{output_dir} is not empty; pass --overwrite to replace it "
             "(outputs are tagged per run so this should be rare)")
@@ -213,6 +256,7 @@ def push_and_run(script_path: Path, *, gpu: bool = False, internet: bool = False
     }
     (job_dir / "kernel-metadata.json").write_text(json.dumps(metadata, indent=2))
 
+    print(f"account  : {username}   (config: {_config_path()})")
     print(f"kernel   : {kernel_id}")
     print(f"gpu      : {gpu}   internet: {internet}   accelerator: {accelerator or '(default)'}")
     print(f"shipped  : {len(shipped)} files ({', '.join(sorted(includes))})")
@@ -222,6 +266,13 @@ def push_and_run(script_path: Path, *, gpu: bool = False, internet: bool = False
     if dry_run:
         print("dry run - nothing pushed")
         return output_dir
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    (output_dir / "launch.json").write_text(json.dumps(
+        {"account": username, "kernel_id": kernel_id, "slug": slug,
+         "accelerator": accelerator, "gpu": gpu, "internet": internet,
+         "datasets": list(datasets), "script": str(script_path),
+         "launched_utc": datetime.now(timezone.utc).isoformat()}, indent=2))
 
     push_cmd = ["kaggle", "kernels", "push", "-p", str(job_dir)]
     if accelerator:
@@ -274,6 +325,9 @@ def main() -> None:
     p.add_argument("--tag", help="run tag appended to the slug (default: UTC timestamp)")
     p.add_argument("--overwrite", action="store_true",
                    help="allow replacing a non-empty local output directory")
+    p.add_argument("--account", default=None,
+                   help="Kaggle account to run as; reads "
+                        "~/.kaggle-accounts/<name>/kaggle.json (default: ~/.kaggle)")
     p.add_argument("--accelerator", default=None,
                    help="accelerator id for machine_shape, e.g. NvidiaTeslaT4")
     p.add_argument("--dataset", action="append", default=None,
@@ -286,6 +340,8 @@ def main() -> None:
 
     if not args.script.exists():
         p.error(f"script not found: {args.script}")
+
+    select_account(args.account)
 
     push_and_run(args.script, gpu=args.gpu, internet=args.internet,
                  title=args.title, includes=tuple(args.include or DEFAULT_INCLUDES),
