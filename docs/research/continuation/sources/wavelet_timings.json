@@ -1,0 +1,151 @@
+{
+  "s": 0.5,
+  "sigma": 1.0,
+  "dtype": "float32",
+  "wavelet_scope": "complete operation: mirror extension, 2-level analysis, per-band RMS, soft threshold, adjoint synthesis, crop",
+  "method": "median over repeated calls after warm-up; CUDA-synchronised; excludes host/device transfers and file I/O; no optimizer steps",
+  "torch": "2.5.1+cu121",
+  "cpu_single_image_ms": {
+    "wavelet_haar": 14.869200007524341,
+    "wavelet_db2": 14.402100030565634,
+    "wavelet_sym4": 15.513099991949275,
+    "wavelet_coif1": 14.958849991671741,
+    "gaussian_sigma_max3": 0.44204998994246125,
+    "gaussian_sigma_max1": 0.4256000102031976
+  },
+  "gpu": {
+    "name": "NVIDIA GeForce RTX 3050 Laptop GPU",
+    "free_mb": 3303,
+    "total_mb": 4096
+  },
+  "cuda": {
+    "input [128,3,32,32]": {
+      "shape": [
+        128,
+        3,
+        32,
+        32
+      ],
+      "forward_ms": {
+        "wavelet_haar": 9.539499995298684,
+        "wavelet_db2": 22.665749973384663,
+        "wavelet_sym4": 25.91459997347556,
+        "wavelet_coif1": 24.471300013829023,
+        "gaussian_sigma_max3": 0.48525002785027027,
+        "gaussian_sigma_max1": 0.3101500042248517
+      },
+      "forward_backward_ms": {
+        "wavelet_haar": 76.03485000436194,
+        "wavelet_db2": 56.75479999626987,
+        "wavelet_sym4": 61.63449998712167,
+        "wavelet_coif1": 59.12660001195036,
+        "gaussian_sigma_max3": 1.0846999939531088,
+        "gaussian_sigma_max1": 0.7585000130347908
+      },
+      "peak_mem_mb": {
+        "wavelet_haar": 378.39892578125,
+        "wavelet_db2": 387.77392578125,
+        "wavelet_sym4": 403.08642578125,
+        "wavelet_coif1": 394.05517578125,
+        "gaussian_sigma_max3": 13.880859375,
+        "gaussian_sigma_max1": 11.630859375
+      }
+    },
+    "stage1 [128,16,32,32]": {
+      "shape": [
+        128,
+        16,
+        32,
+        32
+      ],
+      "forward_ms": {
+        "wavelet_haar": 46.36464998475276,
+        "wavelet_db2": 117.708700010553,
+        "wavelet_sym4": 134.264099993743,
+        "wavelet_coif1": 126.79875001776963,
+        "gaussian_sigma_max3": 2.354700001887977,
+        "gaussian_sigma_max1": 1.282299985177815
+      },
+      "forward_backward_ms": {
+        "wavelet_haar": 235.9112499980256,
+        "wavelet_db2": 292.3890999809373,
+        "wavelet_sym4": 319.2873499938287,
+        "wavelet_coif1": 306.83309998130426,
+        "gaussian_sigma_max3": 5.082949995994568,
+        "gaussian_sigma_max1": 2.661100006662309
+      },
+      "peak_mem_mb": {
+        "wavelet_haar": 2030.068359375,
+        "wavelet_db2": 2072.068359375,
+        "wavelet_sym4": 2144.068359375,
+        "wavelet_coif1": 2090.068359375,
+        "gaussian_sigma_max3": 74.00732421875,
+        "gaussian_sigma_max1": 62.00634765625
+      }
+    },
+    "stage2 [128,32,16,16]": {
+      "shape": [
+        128,
+        32,
+        16,
+        16
+      ],
+      "forward_ms": {
+        "wavelet_haar": 24.57840001443401,
+        "wavelet_db2": 60.653749998891726,
+        "wavelet_sym4": 69.71040001371875,
+        "wavelet_coif1": 65.479150012834,
+        "gaussian_sigma_max3": 1.3380499731283635,
+        "gaussian_sigma_max1": 0.717750022886321
+      },
+      "forward_backward_ms": {
+        "wavelet_haar": 203.90375002170913,
+        "wavelet_db2": 152.46270000352524,
+        "wavelet_sym4": 170.551049959613,
+        "wavelet_coif1": 160.99685002700426,
+        "gaussian_sigma_max3": 3.157150000333786,
+        "gaussian_sigma_max1": 1.5435999957844615
+      },
+      "peak_mem_mb": {
+        "wavelet_haar": 1018.623046875,
+        "wavelet_db2": 1059.623046875,
+        "wavelet_sym4": 1129.623046875,
+        "wavelet_coif1": 1090.623046875,
+        "gaussian_sigma_max3": 46.5087890625,
+        "gaussian_sigma_max1": 34.5068359375
+      }
+    },
+    "stage3 [128,64,8,8]": {
+      "shape": [
+        128,
+        64,
+        8,
+        8
+      ],
+      "forward_ms": {
+        "wavelet_haar": 13.094249996356666,
+        "wavelet_db2": 31.42169999773614,
+        "wavelet_sym4": 36.91095003159717,
+        "wavelet_coif1": 34.20525000547059,
+        "gaussian_sigma_max3": null,
+        "gaussian_sigma_max1": 0.4521000082604587
+      },
+      "forward_backward_ms": {
+        "wavelet_haar": 65.01635001040995,
+        "wavelet_db2": 81.46180000039749,
+        "wavelet_sym4": 95.1684000028763,
+        "wavelet_coif1": 88.28465000260621,
+        "gaussian_sigma_max3": null,
+        "gaussian_sigma_max1": 0.9838500118348747
+      },
+      "peak_mem_mb": {
+        "wavelet_haar": 518.232421875,
+        "wavelet_db2": 560.232421875,
+        "wavelet_sym4": 633.232421875,
+        "wavelet_coif1": 590.232421875,
+        "gaussian_sigma_max3": null,
+        "gaussian_sigma_max1": 20.0078125
+      }
+    }
+  }
+}

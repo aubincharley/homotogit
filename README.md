@@ -18,6 +18,15 @@ conflated:
 phase, exact numbers, verification results, hardware gotchas and open threads.
 Read it before quoting any past result or re-running anything.
 
+**[`docs/research/continuation/`](docs/research/continuation/README.md) is the
+maintained research knowledge base** (in French): the scientific approach, one
+record per experiment `EXP-000`…`EXP-011`, operator and protocol definitions,
+preserved historical sources with sha256 fingerprints, and an errata list of
+interpretations that must not be repeated. Start at its
+[README](docs/research/continuation/README.md); an agent picking the project up
+should read `CURRENT_STATE.md` and `OPEN_QUESTIONS.md` there first. Note that a
+proposal recorded in an archived prompt is **not** authorisation to run it.
+
 ## Current state (one-line summary)
 
 | intervention | effect on final test accuracy | cost |
@@ -29,9 +38,12 @@ Read it before quoting any past result or re-running anything.
 | db2 wavelet feature shrinkage | +0.94 pp (1 seed) — set aside | ~61× |
 
 Current model is `resnet20_bn_cifar` (ResNet-20, BatchNorm, option-A shortcuts,
-269,722 params, 19 filter insertion points). Measured single-seed GPU
-nondeterminism is **~±0.1 pp** on final accuracy — compare small effects against
-it. Everything past the 3-seed campaign is one seed.
+269,722 params, 19 filter insertion points). Two runs of the same paired plain
+configuration differed by 0.04 pp on final accuracy; that is a single observed
+difference, **not** a noise floor or an equivalence threshold — two runs define
+no distribution (see errata C-12 and C-13 in
+[CORRECTIONS](docs/research/continuation/CORRECTIONS.md)). The one-seed rows
+above are preliminary.
 
 ## Two execution paths
 
@@ -100,6 +112,8 @@ configs/           experiment configuration
 docs/              HANDOVER.md (read first), gaussian.md, extensions.md,
                    tv_budget.md, wavelet_shrinkage.md, experiment0.md,
                    results.md, exp1_warmstart.md, kaggle_cli.md
+  research/continuation/   maintained research knowledge base (French):
+                   experiment records, operators, protocols, errata, sources
 tests/             ~170 tests, no dataset download required
 ```
 

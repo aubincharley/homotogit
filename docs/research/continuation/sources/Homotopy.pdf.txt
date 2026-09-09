@@ -1,0 +1,391 @@
+              IDEAL LOW-PASS DENSITY DESIGN FOR HOMOTOPIC OFF-THE-GRID
+                                   DECONVOLUTION
+
+                          Joseph Gabet1               Maxime Ferreira Da Costa1                     Kiryung Lee2
+       1
+           Laboratory of Signals and Systems, CentraleSupélec, Université Paris–Saclay, CNRS, France
+                                2
+                                  The Ohio State University, Columbus, OH, USA
+
+
+                            ABSTRACT                                      a total-variation penalty scaled by the prescribed minimum separa-
+                                                                          tion. A good sampling law must therefore collect energy where the
+A recent conditioning analysis led to a linear program for variable-
+                                                                          PSF is strong without creating excessive variation in the effective
+density continuous frequency sampling. Its solutions empirically
+                                                                          spectrum. Discretizing this criterion gives a convex density-design
+equalized a point-spread-function spectrum without dividing the
+                                                                          problem and does not require pointwise equalization.
+noisy data: the optimized density times the power spectrum was
+flat on a band. We prove this observation. The continuous problem               Numerically, this design repeatedly produced a strikingly sim-
+admits an optimizer whose effective spectrum is a normalized in-          ple solution: the effective spectrum was constant on a band and zero
+dicator of finitely many intervals; for an even spectrum decreasing       outside [8, Sec. 5]. In other words, the sampling law compensated
+away from the origin, it is a centered ideal low-pass. The proof          for the PSF statistically and created an ideal low-pass response with-
+also clarifies non-uniqueness and gives an algorithmic selection rule     out dividing any noisy datum by the PSF spectrum. The observation
+for the rectangular representative. This shape suggests a coarse-to-      was not covered by the conditioning theorem: it remained unclear
+fine sequence of nested low-pass variable-projection objectives. A        whether the rectangular profile was necessarily optimal, whether it
+covering-number bound orders objective complexity independently           was unique, and why a generic linear-program solver sometimes re-
+of the optimization method. Equal-acquisition and equal-iteration         turned a different shape.
+experiments show a lower separation–SNR transition than direct                  The shape question also suggests an optimization strategy. The
+non-homotopic refinement.                                                 autocorrelation of a narrow effective band varies slowly; widening
+                                                                          the band concentrates it near the origin but introduces more oscil-
+   Index Terms— off-the-grid sparse signals, variable-density             lations. This motivates solving a sequence of nested rectangular de-
+sampling, homotopy, variable projection, super-resolution                 signs, from a coarse objective to the full-resolution nonconvex objec-
+                                                                          tive. Variable projection is well suited to this continuation because
+                       1. INTRODUCTION                                    it eliminates the source amplitudes and optimizes only over the con-
+                                                                          tinuous locations.
+Spike deconvolution aims to recover a small number of point sources
+                                                                                The contributions are threefold. First, a complete bounded-
+from a superposition of shifted copies of a known point-spread func-
+                                                                          variation argument proves the existence of an optimal effective
+tion (PSF). Unlike discrete sparse recovery, the shifts are real-valued
+                                                                          spectrum that is a normalized indicator of finitely many intervals;
+and do not lie on a prescribed grid. This off-the-grid model occurs in
+                                                                          under the symmetry and monotonicity satisfied by the Gaussian
+radar, array processing, imaging, and channel estimation [1–3]. Ran-
+                                                                          example, a centered interval is optimal. The proof exposes non-
+dom Fourier moments also serve as compact sketches for large-scale
+                                                                          uniqueness and yields a deterministic level-set procedure selecting
+mixture learning [4, 5]. In all these examples, Fourier measurements
+                                                                          a rectangular optimum. Second, a covering-number bound quan-
+generate a Vandermonde dictionary whose columns become nearly
+                                                                          tifies how its bandwidth-dependent upper bound grows, without
+collinear for closely spaced sources, while a low-pass PSF suppress-
+                                                                          depending on a particular solver. Third, the resulting nested-band
+es the frequencies that carry the information needed to distinguish
+                                                                          continuation is evaluated with variable projection under matched ac-
+them [6, 7].
+                                                                          quisition and total iteration counts, including controls that separate
+     A common response is to divide every measurement point-
+                                                                          the benefit of the objective path from the initializer.
+wise by the PSF spectrum. This restores an unweighted spectral-
+estimation model, but colors and amplifies the noise where the PSF
+response is weak. The alternative studied here leaves the acquired                2. VARIABLE-DENSITY SAMPLING DESIGN
+values untouched and instead designs the frequency-sampling den-
+sity. The product of that density with the PSF power spectrum is the
+                                                                          Consider L snapshots sharing the same r locations:
+effective spectrum: its integral measures the average captured ener-                        Xr
+gy, and its inverse Fourier transform controls correlations between                xℓ (t) =     (A)k,ℓ g(t − τk ),    1 ≤ ℓ ≤ L,               (1)
+shifted atoms.                                                                                k=1
+     A recent conditioning theorem for variable-density sampling          where τ = [τ1 , . . . , τr ]⊤ ∈ Rr , A ∈ Cr×L collects the ampli-
+makes this tradeoff quantitative [8]. It bounds the squared singular      tudes, and g is the known PSF. The actual minimum separation is
+values of the sensing matrix using the captured spectral energy and       δ(τ ) := mink̸=k′ |τk − τk′ | ≥ ∆. Thus δ(τ ) is the actual min-
+                                                                          imum separation, whereas ∆ is only a prescribed lower bound on
+    JG and MF were supported in part by ANR funding ANR-24-CE48-
+3094, AID funding AID-2023639, and the Orange chair on “Sustainable 6G”   it.
+held by CentraleSupélec. KL was supported in part by NSF CAREER Award        Let frequencies f1 , . . . , fM be drawn i.i.d. from a density ρ sup-
+CCF-1943201.                                                              ported on [−B, B].
+For each snapshot, we observe the noisy Fourier coefficients                  solution. At least one solution satisfies
+                                        r
+                                        X
+                                          (A)k,ℓ e−2πifj τk + (E)j,ℓ .                                                1E ⋆ (ξ)
+(Y )j,ℓ := xbℓ (fj ) + (E)j,ℓ = gb(fj )                                                         Γg (ξ)ρ⋆ (ξ) = Z                  ,               (6)
+                                         k=1                                                                          Γg (u)−1 du
+                                                                     (2)                                          E⋆
+Define (Φτ )j,k = e−2πifj τk , G = diag1≤j≤M (b        g (fj )), and s-       where E ⋆ ⊂ I is a finite union of intervals. If Γg is even and strictly
+tack the entries of (2) in Y , E ∈ CM ×L . The Fourier-domain                 decreasing with |ξ|, then E ⋆ can be chosen as [−Ω⋆ , Ω⋆ ].
+observation model is therefore Y = GΦτ A + E. Finally, let                        Proof. Put q = Γ−1 g . Since Γg is positive and continuous on the
+Γg (ξ) := |bg (ξ)|2 denote the power spectral density of the PSF.             compact interval I, there are constants 0 < qmin ≤ q ≤ qmax . In
+     For the observation model (1)–(2), the result in [8] is stated           terms of h, the feasible set is
+for one measurement vector. Its high-probability event, however,
+                                                                                                                                 R
+                                                                                    A = {h ∈ BV (R) : hR ≥ 0, supp h ⊂ I, I qh = 1},
+bounds the singular values of the common sensing matrix GΦτ . On              and the objective is J(h) = I h − λ|Dh|(R).
+this event, every A satisfies                                                     Existence.
+                                                                                                              R
+                                                                                              The profile 1I / I q is feasible and has value (2B −
+                2
+              σmin  ∥A∥2F ≤ ∥GΦτ A∥2F ≤ σmax  2
+                                                  ∥A∥2F ,                          R
+                                                                              2λ)/ I q > 0; hence the supremum M is positive. Choose a max-
+where σmin and σmax are the extreme singular values of GΦτ . This
+                                                                              imizing  sequence with J(hm ) > 0. The mass constraint gives
+is the single-vector bound applied to each column and summed over             R          −1
+                                                                                 h ≤ qmin
+                                                                               I m
+                                                                                             , and therefore
+the snapshots. Thus the same high-probability event controls all s-                                             Z
+napshots: L changes A and Y , but neither the sensing matrix nor                            |Dhm |(R) ≤ λ−1           hm ≤ (λqmin )−1 .
+the density and sample-size conditions in [8].                                                                    I
+                                                                              Thus (hm ) is bounded in BV and has a common compact support.
+     In terms of Γg , the theorem assumes g ∈ L1 , Γg ∈ L1 (ρ) ∩
+                                                                              BV compactness yields, after extraction, hRm → h in L1 (R) [9,
+TV(ρ), and ∆ > ∥Γg ∥TV(ρ) /(2∥Γg ∥L1 (ρ) ). For its concentration
+                                                                              Thm. 3.23]. Nonnegativity, support, and I qh = 1 pass to the
+tolerance ε ∈ (0, 1), the stated near-linear sample-size condition
+                                                                              limit. Lower semicontinuity of total variation then gives J(h) ≥
+then guarantees with high probability, uniformly over all separated
+                                                                              lim supm J(hm ) = M , so h is a maximizer.
+τ , that          "
+                                            −1
+                                                            #1/2                   Reduction  to a level set. For a finite-perimeter set E ⊂ I, let
+                    1 + ε ∥Γg ∥L1 (ρ) + (2∆) ∥Γg ∥TV(ρ)
+                                                                                       R
+   κ(GΦτ ) ≤                                                     . (3)        Q(E) = E q. Whenever Q(E) > 0, the profile 1E /Q(E) is feasi-
+                    1 − ε ∥Γg ∥L1 (ρ) − (2∆)−1 ∥Γg ∥TV(ρ)                     ble; hence
+Here                Z                                 Z                                          |E| − λ Per(E; R) ≤ M Q(E).                    (7)
+    ∥Γg ∥L1 (ρ) = Γg (ξ)ρ(ξ) dξ, ∥Γg ∥TV(ρ) =             |d(Γg ρ)| .         Apply this inequality to the superlevel sets Et = {h > t}. For
+                                                           R                  almost every t, Et has finite perimeter, and the layer-cake and BV
+The denominator in (3) is the design margin. It makes the tradeoff            coarea
+                                                                                   Z identities [9, ZThm. 3.40] give
+                                                                                     ∞                            Z ∞
+transparent: placing mass where the PSF is strong increases energy,
+but abrupt changes of Γg ρ reduce the uniform separation guarantee.                     |Et |dt = h,                   Per(Et ; R)dt = |Dh|(R),
+                                                                                Z ∞0                ZI             0
+     [8, Sec. 5] discretizes [−B, B] at jB/n and writes cj =
+Γg (jB/n). The proposed design algorithm solves                                      Q(Et )dt = qh = 1.
+                                                                                 0                  I
+       max         uL1 (ρ) − (2∆)−1 uTV (ρ),                                  The gap between the right- and left-hand sides of (7) is nonnega-
+     2n+1
+  ρ∈RP    , ρ≥0
+(B/n) n                                                                       tive. Its integral is M − J(h)R ∞ = 0, so it vanishes for almost every
+       j=−n ρj =1
+                              n                                               nonempty level set. Since 0 Q(Et )dt = 1, at least one such set
+                        B X                                                   has Q(Et ) > 0. Normalizing its indicator gives (6) with value M .
+           uL1 (ρ) =           cj ρj ,
+                        n j=−n                                                A bounded finite-perimeter subset of R is, up to a null set, a finite
+                                               n−1
+                                               X                              union of disjoint intervals.
+           uTV (ρ) = c−n ρ−n + cn ρn +                |cj+1 ρj+1 − cj ρj |,        Centered low-pass representative. Now suppose Γg is even and
+                                               j=−n                           decreasing with |ξ|, so q is even and increasing with |ξ|. Let E be a
+                                                                   (4)        level set attaining equality above. The value |E| − λ Per(E; R) =
+The density is then interpolated and used for inverse-CDF frequency           M Q(E) is positive. The centered interval E # with |E # | = |E| has
+sampling. The first two terms of uTV are the jumps to zero at the             Per(E # ; R) = 2 ≤ Per(E; R). Writing E # = [−Ω, Ω], mono-
+endpoints. Numerically, the LP produced cj ρj constant on a subset                 Z of q also gives
+                                                                              tonicity                                                Z
+of the grid. The next section proves that this is not a discretization                      q ≥ q(Ω)|E \ E # | = q(Ω)|E # \ E| ≥               q.
+accident.                                                                            RE\E # R                                           E # \E
+                                                                              Thus E # q ≤ E q. Replacing E by E # therefore cannot decrease
+                                                                              the objective of the normalized indicator: its numerator does not
+         3. THE OPTIMAL EFFECTIVE SPECTRUM
+                                                                              decrease and its normalizing denominator does not increase. The
+Set I = [−B, B] and λ = (2∆)−1 . For a density ρ, write h = Γg ρ              resulting value is at least M , hence equals M by optimality. This
+and extend h by zero outside I. The exact continuous counterpart of           gives an optimal set of the form [−Ω⋆ , Ω⋆ ].                       □
+(4) is                                                                        A concrete non-unique optimum. Consider I = [−1, 1], λ = 1/4,
+                  Z                                                         and a PSF whose power spectral (   density on I is
+              sup          Γg (ξ)ρ(ξ) dξ − λ TV(h; R) .                (5)                                         1,                −1 ≤ ξ ≤ 0,
+                                                                                                −1
+             R ρ≥0     I                                                         Γg (ξ) = q(ξ) ,          q(ξ) =
+              I ρ=1                                                                                                1 − 3ξ + 3ξ 2 , 0 < ξ ≤ 1.
+     The next theorem shows that the observed rectangular profile is          This is a continuous positive in-band power spectrum. The two ef-
+intrinsic to (5) and identifies when it can be centered.                      fective spectra
+                                                                                                     2
+                                                                                            h
+                                                                                            R rec = 3 1I ,     hnr = 12 1[−1,0) + 1[0,1]
+Theorem 1 (Rectangular effective spectrum) Assume that Γg is                  both satisfy I qh = 1. After zero extension, J(hrec ) = 4/3 −
+continuous and positive on I, and B > λ. Problem (5) admits a                 (1/4)(4/3) = 1, whereas J(hnr ) = 3/2 − (1/4)(2) = 1.
+                                                                                                  βk2 :=     ξ 2 dνk (ξ). The corresponding Fourier-feature distance is
+                                                                                                           R
+   g |2 = Γg
+  |b                                        hrec                                        hnr
+                                                                                                                               r
+                                                                                                                             Z X
+                                                                                                                                                      ′ 2
+                                                                                                           d2k (τ , τ ′ ) :=      e−2πiξτs − e−2πiξτs dνk (ξ).        (9)
+                                                                                                                            s=1
+                   ξ                                             ξ                            ξ   The next proposition isolates the dependence on the effective band-
+                                                                                                  width.
+     These equal values are globally optimal. Indeed, set p = 1 on
+[−1, 0] and p(ξ) = 1 − 6ξ 2 + 4ξ 3 on [0, 1]. Then ∥p∥∞ ≤ 1,                                      Proposition 1 (Effective bandwidth and covering number) Let
+and at every jump of either profile, p equals the sign of that jump.                              Θ ⊂ Rr be a bounded set of ordered location vectors. For every
+Moreover, λ(−p′ ) − 1 + q = 0. This is the standard subgradient                                   ε > 0,                                         
+optimality condition for total variation, with multiplier one for the                                                                          ε
+                                                                                                               N (Θ, dk , ε) ≤ N Θ, ∥ · ∥2 ,        .
+mass constraint, and it certifies both profiles. The rectangle exists,                                                                       2πβk
+but an LP solver may return another point of the same optimal face.
+Selecting the rectangular representative. After solving (4), for-                                      Proof. The scalar mean-value inequality gives |e−2πiξt −
+                                                                                                   −2πiξt′
+m h = (cj ρj )j and enumerate its distinct positive superlevel sets.                              e          | ≤ 2π|ξ||t − t′ |. Applying it componentwise in (9),
+Normalize each indicator by the discrete mass constraint and eval-                                then integrating against the normalized effective spectrum, yields
+uate the LP objective. The discrete layer-cake and coarea identities                              dk (τ , τ ′ ) ≤ 2πβk ∥τ − τ ′ ∥2 . Thus every Euclidean ε/(2πβk )-net
+guarantee that at least one candidate is optimal. Merging consecu-                                is a dk -net, which proves the claim.                             √□
+tive selected cells then returns a minimizer of the form asserted by                                   For an ideal effective low-pass on [−Ωk , Ωk ], βk = Ωk / 3.
+Thm. 1.                                                                                           More generally, Prop. 1 shows that β0 < · · · < βK orders the
+                                                                                                  resulting covering-number upper bounds from smaller to larger. It
+                 4. NESTED-BAND CONTINUATION                                                      does not assert that every optimization method has nested basins;
+                                                                                                  the VarPro result cited above and Fig. 1 provide the method-specific
+We first define the optimization problem used below. At stage k, let                              motivation for warm starts. Together, these two ingredients motivate
+Fk index the frequencies in [−Ωk , Ωk ], and let Yk , Gk , and Φτ ,k                              the coarse-to-fine procedure in Alg. 1.
+denote the corresponding row restrictions of Y , G, and Φτ . For a                                Alg. 1: Nested-band VarPro continuation
+candidate location vector τ ∈ Rr , the amplitudes can be eliminated                               Input: final data (fj , (Y )j,: )M
+                                                                                                                                   j=1 , bands Ω0 < · · · < ΩK = B.
+in closed form:                                                                                   1. Set Fk ← {j : |fj | ≤ Ωk }.
+                     1                                                                            2. Initialize τ (0) by standard final-band MUSIC [12].
+           ℓk (τ ) = min ∥Yk − Gk Φτ ,k A∥2F
+                     2 A                                           (8)                            3. For k = 0, . . . , K, approximately minimize ℓk from τ (k) , ob-
+                     1                                                                           taining τ (k+1) .
+                   = ∥ I − Gk Φτ ,k (Gk Φτ ,k )† Yk ∥2F .
+                                                   
+                     2                                                                            Output: the final location estimate τ (K+1) .
+This is the classical variable-projection reduction [10]. For multi-                                   Alg. 1 reuses one acquisition rather than drawing a new frequen-
+snapshot spike deconvolution, a recent analysis characterizes a                                   cy set at every stage. Specifically, draw the M frequencies once
+bandwidth-dependent basin of convexity and proves local conver-                                   from ρB (ξ) ∝ Γg (ξ)−1 1{|ξ|≤B} . Stage k only retains the already
+gence of gradient descent when initialized inside it [11, Thms. 1 and                             acquired rows indexed by Fk . Conditional on their number, the
+6].                                                                                               retained frequencies are i.i.d. from ρΩk (ξ) ∝ Γg (ξ)−1 1{|ξ|≤Ωk } .
+     We can now discuss the geometry behind continuation. When                                    Thus each stage has the intended density for its bandwidth, the row
+the normalized effective spectrum is uniform on [−Ω, Ω], it-                                      sets are nested, and no frequency is redrawn or newly acquired.
+s inverse Fourier transform equals sinc(2Ωt), where sinc(u) =
+sin(πu)/(πu).
+     Increasing Ω improves resolution but also introduces additional                                              5. NUMERICAL EXPERIMENTS
+oscillations in the correlations entering (8). The fine loss is there-
+fore more informative while its useful neighborhood around the de-                                We use two complementary protocols. Fig. 2 maps successful lo-
+sired support can be smaller. Solving the smoother problem first                                  calization over separation and SNR and compares the resulting 80%
+and revealing resolution gradually is consequently natural. For the                               frontiers. Fig. 3 fixes the separation and reports localization error
+Gaussian design considered below, centered bands satisfy the struc-                               together with the corresponding conditional CRBs.
+tural form of Thm. 1; prescribing nested bandwidths produces a con-                                    We simulate L = 20 independent snapshots of two spikes on
+trolled path between such objectives.                                                             the unit torus, with i.i.d. CN (0, 1) amplitudes, and a Gaussian PS-
+                                                                                                  F Γg (ξ) = exp(−4π 2 σ 2 ξ 2 ) with σ = 0.02. We use B = 10,
+     To quantify complexity independently of the optimizer, let dνk
+be the probability measure proportional to Γg (ξ)ρk (ξ) dξ, and let
+                                                                                                  M = 128, and bands √ {3.5, 4.75, 6.25, 8, 10}, whose effective band-
+                                                                                                  widths βk = Ωk / 3 increase from 2.02 to 5.77. Conditional on the
+                       Ω = 3.5   Ω = 6.25         Ω = 10         (b) Basins and iterates          frequencies and amplitudes, noise is E = σn Z with i.i.d. (Z)j,ℓ ∼
+                 1.0   (a)                                                                        CN (0, 1) and σn2 = ∥GΦτ A∥2F 10−SNR/10 /(M L). Thus condi-
+                                                           0.6                                    tional expected noise energy, rather than the norm of a particular
+         KΩ(τ)
+
+
+
+
+                 0.5
+                                                                                                  realization, sets the SNR. Success means permutation-invariant lo-
+                                                     τ2
+
+
+
+
+                                                           0.4                                    cation RMSE below 0.06/(2B). Each cell averages 40 trials.
+                 0.0
+                                                                                                       For 0 < Ω ≤ B, define
+                        −0.2     0.0        0.2                        0.4        0.6                                            Γg (ξ)−1 1{|ξ|≤Ω}
+                                 τ                                           τ1                                        ρΩ (ξ) = R Ω                  .
+                                                                                                                                   −Ω g
+                                                                                                                                       Γ (u)−1 du
+Fig. 1. Coarse-to-fine intuition. (a) Ideal-low-pass autocorrelations                             Each optimized-density trial first draws f1 , . . . , fM independently
+for Ω = 3.5, 6.25, 10. (b) Corresponding empirical attraction basins                              from ρB . Stage k only masks this acquired array: Fk = {j : |fj | ≤
+of (8) and nested-band iterates; the star is the true support.                                    Ωk }. Thus F0 ⊂ · · · ⊂ FK exactly; no frequency is redrawn,
+     (a)
+                                             Uniform VarPro                          Final MUSIC                                                   5.55 dB for uniform sampling. Averaged over separations for which
+                                                                                                                       1.0                         both frontiers cross within the displayed SNR range, the correspond-
+                          10
+
+
+
+
+                                                                                                                             success probability
+                                    0                                                                                  0.8                         ing gains are 2.92 and 5.45 dB. The homotopic curve is never worse
+                                                                                                                                                   than any refined baseline, improves by 18.61 dB on average over
+                  −10
+       SNR (dB)
+
+
+
+
+                                                                                                                       0.6                         the coarse-initialized direct control, and ties direct VarPro in the
+                                               Final VarPro                              Homotopy
+                                                                                                                       0.4                         easy regime beyond 2Bδ(τ ) = 1.13. The coarse-initialized control
+                          10                                                                                                                       shows that transferring a coarse estimate without the intermediate
+                                    0                                                                                  0.2
+                                                                                                                                                   objectives does not reproduce the homotopy gain.
+                  −10                                                                                                  0.0                              Counting one iteration on one active frequency row as one
+                                             0.5      1.0       1.5               0.5       1.0         1.5                                        row-update, homotopy uses only 70.4% of the direct method’s
+                                               normalized separation 2B δ(τ)                                                                       row-updates despite the common 60-iteration budget; its first stage
+       (b)
+                                                                                                                                                   retains 25.2 of the 128 rows on average. Each heatmap cell is the
+                  SNR at 80% (dB)
+
+
+
+
+                                                                 Uniform        Direct    Coarse-init       Homotopy                               empirical mean of 40 Bernoulli success indicators.
+                                                                                                                                                        Fig. 3 reports location RMSE at 2Bδ(τ ) = 0.60 from 80 new
+                                        10
+                                                                                                                                                   paired trials per SNR. Within a panel, all curves share frequencies
+                                        0                                                                                                          and amplitudes, and the estimators share each noise realization. Pan-
+                                    −10                                                                                                            el (a) uses a uniform density and nested uniform subbands; (b) uses
+                                                                                                                                                   the optimized density and its conditional nested laws.
+                                                             0.5                    1.0                       1.5                                       Under the stated circular-Gaussian noise model, we compute
+                                                             normalized separation 2B δ(τ)                                                         the conditional CRB while treating the complex amplitudes as de-
+Fig. 2. Empirical success over separation and SNR. (a) Cellwise                                                                                    terministic nuisance parameters [13]. Eliminating them by a Schur
+success probabilities; white curves are the 80% SNR frontiers. (b)                                                                                 complement gives a location covariance bound. For each trial we
+The same frontiers overlaid for comparison. Both panels use the                                                                                    take the square root of its mean diagonal entry, and the plotted curve
+same trials and interpolation rule. Abscissa: 2Bδ(τ ); lower is better.                                                                            is the root mean square of this quantity over trials. This is a lo-
+                                              MUSIC       CRB unif.    Direct      CRB opt.     Homotopy                                           cal unbiased benchmark, whereas finite-sample VarPro need not be
+                                             (a) Uniform density                           (b) Optimized density                                   unbiased. In contrast, the success frontier measures access to the
+location RMSE
+
+
+
+
+                10−1                                                                                                                               correct basin: a few failures can keep the RMSE high after the 80%
+                                                                                                                                                   crossing in Fig. 2. Using the same success tolerance, the optimized
+                10−2                                                                                                                               homotopic RMSE first falls below it at 4.5 dB, the other optimized
+                10−3
+                                                                                                                                                   curves at 6 dB, and the uniform curves at 9 dB. At equal received
+                                                                                                                                                   SNR, the optimized CRB is about 22% lower than the uniform one;
+                                                                                                                                                   the larger direct–homotopic gap is therefore algorithmic, not a local-
+                                    −10               0               10            −10                 0           10
+                                                                                                                                                   information effect.
+                                                   SNR (dB)                                        SNR (dB)
+
+Fig. 3. Location RMSE versus SNR at 2Bδ(τ ) = 0.60. (a) Uni-                                                                                                               6. CONCLUSION
+form; (b) optimized density. Within each panel, the estimators and
+CRB use the same 80 frequency and amplitude draws. At matched                                                                                      The density-design criterion studied here performs equalization at
+received SNR, the optimized CRB is 0.78 times the uniform CRB.                                                                                     the level of the sampling law rather than by dividing noisy measure-
+moved, or acquired at a later stage. Conditional on the retained coun-                                                                             ments by the PSF. We proved that its continuous formulation always
+t, these frequencies are i.i.d. with density ρΩk . The corresponding                                                                               admits a representative whose effective spectrum is rectangular on
+data and noise rows are simply reused. Every method has the same                                                                                   finitely many intervals. Under the symmetry and monotonicity sat-
+final acquisition count M = 128; the uniform baseline draws 128                                                                                    isfied by the Gaussian example, a centered ideal low-pass is opti-
+frequencies uniformly on [−B, B].                                                                                                                  mal. The level-set proof simultaneously explains non-uniqueness:
+     All refined methods also receive exactly 60 local VarPro itera-                                                                               a generic convex solver may return a different point of the optimal
+tions. Direct and homotopic optimized-density methods are paired                                                                                   face, whereas level-set post-processing deliberately selects a rectan-
+within every trial: they share the final frequencies, amplitudes, noisy                                                                            gular representative.
+measurements, final-band MUSIC initialization, and final loss. Ho-                                                                                      This structural result turns a previously empirical observation
+motopy allocates (3, 6, 9, 15, 27) iterations across the five nested                                                                               into a coarse-to-fine design principle. Increasing the ideal-low-pass
+losses, whereas direct VarPro spends all 60 on ℓK . A second non-                                                                                  bandwidth concentrates the autocorrelation, increases our covering-
+homotopic control initializes the final loss with coarse-band MUSIC                                                                                number upper bound, and reveals a finer VarPro landscape. Nested
+and still spends all 60 iterations at B; it separates the value of a                                                                               restrictions of one final frequency sample realize the entire path
+coarse initializer from that of the intermediate objectives. The uni-                                                                              without additional acquisitions. Under equal frequency and total
+form baseline uses the same 60-iteration budget. No parameter is                                                                                   iteration counts, the resulting continuation improves the empiri-
+tuned per separation–SNR cell.                                                                                                                     cal separation–SNR transition over direct refinement; the coarse-
+     Fig. 2 gives two views of the same 5,720 Monte Carlo trials. For                                                                              initialization control further shows that the gain comes from the
+each method and separation, finite-sample success probabilities may                                                                                intermediate objectives, not merely from transferring an initializer.
+have isolated decreases as SNR increases. We therefore take their                                                                                       The covering argument is intentionally independent of the opti-
+cumulative maximum and linearly interpolate the first 80% crossing.                                                                                mizer and does not constitute a path-tracking theorem. Establishing
+Each white curve in (a) is exactly the corresponding colored curve                                                                                 conditions under which successive VarPro minimizers remain in the
+in (b); panel (b) merely overlays the four frontiers.                                                                                              next attraction basin is the main theoretical question left open.
+     At 2Bδ(τ ) = 0.60, homotopy reaches 80% success at −4.50
+dB, compared with 3.00 dB for direct optimized-density VarPro and
+                      7. REFERENCES                                        IEEE Journal on Selected Areas in Information Theory, 4:1–
+                                                                           15, 2023.
+[1] Emmanuel J. Candès and Carlos Fernandez-Granda. Towards a
+                                                                       [8] Joseph Gabet, Maxime Ferreira Da Costa, and Kiryung Lee.
+    mathematical theory of super-resolution. Communications on
+                                                                           Restricted isometry for variable-density continuous frequency
+    Pure and Applied Mathematics, 67(6):906–956, 2014.
+                                                                           sampling for off-the-grid sparse signals. In Proc. IEEE In-
+[2] Gongguo Tang, Badri N. Bhaskar, Parikshit Shah, and Ben-               t. Conf. Acoustics, Speech and Signal Processing (ICASSP),
+    jamin Recht. Compressed sensing off the grid. IEEE Transac-            pages 811–815, 2026.
+    tions on Information Theory, 59(11):7465–7490, 2013.
+                                                                       [9] Luigi Ambrosio, Nicola Fusco, and Diego Pallara. Functions
+[3] Yuejie Chi and Maxime Ferreira Da Costa. Harnessing sparsi-            of Bounded Variation and Free Discontinuity Problems. Ox-
+    ty over the continuum: Atomic norm minimization for super-             ford University Press, 2000.
+    resolution. IEEE Signal Processing Magazine, 37(2):39–57,
+    2020.                                                             [10] Gene H. Golub and Victor Pereyra. The differentiation of
+                                                                           pseudo-inverses and nonlinear least squares problems whose
+[4] Rémi Gribonval, Antoine Chatalic, Nicolas Keriven, Vincent
+                                                                           variables separate. SIAM Journal on Numerical Analysis,
+    Schellekens, Laurent Jacques, and Philip Schniter. Sketching
+                                                                           10(2):413–432, 1973.
+    data sets for large-scale learning: Keeping only what you need.
+    IEEE Signal Processing Magazine, 38(5):12–36, 2021.               [11] Meghna Kalra, Maxime Ferreira Da Costa, and Kiryung Lee.
+[5] Joseph Gabet and Maxime Ferreira Da Costa. Preconditioned              Characterization of the basin of convexity for multi-snapshot
+    gradient descent for sketched mixture learning. In Proc. IEEE          spike deconvolution via variable projection. arXiv preprint
+    Int. Symp. Information Theory (ISIT), pages 3504–3509, 2024.           arXiv:2607.09593, 2026.
+[6] Ankur Moitra. Super-resolution, extremal functions and the        [12] Ralph O. Schmidt. Multiple emitter location and signal param-
+    condition number of vandermonde matrices. In Proc. 47th An-            eter estimation. IEEE Transactions on Antennas and Propaga-
+    nual ACM Symposium on Theory of Computing, pages 821–                  tion, 34(3):276–280, 1986.
+    830, 2015.                                                        [13] Steven M. Kay. Fundamentals of Statistical Signal Processing:
+[7] Maxime Ferreira Da Costa and Yuejie Chi. Local geometry of             Estimation Theory. Prentice Hall, 1993.
+    nonconvex spike deconvolution from low-pass measurements.
+

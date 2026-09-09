@@ -1,0 +1,188 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=17mm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{mathptmx}
+\usepackage{microtype}
+\usepackage{titlesec}
+\usepackage[hidelinks]{hyperref}
+\linespread{0.96}
+\hypersetup{pdftitle={Homotopy methods for optimization},
+pdfauthor={Aubin Charley, Alexandre Corrard, Idriss El khamlichi, Maxime Nicaise}}
+
+\titleformat{\section}{\normalsize\bfseries}{\thesection.}{0.5em}{}
+\titlespacing*{\section}{0pt}{8pt plus 1pt minus 1pt}{4pt}
+\setlength{\parindent}{1em}
+\setlength{\parskip}{2pt plus 0.5pt minus 0.5pt}
+\setlength{\abovedisplayskip}{5pt plus 1pt minus 1pt}
+\setlength{\belowdisplayskip}{5pt plus 1pt minus 1pt}
+\setlength{\abovedisplayshortskip}{3pt}
+\setlength{\belowdisplayshortskip}{3pt}
+\setlength{\footskip}{8mm}
+\raggedbottom
+
+\begin{document}
+\begin{center}
+    {\Large\bfseries Homotopy methods for optimization}\par
+    \vspace{4pt}
+    Aubin Charley \quad Alexandre Corrard \quad
+    Idriss El khamlichi \quad Maxime Nicaise\par
+    \vspace{2pt}
+    September 2026
+\end{center}
+\vspace{-4pt}
+
+An idea to minimize a difficult target objective $L(\theta)$ is to introduce
+an approximation family $(L_s)_{s\in[0,1]}$, with $L_1=L$, such that the
+initial problems are easier to solve. The family progressively evolves to
+the target problem. In practice, we consider $0=s_0<\cdots<s_K=1$ and use
+an approximate minimizer of $L_{s_k}$ as a warm start for $L_{s_{k+1}}$:
+$\theta_{k+1}^{(0)}=\theta_k^\star$. The best-case scenario is that each
+solution lands in a basin where a local optimizer finds the next minimizer.
+However, the central difficulty is to explain why the intermediate problems
+should be easier, and why solving them should help with the final one.
+The approaches below give different answers to these two questions.
+
+\section{Making the objective easier to optimize}
+
+The most intuitive approach is to progressively deform an easy objective
+into the target loss, for instance through
+\[
+    L_s(\theta)=(1-s)L_{\mathrm{easy}}(\theta)+sL(\theta).
+\]
+In \cite{LENDL1998359}, the authors apply the deformation principle to
+multilayer perceptrons, starting from a modified regression problem with
+a known solution. The main difficulty is the choice of $L_{\mathrm{easy}}$:
+there is no general reason for the intermediate objectives to remain easier
+to optimize, or for their minimizers and attraction basins to vary smoothly
+along the path. A related construction uses regularization,
+$L_s(\theta)=L(\theta)+\lambda(s)R(\theta)$, with $\lambda(s)\downarrow0$.
+In \cite{amakor2025continuation}, the authors study regularization paths for
+deep networks by treating the loss and $\ell^1$ sparsity as competing
+objectives. Their aim is to explore this trade-off; strong regularization
+does not by itself guarantee an easy starting problem.
+
+Parameter-space smoothing gives a more direct geometric motivation:
+the loss is averaged around each parameter value, and the amount of
+smoothing is progressively reduced. Writing
+\[
+    L_\sigma(\theta)=\mathbb{E}_{\xi}
+    \bigl[L(\theta+\sigma\xi)\bigr],
+    \qquad \sigma\downarrow0,
+\]
+In \cite{hazan2016graduated}, the authors consider $\xi$ uniform on the unit
+ball. Under assumptions ensuring local strong convexity of the smoothed
+objectives around their minimizers and sufficient proximity of successive
+minimizers, they obtain convergence guarantees for graduated optimization.
+This makes explicit what the interpolation alone leaves unresolved:
+smoothing must provide both tractable subproblems and a path that can be
+followed. The approach looks like a good idea from a purely mathematical
+perspective, because smoothing acts directly in the optimization space.
+However, these geometric assumptions are difficult to verify for
+neural-network losses. In \cite{sato2025explicit}, the authors investigate
+this transfer to modern networks and report limitations of explicit
+smoothing on high-dimensional objectives. They also study an implicit
+alternative, interpreting SGD stochasticity as a source of smoothing,
+and extend it to SGD with momentum. Thus even a well-motivated family
+raises the practical question of how much its intermediate problems cost
+to optimize.
+
+\section{From geometric simplicity to simpler examples and models}
+
+The previous constructions act directly on the objective. Curriculum
+learning, introduced in \cite{bengio2009curriculum}, instead aims at building training
+losses that become progressively more difficult from a semantic point of
+view. It gives more importance to intuitively ``easy'' examples at first,
+before recovering the target training distribution:
+\[
+    L_s(\theta)=\sum_{i=1}^{n}w_i(s)\,
+    \ell\bigl(f_\theta(x_i),y_i\bigr),
+    \qquad w_i(s)\geq0,\quad \sum_i w_i(s)=1,\quad w_i(1)=\tfrac1n.
+\]
+In \cite{bengio2009curriculum}, the authors show, for instance, that
+presenting gradually more complex geometrical shapes can help models
+learn faster. The main limitation is that the notion of an ``easy''
+example is highly task-dependent and generally defined from prior
+knowledge. Moreover, semantic simplicity does not imply a simpler
+optimization landscape. This is the main gap between the curriculum
+intuition and the geometric conditions used in \cite{hazan2016graduated}.
+
+A similar intuition can be applied inside the network. If
+$f_{\theta,s}$ denotes a progressively modified model, the family becomes
+$L_s(\theta)=n^{-1}\sum_i\ell(f_{\theta,s}(x_i),y_i)$, with
+$f_{\theta,1}=f_\theta$. In \cite{gulcehre2017mollifying}, the idea is to
+make the network almost linear at the beginning of training through
+stochastic shortcuts and noisy activations, then progressively remove
+these modifications. In \cite{yang2025homotopy}, the authors use an
+activation homotopy connecting the identity to ReLU,
+$\phi_s(z)=(1-s)z+s\operatorname{ReLU}(z)$, and obtain accelerated
+convergence in an infinite-width two-layer setting. In
+\cite{roulet2021smoothing}, the authors instead replace non-smooth network
+modules by smooth approximations. Their fixed-smoothing analysis provides
+a possible family for continuation, but is not itself a homotopy-training
+algorithm.
+
+These constructions simplify the model in different senses;
+in particular, a linear input-output map still need not give a convex
+loss in the parameters of a multilayer network.
+
+Frequency-based curriculum connects this model modification to the idea
+of gradually increasing the difficulty of the information presented.
+In \cite{sinha2020curriculum}, the authors initially remove high-frequency
+information from CNN feature maps and progressively reintroduce it:
+\[
+    h_{\ell,\sigma}=G_\sigma*h_\ell,
+    \qquad \sigma\downarrow0,
+\]
+where $G_\sigma$ is a Gaussian low-pass filter with standard deviation
+$\sigma$. The intuition is that the model can first focus on large-scale
+structures before dealing with finer details and textures. The spectral
+bias studied in \cite{rahaman2019spectral}, whereby
+networks tend to learn low-frequency components first, gives a
+conceptually related motivation. However, the two notions of frequency
+are not the same: \cite{rahaman2019spectral} studies the learned function
+in input space, while \cite{sinha2020curriculum} directly filters spatial feature maps. This supports a useful analogy,
+but does not establish that feature smoothing satisfies the geometric
+conditions of graduated optimization.
+
+\section{Once a family is chosen: tracking or learning the path}
+
+The choice of a family does not determine how efficiently its solutions
+can be reached. In \cite{mai2026neural}, the authors address this second
+question with a neural predictor-corrector: a reinforcement-learning
+policy adapts the continuation step size and the termination of corrector
+iterations. The policy can learn to take larger steps when the path is
+easy to track and smaller steps in more difficult regions, while adapting
+the computation spent on each correction. This reduces manual schedule
+tuning, but requires training on a suitable distribution of problems.
+
+In \cite{Lin2023ContinuationPL}, the authors go further by learning the
+solution path itself rather than explicitly tracking it through a sequence
+of optimization problems. A network $\theta_\phi(s)$ represents the
+solutions across the continuation interval, schematically through
+\[
+    \min_\phi\ \mathbb{E}_{s\sim\mathcal{U}(0,1)}
+    \bigl[L_s\bigl(\theta_\phi(s)\bigr)\bigr].
+\]
+This replaces the cost of sequential path tracking by the cost of learning
+a global representation, which can itself be difficult when minimizers
+undergo sharp transitions or form competing branches. Both approaches
+still require a suitable approximation family to be defined in advance:
+learning how to follow or represent a path does not settle how to
+construct a useful one.
+
+For our exploratory project, this suggests separating the benefit of the
+chosen simplification from the benefit of introducing difficulty
+progressively. Parameter smoothing offers the clearest connection to
+optimization geometry, while activation and feature smoothing offer
+concrete constructions for neural networks. Comparing a decreasing
+smoothing schedule with both fixed smoothing and direct training, under
+a comparable computational budget, would help determine whether
+continuation itself improves optimization. The literature provides
+plausible starting points, but no general guarantee that the most
+intuitive simplification will produce the most useful path.
+
+\bibliographystyle{plain}
+\bibliography{biblio}
+\end{document}

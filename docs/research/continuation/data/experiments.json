@@ -1,0 +1,248 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-09-09",
+  "latest_completed_experiment": "EXP-011",
+  "source_of_truth_for_narrative": "../experiments/INDEX.md",
+  "experiments": [
+    {
+      "experiment_id": "EXP-000",
+      "file": "experiments/EXP-000_input_gaussian.md",
+      "title": "EXP-000 — Gaussian fixe sur les images d'entrée",
+      "status": "completed_reported",
+      "protocol_id": "P-INPUT-GN",
+      "evidence": "local_report_and_figures",
+      "seed_ids": [
+        0,
+        1,
+        2
+      ],
+      "updated_at": "2026-09-09",
+      "code_inspected_in_handoff": false,
+      "numeric_recalculated_in_handoff": false,
+      "historical_run_id": null,
+      "source_ids": [
+        "S-018",
+        "S-016",
+        "S-005"
+      ]
+    },
+    {
+      "experiment_id": "EXP-001",
+      "file": "experiments/EXP-001_input_warmstart.md",
+      "title": "EXP-001 — Warm start et étape intermédiaire sur les entrées",
+      "status": "completed_reported",
+      "protocol_id": "P-INPUT-GN",
+      "evidence": "local_report_and_figures",
+      "seed_ids": [
+        0,
+        1,
+        2
+      ],
+      "updated_at": "2026-09-09",
+      "code_inspected_in_handoff": false,
+      "numeric_recalculated_in_handoff": false,
+      "historical_run_id": null,
+      "source_ids": [
+        "S-008",
+        "S-015"
+      ]
+    },
+    {
+      "experiment_id": "EXP-002",
+      "file": "experiments/EXP-002_tv_previews.md",
+      "title": "EXP-002 — Aperçus TV–L² et TV–Ḣ⁻¹ homogène",
+      "status": "previews_completed_partial_solver_convergence",
+      "protocol_id": "P-PREVIEWS",
+      "evidence": "local_diagnostics_json_and_images",
+      "seed_ids": [],
+      "updated_at": "2026-09-09",
+      "code_inspected_in_handoff": false,
+      "numeric_recalculated_in_handoff": false,
+      "historical_run_id": null,
+      "classification_training": false,
+      "source_ids": [
+        "S-028"
+      ]
+    },
+    {
+      "experiment_id": "EXP-003",
+      "file": "experiments/EXP-003_wavelet_previews.md",
+      "title": "EXP-003 — Aperçus et coûts des ondelettes",
+      "status": "previews_and_microbenchmarks_completed",
+      "protocol_id": "P-PREVIEWS",
+      "evidence": "local_diagnostics_json_and_images",
+      "seed_ids": [],
+      "updated_at": "2026-09-09",
+      "code_inspected_in_handoff": false,
+      "numeric_recalculated_in_handoff": false,
+      "historical_run_id": null,
+      "classification_training": false,
+      "source_ids": [
+        "S-029",
+        "S-030"
+      ]
+    },
+    {
+      "experiment_id": "EXP-004",
+      "file": "experiments/EXP-004_early_internal_pilot.md",
+      "title": "EXP-004 — Premier pilote interne, avec db2",
+      "status": "completed_partial_record",
+      "protocol_id": "P-INT-EARLY",
+      "evidence": "figure_and_older_handoff",
+      "seed_ids": null,
+      "updated_at": "2026-09-09",
+      "code_inspected_in_handoff": false,
+      "numeric_recalculated_in_handoff": false,
+      "historical_run_id": null,
+      "source_ids": [
+        "S-013",
+        "S-039"
+      ]
+    },
+    {
+      "experiment_id": "EXP-005",
+      "file": "experiments/EXP-005_gn_audit.md",
+      "title": "EXP-005 — Gaussian interne GroupNorm, contrôle LR et audit",
+      "status": "completed_partial_record",
+      "protocol_id": "P-INT-GN",
+      "evidence": "conversation_figure_and_audit_report",
+      "seed_ids": [
+        0,
+        1,
+        2
+      ],
+      "updated_at": "2026-09-09",
+      "code_inspected_in_handoff": false,
+      "numeric_recalculated_in_handoff": false,
+      "historical_run_id": null,
+      "source_ids": [
+        "S-014",
+        "S-CONV"
+      ]
+    },
+    {
+      "experiment_id": "EXP-006",
+      "file": "experiments/EXP-006_resnet18_bn.md",
+      "title": "EXP-006 — Pilote ResNet-18 BatchNorm et initialisation corrigée",
+      "status": "completed_reported",
+      "protocol_id": "P-R18-BN",
+      "evidence": "conversation_report_and_figure",
+      "seed_ids": [
+        0
+      ],
+      "updated_at": "2026-09-09",
+      "code_inspected_in_handoff": false,
+      "numeric_recalculated_in_handoff": false,
+      "historical_run_id": "resnet18-gaussian-20260908-144640",
+      "source_ids": [
+        "S-CONV",
+        "S-017"
+      ]
+    },
+    {
+      "experiment_id": "EXP-007",
+      "file": "experiments/EXP-007_resnet20_bn.md",
+      "title": "EXP-007 — ResNet-20 BN, 2 400 updates et correction des courbes",
+      "status": "completed_reported",
+      "protocol_id": "P-R20-BN-PILOT",
+      "evidence": "conversation_report_and_figure",
+      "seed_ids": [
+        0
+      ],
+      "updated_at": "2026-09-09",
+      "code_inspected_in_handoff": false,
+      "numeric_recalculated_in_handoff": false,
+      "historical_run_id": "resnet20bn-gaussian-20260908-154226",
+      "source_ids": [
+        "S-CONV",
+        "S-037"
+      ]
+    },
+    {
+      "experiment_id": "EXP-008",
+      "file": "experiments/EXP-008_full_gaussian.md",
+      "title": "EXP-008 — Gaussian sur CIFAR-10 complet, trois graines",
+      "status": "completed_reported",
+      "protocol_id": "P-FULL-R20-BN",
+      "evidence": "conversation_report_and_figure",
+      "seed_ids": [
+        0,
+        1,
+        2
+      ],
+      "updated_at": "2026-09-09",
+      "code_inspected_in_handoff": false,
+      "numeric_recalculated_in_handoff": false,
+      "historical_run_id": "fulldata-r20bn-20260908-161221",
+      "source_ids": [
+        "S-CONV",
+        "S-038"
+      ]
+    },
+    {
+      "experiment_id": "EXP-009",
+      "file": "experiments/EXP-009_db2_bn.md",
+      "title": "EXP-009 — Pilote db2 interne BN et abandon de la branche",
+      "status": "completed_branch_dropped_by_user",
+      "protocol_id": "P-R20-BN-PILOT",
+      "evidence": "conversation_report_and_figure",
+      "seed_ids": [
+        0
+      ],
+      "updated_at": "2026-09-09",
+      "code_inspected_in_handoff": false,
+      "numeric_recalculated_in_handoff": false,
+      "historical_run_id": "db2-pilot-r20bn-20260908-191741",
+      "branch_current_status": "dropped_by_user",
+      "source_ids": [
+        "S-CONV",
+        "S-036"
+      ]
+    },
+    {
+      "experiment_id": "EXP-010",
+      "file": "experiments/EXP-010_resolution_pilot.md",
+      "title": "EXP-010 — Premier essai de résolution progressive sur CIFAR complet",
+      "status": "completed_reported",
+      "protocol_id": "P-FULL-R20-BN",
+      "evidence": "local_execution_report_and_figure",
+      "seed_ids": [
+        0
+      ],
+      "updated_at": "2026-09-09",
+      "code_inspected_in_handoff": false,
+      "numeric_recalculated_in_handoff": false,
+      "historical_run_id": "progres-r20bn-20260909-075846",
+      "source_ids": [
+        "S-032",
+        "S-035"
+      ]
+    },
+    {
+      "experiment_id": "EXP-011",
+      "file": "experiments/EXP-011_full_grid.md",
+      "title": "EXP-011 — Benchmark complet : 21 configurations, trois graines",
+      "status": "completed_numeric_verified",
+      "protocol_id": "P-FULL-R20-BN",
+      "evidence": "local_final_json_execution_report_and_original_figure",
+      "seed_ids": [
+        0,
+        1,
+        2
+      ],
+      "updated_at": "2026-09-09",
+      "code_inspected_in_handoff": false,
+      "numeric_recalculated_in_handoff": true,
+      "historical_run_id": "campaign-j0-20260909-095039 + campaign-j1-20260909-095101 + campaign-j2-20260909-095123",
+      "expected_cells": 63,
+      "completed_cells": 63,
+      "configs": 21,
+      "code_commit_reported": "f191fa6",
+      "source_ids": [
+        "S-031",
+        "S-033",
+        "S-034"
+      ]
+    }
+  ]
+}

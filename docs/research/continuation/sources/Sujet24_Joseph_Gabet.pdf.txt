@@ -1,0 +1,57 @@
+                                                Filière Métiers de la Recherche –                                                      L2S
+                                                             Sujet 24                                                       Laboratoire des Signaux
+                                                                                                                                        et Systèmes
+
+
+
+
+         Entraînement homotopique des réseaux de neurones profonds
+                                               Joseph Gabet — L2S, CentraleSupélec
+                                                    joseph.gabet@l2s.centralesupelec.fr
+
+Contexte de l'étude
+L’entraînement des réseaux de neurones profonds conduit à
+des problèmes d’optimisation non convexes dont la
+géométrie dépend du modèle, des données et de la
+procédure d’apprentissage. Une stratégie d’homotopie (ou
+continuation) consiste à ne pas attaquer directement le
+problème cible : on résout d’abord une version plus simple
+ou plus lisse, puis on réintroduit progressivement la
+complexité. La solution obtenue à une étape sert
+d’initialisation (warm start) à la suivante. Cette philosophie
+coarse-to-fine est attractive lorsque le problème complet
+présente une géométrie d’optimisation difficile, sans
+présumer de sa cause (non-convexité, conditionnement,
+bruit, distribution des données, etc.).
+Objectif
+Ce projet de recherche est volontairement ouvert : aucune homotopie n’est imposée. L’objectif est d’explorer comment
+transposer cette philosophie à l’entraînement des DNN et, surtout, de comprendre ce que signifie « simplifier
+progressivement » dans ce contexte. La continuation peut porter sur des quantités de nature très différente — fonction de
+perte, régularisation, architecture ou capacité du réseau, résolution des entrées, difficulté ou distribution des données,
+bruit/augmentation, contraintes, etc. — et ces choix ne reposent ni sur les mêmes hypothèses ni sur les mêmes
+mécanismes. Les étudiants devront formuler des idées originales, les justifier et identifier les régimes dans lesquels elles
+peuvent améliorer l’optimisation, la stabilité ou la généralisation par rapport à un entraînement direct.
+Déroulement
+1. État de l’art critique. Étudier ce qui existe déjà en deep learning (curriculum/progressive training, lissage, annealing de
+   régularisation, changements de résolution ou de capacité, etc.) et dans des domaines où les méthodes de continuation sont
+   bien établies, notamment en optimisation et en traitement du signal. Distinguer précisément ce qui est continué : objectif,
+   modèle, données/distribution, résolution, contrainte ou niveau de bruit, ainsi que les hypothèses sous-jacentes.
+2. Conception de nouvelles homotopies. À partir de cette cartographie, proposer une ou plusieurs stratégies originales pour
+   des DNN : choix du paramètre de continuation, chemin entre le problème simple et le problème cible, calendrier de
+   progression et mécanisme de warm start. Chaque proposition devra être accompagnée d’une intuition claire et de cas où un
+   gain est attendu — ou au contraire peu plausible.
+3. Benchmarks convaincants. Construire des comparaisons contrôlées avec entraînement direct et méthodes proches, à
+   budgets de calcul/optimisation comparables. Utiliser plusieurs initialisations et, lorsque pertinent, plusieurs architectures ou
+   distributions de données ; réaliser des ablations sur le chemin et le calendrier. Mesurer convergence, performance finale,
+   stabilité, robustesse, coût et cas d’échec.
+Outils et méthodes                                                      Livrables attendus
+Python, PyTorch (ou JAX/TensorFlow), NumPy et outils de Poster en anglais ; article de vulgarisation ; rapport scientifique
+suivi d’expériences. Les modèles et jeux de données seront ; code, scripts de benchmark et protocole expérimental
+choisis pour permettre de nombreuses répétitions et ablations, reproductibles.
+plutôt qu’une course à la taille.
+Références bibliographiques
+• J. Gabet, M. Ferreira Da Costa, K. Lee, « Restricted Isometry for Variable-Density Continuous Frequency Sampling for Off-the-Grid Sparse
+   Signals », Proc. IEEE ICASSP, pp. 811–815, 2026.
+• Y. Bengio, J. Louradour, R. Collobert, J. Weston, « Curriculum Learning », ICML, 2009.
+• E. Hazan, K. Y. Levy, S. Shalev-Shwartz, « On Graduated Optimization for Stochastic Non-Convex Problems », ICML, 2016.
+

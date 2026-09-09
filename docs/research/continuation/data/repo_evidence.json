@@ -1,0 +1,790 @@
+{
+  "repository_root": "C:\\Users\\mnica\\Documents\\Projet_filiere",
+  "head": "9da41d6",
+  "branch": "continuation-gaussian-tv",
+  "experiments": {
+    "EXP-000": {
+      "code_state": "gaussian.py a été étendu depuis (repli de réflexion explicite, phase 8) ; le chemin input-space de exp0 n'est pas affecté par ce repli, qui ne sert qu'aux cartes 4x4.",
+      "code": [
+        {
+          "path": "continuation/experiments/exp0.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 10313,
+          "last_commit": "86c00bc 2026-09-08"
+        },
+        {
+          "path": "continuation/engine.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 22782,
+          "last_commit": "86c00bc 2026-09-08"
+        },
+        {
+          "path": "continuation/transforms/gaussian.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 10440,
+          "last_commit": "d643f75 2026-09-08"
+        }
+      ],
+      "config": [
+        {
+          "path": "configs/exp0_gaussian.yaml",
+          "exists": true,
+          "kind": "file",
+          "bytes": 2348,
+          "last_commit": "86c00bc 2026-09-08"
+        }
+      ],
+      "results": [
+        {
+          "path": "results/exp0_gaussian",
+          "exists": true,
+          "kind": "dir",
+          "n_files": 88
+        }
+      ],
+      "docs": [
+        {
+          "path": "docs/experiment0.md",
+          "exists": true,
+          "kind": "file",
+          "bytes": 6829,
+          "last_commit": "86c00bc 2026-09-08"
+        },
+        {
+          "path": "docs/results.md",
+          "exists": true,
+          "kind": "file",
+          "bytes": 12222,
+          "last_commit": "86c00bc 2026-09-08"
+        }
+      ]
+    },
+    "EXP-001": {
+      "code_state": "branchement full_state_v1 ; code inchangé depuis.",
+      "code": [
+        {
+          "path": "continuation/experiments/exp1.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 20716,
+          "last_commit": "86c00bc 2026-09-08"
+        },
+        {
+          "path": "continuation/engine.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 22782,
+          "last_commit": "86c00bc 2026-09-08"
+        }
+      ],
+      "config": [
+        {
+          "path": "configs/exp1_warmstart.yaml",
+          "exists": true,
+          "kind": "file",
+          "bytes": 2627,
+          "last_commit": "86c00bc 2026-09-08"
+        }
+      ],
+      "results": [
+        {
+          "path": "results/exp1_gaussian_warmstart",
+          "exists": true,
+          "kind": "dir",
+          "n_files": 55
+        }
+      ],
+      "docs": [
+        {
+          "path": "docs/exp1_warmstart.md",
+          "exists": true,
+          "kind": "file",
+          "bytes": 11529,
+          "last_commit": "86c00bc 2026-09-08"
+        }
+      ]
+    },
+    "EXP-002": {
+      "code_state": "tv.py corrigé pendant EXP-002 (signe de l'adjoint D^T) ; les apercus livres ont ete produits apres correction.",
+      "code": [
+        {
+          "path": "continuation/transforms/tv.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 17668,
+          "last_commit": "86c00bc 2026-09-08"
+        },
+        {
+          "path": "scripts/tv_previews.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 6342,
+          "last_commit": "86c00bc 2026-09-08"
+        }
+      ],
+      "config": [],
+      "results": [
+        {
+          "path": "results/tv_previews",
+          "exists": true,
+          "kind": "dir",
+          "n_files": 3
+        }
+      ],
+      "docs": [
+        {
+          "path": "docs/tv_budget.md",
+          "exists": true,
+          "kind": "file",
+          "bytes": 7749,
+          "last_commit": "86c00bc 2026-09-08"
+        }
+      ]
+    },
+    "EXP-003": {
+      "code_state": "chemin 'fast' fusionne et bypass s=1 ajoutes apres les premiers apercus ; les deux chemins calculent la meme operation (verifie par les tests).",
+      "code": [
+        {
+          "path": "continuation/transforms/wavelet.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 19624,
+          "last_commit": "d643f75 2026-09-08"
+        },
+        {
+          "path": "scripts/wavelet_previews.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 5364,
+          "last_commit": "d643f75 2026-09-08"
+        },
+        {
+          "path": "scripts/wavelet_benchmark.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 7051,
+          "last_commit": "d643f75 2026-09-08"
+        },
+        {
+          "path": "scripts/wavelet_profile.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 1617,
+          "last_commit": "d643f75 2026-09-08"
+        },
+        {
+          "path": "scripts/wavelet_optimized_benchmark.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 6061,
+          "last_commit": "d643f75 2026-09-08"
+        }
+      ],
+      "config": [],
+      "results": [
+        {
+          "path": "results/wavelet_previews",
+          "exists": true,
+          "kind": "dir",
+          "n_files": 14
+        }
+      ],
+      "docs": [
+        {
+          "path": "docs/wavelet_shrinkage.md",
+          "exists": true,
+          "kind": "file",
+          "bytes": 7157,
+          "last_commit": "d643f75 2026-09-08"
+        }
+      ]
+    },
+    "EXP-004": {
+      "code_state": "pilote ancien ; sorties partiellement telechargees, summary.json absent pour plusieurs cellules.",
+      "code": [
+        {
+          "path": "scripts/kaggle_pilot_continuation.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 22613,
+          "last_commit": "d643f75 2026-09-08"
+        },
+        {
+          "path": "scripts/kaggle_run.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 14831,
+          "last_commit": "776c0a1 2026-09-09"
+        }
+      ],
+      "config": [],
+      "results": [
+        {
+          "path": "results/kaggle_outputs/pilot-continuation-20260908-103434",
+          "exists": true,
+          "kind": "dir",
+          "n_files": 51
+        },
+        {
+          "path": "results/kaggle_outputs/pilot-continuation-20260908-122558",
+          "exists": true,
+          "kind": "dir",
+          "n_files": 67
+        }
+      ],
+      "docs": [
+        {
+          "path": "docs/kaggle_cli.md",
+          "exists": true,
+          "kind": "file",
+          "bytes": 2336,
+          "last_commit": "0160bd1 2026-09-09"
+        }
+      ]
+    },
+    "EXP-005": {
+      "code_state": "continuation_driver.py a beaucoup evolue depuis (tables par paliers, chemins courant/cible, resolution). Le code expedie a ce run est conserve dans le _repo/ de chaque sortie Kaggle, pas dans l'arbre courant.",
+      "code": [
+        {
+          "path": "scripts/continuation_driver.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 29567,
+          "last_commit": "26cfb82 2026-09-09"
+        },
+        {
+          "path": "scripts/job_plain_study.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 462,
+          "last_commit": "d643f75 2026-09-08"
+        },
+        {
+          "path": "scripts/job_gaussian_study.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 502,
+          "last_commit": "d643f75 2026-09-08"
+        },
+        {
+          "path": "scripts/job_lr_diagnostic.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 1058,
+          "last_commit": "d643f75 2026-09-08"
+        },
+        {
+          "path": "scripts/job_lr_control_002.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 824,
+          "last_commit": "d643f75 2026-09-08"
+        },
+        {
+          "path": "scripts/audit_gaussian_placement.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 8974,
+          "last_commit": "d643f75 2026-09-08"
+        },
+        {
+          "path": "scripts/verify_grad_accumulation.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 5525,
+          "last_commit": "d643f75 2026-09-08"
+        },
+        {
+          "path": "continuation/models/resnet_gn.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 5629,
+          "last_commit": "86c00bc 2026-09-08"
+        }
+      ],
+      "config": [
+        {
+          "path": "scripts/_study_common.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 723,
+          "last_commit": "d643f75 2026-09-08"
+        }
+      ],
+      "results": [
+        {
+          "path": "results/kaggle_outputs/plain-study-20260908-132611",
+          "exists": true,
+          "kind": "dir",
+          "n_files": 76
+        },
+        {
+          "path": "results/kaggle_outputs/gaussian-study-20260908-132957",
+          "exists": true,
+          "kind": "dir",
+          "n_files": 76
+        },
+        {
+          "path": "results/kaggle_outputs/lr-diagnostic-20260908-132240",
+          "exists": true,
+          "kind": "dir",
+          "n_files": 66
+        },
+        {
+          "path": "results/kaggle_outputs/lr-control-002-20260908-140604",
+          "exists": true,
+          "kind": "dir",
+          "n_files": 73
+        },
+        {
+          "path": "results/gaussian_placement_audit.json",
+          "exists": true,
+          "kind": "file",
+          "bytes": 4574,
+          "last_commit": "d643f75 2026-09-08"
+        },
+        {
+          "path": "results/grad_accumulation_check.json",
+          "exists": true,
+          "kind": "file",
+          "bytes": 1240,
+          "last_commit": "d643f75 2026-09-08"
+        },
+        {
+          "path": "results/plain_vs_gaussian_paired.json",
+          "exists": true,
+          "kind": "file",
+          "bytes": 475,
+          "last_commit": "d643f75 2026-09-08"
+        }
+      ],
+      "docs": []
+    },
+    "EXP-006": {
+      "code_state": "le repli de reflexion explicite pour cartes 4x4 a ete ajoute pour ce run ; voir gaussian.py.",
+      "code": [
+        {
+          "path": "continuation/models/resnet18_bn.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 4203,
+          "last_commit": "d643f75 2026-09-08"
+        },
+        {
+          "path": "scripts/job_resnet18_gaussian.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 4836,
+          "last_commit": "d643f75 2026-09-08"
+        },
+        {
+          "path": "scripts/continuation_driver.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 29567,
+          "last_commit": "26cfb82 2026-09-09"
+        }
+      ],
+      "config": [],
+      "results": [
+        {
+          "path": "results/kaggle_outputs/resnet18-gaussian-20260908-144640",
+          "exists": true,
+          "kind": "dir",
+          "n_files": 71
+        },
+        {
+          "path": "results/resnet18_plain_vs_gaussian.png",
+          "exists": true,
+          "kind": "file",
+          "bytes": 156859,
+          "last_commit": "d643f75 2026-09-08"
+        }
+      ],
+      "docs": []
+    },
+    "EXP-007": {
+      "code_state": "modele inchange depuis ; driver modifie apres coup.",
+      "code": [
+        {
+          "path": "continuation/models/resnet20_bn.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 3893,
+          "last_commit": "d643f75 2026-09-08"
+        },
+        {
+          "path": "scripts/job_resnet20bn_gaussian.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 1477,
+          "last_commit": "d643f75 2026-09-08"
+        },
+        {
+          "path": "scripts/continuation_driver.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 29567,
+          "last_commit": "26cfb82 2026-09-09"
+        }
+      ],
+      "config": [],
+      "results": [
+        {
+          "path": "results/kaggle_outputs/resnet20bn-gaussian-20260908-154226",
+          "exists": true,
+          "kind": "dir",
+          "n_files": 87
+        },
+        {
+          "path": "results/resnet20bn_plain_vs_gaussian.png",
+          "exists": true,
+          "kind": "file",
+          "bytes": 175721,
+          "last_commit": "d643f75 2026-09-08"
+        },
+        {
+          "path": "results/resnet20bn_pilot_corrected.png",
+          "exists": true,
+          "kind": "file",
+          "bytes": 179420,
+          "last_commit": "d643f75 2026-09-08"
+        }
+      ],
+      "docs": []
+    },
+    "EXP-008": {
+      "code_state": "assets partages de ce run (init_seed*.pt, shared_indices.npz) reutilises comme etat epingle d'EXP-010 et EXP-011.",
+      "code": [
+        {
+          "path": "scripts/job_fulldata_campaign.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 2377,
+          "last_commit": "d643f75 2026-09-08"
+        },
+        {
+          "path": "scripts/continuation_driver.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 29567,
+          "last_commit": "26cfb82 2026-09-09"
+        }
+      ],
+      "config": [],
+      "results": [
+        {
+          "path": "results/kaggle_outputs/fulldata-r20bn-20260908-161221",
+          "exists": true,
+          "kind": "dir",
+          "n_files": 120
+        },
+        {
+          "path": "results/fulldata_campaign.png",
+          "exists": true,
+          "kind": "file",
+          "bytes": 424139,
+          "last_commit": "d643f75 2026-09-08"
+        }
+      ],
+      "docs": [
+        {
+          "path": "docs/HANDOVER.md",
+          "exists": true,
+          "kind": "file",
+          "bytes": 28068,
+          "last_commit": "5ec3217 2026-09-09"
+        }
+      ]
+    },
+    "EXP-009": {
+      "code_state": "table par paliers de s ajoutee au driver pour ce run ; is_active traite s=1 comme inactif.",
+      "code": [
+        {
+          "path": "scripts/job_db2_pilot.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 5808,
+          "last_commit": "26cfb82 2026-09-09"
+        },
+        {
+          "path": "scripts/verify_db2_operator.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 5484,
+          "last_commit": "26cfb82 2026-09-09"
+        },
+        {
+          "path": "continuation/transforms/wavelet.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 19624,
+          "last_commit": "d643f75 2026-09-08"
+        },
+        {
+          "path": "scripts/continuation_driver.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 29567,
+          "last_commit": "26cfb82 2026-09-09"
+        }
+      ],
+      "config": [],
+      "results": [
+        {
+          "path": "results/kaggle_outputs/db2-pilot-r20bn-20260908-191741",
+          "exists": true,
+          "kind": "dir",
+          "n_files": 91
+        },
+        {
+          "path": "results/db2_operator_verification.json",
+          "exists": true,
+          "kind": "file",
+          "bytes": 7351,
+          "last_commit": "26cfb82 2026-09-09"
+        },
+        {
+          "path": "results/db2_pilot.png",
+          "exists": true,
+          "kind": "file",
+          "bytes": 183106,
+          "last_commit": "26cfb82 2026-09-09"
+        }
+      ],
+      "docs": []
+    },
+    "EXP-010": {
+      "code_state": "le redimensionnement vit dans InputPipeline (uint8/255 -> float -> resize -> T_eta -> normalisation) ; la verification d'appariement par empreintes est dans le job.",
+      "code": [
+        {
+          "path": "scripts/job_progressive_resolution.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 9810,
+          "last_commit": "26cfb82 2026-09-09"
+        },
+        {
+          "path": "scripts/verify_progressive_resolution.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 7284,
+          "last_commit": "26cfb82 2026-09-09"
+        },
+        {
+          "path": "scripts/plot_progressive_resolution.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 5934,
+          "last_commit": "26cfb82 2026-09-09"
+        },
+        {
+          "path": "continuation/pipeline.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 4185,
+          "last_commit": "26cfb82 2026-09-09"
+        },
+        {
+          "path": "scripts/continuation_driver.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 29567,
+          "last_commit": "26cfb82 2026-09-09"
+        }
+      ],
+      "config": [],
+      "results": [
+        {
+          "path": "results/kaggle_outputs/progres-r20bn-20260909-075846",
+          "exists": true,
+          "kind": "dir",
+          "n_files": 94
+        },
+        {
+          "path": "results/progressive_resolution.png",
+          "exists": true,
+          "kind": "file",
+          "bytes": 326740,
+          "last_commit": "26cfb82 2026-09-09"
+        },
+        {
+          "path": "results/progressive_resolution_verification.json",
+          "exists": true,
+          "kind": "file",
+          "bytes": 7744,
+          "last_commit": "26cfb82 2026-09-09"
+        }
+      ],
+      "docs": []
+    },
+    "EXP-011": {
+      "code_state": "code de la campagne ecrit pour ce run et inchange depuis ; commit f191fa6 contient les resultats.",
+      "code": [
+        {
+          "path": "continuation/campaign_ops.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 10626,
+          "last_commit": "b9bb609 2026-09-09"
+        },
+        {
+          "path": "scripts/campaign_driver.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 18053,
+          "last_commit": "b9bb609 2026-09-09"
+        },
+        {
+          "path": "scripts/campaign_manifest.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 10250,
+          "last_commit": "b9bb609 2026-09-09"
+        },
+        {
+          "path": "scripts/job_campaign.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 5616,
+          "last_commit": "b9bb609 2026-09-09"
+        },
+        {
+          "path": "scripts/job_campaign_0.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 331,
+          "last_commit": "b9bb609 2026-09-09"
+        },
+        {
+          "path": "scripts/job_campaign_1.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 331,
+          "last_commit": "b9bb609 2026-09-09"
+        },
+        {
+          "path": "scripts/job_campaign_2.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 331,
+          "last_commit": "b9bb609 2026-09-09"
+        },
+        {
+          "path": "scripts/verify_campaign_ops.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 12693,
+          "last_commit": "b9bb609 2026-09-09"
+        },
+        {
+          "path": "scripts/stage_campaign_assets.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 5309,
+          "last_commit": "b9bb609 2026-09-09"
+        },
+        {
+          "path": "scripts/analyze_campaign.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 9137,
+          "last_commit": "f191fa6 2026-09-09"
+        },
+        {
+          "path": "scripts/make_presentation.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 29735,
+          "last_commit": "9da41d6 2026-09-09"
+        },
+        {
+          "path": "scripts/presentation_labels.py",
+          "exists": true,
+          "kind": "file",
+          "bytes": 4252,
+          "last_commit": "9da41d6 2026-09-09"
+        }
+      ],
+      "config": [
+        {
+          "path": "results/campaign_manifest_frozen.json",
+          "exists": true,
+          "kind": "file",
+          "bytes": 29029,
+          "last_commit": "b9bb609 2026-09-09"
+        }
+      ],
+      "results": [
+        {
+          "path": "results/kaggle_outputs/campaign-j0-20260909-095039",
+          "exists": true,
+          "kind": "dir",
+          "n_files": 219
+        },
+        {
+          "path": "results/kaggle_outputs/campaign-j1-20260909-095101",
+          "exists": true,
+          "kind": "dir",
+          "n_files": 219
+        },
+        {
+          "path": "results/kaggle_outputs/campaign-j2-20260909-095123",
+          "exists": true,
+          "kind": "dir",
+          "n_files": 219
+        },
+        {
+          "path": "results/campaign_results.json",
+          "exists": true,
+          "kind": "file",
+          "bytes": 47050,
+          "last_commit": "f191fa6 2026-09-09"
+        },
+        {
+          "path": "results/campaign_verification.json",
+          "exists": true,
+          "kind": "file",
+          "bytes": 11368,
+          "last_commit": "b9bb609 2026-09-09"
+        },
+        {
+          "path": "results/campaign_previews",
+          "exists": true,
+          "kind": "dir",
+          "n_files": 2
+        },
+        {
+          "path": "results/presentation",
+          "exists": true,
+          "kind": "dir",
+          "n_files": 43
+        }
+      ],
+      "docs": [
+        {
+          "path": "docs/HANDOVER.md",
+          "exists": true,
+          "kind": "file",
+          "bytes": 28068,
+          "last_commit": "5ec3217 2026-09-09"
+        }
+      ]
+    }
+  },
+  "missing": [],
+  "campaign_cross_check": {
+    "status": "compared",
+    "n_configurations": 21,
+    "n_cells_snapshot": 63,
+    "n_cells_repository": 63,
+    "differences": []
+  },
+  "reported_commit_f191fa6": {
+    "resolves": true,
+    "subject": "f191fa6 2026-09-09 push"
+  }
+}

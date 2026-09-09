@@ -3,6 +3,18 @@
 **Read this first after any context reset.** It records what exists, what was
 measured, what was decided, and where to look. Newest work is most detailed.
 
+> **Mémoire de recherche (français).** A maintained knowledge base lives in
+> [`docs/research/continuation/`](research/continuation/README.md): per-experiment
+> records `EXP-000`…`EXP-011` with verified repository paths
+> ([REPO_EVIDENCE](research/continuation/REPO_EVIDENCE.md)), operator and
+> protocol definitions, preserved sources, and an errata list
+> ([CORRECTIONS](research/continuation/CORRECTIONS.md)) of claims that must not
+> be repeated. This file stays the operational handover — code map, phases,
+> gotchas; that base is the scientific memory and the place to record a new
+> experiment. Keep them consistent: numbers have one canonical source, the run's
+> own JSON. Its update procedure is
+> [MAINTENANCE](research/continuation/MAINTENANCE.md).
+
 Repo root: `C:\Users\mnica\Documents\Projet_filiere`
 Remote: `https://github.com/aubincharley/homotogit`, branch `continuation-gaussian-tv`
 Kaggle account: `maxnicaise` (phone-verified; GPU + internet gated on that).
