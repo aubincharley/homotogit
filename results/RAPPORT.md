@@ -229,8 +229,49 @@ rattrape presque tout. Le déficit final de 0,77 point est le reliquat d'un
 retard massif comblé en 20 époques. Première hypothèse : la rampe consomme la
 moitié du budget d'entraînement sur un problème qui n'est pas la cible.
 
-*Figures : `compare_updates.png`, `alpha.png`, `loss_vs_alpha.png`,
-`branch.png`, `curvature.png`.*
+![exp1 — comparaison](exp1_50k_40ep/compare_updates.png)
+
+*__Figure 1.__ ResNet-18, 50k images, 40 époques. Panneau haut-gauche : la seule
+lecture comparable, les deux bras évalués comme le même ResNet ReLU. Le bras
+homotopie (orange) traîne pendant toute la rampe puis rattrape presque tout.
+Panneau bas-droite : la distance au réseau cible, nulle pour la baseline par
+construction.*
+
+![exp1 — diagnostic de l'homotopie](exp1_50k_40ep/alpha.png)
+
+*__Figure 2.__ Le garde-fou. À gauche `linear_gap` par site d'activation, au
+milieu la fraction de pré-activations négatives, à droite les deux moyennes
+contre α. __La lecture qui compte est à droite :__ `linear_gap` monte
+exactement quand α descend, et les deux courbes se croisent. Si `linear_gap`
+restait plate, le réseau aurait décalé ses BatchNorm pour rendre φ_α ≈ identité
+et l'homotopie aurait été contournée — aucun chiffre du run ne vaudrait alors
+quoi que ce soit. `neg_frac` reste entre 0,44 et 0,50 : pas d'échappatoire.*
+
+![exp1 — la branche](exp1_50k_40ep/branch.png)
+
+*__Figure 3.__ Continuité de θ*(α). À gauche, la taille du pas entre
+checkpoints consécutifs — en paramètres et en désaccord de prédiction — contre
+α. À droite, mouvement en paramètres contre mouvement fonctionnel. __Le fait
+inattendu :__ le plus grand changement fonctionnel survient aux époques 25-30,
+c'est-à-dire __après__ que α ait atteint 0. Le réseau se réorganise
+massivement une fois l'homotopie terminée : θ ne suit pas la branche, il est en
+retard sur elle et rattrape ensuite.*
+
+![exp1 — courbure](exp1_50k_40ep/curvature.png)
+
+*__Figure 4.__ Valeurs propres dominantes de la hessienne et trace le long de
+la trajectoire, par power iteration et estimateur de Hutchinson (mode eval,
+batch fixe). C'est cette mesure qui a réfuté l'hypothèse du « minimum plus
+plat » : le bras homotopie finit à 48,1 / 433 contre 35,2 / 166 pour la
+baseline — plus __pointu__, pas plus plat.*
+
+![exp1 — coupe le long de α](exp1_50k_40ep/loss_vs_alpha.png)
+
+*__Figure 5.__ L_α(θ_t) à θ figé, balayé sur α, pour plusieurs checkpoints. Les
+traits pointillés marquent l'α auquel chaque θ a été entraîné. Une courbe plate
+autour de son pointillé signifierait des poids bons sur tout le chemin ; ici la
+loss explose dès qu'on s'éloigne de l'α d'entraînement, en particulier pour les
+checkpoints tardifs.*
 
 ### 3.2 Digression — l'observation de régularité, et sa réfutation
 
@@ -331,6 +372,14 @@ l'essentiel du bénéfice.
 ~18 % à accuracy quasi égale. Cet effet est entièrement présent à
 $\lambda = 0$ : il vient de l'escalier, pas de la pénalité.
 
+![exp2 — balayage de lambda](exp2_lambda_sweep_1seed/compare_updates.png)
+
+*__Figure 6.__ Les cinq bras. __Les quatre courbes escalier sont
+superposées sur les six panneaux__ — λ varie d'un facteur 100 sans que rien ne
+bouge. C'est la démonstration visuelle que l'ancre est inerte. Le seul écart
+franc est au panneau haut-milieu, entre la baseline (bleu) et le groupe
+escalier, et il est présent à λ = 0.*
+
 ### 3.4 exp3 — trois graines sur le même protocole
 
 *10 000 images, 50 époques, graines 0/1/2. Baseline contre escalier sans ancre.*
@@ -360,6 +409,16 @@ C'est la deuxième conclusion préliminaire à devoir être corrigée.
 régularisation — un réseau mieux calibré mais moins juste — pas d'une meilleure
 optimisation. Le critère de décision, fixé avant tout résultat, portait sur
 l'accuracy : il n'est pas rempli.
+
+![exp3 — trois graines](exp3_3seeds/compare_updates.png)
+
+*__Figure 7.__ Trois graines : trait épais la moyenne, bande ±1 écart-type,
+traits fins les runs individuels. Les deux à la fois délibérément — une bande
+seule ne dit pas si un écart vient de trois runs dispersés ou d'un seul
+aberrant, et à n = 3 cette distinction décide de ce que l'écart signifie. Les
+bandes __ne se recouvrent jamais en fin d'entraînement__, ni sur l'accuracy ni
+sur la loss. Les dents de scie de l'escalier sont synchrones entre graines :
+elles viennent du redémarrage de learning rate, pas du hasard.*
 
 **Une explication banale restait à écarter.** À 10 000 images la baseline
 mémorise complètement (gap +16,2 %). Dans ce régime, **tout** ce qui freine
@@ -418,8 +477,27 @@ redémarrage, l'escalier était 1,78 point derrière ; à l'époque 79 il l'éta
 visible de 0,892 à 0,753. Le supprimer aurait vraisemblablement empiré son
 score.
 
-*Figures : `exp4_full80_3seeds/compare_updates.png` (moyenne, bande ±1 σ, les
-trois runs), `alpha.png`, `loss_vs_alpha.png`.*
+![exp4 — pleine échelle](exp4_full80_3seeds/compare_updates.png)
+
+*__Figure 8. Le résultat principal de la campagne.__ 50 000 images, 80 époques,
+trois graines. Comparer au panneau haut-milieu de la figure 7 : à 10k la
+courbe de test loss de l'escalier passait __sous__ celle de la baseline ; ici
+elle reste __au-dessus__. Le panneau bas-milieu montre le même renversement sur
+l'écart de généralisation. Les bandes sont si serrées (σ ≈ 0,0004) qu'elles
+sont à peine visibles.*
+
+![exp4 — diagnostic](exp4_full80_3seeds/alpha.png)
+
+*__Figure 9.__ Le même garde-fou qu'en figure 2, à pleine échelle. `linear_gap`
+suit α sur les dix paliers. __C'est cette figure qui protège le résultat
+négatif :__ sans elle, les −1,19 point pourraient se lire comme un bug
+d'implémentation plutôt que comme un fait sur la méthode.*
+
+![exp4 — coupe le long de α](exp4_full80_3seeds/loss_vs_alpha.png)
+
+*__Figure 10.__ L_α(θ_t) à θ figé. Noter l'échelle : la loss atteint 10⁴ aux
+α éloignés de celui d'entraînement. Les poids sont spécialisés à leur position
+sur le chemin et ne transfèrent pas ailleurs.*
 
 ### 3.6 exp6 — sans connexions résiduelles
 
@@ -466,6 +544,16 @@ favorable. La pénalité **s'aggrave** au contraire : −1,2 point sur ResNet à
 (0,8616) : il n'a pas fini d'apprendre — 10 époques à $\alpha = 0$ sur 50. C'est
 exactement le motif qu'exp3 avait produit et qu'exp4 a réfuté ; il ne doit pas
 être lu comme un gain.
+
+![exp6 — PlainNet](exp6_plainnet_5k_seed1/compare_updates.png)
+
+*__Figure 11.__ PlainNet-18, quatre bras. __L'écart entre la baseline (bleu) et
+le groupe homotopie est bien plus large qu'aucune figure ResNet__ — comparer à
+la figure 8, où les deux courbes finissaient collées. Le bras escalier (violet)
+est nettement en dessous partout, sauf en test loss où il passe devant en fin
+de run : c'est la signature « pas fini d'apprendre », visible aussi au panneau
+haut-droite où sa train loss reste dix fois plus haute que celle de la
+baseline.*
 
 ---
 
@@ -585,7 +673,29 @@ l'accuracy finale de la baseline n'est jamais atteinte.
 
 ---
 
-## Annexe — reproduction
+## Annexe A — index des figures
+
+| # | fichier | ce qu'elle établit |
+|---|---|---|
+| 1 | `exp1_50k_40ep/compare_updates.png` | premier signal sur l'axe activation |
+| 2 | `exp1_50k_40ep/alpha.png` | l'homotopie est délivrée, non contournée |
+| 3 | `exp1_50k_40ep/branch.png` | θ ne suit pas la branche, il la rattrape |
+| 4 | `exp1_50k_40ep/curvature.png` | minimum plus **pointu** : hypothèse réfutée |
+| 5 | `exp1_50k_40ep/loss_vs_alpha.png` | les poids ne transfèrent pas le long du chemin |
+| 6 | `exp2_lambda_sweep_1seed/compare_updates.png` | **l'ancre est inerte** sur 2 ordres de grandeur |
+| 7 | `exp3_3seeds/compare_updates.png` | dispersion inter-graines, bandes disjointes |
+| 8 | `exp4_full80_3seeds/compare_updates.png` | **le résultat principal**, et le renversement |
+| 9 | `exp4_full80_3seeds/alpha.png` | le garde-fou à pleine échelle |
+| 10 | `exp4_full80_3seeds/loss_vs_alpha.png` | spécialisation des poids à leur α |
+| 11 | `exp6_plainnet_5k_seed1/compare_updates.png` | sans skips, la pénalité s'aggrave |
+
+Toutes les figures `compare_updates.png` partagent la même disposition en six
+panneaux : accuracy comparable (lue comme le ResNet ReLU complet, BatchNorm
+ré-estimée), test loss, train loss, accuracy à l'α courant, écart de
+généralisation, distance au réseau cible. **Le panneau haut-gauche est le seul
+où les bras sont évalués comme le même réseau** ; les autres sont diagnostiques.
+
+## Annexe B — reproduction
 
 ```
 src/cifarbase/configs/     une YAML par bras, avec en tête la question qu'il pose
