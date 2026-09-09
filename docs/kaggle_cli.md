@@ -29,9 +29,10 @@ subprocesses before anything authenticates. Without the flag the default
 kernel id and the quota all follow the selected account, and every launch writes
 `results/kaggle_outputs/<slug>/launch.json` recording which account ran it.
 
-Configured accounts: `maxnicaise`, `maxlefrr`. Both were measured on the same
-image — 2x Tesla T4, `torch 2.10.0+cu128` — which is why digests reproduce across
-them.
+Configured accounts: `maxnicaise`, `maxlefrr`, `maxnikezz`. All three were
+measured on the same image — 2x Tesla T4, `torch 2.10.0+cu128`, CUDA 12.8 — which
+is why digests reproduce across them. That is **6 T4s in parallel**; re-probe if
+Kaggle ever changes the image, because a different build breaks pairing.
 
 `kernels list --mine` only sees the selected account's kernels, so check both
 before launching to avoid duplicate submissions.
