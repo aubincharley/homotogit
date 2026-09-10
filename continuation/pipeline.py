@@ -70,13 +70,16 @@ class InputPipeline:
             torch.cuda.synchronize(device)
 
     def __call__(self, images_uint8: torch.Tensor, eta: float,
-                 meta: dict | None = None, res: int | None = None) -> torch.Tensor:
+                 meta: dict | None = None, res: int | None = None,
+                 reducer=None) -> torch.Tensor:
         x = self.to_unit_float(images_uint8)
         if res is not None:
             # progressive resolution, built from the original *floating-point*
             # image and before normalization, so the fixed per-channel constants
             # are shared by every resolution.  res == H is an exact no-op.
-            x = resize_unit_float(x, res)
+            # reducer(x, res) lets a caller supply a different reduction
+            # operator; without it the established bilinear resize is used.
+            x = reducer(x, res) if reducer is not None else resize_unit_float(x, res)
         self._sync(x.device)
         t0 = time.perf_counter()
         x = self.transform(x, eta, meta)
