@@ -1,0 +1,35 @@
+{
+  "cell": {
+    "id": "ADAPT",
+    "cell_id": "ADAPT__seed0",
+    "group": "ADAPT",
+    "seed": 0,
+    "resolution": "R32",
+    "gaussian": "Gplateau",
+    "reduction": "input_bilinear",
+    "mask": "all19",
+    "operator": "gaussian",
+    "adaptive": true,
+    "adaptive_params": {
+      "sigma_init": 1.0,
+      "sens_batch": 256,
+      "ramp_from": 18,
+      "zero_by": 21,
+      "tracker": {
+        "beta": 0.9,
+        "tol": 0.01,
+        "patience": 30,
+        "min_steps": 40
+      },
+      "stepper": {
+        "delta_ref": 0.15,
+        "dmin": 0.02,
+        "dmax": 0.35,
+        "sigma_max": 1.0
+      }
+    }
+  },
+  "job": 0,
+  "worker": 0,
+  "traceback": "Traceback (most recent call last):\n  File \"/kaggle/working/_repo/scripts/campaign_driver.py\", line 381, in _worker\n    train_cell(cell, Path(assets), gpu, Path(out_dir), job, worker)\n  File \"/kaggle/working/_repo/scripts/campaign_driver.py\", line 306, in train_cell\n    grads = ctrl.measure(model, pipe, sens_imgs, sens_lbls)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/dist-packages/torch/utils/_contextlib.py\", line 124, in decorate_context\n    return func(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^\n  File \"/kaggle/working/_repo/continuation/adaptive.py\", line 357, in measure\n    loss = F.cross_entropy(model(pipe(images, 0.0)), labels)\n                           ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py\", line 1776, in _wrapped_call_impl\n    return self._call_impl(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py\", line 1787, in _call_impl\n    return forward_call(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/kaggle/working/_repo/continuation/models/resnet20_bn.py\", line 87, in forward\n    out = F.relu(self.bn1(self.conv1(x)))\n                          ^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py\", line 1776, in _wrapped_call_impl\n    return self._call_impl(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py\", line 1882, in _call_impl\n    return inner()\n           ^^^^^^^\n  File \"/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py\", line 1843, in inner\n    hook_result = hook(self, args, result)\n                  ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/kaggle/working/_repo/continuation/campaign_ops.py\", line 455, in <lambda>\n    lambda _m, _i, out, s=site: ctrl.apply_at(s, out)))\n                                ^^^^^^^^^^^^^^^^^^^^^\n  File \"/kaggle/working/_repo/continuation/adaptive.py\", line 332, in apply_at\n    return blur_with_sigma_grad(h, self.q[site] * s, self.gauss.radius)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/kaggle/working/_repo/continuation/transforms/gaussian.py\", line 191, in blur_with_sigma_grad\n    y = F.conv2d(reflect_pad_axis(x, radius, -1), kx, groups=c)\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nRuntimeError: Expected all tensors to be on the same device, but got weight is on cpu, different from other tensors on cuda:0 (when checking argument in method wrapper_CUDA___conv_depthwise2d)\n"
+}

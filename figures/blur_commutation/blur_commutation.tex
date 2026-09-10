@@ -1,0 +1,17 @@
+% Standalone wrapper.  Compile with:  pdflatex blur_commutation.tex
+% To drop the figure into a paper instead, \input{body.tex} inside a figure
+% environment and point \bcDir at this directory:
+%   \providecommand{\bcDir}{figures/blur_commutation/}
+%   \begin{figure*}\centering
+%     \resizebox{\textwidth}{!}{\input{figures/blur_commutation/body}}
+%   \end{figure*}
+% The paper preamble then needs: amsmath, amssymb, graphicx, tikz with the
+% arrows.meta, calc and positioning libraries.
+\documentclass[border=2mm]{standalone}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,calc,positioning}
+\begin{document}
+\input{body}
+\end{document}
