@@ -52,34 +52,14 @@ SITES = ("all", "act1", "act2")
 def activation_sites(model, which="all"):
     """Every Activation in forward order, as (module, stage, block).
 
-    stage is 0 for the stem and 1..4 for layer1..layer4; block is a running
-    index over BasicBlocks, -1 for the stem. Those two are what `scope` groups
-    by, so they are carried here rather than re-derived from module names.
-
-    `which` selects act1 (inside the residual branch), act2 (on the main path,
-    after the add) or both. It matters because they linearise different things:
-    act1 alone makes F affine and leaves the block nonlinear, act2 alone leaves
-    F nonlinear, and only "all" makes the network itself affine at alpha = 1.
-
-    Walked explicitly rather than through modules() so that forward order is
-    constructed rather than assumed -- test_sites_are_every_activation_in_
-    forward_order checks the result against hooks either way.
+    Delegates to the model: which activations exist, in what order, and how
+    they group into stages is a fact about the architecture, so each model
+    answers for itself. A ResNet reports its stem plus two per block; a VGG
+    reports one per convolution, staged by the maxpools between them.
     """
     if which not in SITES:
         raise ValueError(f"unknown a_sites {which!r}: pick one of {', '.join(SITES)}")
-    sites = []
-    if which == "all":
-        sites.append((model.act0, 0, -1))
-    block_index = 0
-    stages = (model.layer1, model.layer2, model.layer3, model.layer4)
-    for stage_index, stage in enumerate(stages, start=1):
-        for block in stage:
-            if which in ("all", "act1"):
-                sites.append((block.act1, stage_index, block_index))
-            if which in ("all", "act2"):
-                sites.append((block.act2, stage_index, block_index))
-            block_index += 1
-    return sites
+    return model.activation_sites(which)
 
 
 def _dense_rank(keys):

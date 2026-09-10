@@ -53,6 +53,8 @@ push-act:       ## push one protocol as its own kernel, e.g. make push-act ACT=a
 	@$(PYTHON) -c "$$STAGE_ARM" $(ACT) "$(SEEDS)" "$(TAG)" "$(FORCE)"
 	$(PYTHON) build.py
 	@cp dist/main.py .push/$(ACT)-$${TAG:-s$$(echo $(SEEDS) | tr -d ,)}/main.py
+	@grep -q 'KAGGLE_CONFIG = "$(ACT)"' .push/$(ACT)-$${TAG:-s$$(echo $(SEEDS) | tr -d ,)}/main.py \
+	  || { echo "!! staged bundle does not carry config $(ACT) -- refusing to push"; exit 1; }
 	@echo "NOTE: a push resets the accelerator. Set GPU T4 x2 in the UI, then Save & Run All."
 	kaggle kernels push -p .push/$(ACT)-$${TAG:-s$$(echo $(SEEDS) | tr -d ,)}
 	@$(PYTHON) -c "$$RESTORE_MAIN"
@@ -92,11 +94,29 @@ import json, pathlib, subprocess, sys
 arm, seeds, tag, force = (sys.argv[1], sys.argv[2].strip(),
                           sys.argv[3].strip(), sys.argv[4].strip())
 tag = tag or "s" + seeds.replace(",", "")
+
+# A push that fails -- a full GPU queue, a network error -- aborts the recipe
+# before RESTORE_MAIN runs, and leaves main.py stamped with that arm. The next
+# stamp then finds no `KAGGLE_CONFIG = "baseline"` to replace, does nothing, and
+# pushes the PREVIOUS arm's config under the new arm's name. That happened, and
+# it is silent: two kernels ran the same experiment while their names said
+# otherwise. Recover from the leftover, then assert both replacements bit.
 main = pathlib.Path("main.py")
-pathlib.Path("main.py.orig").write_text(main.read_text())
+leftover = pathlib.Path("main.py.orig")
+if leftover.exists():
+    main.write_text(leftover.read_text())
+    leftover.unlink()
+    print("  (recovered main.py from an earlier push that did not restore it)")
+leftover.write_text(main.read_text())
 text = main.read_text()
-text = text.replace('KAGGLE_CONFIG = "baseline"', f'KAGGLE_CONFIG = "{arm}"')
-text = text.replace("KAGGLE_ARGV = []", f'KAGGLE_ARGV = ["--seeds", "{seeds}"]')
+for old, new in (('KAGGLE_CONFIG = "baseline"', f'KAGGLE_CONFIG = "{arm}"'),
+                 ("KAGGLE_ARGV = []", f'KAGGLE_ARGV = ["--seeds", "{seeds}"]')):
+    if old not in text:
+        raise SystemExit(
+            f"!! main.py does not contain {old!r}, so stamping would silently "
+            f"push whatever config it does hold. Restore it with "
+            f"`git checkout main.py` and try again.")
+    text = text.replace(old, new)
 main.write_text(text)
 
 stage = pathlib.Path(".push") / f"{arm}-{tag}"

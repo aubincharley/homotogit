@@ -151,6 +151,43 @@ class ResidualGate:
         return False
 
 
+class NullResidualGate:
+    """The ResidualGate interface for a network with no residual branch.
+
+    VGG has nothing to gate. Rather than have the training loop branch on
+    whether a residual axis exists, this holds s at 1 -- which *is* the
+    unmodified network -- and every call is a no-op. Same idea as
+    wandb_setup.NullRun: the code never asks whether the thing is available.
+    """
+
+    def __len__(self):
+        return 1
+
+    def set(self, s):
+        return [1.0]
+
+    def get(self):
+        return [1.0]
+
+    @contextlib.contextmanager
+    def at(self, s):
+        yield self
+
+    def close(self):
+        pass
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        return False
+
+
+def build_residual_gate(model):
+    """A real gate where there are residual branches, a null one otherwise."""
+    return ResidualGate(model) if residual_blocks(model) else NullResidualGate()
+
+
 # --------------------------------------------------------------------------
 # the policy
 # --------------------------------------------------------------------------

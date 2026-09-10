@@ -162,9 +162,107 @@ class ResNet(nn.Module):
             self.in_ch = out_ch * BasicBlock.expansion
         return nn.Sequential(*layers)
 
+    def activation_sites(self, which="all"):
+        """Every Activation in forward order, as (module, stage, block).
+
+        The model owns this because it is a fact about its own topology.
+        stage is 0 for the stem and 1..4 for layer1..layer4; block is a running
+        index over BasicBlocks, -1 for the stem. `which` selects act1 (inside
+        the residual branch), act2 (the main path, after the add) or both.
+        """
+        sites = []
+        if which == "all":
+            sites.append((self.act0, 0, -1))
+        block_index = 0
+        stages = (self.layer1, self.layer2, self.layer3, self.layer4)
+        for stage_index, stage in enumerate(stages, start=1):
+            for block in stage:
+                if which in ("all", "act1"):
+                    sites.append((block.act1, stage_index, block_index))
+                if which in ("all", "act2"):
+                    sites.append((block.act2, stage_index, block_index))
+                block_index += 1
+        return sites
+
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         out = self.act0(self.bn1(self.conv1(x)))
         out = self.layer4(self.layer3(self.layer2(self.layer1(out))))
+        out = F.adaptive_avg_pool2d(out, 1).flatten(1)
+        return self.fc(out)
+
+
+class VGG(nn.Module):
+    """VGG-11 with BatchNorm, adapted to 32x32 inputs.
+
+    A network designed without skip connections, rather than a ResNet with the
+    skips deleted. That distinction is the reason this class exists: removing
+    the `+ x` from a ResNet-18 leaves a model He et al. (2015) found roughly as
+    trainable as the residual one -- the degradation that motivates skips
+    appears at thirty-four layers -- so a PlainNet-18 may not be the rough
+    landscape an activation homotopy was meant for. VGG is.
+
+    The CIFAR adaptation is the usual one: the eight convolutions of the
+    ImageNet vgg11_bn, then a global average pool and a single linear layer
+    instead of the three 4096-wide fully connected layers, which exist for
+    224x224 inputs and would be most of the parameters here.
+
+    Each convolution is followed by BatchNorm and an `Activation`, so every
+    diagnostic written for the ResNet -- linear_gap, the alpha=0 readout with
+    its BatchNorm re-estimation, the anchor over conv and linear weights --
+    applies unchanged.
+    """
+
+    def __init__(self, plan, num_classes=10, width=64):
+        super().__init__()
+        # width scales the whole plan, so --width 16 gives a runnable smoke test
+        # exactly as it does for the ResNet.
+        scale = width / 64
+        layers, in_ch = [], 3
+        for item in plan:
+            if item == "M":
+                layers.append(nn.MaxPool2d(2, 2))
+                continue
+            out_ch = max(1, round(item * scale))
+            layers += [nn.Conv2d(in_ch, out_ch, 3, padding=1, bias=False),
+                       nn.BatchNorm2d(out_ch), Activation()]
+            in_ch = out_ch
+        self.features = nn.Sequential(*layers)
+        self.fc = nn.Linear(in_ch, num_classes)
+
+        for module in self.modules():
+            if isinstance(module, nn.Conv2d):
+                nn.init.kaiming_normal_(module.weight, mode="fan_out",
+                                        nonlinearity="relu")
+            elif isinstance(module, nn.BatchNorm2d):
+                nn.init.ones_(module.weight)
+                nn.init.zeros_(module.bias)
+
+    def activation_sites(self, which="all"):
+        """The eight Activations in forward order, as (module, stage, block).
+
+        A VGG stage is a run of convolutions between two maxpools -- 1, 1, 2, 2,
+        2 for vgg11 -- which is what a stage-wise schedule should group. block
+        is the running convolution index.
+
+        act1 and act2 name the two activations of a residual block and have no
+        counterpart here; returning all eight for them would turn an ablation
+        config into a silent no-op.
+        """
+        if which != "all":
+            raise ValueError(
+                f"a_sites={which!r} names an activation of a residual block; "
+                f"this network has none. Use a_sites=all.")
+        sites, stage, block = [], 0, 0
+        for layer in self.features:
+            if isinstance(layer, nn.MaxPool2d):
+                stage += 1
+            elif isinstance(layer, Activation):
+                sites.append((layer, stage, block))
+                block += 1
+        return sites
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        out = self.features(x)
         out = F.adaptive_avg_pool2d(out, 1).flatten(1)
         return self.fc(out)
 
@@ -174,6 +272,10 @@ ARCHS = {
     "resnet34": (3, 4, 6, 3),
 }
 
+VGG_PLANS = {
+    "vgg11": (64, "M", 128, "M", 256, 256, "M", 512, 512, "M", 512, 512, "M"),
+}
+
 
 def count_params(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
@@ -181,13 +283,18 @@ def count_params(model):
 
 def build_model(cfg, device, quiet=False):
     arch = cfg["arch"]
-    if arch not in ARCHS:
-        raise ValueError(f"unknown arch {arch!r}: pick one of {', '.join(ARCHS)}")
-    model = ResNet(ARCHS[arch], num_classes=10, width=cfg.get("width", 64),
-                   zero_init_residual=bool(cfg.get("zero_init_residual", True)),
-                   use_residual=bool(cfg.get("use_residual", True)))
+    if arch in VGG_PLANS:
+        model = VGG(VGG_PLANS[arch], num_classes=10, width=cfg.get("width", 64))
+        kind = f"{arch}-bn"
+    elif arch in ARCHS:
+        model = ResNet(ARCHS[arch], num_classes=10, width=cfg.get("width", 64),
+                       zero_init_residual=bool(cfg.get("zero_init_residual", True)),
+                       use_residual=bool(cfg.get("use_residual", True)))
+        kind = arch if model.use_residual else f"plain-{arch} (no skips)"
+    else:
+        known = ", ".join(list(ARCHS) + list(VGG_PLANS))
+        raise ValueError(f"unknown arch {arch!r}: pick one of {known}")
     model = model.to(device)
     if not quiet:
-        kind = arch if model.use_residual else f"plain-{arch} (no skips)"
         print(f"model: {kind}, {count_params(model) / 1e6:.2f}M params")
     return model

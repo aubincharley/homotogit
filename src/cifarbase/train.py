@@ -20,9 +20,9 @@ import torch.nn.functional as F
 from cifarbase.activation import ActivationGate, build_activation_gate
 from cifarbase.anchor import (anchor_coefficient, anchor_distance,
                               anchor_penalty, calibrate_lambda, get_theta_0)
-from cifarbase.homotopy import (ResidualGate, alpha_at_cfg, other_parameters,
-                                phase_at, phase_bounds, residual_parameters,
-                                s_at_cfg)
+from cifarbase.homotopy import (ResidualGate, alpha_at_cfg, build_residual_gate,
+                                other_parameters, phase_at, phase_bounds,
+                                residual_parameters, s_at_cfg)
 from cifarbase.landscape import (activation_stats, grad_norm_per_block,
                                  record, recompute_bn, residual_ratio,
                                  save_checkpoint)
@@ -183,7 +183,9 @@ def train_once(cfg, train, val, test, device, seed, run=None, verbose=True,
     seed_everything(seed, cfg["deterministic"])
     model = build_model(cfg, device, quiet=not verbose)
     optimizer = build_optimizer(model, cfg)
-    gate = ResidualGate(model)
+    # A null gate on a network with no residual branch (VGG): s stays at 1,
+    # which is the unmodified network, and nothing downstream has to branch.
+    gate = build_residual_gate(model)
     # None when a_schedule is "none", and then nothing below touches an alpha:
     # a baseline run is exactly the run it was before this axis existed.
     a_gate = build_activation_gate(model, cfg)
@@ -405,10 +407,11 @@ def train_once(cfg, train, val, test, device, seed, run=None, verbose=True,
             # matter show up in history.csv without anyone having to open the
             # jsonl. The per-block detail stays in landscape.jsonl.
             blocks = diagnostics["ratio"]
-            row["ratio_mean"] = sum(blocks) / len(blocks)
-            row["ratio_last_block"] = blocks[-1]
-            row["grad_norm_mean"] = (sum(diagnostics["grad_norm"])
-                                     / len(diagnostics["grad_norm"]))
+            if blocks:                       # empty on a network with no blocks
+                row["ratio_mean"] = sum(blocks) / len(blocks)
+                row["ratio_last_block"] = blocks[-1]
+                row["grad_norm_mean"] = (sum(diagnostics["grad_norm"])
+                                         / len(diagnostics["grad_norm"]))
             row["grad_norm_total"] = diagnostics["grad_norm_total"]
             if "linear_gap" in diagnostics:
                 # The number that says whether the homotopy is doing anything.

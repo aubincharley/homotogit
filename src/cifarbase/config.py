@@ -411,17 +411,36 @@ def _validate_anchor(cfg):
 def _validate(cfg):
     # Imported here, not at module scope, so `--help` works on a machine with no
     # torch installed.
-    from cifarbase.model import ARCHS
+    from cifarbase.model import ARCHS, VGG_PLANS
 
-    if not cfg["use_residual"] and cfg["zero_init_residual"]:
+    if cfg["arch"] in VGG_PLANS:
+        # A VGG has no residual branch, so three keys that are meaningful on a
+        # ResNet would be silent no-ops here. Refusing them is the same policy
+        # the s_* and a_* validators follow: a config that quietly does nothing
+        # produces a run answering a question nobody asked.
+        if cfg["zero_init_residual"]:
+            raise SystemExit(
+                f"!! zero_init_residual with arch={cfg['arch']!r}: this network "
+                f"has no residual branch to zero, so the flag would do nothing. "
+                f"Set zero_init_residual: false.")
+        if not cfg["use_residual"]:
+            raise SystemExit(
+                f"!! use_residual=False with arch={cfg['arch']!r}: this network "
+                f"has no skips to remove. use_residual applies to resnet only.")
+        if cfg["s_schedule"] != "const":
+            raise SystemExit(
+                f"!! s_schedule={cfg['s_schedule']!r} with arch={cfg['arch']!r}: "
+                f"the residual homotopy needs residual branches, and this "
+                f"network has none. The activation axis (a_*) applies.")
+    elif not cfg["use_residual"] and cfg["zero_init_residual"]:
         raise SystemExit(
             "!! use_residual=False with zero_init_residual=True: gamma_bn2 "
             "starts at 0 and there is no x to add back, so every block outputs "
             "exactly zero and the network is a constant. Set "
             "zero_init_residual: false on any plain config.")
-    if cfg["arch"] not in ARCHS:
-        raise SystemExit(f"!! unknown arch {cfg['arch']!r}: "
-                         f"pick one of {', '.join(ARCHS)}")
+    if cfg["arch"] not in ARCHS and cfg["arch"] not in VGG_PLANS:
+        known = ", ".join(list(ARCHS) + list(VGG_PLANS))
+        raise SystemExit(f"!! unknown arch {cfg['arch']!r}: pick one of {known}")
     if cfg["optimizer"] != "sgd":
         raise SystemExit(f"!! optimizer {cfg['optimizer']!r}: this baseline is "
                          f"SGD only. Add the branch in train.build_optimizer "

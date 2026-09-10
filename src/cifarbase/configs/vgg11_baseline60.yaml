@@ -1,0 +1,55 @@
+# VGG-11 with BatchNorm -- the activation homotopy on an architecture that was
+# designed without skips, rather than one with the skips deleted.
+#
+# Why this and not the PlainNet of exp6: He et al. (2015) found plain and
+# residual networks near-equivalent at eighteen layers, the degradation that
+# motivates skip connections appearing at thirty-four. A PlainNet-18 may simply
+# not be the rough landscape an activation homotopy was meant for. VGG is a real
+# architecture whose loss surface the literature describes as chaotic.
+#
+# CONCEPTUAL CAVEAT, deliberate and documented. On a ResNet every nonlinearity
+# is an Activation, so alpha=1 makes the whole network affine -- a linear
+# classifier, with the singular Hessian that motivated the anchor. VGG-11 also
+# pools with max, five times, and max-pooling is nonlinear and carries no alpha.
+# At alpha=1 a VGG is therefore still PIECEWISE LINEAR, not linear: the homotopy
+# removes the eight kinks the activations contribute and leaves the five the
+# pooling contributes.
+#
+# That is accepted rather than engineered around. Replacing max with average
+# pooling would restore exact linearity at alpha=1, but the network would no
+# longer be VGG-11, and the question here is empirical -- does the homotopy help
+# a real skip-free architecture -- not whether the Hessian argument survives.
+# tests/test_vgg.py pins the fact down, with the ResNet as the control that does
+# become affine.
+#
+# 5 000 images and 60 epochs: a pilot, cheap enough for three seeds.
+#
+# THE CONTROL. Plain ReLU throughout, alpha nailed at 0, no anchor.
+
+seeds: "0"          # pilote : une graine. Trois si le signal vaut la peine.
+
+batch_size: 128
+eval_batch_size: 1000
+train_subset: 5000
+val_size: 0
+augment: true
+
+arch: vgg11
+width: 64
+zero_init_residual: false   # refused otherwise: a VGG has no residual branch
+                            # to zero, so the flag would be a silent no-op
+
+epochs: 60
+optimizer: sgd
+lr: 0.1
+momentum: 0.9
+nesterov: true
+weight_decay: 5.0e-4
+schedule: cosine
+warmup_epochs: 5
+
+a_bn_batches: 64
+ckpt_every: 0
+diag_every: 5
+per_class: false
+

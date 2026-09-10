@@ -1,0 +1,69 @@
+# VGG-11 with BatchNorm on the whole training set -- the activation homotopy on
+# an architecture designed without skips, at full scale.
+#
+# The 5k pilot (exp7) gave baseline 0.7609 against staircase 0.7352, so -2.57
+# points on one seed. This asks whether that holds on 50 000 images, where the
+# baseline stops memorising: at 5k its generalisation gap is +0.24, and every
+# earlier experiment showed that conclusions drawn in that regime can reverse.
+# exp3 and exp4 reversed one outright.
+#
+# CONCEPTUAL CAVEAT, carried over and deliberate. VGG-11 pools with max, five
+# times, and max-pooling is nonlinear and carries no alpha. At alpha=1 the
+# network is therefore still PIECEWISE LINEAR, not linear: the homotopy removes
+# the eight kinks the activations contribute and leaves the five the pooling
+# contributes. The Hessian-degeneracy argument that motivated the anchor does
+# not apply here. Accepted rather than engineered around -- replacing max with
+# average pooling would restore exact linearity at alpha=1 but the network would
+# no longer be VGG-11, and the question is empirical.
+#
+# The same ten plateaus as vgg11_steps70, WITHOUT the per-plateau learning rate
+# restart. One global cosine across the whole run instead of ten.
+#
+# What this isolates. a_lr_restart exists so theta can settle at each alpha
+# before the continuation steps -- otherwise the staircase is decoration. But
+# measured on vgg11_steps70, each restart throws the learning rate back to 0.1
+# and costs about 4.7 points of the alpha=0 readout, recovered over four or five
+# epochs. A plateau is five epochs long. Nearly the whole plateau is spent
+# repairing its own restart, and there is little left to settle with.
+#
+# So the remedy may cost more than the disease. This arm runs the identical
+# alpha path under a single cosine: same ten levels, same 22 epochs at alpha=0,
+# no sawtooth. vgg11_steps70 minus this arm is the price of the restarts.
+#
+# The known risk, and the reason the flag was introduced: under one global
+# cosine the early plateaus run at a learning rate too high to settle and the
+# late ones at one too low to move. grad_norm_total at the phase boundaries is
+# how to check which failure actually occurred.
+
+seeds: "0"
+
+batch_size: 128
+eval_batch_size: 1000
+val_size: 0
+augment: true
+
+arch: vgg11
+width: 64
+zero_init_residual: false   # refused otherwise: a VGG has no residual branch
+
+epochs: 70
+optimizer: sgd
+lr: 0.1
+momentum: 0.9
+nesterov: true
+weight_decay: 5.0e-4
+schedule: cosine
+warmup_epochs: 5
+
+a_bn_batches: 64
+ckpt_every: 0
+diag_every: 5
+per_class: true
+
+a_schedule: staircase
+a_stairs: 10
+a_lr_restart: false
+a_start: 1.0
+a_end: 0.0
+a_ramp_start: 0.0
+a_ramp_end: 0.75

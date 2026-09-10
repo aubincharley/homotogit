@@ -1,0 +1,57 @@
+# VGG-11 with BatchNorm on the whole training set -- the activation homotopy on
+# an architecture designed without skips, at full scale.
+#
+# The 5k pilot (exp7) gave baseline 0.7609 against staircase 0.7352, so -2.57
+# points on one seed. This asks whether that holds on 50 000 images, where the
+# baseline stops memorising: at 5k its generalisation gap is +0.24, and every
+# earlier experiment showed that conclusions drawn in that regime can reverse.
+# exp3 and exp4 reversed one outright.
+#
+# CONCEPTUAL CAVEAT, carried over and deliberate. VGG-11 pools with max, five
+# times, and max-pooling is nonlinear and carries no alpha. At alpha=1 the
+# network is therefore still PIECEWISE LINEAR, not linear: the homotopy removes
+# the eight kinks the activations contribute and leaves the five the pooling
+# contributes. The Hessian-degeneracy argument that motivated the anchor does
+# not apply here. Accepted rather than engineered around -- replacing max with
+# average pooling would restore exact linearity at alpha=1 but the network would
+# no longer be VGG-11, and the question is empirical.
+#
+# The discrete continuation: ten plateaus over the first three quarters, then
+# the tail at alpha=0. Same structure as vgg11_steps60 and as full80_steps on
+# the ResNet, so the architectures are compared at equal protocol.
+#
+# a_lr_restart gives each plateau its own warmup and cosine so theta can settle
+# before alpha steps. No anchor -- four experiments put it to rest.
+
+seeds: "0"
+
+batch_size: 128
+eval_batch_size: 1000
+val_size: 0
+augment: true
+
+arch: vgg11
+width: 64
+zero_init_residual: false   # refused otherwise: a VGG has no residual branch
+
+epochs: 70
+optimizer: sgd
+lr: 0.1
+momentum: 0.9
+nesterov: true
+weight_decay: 5.0e-4
+schedule: cosine
+warmup_epochs: 5
+
+a_bn_batches: 64
+ckpt_every: 0
+diag_every: 5
+per_class: true
+
+a_schedule: staircase
+a_stairs: 10
+a_lr_restart: true
+a_start: 1.0
+a_end: 0.0
+a_ramp_start: 0.0
+a_ramp_end: 0.75
