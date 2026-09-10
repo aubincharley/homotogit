@@ -60,14 +60,18 @@ def main(out_dir="results/per_layer_cpu_v2"):
             peak = max(r) if max(r) > 0 else 0.0
             shape.append(r[site] / peak if peak > 0 else float("nan"))
         axes[1].plot(epochs, shape, "-o", ms=4, color=c, label=label)
-    for lvl, txt in ((1.0, r"$\rho$=2 deep"), (0.5, r"$\rho$=2 stage2"),
-                     (0.25, r"$\rho$=2 shallow")):
+    # These mark the three coefficient VALUES the fixed rho=2 profile uses.
+    # rho=2 assigns 1.0 to the DEEP sites; the discovered profile puts its
+    # maximum on the STEM instead, so matching a line is not matching rho=2.
+    for lvl, txt in ((1.0, r"$\rho$=2 level 1.00 (its deep sites)"),
+                     (0.5, r"$\rho$=2 level 0.50 (its stage 2)"),
+                     (0.25, r"$\rho$=2 level 0.25 (its shallow sites)")):
         axes[1].axhline(lvl, color="#d62728", ls="--", lw=0.9, alpha=0.55)
         axes[1].annotate(txt, (0.02, lvl), xycoords=("axes fraction", "data"),
                          fontsize=7, color="#d62728", va="bottom")
     axes[1].set_xlabel("epoch")
     axes[1].set_ylabel(r"$\sigma_\ell\,/\,\max_\ell \sigma_\ell$")
-    axes[1].set_title("Discovered profile shape vs the fixed $\\rho$=2 targets")
+    axes[1].set_title("Discovered shape — max on the STEM, i.e. inverted vs $\\rho$=2")
     axes[1].legend(fontsize=8, loc="center right")
     axes[1].grid(alpha=0.25)
 

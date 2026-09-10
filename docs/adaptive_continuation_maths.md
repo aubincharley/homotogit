@@ -408,8 +408,19 @@ $n=5\times10^4$, $B=128$ ($391$ updates per epoch):
 | 120 | 0.05 | 46 920 | 1173 | $40\times$ |
 | 40 | 0.1 | 14 040 | 702 | $24\times$ |
 
-The last row is a configuration observed to reach training interpolation. So
-quadrupling $E$ at fixed $\alpha$ leaves $\mathcal M$ a factor
-$702/117.3\approx6$ short, whereas raising $\alpha$ tenfold at $E=120$ exceeds
-it by $\approx1.7$. Convergence is governed by $\mathcal M$, not by $E$ alone —
-which is why "more epochs" and "a convergence test" are not the same request.
+The fourth row is a configuration observed to reach training interpolation.
+
+> **Corrected by measurement.** The prediction from this table was that
+> $E=120,\ \alpha=0.005$ ($\mathcal M\approx117$, a factor $702/117\approx6$
+> short of the interpolating row) would **not** converge. It does: measured
+> probe accuracy $1.0000$ at $E=120$ for **both** learning rates, and for the
+> plain, fixed-schedule and adaptive arms alike.
+>
+> So $\mathcal M$ is **not** a sufficient statistic for convergence, and
+> $(3.2)$ must not be used to predict it. What the comparison does establish is
+> that $E=30$ was simply too short: at $E=120$ the corrector interpolates at
+> either learning rate. The failure of every convergence-style trigger in
+> section 4 is therefore a property of the **budget that was used**, not a
+> property of the problem — at a long horizon a convergence trigger has
+> something to detect, though by then the plateau is the interpolation point
+> and arrives near the end of training rather than within each stage.

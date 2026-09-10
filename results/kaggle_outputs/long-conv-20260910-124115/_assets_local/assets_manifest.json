@@ -1,0 +1,47 @@
+{
+  "source_job": "job_long_convergence (self-generated, 120 epochs)",
+  "paired_with_campaign": true,
+  "pairing_checks": {
+    "subset": true,
+    "train_probe": true,
+    "perm_seed0_first30": true,
+    "init_seed0": true
+  },
+  "expected": {
+    "subset": "33236cc6bd19fa6b89e06d441d3fcd8eb37dc8540f6a4f2b627b20af10894a41",
+    "train_probe": "a33645e0e4f024d8c47c0c5bdd7fbc7ea59a976090a815c58ba029908f2c86bc",
+    "perm_seed0_first30": "5df32d0d922962e72fb4dd718a5eaad13f3209f75b8363aff64e57b89b4bb22f",
+    "init_seed0": "6e652c49e5139e785887b9cb6b08ce5b0dee734bde6384550be6a8a3641e2c1b"
+  },
+  "got": {
+    "subset": "33236cc6bd19fa6b89e06d441d3fcd8eb37dc8540f6a4f2b627b20af10894a41",
+    "train_probe": "a33645e0e4f024d8c47c0c5bdd7fbc7ea59a976090a815c58ba029908f2c86bc",
+    "perm_seed0_first30": "5df32d0d922962e72fb4dd718a5eaad13f3209f75b8363aff64e57b89b4bb22f",
+    "init_seed0": "6e652c49e5139e785887b9cb6b08ce5b0dee734bde6384550be6a8a3641e2c1b"
+  },
+  "note": "perm_seed0 has 120 rows, so its first 30 are checked against the campaign digest: same generator stream, same minibatch order over the first 30 epochs",
+  "arrays": {
+    "subset": {
+      "sha256": "33236cc6bd19fa6b89e06d441d3fcd8eb37dc8540f6a4f2b627b20af10894a41",
+      "shape": [
+        50000
+      ]
+    },
+    "train_probe": {
+      "sha256": "a33645e0e4f024d8c47c0c5bdd7fbc7ea59a976090a815c58ba029908f2c86bc",
+      "shape": [
+        500
+      ]
+    },
+    "perm_seed0": {
+      "sha256": "af381ba5e2d8413ea8fee4799b73747e838f2020b7a88849669316f694d22b32",
+      "shape": [
+        120,
+        50000
+      ]
+    }
+  },
+  "states": {
+    "init_seed0": "6e652c49e5139e785887b9cb6b08ce5b0dee734bde6384550be6a8a3641e2c1b"
+  }
+}

@@ -10,6 +10,16 @@ ever saved weights.  It is the sharper one: on **one** set of weights and
 Both are evaluated on the same grid, the same directions and the same images,
 so the only thing that changes between the two surfaces is the operator.
 
+With ``--recalibrate-bn`` the BatchNorm running statistics are recomputed at
+every grid point, separately for each objective, before that objective is
+evaluated.  Without it the comparison is confounded: these checkpoints are
+BatchNorm nets whose buffers were estimated under the *filtered* feature
+distribution, so bypassing the filters evaluates the network with statistics
+that belong to a different input distribution -- exactly the contamination
+``continuation/models/resnet_gn.py`` cites as its reason for GroupNorm.
+Calibration uses held-out *training* images, never the evaluation set, so no
+statistics leak from the images the loss is read on.
+
 Directions follow Li et al. (2018): two random directions, normalized
 filter-wise to the anchor's own filter norms, so distance along an axis means
 the same thing everywhere.  Only weight tensors with more than one dimension
@@ -84,6 +94,36 @@ def filter_normalised_direction(anchor, generator):
     return d
 
 
+def batchnorm_modules(model):
+    return [m for m in model.modules()
+            if isinstance(m, torch.nn.modules.batchnorm._BatchNorm)]
+
+
+def recalibrate_bn(model, ctrl, bypass, images, norm, batch):
+    """Re-estimate BN running statistics for the current weights and objective.
+
+    ``momentum=None`` makes each layer accumulate a cumulative average over the
+    calibration pass, so the result is the exact mean/var over those batches
+    rather than an exponentially weighted trace.
+    """
+    bns = batchnorm_modules(model)
+    if not bns:
+        return False
+    saved = [m.momentum for m in bns]
+    for m in bns:
+        m.reset_running_stats()
+        m.momentum = None
+    ctrl.bypass_all = bypass
+    model.train()
+    with torch.no_grad():
+        for s in range(0, len(images), batch):
+            model(norm(images[s:s + batch].float() / 255.0))
+    model.eval()
+    for m, mo in zip(bns, saved):
+        m.momentum = mo
+    return True
+
+
 def stratified(labels, per_class, num_classes=10, seed=0):
     g = np.random.default_rng(seed)
     lab = labels.numpy()
@@ -103,6 +143,10 @@ def main():
     ap.add_argument("--batch", type=int, default=256)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--threads", type=int, default=0)
+    ap.add_argument("--recalibrate-bn", action="store_true",
+                    help="re-estimate BN statistics per grid point and per "
+                         "objective, on held-out training images")
+    ap.add_argument("--calib-images", type=int, default=500)
     a = ap.parse_args()
     if a.threads:
         torch.set_num_threads(a.threads)
@@ -126,6 +170,12 @@ def main():
     y = bundle.test.labels[idx]
     norm = ChannelNormalizer(bundle.mean, bundle.std)
 
+    cal_x = None
+    if a.recalibrate_bn:
+        cidx = stratified(bundle.train.labels, a.calib_images // 10,
+                          seed=a.seed + 1000)
+        cal_x = bundle.train.images[cidx]
+
     model = build_model(ModelConfig(arch=arch), 10, seed=0)
     model.load_state_dict(anchor)
     model.eval()
@@ -144,6 +194,8 @@ def main():
     plain = np.full((a.grid, a.grid), np.nan)
 
     def evaluate(bypass):
+        if cal_x is not None:
+            recalibrate_bn(model, ctrl, bypass, cal_x, norm, a.batch)
         ctrl.bypass_all = bypass
         tot = 0.0
         with torch.no_grad():
@@ -170,12 +222,18 @@ def main():
                  el * (a.grid ** 2 - done) / max(done, 1)), flush=True)
 
     OUT.mkdir(parents=True, exist_ok=True)
-    tag = "%s_ep%02d_g%d_n%d" % (run.name, a.epoch, a.grid, len(x))
+    # the span must be in the name: two runs that differ only by span are
+    # different experiments, and leaving it out let one overwrite the other
+    tag = "%s_ep%02d_g%d_s%03d_n%d%s" % (
+        run.name, a.epoch, a.grid, round(a.span * 100), len(x),
+        "_bnrecal" if a.recalibrate_bn else "")
     path = OUT / ("landscape_%s.npz" % tag)
     np.savez_compressed(
         path, xs=xs, ys=ys, loss_blur=blur, loss_plain=plain,
         sigma=sigma, epoch=a.epoch, arch=arch, span=a.span,
         n_images=len(x), image_indices=idx, seed=a.seed,
+        recalibrated_bn=bool(a.recalibrate_bn),
+        calib_images=(0 if cal_x is None else len(cal_x)),
         checkpoint=str(ckpt.relative_to(ROOT)), checkpoint_sha256_16=digest(ckpt),
         centre_blur=blur[a.grid // 2, a.grid // 2],
         centre_plain=plain[a.grid // 2, a.grid // 2])

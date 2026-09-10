@@ -67,12 +67,18 @@ def table(dwell):
     return t
 
 
+# Which allocations to run in this invocation.  Two cells fit two workers in a
+# single round, so on a tight quota the run cannot be killed part-way through a
+# second round and lose everything.  "front" and "back" are the decisive
+# opposites; "hour" is a third shape, deferred to an unconstrained account.
+RUN = ("front", "back")
+
 CELLS = [
     {"id": f"alloc_{name}", "cell_id": f"alloc_{name}__seed0", "group": "ALLOC",
      "seed": SEED, "resolution": "R32", "gaussian": "Gplateau",
      "operator": "gaussian", "reduction": "input_bilinear", "mask": "all19",
      "adaptive": False, "gaussian_table": table(d), "dwell": d}
-    for name, d in ALLOCATIONS.items()
+    for name, d in ALLOCATIONS.items() if name in RUN
 ]
 
 
