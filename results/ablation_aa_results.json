@@ -1,5 +1,5 @@
 {
-  "n_arms": 24,
+  "n_arms": 32,
   "missing": [],
   "seeds": 1,
   "arms": {
@@ -119,25 +119,29 @@
       "rationale": "fixed level, never annealed: architecture, not continuation. Separates 'the filter helps' from 'annealing helps', and a peak near sigma 0.5-0.8 would be a Nyquist signature"
     },
     "P_postblock": {
-      "n_seeds": 1,
+      "n_seeds": 3,
       "seeds": [
-        0
+        0,
+        1,
+        2
       ],
       "primary_path": "target",
-      "acc": 0.7989,
-      "acc_sd": null,
+      "acc": 0.8008333333333333,
+      "acc_sd": 0.0021197484127446144,
       "acc_per_seed": [
-        0.7989
+        0.7989,
+        0.8005,
+        0.8031
       ],
-      "acc_target": 0.7989,
-      "acc_current": 0.7989,
-      "ce_target": 0.5984609603881836,
-      "probe_ce": 0.30040142822265625,
-      "wall_s": 517.7108438580001,
-      "shift_consistency": 0.8752333124478658,
+      "acc_target": 0.8008333333333333,
+      "acc_current": 0.8008333333333333,
+      "ce_target": 0.5979345123291017,
+      "probe_ce": 0.2776524861653646,
+      "wall_s": 538.1907630936668,
+      "shift_consistency": 0.8752221994929844,
       "alias": {
-        "blocks3": 0.08310850895941257,
-        "blocks6": 0.13025040552020073
+        "blocks3": 0.08132227386037509,
+        "blocks6": 0.12810093785325685
       },
       "rationale": "after the ReLU (10 positions): the only placement that is anti-aliasing-correct at the two decimation points"
     },
@@ -570,9 +574,385 @@
         "blocks6": 0.14934982856114706
       },
       "rationale": "single resolution reduction apres blocks[2], no blur"
+    },
+    "P_A2": {
+      "n_seeds": 3,
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "primary_path": "target",
+      "acc": 0.8027666666666667,
+      "acc_sd": 0.002437895267096835,
+      "acc_per_seed": [
+        0.8037,
+        0.8,
+        0.8046
+      ],
+      "acc_target": 0.8027666666666667,
+      "acc_current": 0.8027666666666667,
+      "ce_target": 0.583052252705892,
+      "probe_ce": 0.3399303385416667,
+      "wall_s": 550.6919706903333,
+      "shift_consistency": 0.885477754804823,
+      "alias": {
+        "blocks3": 0.07866125305493672,
+        "blocks6": 0.13994298006097475
+      },
+      "rationale": "sigma proportional to sqrt(map size): the same direction as A1 but damped, so the deepest positions land near 0.5 -- the value wave 1's dose-response peaked at -- instead of at 0.25 and 0.125, where the kernel is numerically a delta and the blur is simply off"
+    },
+    "P_A3": {
+      "n_seeds": 3,
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "primary_path": "target",
+      "acc": 0.8018,
+      "acc_sd": 0.004582575694955844,
+      "acc_per_seed": [
+        0.8008,
+        0.7978,
+        0.8068
+      ],
+      "acc_target": 0.8018,
+      "acc_current": 0.8018,
+      "ce_target": 0.5785542612711588,
+      "probe_ce": 0.28216063435872396,
+      "wall_s": 582.5056657609999,
+      "shift_consistency": 0.8748666445414225,
+      "alias": {
+        "blocks3": 0.1681313825150331,
+        "blocks6": 0.15067916611830393
+      },
+      "rationale": "the exact opposite: more blur at depth. Direction control -- without it, 'better distributed' and 'simply less' are indistinguishable"
+    },
+    "Q_A1": {
+      "n_seeds": 3,
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "primary_path": "target",
+      "acc": 0.7847666666666667,
+      "acc_sd": 0.003251666239535234,
+      "acc_per_seed": [
+        0.7841,
+        0.7883,
+        0.7819
+      ],
+      "acc_target": 0.7847666666666667,
+      "acc_current": 0.7847666666666667,
+      "ce_target": 0.6444984395345053,
+      "probe_ce": 0.26090141805013023,
+      "wall_s": 550.0632760479999,
+      "shift_consistency": 0.8598333199818929,
+      "alias": {
+        "blocks3": 0.07183959955970447,
+        "blocks6": 0.1418823686738809
+      },
+      "rationale": "sigma proportional to map size: less blur where the kernel already exceeds the map"
+    },
+    "Q_A3": {
+      "n_seeds": 3,
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "primary_path": "target",
+      "acc": 0.7700666666666667,
+      "acc_sd": 0.003821430796617064,
+      "acc_per_seed": [
+        0.7728,
+        0.7717,
+        0.7657
+      ],
+      "acc_target": 0.7700666666666667,
+      "acc_current": 0.7700666666666667,
+      "ce_target": 0.7671216796875,
+      "probe_ce": 0.11784424336751302,
+      "wall_s": 585.4597696876666,
+      "shift_consistency": 0.8001333077748617,
+      "alias": {
+        "blocks3": 0.1743022228280703,
+        "blocks6": 0.18443891778588295
+      },
+      "rationale": "the exact opposite: more blur at depth. Direction control -- without it, 'better distributed' and 'simply less' are indistinguishable"
+    },
+    "Q_A4": {
+      "n_seeds": 3,
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "primary_path": "target",
+      "acc": 0.7958666666666666,
+      "acc_sd": 0.0009504384952921686,
+      "acc_per_seed": [
+        0.7949,
+        0.7968,
+        0.7959
+      ],
+      "acc_target": 0.7958666666666666,
+      "acc_current": 0.7958666666666666,
+      "ce_target": 0.6310882843017578,
+      "probe_ce": 0.16305575561523436,
+      "wall_s": 532.2203067626666,
+      "shift_consistency": 0.8422555459870232,
+      "alias": {
+        "blocks3": 0.16936505461732546,
+        "blocks6": 0.15583929295341173
+      },
+      "rationale": "sigma proportional to receptive field: the only profile that varies *within* a stage rather than in three plateaus"
+    },
+    "P_A4": {
+      "n_seeds": 3,
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "primary_path": "target",
+      "acc": 0.8114333333333333,
+      "acc_sd": 0.0022479620400116316,
+      "acc_per_seed": [
+        0.8109,
+        0.8095,
+        0.8139
+      ],
+      "acc_target": 0.8114333333333333,
+      "acc_current": 0.8114333333333333,
+      "ce_target": 0.5618844914754232,
+      "probe_ce": 0.2663542785644531,
+      "wall_s": 593.6692725556667,
+      "shift_consistency": 0.8779555294248792,
+      "alias": {
+        "blocks3": 0.15990053986509642,
+        "blocks6": 0.14170111467440924
+      },
+      "rationale": "sigma proportional to receptive field: the only profile that varies *within* a stage rather than in three plateaus"
+    },
+    "Q_A2": {
+      "n_seeds": 3,
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "primary_path": "target",
+      "acc": 0.7955333333333333,
+      "acc_sd": 0.004636090306856987,
+      "acc_per_seed": [
+        0.7962,
+        0.7906,
+        0.7998
+      ],
+      "acc_target": 0.7955333333333333,
+      "acc_current": 0.7955333333333333,
+      "ce_target": 0.6163850906372069,
+      "probe_ce": 0.2303600107828776,
+      "wall_s": 578.8097621516666,
+      "shift_consistency": 0.8669333126809861,
+      "alias": {
+        "blocks3": 0.07554799007872741,
+        "blocks6": 0.12898674979805946
+      },
+      "rationale": "sigma proportional to sqrt(map size): the same direction as A1 but damped, so the deepest positions land near 0.5 -- the value wave 1's dose-response peaked at -- instead of at 0.25 and 0.125, where the kernel is numerically a delta and the blur is simply off"
+    },
+    "P_A1": {
+      "n_seeds": 3,
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "primary_path": "target",
+      "acc": 0.7961,
+      "acc_sd": 0.0043577517139001525,
+      "acc_per_seed": [
+        0.7958,
+        0.7919,
+        0.8006
+      ],
+      "acc_target": 0.7961,
+      "acc_current": 0.7961,
+      "ce_target": 0.5958221771240234,
+      "probe_ce": 0.3360979715983073,
+      "wall_s": 632.6406352416667,
+      "shift_consistency": 0.8839110864533318,
+      "alias": {
+        "blocks3": 0.0756632008900245,
+        "blocks6": 0.14260131865739822
+      },
+      "rationale": "sigma proportional to map size: less blur where the kernel already exceeds the map"
     }
   },
   "comparisons": [
+    {
+      "a": "Q_A1",
+      "b": "P_postblock",
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "n_seeds": 3,
+      "d_acc_pp": -1.61,
+      "d_acc_sd": 0.46,
+      "d_per_seed": [
+        -1.48,
+        -1.22,
+        -2.12
+      ],
+      "all_same_sign": true,
+      "acc_a": 0.7847666666666667,
+      "acc_b": 0.8008333333333333
+    },
+    {
+      "a": "Q_A2",
+      "b": "P_postblock",
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "n_seeds": 3,
+      "d_acc_pp": -0.53,
+      "d_acc_sd": 0.4,
+      "d_per_seed": [
+        -0.27,
+        -0.99,
+        -0.33
+      ],
+      "all_same_sign": true,
+      "acc_a": 0.7955333333333333,
+      "acc_b": 0.8008333333333333
+    },
+    {
+      "a": "Q_A3",
+      "b": "P_postblock",
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "n_seeds": 3,
+      "d_acc_pp": -3.08,
+      "d_acc_sd": 0.59,
+      "d_per_seed": [
+        -2.61,
+        -2.88,
+        -3.74
+      ],
+      "all_same_sign": true,
+      "acc_a": 0.7700666666666667,
+      "acc_b": 0.8008333333333333
+    },
+    {
+      "a": "Q_A4",
+      "b": "P_postblock",
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "n_seeds": 3,
+      "d_acc_pp": -0.5,
+      "d_acc_sd": 0.19,
+      "d_per_seed": [
+        -0.4,
+        -0.37,
+        -0.72
+      ],
+      "all_same_sign": true,
+      "acc_a": 0.7958666666666666,
+      "acc_b": 0.8008333333333333
+    },
+    {
+      "a": "P_A1",
+      "b": "D2G",
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "n_seeds": 3,
+      "d_acc_pp": -1.38,
+      "d_acc_sd": 0.48,
+      "d_per_seed": [
+        -0.96,
+        -1.9,
+        -1.29
+      ],
+      "all_same_sign": true,
+      "acc_a": 0.7961,
+      "acc_b": 0.8099333333333334
+    },
+    {
+      "a": "P_A2",
+      "b": "D2G",
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "n_seeds": 3,
+      "d_acc_pp": -0.72,
+      "d_acc_sd": 0.48,
+      "d_per_seed": [
+        -0.17,
+        -1.09,
+        -0.89
+      ],
+      "all_same_sign": true,
+      "acc_a": 0.8027666666666667,
+      "acc_b": 0.8099333333333334
+    },
+    {
+      "a": "P_A3",
+      "b": "D2G",
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "n_seeds": 3,
+      "d_acc_pp": -0.81,
+      "d_acc_sd": 0.44,
+      "d_per_seed": [
+        -0.46,
+        -1.31,
+        -0.67
+      ],
+      "all_same_sign": true,
+      "acc_a": 0.8018,
+      "acc_b": 0.8099333333333334
+    },
+    {
+      "a": "P_A4",
+      "b": "D2G",
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "n_seeds": 3,
+      "d_acc_pp": 0.15,
+      "d_acc_sd": 0.36,
+      "d_per_seed": [
+        0.55,
+        -0.14,
+        0.04
+      ],
+      "all_same_sign": false,
+      "acc_a": 0.8114333333333333,
+      "acc_b": 0.8099333333333334
+    },
     {
       "a": "D0",
       "b": "R4",
@@ -847,7 +1227,7 @@
       ],
       "all_same_sign": null,
       "acc_a": 0.7978,
-      "acc_b": 0.7989
+      "acc_b": 0.8008333333333333
     },
     {
       "a": "R3",
@@ -895,7 +1275,7 @@
       ],
       "all_same_sign": null,
       "acc_a": 0.8014,
-      "acc_b": 0.7989
+      "acc_b": 0.8008333333333333
     },
     {
       "a": "C_plateau",
@@ -942,7 +1322,7 @@
         1.71
       ],
       "all_same_sign": null,
-      "acc_a": 0.7989,
+      "acc_a": 0.8008333333333333,
       "acc_b": 0.7818
     },
     {
@@ -974,7 +1354,7 @@
         4.83
       ],
       "all_same_sign": null,
-      "acc_a": 0.7989,
+      "acc_a": 0.8008333333333333,
       "acc_b": 0.7506
     },
     {

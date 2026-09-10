@@ -1,0 +1,235 @@
+{
+  "id": "P_A2",
+  "group": "wave5",
+  "test": "a priori sur sigma, avec la reduction apres blocks[2] (architecture D2G)",
+  "operator": "gaussian",
+  "levels": "plateau",
+  "resolution": "Rprog",
+  "reduction": "block2_max",
+  "placement": "post_block",
+  "mask": "all19",
+  "blurpool_sigma": null,
+  "constant": false,
+  "primary_path": "target",
+  "sigma_profile": [
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    0.70711,
+    0.70711,
+    0.70711,
+    0.5,
+    0.5,
+    0.5
+  ],
+  "controller_builder": "continuation.ablation_ops.build_from_cell",
+  "diagnostics": {
+    "measured_in": {
+      "path": "target",
+      "level": 0.0,
+      "resolution": 32,
+      "filters_bypassed": true
+    },
+    "shift_consistency": {
+      "n_images": 10000,
+      "acc_unshifted": 0.7999999523162842,
+      "consistency_mean": 0.8793666362762451,
+      "acc_shifted_mean": 0.7977333267529806,
+      "acc_drop_from_shift": 0.0022666255633035925,
+      "per_shift": {
+        "dy+0_dx+1": {
+          "consistency": 0.8872999548912048,
+          "acc_shifted": 0.7962999939918518
+        },
+        "dy+1_dx+0": {
+          "consistency": 0.882099986076355,
+          "acc_shifted": 0.8012999892234802
+        },
+        "dy+1_dx+1": {
+          "consistency": 0.8686999678611755,
+          "acc_shifted": 0.7955999970436096
+        }
+      },
+      "shift_method": "replicate padding then crop; no wrap-around",
+      "note": "translation is applied to the normalized network input, after the pipeline, so it is a pure geometric shift of the tensor the network sees"
+    },
+    "aliasing_energy": {
+      "definition": "fraction of |DFT|^2 energy with |f_y|>0.25 or |f_x|>0.25 cycles/sample, at the input of each decimating block; that is the energy folded by a factor-2 subsampling",
+      "measured_at": {
+        "blocks3": {
+          "shape_CHW": [
+            16,
+            32,
+            32
+          ],
+          "n_batches": 4,
+          "alias_energy_fraction": 0.08070981688797474
+        },
+        "blocks6": {
+          "shape_CHW": [
+            32,
+            16,
+            16
+          ],
+          "n_batches": 4,
+          "alias_energy_fraction": 0.14736716449260712
+        }
+      },
+      "note": "measured on the network as configured at call time; the caller decides whether internal filters are active"
+    },
+    "diagnostic_seconds": 2.1240787919999775
+  },
+  "rationale": "sigma proportional to sqrt(map size): the same direction as A1 but damped, so the deepest positions land near 0.5 -- the value wave 1's dose-response peaked at -- instead of at 0.25 and 0.125, where the kernel is numerically a delta and the blur is simply off",
+  "est_seconds": 575,
+  "seed": 1,
+  "cell_id": "P_A2__seed1",
+  "job": 0,
+  "worker": 1,
+  "gpu_index": 1,
+  "gpu": "Tesla T4",
+  "epochs": 30,
+  "updates": 11730,
+  "updates_per_epoch": 391,
+  "n_train": 50000,
+  "n_test": 10000,
+  "warmup": 60,
+  "effective_batch": 128,
+  "microbatch": 32,
+  "controller": {
+    "operator": "gaussian",
+    "levels": [
+      1.0,
+      1.0,
+      1.0,
+      0.85,
+      0.85,
+      0.85,
+      0.7,
+      0.7,
+      0.7,
+      0.6,
+      0.6,
+      0.6,
+      0.5,
+      0.5,
+      0.5,
+      0.4,
+      0.4,
+      0.4,
+      0.3,
+      0.3,
+      0.3,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "n_sites": 10,
+    "sites": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "insertion_mask": "custom",
+    "reduction": "block2_max",
+    "resolution_by_epoch": [
+      16,
+      16,
+      16,
+      16,
+      16,
+      16,
+      24,
+      24,
+      24,
+      24,
+      24,
+      24,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32
+    ],
+    "sigma_rule": "sigma_l(e) = q_l(e) * G(e); q_l = width_l / width_l@32",
+    "gmix_rule": "T_alpha(h) = (1-alpha) h + alpha G_{q_l}(h), reference width 1; alpha=0 returns h unevaluated",
+    "gaussian_kernel": {
+      "kernel_size": 9,
+      "radius": 4
+    },
+    "placement": "post_block",
+    "mask": "all19",
+    "n_positions": 10,
+    "constant_level": false,
+    "blurpool_sigma": null,
+    "relative": false,
+    "sigma_profile": [
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      0.70711,
+      0.70711,
+      0.70711,
+      0.5,
+      0.5,
+      0.5
+    ],
+    "sigma_profile_note": "per-position multiplier on sigma, applied on top of q; None = uniform sigma",
+    "reduction_point": "block2",
+    "first_reduced_position": 4,
+    "blurpool_note": "fixed architectural prefilter on the inputs of blocks[3] and blocks[6]; covers the strided conv and the decimating shortcut; not disabled by bypass_all",
+    "placement_note": "post-ReLU: stem activation + 9 block outputs (10 positions, not 19)"
+  },
+  "normalization": {
+    "mean": [
+      0.4913996756076813,
+      0.4821584224700928,
+      0.44653090834617615
+    ],
+    "std": [
+      0.24703222513198853,
+      0.24348512291908264,
+      0.26158782839775085
+    ]
+  },
+  "final_test_acc": 0.8,
+  "final_test_ce": 0.5913485397338867,
+  "final_test_acc_current": 0.8,
+  "final_test_ce_current": 0.5913485397338867,
+  "final_train_probe_acc_current": 0.882,
+  "final_train_probe_ce_current": 0.377413330078125,
+  "final_test_acc_primary": 0.8,
+  "final_train_probe_acc": 0.882,
+  "final_train_probe_ce": 0.377413330078125,
+  "wall_seconds": 553.516913595,
+  "eval_seconds": 22.24407087100002,
+  "train_seconds": 531.2728427239999,
+  "peak_mem_mib": 583.630859375
+}

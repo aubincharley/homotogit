@@ -29,12 +29,13 @@ from scripts.ablation_manifest import build_configs as _w1  # noqa: E402
 from scripts.ablation2_manifest import build_configs as _w2  # noqa: E402
 from scripts.ablation3_manifest import build_configs as _w3  # noqa: E402
 from scripts.ablation4_manifest import build_configs as _w4  # noqa: E402  (seeds only)
+from scripts.ablation5_manifest import build_configs as _w5  # noqa: E402
 
 
 def build_configs():
     """All three waves: 12 at constant 32x32, 6 on the resolution row, 6 on the
     depth-of-reduction axis."""
-    return _w1() + _w2() + _w3()
+    return _w1() + _w2() + _w3() + _w5()
 
 
 def _stats(values):
@@ -125,6 +126,10 @@ def compare(arms, a, b):
 
 
 COMPARISONS = [
+    # wave 5 -- the depth prior on sigma, alone (Q) then on top of the reduction (P)
+    ("Q_A1", "P_postblock"), ("Q_A2", "P_postblock"),
+    ("Q_A3", "P_postblock"), ("Q_A4", "P_postblock"),
+    ("P_A1", "D2G"), ("P_A2", "D2G"), ("P_A3", "D2G"), ("P_A4", "D2G"),
     # wave 3 -- depth of the single reduction, and the blur at each depth
     ("D0", "R4"), ("D1", "R4"), ("D2", "R4"), ("D1", "R1"),
     ("D0G", "D0"), ("D1G", "D1"), ("D2G", "D2"),
@@ -170,7 +175,8 @@ def main():
              "M_nodown", "K_const030", "K_const050", "K_const080", "K_const100",
              "B_blurpool", "B_blurpool_plateau",
              "R1", "R2", "R3", "R4", "R5", "R6",
-             "D0", "D0G", "D1", "D1G", "D2", "D2G"]
+             "D0", "D0G", "D1", "D1G", "D2", "D2G",
+             "Q_A1", "Q_A2", "Q_A3", "Q_A4", "P_A1", "P_A2", "P_A3", "P_A4"]
     print("%-20s %-8s %2s %7s %7s %8s %9s  %-13s %s" %
           ("arm", "path", "n", "acc", "sd", "probeCE", "shiftCons",
            "alias b3/b6", "wall"))

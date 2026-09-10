@@ -1,0 +1,56 @@
+{
+  "measured_in": {
+    "path": "target",
+    "level": 0.0,
+    "resolution": 32,
+    "filters_bypassed": true
+  },
+  "shift_consistency": {
+    "n_images": 10000,
+    "acc_unshifted": 0.7818999886512756,
+    "consistency_mean": 0.8618333141009012,
+    "acc_shifted_mean": 0.7800333102544149,
+    "acc_drop_from_shift": 0.0018666783968607215,
+    "per_shift": {
+      "dy+0_dx+1": {
+        "consistency": 0.8659999966621399,
+        "acc_shifted": 0.7823999524116516
+      },
+      "dy+1_dx+0": {
+        "consistency": 0.8697999715805054,
+        "acc_shifted": 0.7793999910354614
+      },
+      "dy+1_dx+1": {
+        "consistency": 0.8496999740600586,
+        "acc_shifted": 0.7782999873161316
+      }
+    },
+    "shift_method": "replicate padding then crop; no wrap-around",
+    "note": "translation is applied to the normalized network input, after the pipeline, so it is a pure geometric shift of the tensor the network sees"
+  },
+  "aliasing_energy": {
+    "definition": "fraction of |DFT|^2 energy with |f_y|>0.25 or |f_x|>0.25 cycles/sample, at the input of each decimating block; that is the energy folded by a factor-2 subsampling",
+    "measured_at": {
+      "blocks3": {
+        "shape_CHW": [
+          16,
+          32,
+          32
+        ],
+        "n_batches": 4,
+        "alias_energy_fraction": 0.06344312988221645
+      },
+      "blocks6": {
+        "shape_CHW": [
+          32,
+          16,
+          16
+        ],
+        "n_batches": 4,
+        "alias_energy_fraction": 0.1338053159415722
+      }
+    },
+    "note": "measured on the network as configured at call time; the caller decides whether internal filters are active"
+  },
+  "diagnostic_seconds": 2.002198749999934
+}
