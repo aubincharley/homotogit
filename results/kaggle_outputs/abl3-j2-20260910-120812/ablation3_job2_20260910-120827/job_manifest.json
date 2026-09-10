@@ -1,0 +1,46 @@
+{
+  "job": 2,
+  "n_cells": 2,
+  "cells": [
+    {
+      "id": "D0G",
+      "group": "wave3",
+      "test": "profondeur de la reduction",
+      "operator": "gaussian",
+      "levels": "plateau",
+      "resolution": "Rprog",
+      "reduction": "block0_max",
+      "placement": "post_block",
+      "mask": "all19",
+      "blurpool_sigma": null,
+      "constant": false,
+      "primary_path": "target",
+      "controller_builder": "continuation.ablation_ops.build_from_cell",
+      "diagnostics": true,
+      "rationale": "single resolution reduction apres blocks[0], Gaussian plateau after the ReLU",
+      "est_seconds": 570,
+      "seed": 0,
+      "cell_id": "D0G__seed0"
+    },
+    {
+      "id": "D0",
+      "group": "wave3",
+      "test": "profondeur de la reduction",
+      "operator": "none",
+      "levels": "none",
+      "resolution": "Rprog",
+      "reduction": "block0_max",
+      "placement": "conv_out",
+      "mask": "all19",
+      "blurpool_sigma": null,
+      "constant": false,
+      "primary_path": "target",
+      "controller_builder": "continuation.ablation_ops.build_from_cell",
+      "diagnostics": true,
+      "rationale": "single resolution reduction apres blocks[0], no blur",
+      "est_seconds": 465,
+      "seed": 0,
+      "cell_id": "D0__seed0"
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "job": 1,
+  "n_cells": 1,
+  "cells": [
+    {
+      "id": "R6",
+      "group": "wave2",
+      "test": "l'annelage sert-il au meilleur placement",
+      "operator": "gaussian",
+      "levels": "const0.5",
+      "resolution": "R32",
+      "reduction": "input_bilinear",
+      "placement": "post_block",
+      "mask": "all19",
+      "blurpool_sigma": null,
+      "constant": true,
+      "primary_path": "current",
+      "controller_builder": "continuation.ablation_ops.build_from_cell",
+      "diagnostics": true,
+      "rationale": "wave 1 showed a constant sigma matches the annealed schedule at conv_out; this asks the same question at post_block, the placement that won. Not a continuation: read the current path",
+      "est_seconds": 625,
+      "seed": 0,
+      "cell_id": "R6__seed0"
+    }
+  ]
+}

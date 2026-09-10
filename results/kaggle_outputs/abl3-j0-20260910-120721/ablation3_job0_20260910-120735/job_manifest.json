@@ -1,0 +1,26 @@
+{
+  "job": 0,
+  "n_cells": 1,
+  "cells": [
+    {
+      "id": "D2G",
+      "group": "wave3",
+      "test": "profondeur de la reduction",
+      "operator": "gaussian",
+      "levels": "plateau",
+      "resolution": "Rprog",
+      "reduction": "block2_max",
+      "placement": "post_block",
+      "mask": "all19",
+      "blurpool_sigma": null,
+      "constant": false,
+      "primary_path": "target",
+      "controller_builder": "continuation.ablation_ops.build_from_cell",
+      "diagnostics": true,
+      "rationale": "single resolution reduction apres blocks[2], Gaussian plateau after the ReLU",
+      "est_seconds": 625,
+      "seed": 0,
+      "cell_id": "D2G__seed0"
+    }
+  ]
+}

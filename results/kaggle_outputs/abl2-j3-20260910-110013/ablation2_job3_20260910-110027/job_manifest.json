@@ -1,0 +1,46 @@
+{
+  "job": 3,
+  "n_cells": 2,
+  "cells": [
+    {
+      "id": "R3",
+      "group": "wave2",
+      "test": "test principal",
+      "operator": "gaussian",
+      "levels": "plateau",
+      "resolution": "Rprog",
+      "reduction": "input_bilinear",
+      "placement": "post_block",
+      "mask": "all19",
+      "blurpool_sigma": null,
+      "constant": false,
+      "primary_path": "target",
+      "controller_builder": "continuation.ablation_ops.build_from_cell",
+      "diagnostics": true,
+      "rationale": "does the post-ReLU placement's advantage survive on top of progressive resolution",
+      "est_seconds": 575,
+      "seed": 0,
+      "cell_id": "R3__seed0"
+    },
+    {
+      "id": "R1",
+      "group": "wave2",
+      "test": "resolution seule",
+      "operator": "none",
+      "levels": "none",
+      "resolution": "Rprog",
+      "reduction": "input_bilinear",
+      "placement": "conv_out",
+      "mask": "all19",
+      "blurpool_sigma": null,
+      "constant": false,
+      "primary_path": "target",
+      "controller_builder": "continuation.ablation_ops.build_from_cell",
+      "diagnostics": true,
+      "rationale": "progressive resolution with no filter at all: the term every other resolution arm has to be decomposed against",
+      "est_seconds": 495,
+      "seed": 0,
+      "cell_id": "R1__seed0"
+    }
+  ]
+}

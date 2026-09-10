@@ -1,0 +1,182 @@
+{
+  "id": "B_blurpool",
+  "group": "T5_blurpool",
+  "test": "5",
+  "operator": "none",
+  "levels": "none",
+  "resolution": "R32",
+  "reduction": "input_bilinear",
+  "placement": "conv_out",
+  "mask": "all19",
+  "blurpool_sigma": 0.5,
+  "constant": false,
+  "primary_path": "target",
+  "controller_builder": "continuation.ablation_ops.build_from_cell",
+  "diagnostics": {
+    "measured_in": {
+      "path": "target",
+      "level": 0.0,
+      "resolution": 32,
+      "filters_bypassed": true
+    },
+    "shift_consistency": {
+      "n_images": 10000,
+      "acc_unshifted": 0.785099983215332,
+      "consistency_mean": 0.852733314037323,
+      "acc_shifted_mean": 0.7805666526158651,
+      "acc_drop_from_shift": 0.004533330599466923,
+      "per_shift": {
+        "dy+0_dx+1": {
+          "consistency": 0.8648999929428101,
+          "acc_shifted": 0.7822999954223633
+        },
+        "dy+1_dx+0": {
+          "consistency": 0.8574999570846558,
+          "acc_shifted": 0.7836999893188477
+        },
+        "dy+1_dx+1": {
+          "consistency": 0.8357999920845032,
+          "acc_shifted": 0.7756999731063843
+        }
+      },
+      "shift_method": "replicate padding then crop; no wrap-around",
+      "note": "translation is applied to the normalized network input, after the pipeline, so it is a pure geometric shift of the tensor the network sees"
+    },
+    "aliasing_energy": {
+      "definition": "fraction of |DFT|^2 energy with |f_y|>0.25 or |f_x|>0.25 cycles/sample, at the input of each decimating block; that is the energy folded by a factor-2 subsampling",
+      "measured_at": {
+        "blocks3": {
+          "shape_CHW": [
+            16,
+            32,
+            32
+          ],
+          "n_batches": 4,
+          "alias_energy_fraction": 0.09403948113322258
+        },
+        "blocks6": {
+          "shape_CHW": [
+            32,
+            16,
+            16
+          ],
+          "n_batches": 4,
+          "alias_energy_fraction": 0.08660625480115414
+        }
+      },
+      "note": "measured on the network as configured at call time; the caller decides whether internal filters are active"
+    },
+    "diagnostic_seconds": 2.450285883000106
+  },
+  "rationale": "fixed sigma 0.5 on the inputs of blocks[3] and blocks[6], covering both strided convs and both decimating shortcuts; no annealed Gaussian anywhere. The positive test of H",
+  "est_seconds": 515,
+  "seed": 0,
+  "cell_id": "B_blurpool__seed0",
+  "job": 3,
+  "worker": 1,
+  "gpu_index": 1,
+  "gpu": "Tesla T4",
+  "epochs": 30,
+  "updates": 11730,
+  "updates_per_epoch": 391,
+  "n_train": 50000,
+  "n_test": 10000,
+  "warmup": 60,
+  "effective_batch": 128,
+  "microbatch": 32,
+  "controller": {
+    "operator": "none",
+    "levels": null,
+    "n_sites": 19,
+    "sites": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18
+    ],
+    "insertion_mask": "all19",
+    "reduction": "input_bilinear",
+    "resolution_by_epoch": [
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32
+    ],
+    "sigma_rule": "sigma_l(e) = q_l(e) * G(e); q_l = width_l / width_l@32",
+    "gmix_rule": "T_alpha(h) = (1-alpha) h + alpha G_{q_l}(h), reference width 1; alpha=0 returns h unevaluated",
+    "gaussian_kernel": null,
+    "placement": "conv_out",
+    "mask": "all19",
+    "n_positions": 19,
+    "constant_level": false,
+    "blurpool_sigma": 0.5,
+    "blurpool_note": "fixed architectural prefilter on the inputs of blocks[3] and blocks[6]; covers the strided conv and the decimating shortcut; not disabled by bypass_all",
+    "placement_note": "conv output, before BN and ReLU (campaign default)"
+  },
+  "normalization": {
+    "mean": [
+      0.4913996756076813,
+      0.4821584224700928,
+      0.44653090834617615
+    ],
+    "std": [
+      0.24703222513198853,
+      0.24348512291908264,
+      0.26158782839775085
+    ]
+  },
+  "final_test_acc": 0.7851,
+  "final_test_ce": 0.6608906524658203,
+  "final_test_acc_current": 0.7851,
+  "final_test_ce_current": 0.6608906524658203,
+  "final_train_probe_acc_current": 0.944,
+  "final_train_probe_ce_current": 0.19581515502929686,
+  "final_test_acc_primary": 0.7851,
+  "final_train_probe_acc": 0.944,
+  "final_train_probe_ce": 0.19581515502929686,
+  "wall_seconds": 459.7754712369999,
+  "eval_seconds": 20.655310587999566,
+  "train_seconds": 439.12016064900035,
+  "peak_mem_mib": 514.76220703125
+}

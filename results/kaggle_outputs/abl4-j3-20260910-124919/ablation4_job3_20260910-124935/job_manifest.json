@@ -1,0 +1,46 @@
+{
+  "job": 3,
+  "n_cells": 2,
+  "cells": [
+    {
+      "id": "D2",
+      "group": "wave3",
+      "test": "profondeur de la reduction",
+      "operator": "none",
+      "levels": "none",
+      "resolution": "Rprog",
+      "reduction": "block2_max",
+      "placement": "conv_out",
+      "mask": "all19",
+      "blurpool_sigma": null,
+      "constant": false,
+      "primary_path": "target",
+      "controller_builder": "continuation.ablation_ops.build_from_cell",
+      "diagnostics": true,
+      "rationale": "single resolution reduction apres blocks[2], no blur",
+      "est_seconds": 520,
+      "seed": 2,
+      "cell_id": "D2__seed2"
+    },
+    {
+      "id": "D1",
+      "group": "wave3",
+      "test": "profondeur de la reduction",
+      "operator": "none",
+      "levels": "none",
+      "resolution": "Rprog",
+      "reduction": "block1_max",
+      "placement": "conv_out",
+      "mask": "all19",
+      "blurpool_sigma": null,
+      "constant": false,
+      "primary_path": "target",
+      "controller_builder": "continuation.ablation_ops.build_from_cell",
+      "diagnostics": true,
+      "rationale": "single resolution reduction apres blocks[1], no blur",
+      "est_seconds": 490,
+      "seed": 2,
+      "cell_id": "D1__seed2"
+    }
+  ]
+}

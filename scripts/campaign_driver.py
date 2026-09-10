@@ -137,6 +137,33 @@ def evaluate(model, ctrl, images, labels, pipe, level, resolution, batch=500):
     return tot / n, correct / n
 
 
+def build_controller(model, cell):
+    """Cell -> ``(controller, hook handles)``.
+
+    A cell may name its own builder in ``cell["controller_builder"]`` as a
+    ``module.function`` path; the anti-aliasing ablation uses this to install its
+    own placements, masks and BlurPool without this driver knowing anything about
+    them.  Dispatching on a **cell field** rather than on a module-level global is
+    deliberate: workers are spawned, so a global set in the parent would not
+    survive into the child, whereas the cell dict is pickled onto the queue.
+
+    Cells with no builder take the original campaign path, unchanged.
+    """
+    builder = cell.get("controller_builder")
+    if builder:
+        import importlib
+        mod_name, fn_name = builder.rsplit(".", 1)
+        return getattr(importlib.import_module(mod_name), fn_name)(model, cell)
+
+    from scripts.campaign_manifest import GAUSSIAN, RESOLUTIONS
+    sites = EARLY7 if cell["mask"] == "early7" else tuple(range(N_SITES))
+    ctrl = SiteController(operator=cell["operator"],
+                          levels=GAUSSIAN[cell["gaussian"]], sites=sites,
+                          resolution_by_epoch=RESOLUTIONS[cell["resolution"]],
+                          reduction=cell["reduction"])
+    return ctrl, attach_sites(model, ctrl)
+
+
 def train_cell(cell, assets: Path, gpu: int, out_dir: Path, job: int, worker: int):
     dev = torch.device("cuda:%d" % gpu if torch.cuda.is_available() else "cpu")
     if dev.type == "cuda":
@@ -174,13 +201,7 @@ def train_cell(cell, assets: Path, gpu: int, out_dir: Path, job: int, worker: in
                                      map_location=dev, weights_only=True))
     model.train()
 
-    from scripts.campaign_manifest import GAUSSIAN, RESOLUTIONS
-    sites = EARLY7 if cell["mask"] == "early7" else tuple(range(N_SITES))
-    ctrl = SiteController(operator=cell["operator"],
-                          levels=GAUSSIAN[cell["gaussian"]], sites=sites,
-                          resolution_by_epoch=RESOLUTIONS[cell["resolution"]],
-                          reduction=cell["reduction"])
-    handles = attach_sites(model, ctrl)
+    ctrl, handles = build_controller(model, cell)
 
     epochs = PROTOCOL["epochs"]
     n, B, mb = int(subset.size), PROTOCOL["effective_batch"], PROTOCOL["microbatch"]
@@ -295,12 +316,62 @@ def train_cell(cell, assets: Path, gpu: int, out_dir: Path, job: int, worker: in
                                  "std": [float(v) for v in bundle.std]},
                "final_test_acc": last["test_acc_target"],
                "final_test_ce": last["test_ce_target"],
+               # An arm whose level never reaches the target endpoint (a constant
+               # sigma) is not evaluated honestly by the target path: that path
+               # measures a premature ablation, BN running-statistic mismatch
+               # included.  Both paths are therefore always recorded and the cell
+               # declares which one to read.
+               "final_test_acc_current": last["test_acc_current"],
+               "final_test_ce_current": last["test_ce_current"],
+               "final_train_probe_acc_current": last["train_probe_acc_current"],
+               "final_train_probe_ce_current": last["train_probe_ce_current"],
+               "primary_path": cell.get("primary_path", "target"),
+               "final_test_acc_primary": (
+                   last["test_acc_current"]
+                   if cell.get("primary_path") == "current"
+                   else last["test_acc_target"]),
                "final_train_probe_acc": last["train_probe_acc_target"],
                "final_train_probe_ce": last["train_probe_ce_target"],
                "wall_seconds": wall, "eval_seconds": eval_seconds[0],
                "train_seconds": wall - eval_seconds[0],
                "peak_mem_mib": (torch.cuda.max_memory_allocated(dev) / 1024 ** 2
                                 if dev.type == "cuda" else None)}
+    # ---- training-free diagnostics 0a / 0b, on the final weights -----------
+    # Opt-in per cell, so campaign cells are unaffected.  Measured with the
+    # network in the configuration its primary_path names, and with the hooks
+    # still attached -- a BlurPool arm must keep its architectural prefilter.
+    if cell.get("diagnostics"):
+        from continuation.ablation_ops import aliasing_energy, shift_consistency
+        primary = cell.get("primary_path", "target")
+        prev = (ctrl.value, ctrl.resolution, ctrl.bypass_all)
+        if primary == "current" and ctrl.levels:
+            ctrl.set_state(ctrl.levels[epochs - 1], 32)
+            ctrl.bypass_all = False
+        else:
+            ctrl.set_state(0.0, 32)
+            ctrl.bypass_all = True
+        res_diag = ctrl.input_resolution()
+        t_diag = time.perf_counter()
+        diag = {
+            "measured_in": {"path": primary, "level": ctrl.value,
+                            "resolution": 32, "filters_bypassed": ctrl.bypass_all},
+            "shift_consistency": shift_consistency(
+                model, pipe, test_imgs, test_lbls, res=res_diag),
+            "aliasing_energy": aliasing_energy(
+                model, pipe, test_imgs, res=res_diag),
+        }
+        ctrl.value, ctrl.resolution, ctrl.bypass_all = prev
+        ctrl.q = ctrl.q_for(ctrl.resolution)
+        diag["diagnostic_seconds"] = time.perf_counter() - t_diag
+        (run_dir / "diagnostics.json").write_text(json.dumps(diag, indent=2))
+        summary["diagnostics"] = diag
+        log("%-46s diag: shift-consistency=%.4f  alias-energy=%s"
+            % (cell["cell_id"][:46],
+               diag["shift_consistency"]["consistency_mean"],
+               {k: (None if v["alias_energy_fraction"] is None
+                    else round(v["alias_energy_fraction"], 4))
+                for k, v in diag["aliasing_energy"]["measured_at"].items()}))
+
     for h in handles:
         h.remove()
     (run_dir / "summary.json").write_text(json.dumps(summary, indent=2))
@@ -342,9 +413,11 @@ def _worker(queue, cells_by_id, assets, out_dir, job, worker, gpu, done_counter,
             % (k, total, total - k, el, el / max(k, 1) * (total - k)))
 
 
-def run_job(job_index: int, cells: list):
-    out_dir = WORK / ("campaign_job%d_%s" % (job_index,
-                                             time.strftime("%Y%m%d-%H%M%S")))
+def run_job(job_index: int, cells: list, prefix: str = "campaign_job"):
+    """Run ``cells`` on this environment's GPUs.  ``prefix`` names the output
+    directory so a different study is identifiable without reading its cells."""
+    out_dir = WORK / ("%s%d_%s" % (prefix, job_index,
+                                   time.strftime("%Y%m%d-%H%M%S")))
     out_dir.mkdir(parents=True, exist_ok=True)
     ngpu = torch.cuda.device_count()
     env = {"python": sys.version.split()[0], "platform": platform.platform(),

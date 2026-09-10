@@ -1,0 +1,113 @@
+{
+  "assets_dir": "/kaggle/input/datasets/idrisselk/r20bn-ablation-assets",
+  "manifest": {
+    "purpose": "pinned shared state for the anti-aliasing ablation",
+    "generated_by": "scripts/stage_ablation_assets.py",
+    "spec": {
+      "arch": "resnet20_bn_cifar",
+      "dataset": "cifar10",
+      "num_val": 0,
+      "subset_seed": 0,
+      "per_class": 5000,
+      "n_subset": 50000,
+      "epochs": 30,
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "probe_seed": 0,
+      "train_probe": 500
+    },
+    "torch": "2.14.0",
+    "numpy": "2.5.3",
+    "params": 269722,
+    "normalization": {
+      "mean": [
+        0.4913996756076813,
+        0.4821584224700928,
+        0.44653090834617615
+      ],
+      "std": [
+        0.24703222513198853,
+        0.24348512291908264,
+        0.26158782839775085
+      ]
+    },
+    "not_paired_with": "results/campaign_results.json -- different initial weights; the ablation carries its own controls",
+    "arrays": {
+      "subset": {
+        "sha256": "33236cc6bd19fa6b89e06d441d3fcd8eb37dc8540f6a4f2b627b20af10894a41",
+        "shape": [
+          50000
+        ],
+        "dtype": "int64"
+      },
+      "train_probe": {
+        "sha256": "a33645e0e4f024d8c47c0c5bdd7fbc7ea59a976090a815c58ba029908f2c86bc",
+        "shape": [
+          500
+        ],
+        "dtype": "int64"
+      },
+      "perm_seed0": {
+        "sha256": "5df32d0d922962e72fb4dd718a5eaad13f3209f75b8363aff64e57b89b4bb22f",
+        "shape": [
+          30,
+          50000
+        ],
+        "dtype": "int32"
+      },
+      "perm_seed1": {
+        "sha256": "b3c1460f166f3e3afb821c9b5cebc30a1915ce47b3a2502b85921041e8b58cb0",
+        "shape": [
+          30,
+          50000
+        ],
+        "dtype": "int32"
+      },
+      "perm_seed2": {
+        "sha256": "995dcd74c2f86f26d89d170041b8996b37e7dc881ebe9db103ddf2fc76f3e5bb",
+        "shape": [
+          30,
+          50000
+        ],
+        "dtype": "int32"
+      }
+    },
+    "states": {
+      "init_seed0": "d8abf19985074cac3b942605d4b325dab24e911f2b441a0b1dc6b2268860ab88",
+      "init_seed1": "5c27c5f880bf6ffb28f7ad98115ff1a6dd0fae14b44fd137a600b59c7416238d",
+      "init_seed2": "f6b02312f87ba6ec1ced77f5da3be64b89e3958e682d4b86db49df76adffcc7f"
+    },
+    "files": {
+      "init_seed0.pt": {
+        "sha256": "81bc67965a284a110df45497bd2b426b90f513b6a5f260dc2c3851f52a6ed03a",
+        "bytes": 1121477
+      },
+      "init_seed1.pt": {
+        "sha256": "46658ba26157c6aeafdb3ec050fa9cf908cdc9f524aa863fb01c11ae32f09d59",
+        "bytes": 1121477
+      },
+      "init_seed2.pt": {
+        "sha256": "4b471f292cb98c973b4cad136c6deaf28e1aff8cb5b2d6268ba1597fec5ebf6f",
+        "bytes": 1121477
+      },
+      "shared_indices.npz": {
+        "sha256": "58ee3bad80f72bddbef17691fd3e34313bb4a9f3e13ec87d22bdc8230a076d3c",
+        "bytes": 12085989
+      }
+    }
+  },
+  "checks": {
+    "array:subset": true,
+    "array:train_probe": true,
+    "array:perm_seed0": true,
+    "array:perm_seed1": true,
+    "array:perm_seed2": true,
+    "state:init_seed0": true,
+    "state:init_seed1": true,
+    "state:init_seed2": true
+  },
+  "all_match": true
+}

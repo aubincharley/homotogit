@@ -1,0 +1,197 @@
+{
+  "config": {
+    "seeds": "0",
+    "quick": false,
+    "deterministic": false,
+    "batch_size": 128,
+    "eval_batch_size": 1000,
+    "val_size": 0,
+    "train_subset": 0,
+    "augment": true,
+    "arch": "resnet18",
+    "width": 64,
+    "zero_init_residual": true,
+    "epochs": 40,
+    "optimizer": "sgd",
+    "lr": 0.1,
+    "momentum": 0.9,
+    "nesterov": true,
+    "weight_decay": 0.0005,
+    "schedule": "cosine",
+    "warmup_epochs": 5,
+    "grad_clip": 0.0,
+    "label_smoothing": 0.0,
+    "s_schedule": "const",
+    "s_min": 0.0,
+    "s_max": 1.0,
+    "s_ramp_start": 0.0,
+    "s_ramp_end": 0.5,
+    "s_stairs": 0,
+    "s_lr_restart": false,
+    "s_granularity": "step",
+    "lr_gate_control": false,
+    "a_schedule": "linear",
+    "a_start": 1.0,
+    "a_end": 0.0,
+    "a_ramp_start": 0.0,
+    "a_ramp_end": 0.5,
+    "a_stairs": 0,
+    "a_lr_restart": false,
+    "a_scope": "global",
+    "a_reverse": false,
+    "a_sites": "all",
+    "a_bn_batches": 32,
+    "ckpt_every": 5,
+    "diag_every": 5,
+    "per_class": true,
+    "wandb": true,
+    "config": "act_linear"
+  },
+  "stats": {
+    "n_seeds": 1,
+    "seeds": [
+      0
+    ],
+    "params": {
+      "mean": 11173962.0,
+      "min": 11173962,
+      "max": 11173962,
+      "n": 1
+    },
+    "epochs": {
+      "mean": 40.0,
+      "min": 40,
+      "max": 40,
+      "n": 1
+    },
+    "wall_s": {
+      "mean": 2402.7856175899506,
+      "min": 2402.7856175899506,
+      "max": 2402.7856175899506,
+      "n": 1
+    },
+    "img_per_s": {
+      "mean": 831.0354387766132,
+      "min": 831.0354387766132,
+      "max": 831.0354387766132,
+      "n": 1
+    },
+    "selected_epoch": {
+      "mean": 39.0,
+      "min": 39,
+      "max": 39,
+      "n": 1
+    },
+    "test_acc_final": {
+      "mean": 0.932,
+      "min": 0.932,
+      "max": 0.932,
+      "n": 1
+    },
+    "test_loss_final": {
+      "mean": 0.2367974868774414,
+      "min": 0.2367974868774414,
+      "max": 0.2367974868774414,
+      "n": 1
+    },
+    "test_acc_selected": {
+      "mean": 0.932,
+      "min": 0.932,
+      "max": 0.932,
+      "n": 1
+    },
+    "test_loss_selected": {
+      "mean": 0.2367974868774414,
+      "min": 0.2367974868774414,
+      "max": 0.2367974868774414,
+      "n": 1
+    },
+    "test_err_selected": {
+      "mean": 6.799999999999995,
+      "min": 6.799999999999995,
+      "max": 6.799999999999995,
+      "n": 1
+    },
+    "train_acc": {
+      "mean": 0.99708,
+      "min": 0.99708,
+      "max": 0.99708,
+      "n": 1
+    },
+    "train_loss": {
+      "mean": 0.013607082233428954,
+      "min": 0.013607082233428954,
+      "max": 0.013607082233428954,
+      "n": 1
+    },
+    "gen_gap": {
+      "mean": 0.06507999999999992,
+      "min": 0.06507999999999992,
+      "max": 0.06507999999999992,
+      "n": 1
+    },
+    "worst_class": {
+      "mean": 3.0,
+      "min": 3,
+      "max": 3,
+      "n": 1
+    },
+    "worst_class_acc": {
+      "mean": 0.8510000109672546,
+      "min": 0.8510000109672546,
+      "max": 0.8510000109672546,
+      "n": 1
+    },
+    "s_final": {
+      "mean": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "n": 1
+    },
+    "alpha_final": {
+      "mean": 0.0,
+      "min": 0.0,
+      "max": 0.0,
+      "n": 1
+    }
+  },
+  "runs": [
+    {
+      "seed": 0,
+      "params": 11173962,
+      "epochs": 40,
+      "wall_s": 2402.7856175899506,
+      "img_per_s": 831.0354387766132,
+      "selection": "final_epoch",
+      "selected_epoch": 39,
+      "best_val_acc": NaN,
+      "test_acc_final": 0.932,
+      "test_loss_final": 0.2367974868774414,
+      "test_acc_selected": 0.932,
+      "test_loss_selected": 0.2367974868774414,
+      "test_err_selected": 6.799999999999995,
+      "train_acc": 0.99708,
+      "train_loss": 0.013607082233428954,
+      "gen_gap": 0.06507999999999992,
+      "worst_class": 3,
+      "worst_class_acc": 0.8510000109672546,
+      "per_class": [
+        0.9440000057220459,
+        0.968999981880188,
+        0.9020000100135803,
+        0.8510000109672546,
+        0.9440000057220459,
+        0.8949999809265137,
+        0.9470000267028809,
+        0.953000009059906,
+        0.9580000042915344,
+        0.9570000171661377
+      ],
+      "s_schedule": "const",
+      "s_final": 1.0,
+      "a_schedule": "linear",
+      "a_scope": "global",
+      "alpha_final": 0.0
+    }
+  ]
+}

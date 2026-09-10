@@ -1,0 +1,198 @@
+{
+  "config": {
+    "seeds": "0",
+    "quick": false,
+    "deterministic": false,
+    "batch_size": 128,
+    "eval_batch_size": 1000,
+    "val_size": 0,
+    "train_subset": 5000,
+    "augment": true,
+    "arch": "vgg11",
+    "width": 64,
+    "zero_init_residual": false,
+    "use_residual": true,
+    "epochs": 60,
+    "optimizer": "sgd",
+    "lr": 0.1,
+    "momentum": 0.9,
+    "nesterov": true,
+    "weight_decay": 0.0005,
+    "schedule": "cosine",
+    "warmup_epochs": 5,
+    "grad_clip": 0.0,
+    "label_smoothing": 0.0,
+    "s_schedule": "const",
+    "s_min": 0.0,
+    "s_max": 1.0,
+    "s_ramp_start": 0.0,
+    "s_ramp_end": 0.5,
+    "s_stairs": 0,
+    "s_lr_restart": false,
+    "s_granularity": "step",
+    "lr_gate_control": false,
+    "a_schedule": "staircase",
+    "a_start": 1.0,
+    "a_end": 0.0,
+    "a_ramp_start": 0.0,
+    "a_ramp_end": 0.75,
+    "a_stairs": 10,
+    "a_lr_restart": true,
+    "a_scope": "global",
+    "a_reverse": false,
+    "a_sites": "all",
+    "a_bn_batches": 64,
+    "anchor_lambda": 0.0,
+    "anchor_target": 0.0,
+    "anchor_calibrate_at": 0.25,
+    "ckpt_every": 0,
+    "diag_every": 5,
+    "per_class": false,
+    "wandb": true,
+    "config": "vgg11_steps60"
+  },
+  "stats": {
+    "n_seeds": 1,
+    "seeds": [
+      0
+    ],
+    "params": {
+      "mean": 9228362.0,
+      "min": 9228362,
+      "max": 9228362,
+      "n": 1
+    },
+    "epochs": {
+      "mean": 60.0,
+      "min": 60,
+      "max": 60,
+      "n": 1
+    },
+    "wall_s": {
+      "mean": 170.81805443763733,
+      "min": 170.81805443763733,
+      "max": 170.81805443763733,
+      "n": 1
+    },
+    "img_per_s": {
+      "mean": 1753.444628473681,
+      "min": 1753.444628473681,
+      "max": 1753.444628473681,
+      "n": 1
+    },
+    "selected_epoch": {
+      "mean": 59.0,
+      "min": 59,
+      "max": 59,
+      "n": 1
+    },
+    "test_acc_final": {
+      "mean": 0.7352,
+      "min": 0.7352,
+      "max": 0.7352,
+      "n": 1
+    },
+    "test_loss_final": {
+      "mean": 1.0033199523925782,
+      "min": 1.0033199523925782,
+      "max": 1.0033199523925782,
+      "n": 1
+    },
+    "test_acc_selected": {
+      "mean": 0.7352,
+      "min": 0.7352,
+      "max": 0.7352,
+      "n": 1
+    },
+    "test_loss_selected": {
+      "mean": 1.0033199523925782,
+      "min": 1.0033199523925782,
+      "max": 1.0033199523925782,
+      "n": 1
+    },
+    "test_err_selected": {
+      "mean": 26.480000000000004,
+      "min": 26.480000000000004,
+      "max": 26.480000000000004,
+      "n": 1
+    },
+    "train_acc": {
+      "mean": 0.9818,
+      "min": 0.9818,
+      "max": 0.9818,
+      "n": 1
+    },
+    "train_loss": {
+      "mean": 0.06809396743774414,
+      "min": 0.06809396743774414,
+      "max": 0.06809396743774414,
+      "n": 1
+    },
+    "gen_gap": {
+      "mean": 0.24660000000000004,
+      "min": 0.24660000000000004,
+      "max": 0.24660000000000004,
+      "n": 1
+    },
+    "worst_class": {
+      "mean": -1.0,
+      "min": -1,
+      "max": -1,
+      "n": 1
+    },
+    "s_final": {
+      "mean": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "n": 1
+    },
+    "alpha_final": {
+      "mean": 0.0,
+      "min": 0.0,
+      "max": 0.0,
+      "n": 1
+    },
+    "anchor_lambda": {
+      "mean": 0.0,
+      "min": 0.0,
+      "max": 0.0,
+      "n": 1
+    },
+    "theta_dist_final": {
+      "mean": 0.0,
+      "min": 0.0,
+      "max": 0.0,
+      "n": 1
+    }
+  },
+  "runs": [
+    {
+      "seed": 0,
+      "params": 9228362,
+      "epochs": 60,
+      "wall_s": 170.81805443763733,
+      "img_per_s": 1753.444628473681,
+      "selection": "final_epoch",
+      "selected_epoch": 59,
+      "best_val_acc": NaN,
+      "test_acc_final": 0.7352,
+      "test_loss_final": 1.0033199523925782,
+      "test_acc_selected": 0.7352,
+      "test_loss_selected": 1.0033199523925782,
+      "test_err_selected": 26.480000000000004,
+      "train_acc": 0.9818,
+      "train_loss": 0.06809396743774414,
+      "gen_gap": 0.24660000000000004,
+      "worst_class": -1,
+      "worst_class_acc": NaN,
+      "per_class": null,
+      "s_schedule": "const",
+      "s_final": 1.0,
+      "a_schedule": "staircase",
+      "a_scope": "global",
+      "alpha_final": 0.0,
+      "anchor_lambda": 0.0,
+      "theta_dist_final": 0.0
+    }
+  ]
+}

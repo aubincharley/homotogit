@@ -1,0 +1,1194 @@
+{
+  "n_arms": 24,
+  "missing": [],
+  "seeds": 1,
+  "arms": {
+    "B_blurpool_plateau": {
+      "n_seeds": 1,
+      "seeds": [
+        0
+      ],
+      "primary_path": "target",
+      "acc": 0.7919,
+      "acc_sd": null,
+      "acc_per_seed": [
+        0.7919
+      ],
+      "acc_target": 0.7919,
+      "acc_current": 0.7919,
+      "ce_target": 0.589836328125,
+      "probe_ce": 0.37254498291015625,
+      "wall_s": 697.9397827759999,
+      "shift_consistency": 0.9008999665578207,
+      "alias": {
+        "blocks3": 0.04733339976519346,
+        "blocks6": 0.05998458247631788
+      },
+      "rationale": "BlurPool plus the annealed Gaussian: if they share a mechanism their gains should be largely redundant"
+    },
+    "C_plain": {
+      "n_seeds": 1,
+      "seeds": [
+        0
+      ],
+      "primary_path": "target",
+      "acc": 0.7506,
+      "acc_sd": null,
+      "acc_per_seed": [
+        0.7506
+      ],
+      "acc_target": 0.7506,
+      "acc_current": 0.7506,
+      "ce_target": 0.7500251312255859,
+      "probe_ce": 0.24852781677246094,
+      "wall_s": 422.74991600400006,
+      "shift_consistency": 0.8042332927385966,
+      "alias": {
+        "blocks3": 0.17140351235866547,
+        "blocks6": 0.19663362205028534
+      },
+      "rationale": "no filter anywhere; the baseline every arm is measured against"
+    },
+    "K_const030": {
+      "n_seeds": 1,
+      "seeds": [
+        0
+      ],
+      "primary_path": "current",
+      "acc": 0.7497,
+      "acc_sd": null,
+      "acc_per_seed": [
+        0.7497
+      ],
+      "acc_target": 0.7433,
+      "acc_current": 0.7497,
+      "ce_target": 0.7834748901367188,
+      "probe_ce": 0.23503125,
+      "wall_s": 754.985266783,
+      "shift_consistency": 0.8050999840100607,
+      "alias": {
+        "blocks3": 0.16713732481002808,
+        "blocks6": 0.18928254395723343
+      },
+      "rationale": "fixed level, never annealed: architecture, not continuation. Separates 'the filter helps' from 'annealing helps', and a peak near sigma 0.5-0.8 would be a Nyquist signature"
+    },
+    "C_plateau": {
+      "n_seeds": 1,
+      "seeds": [
+        0
+      ],
+      "primary_path": "target",
+      "acc": 0.7818,
+      "acc_sd": null,
+      "acc_per_seed": [
+        0.7818
+      ],
+      "acc_target": 0.7818,
+      "acc_current": 0.7818,
+      "ce_target": 0.6304728942871094,
+      "probe_ce": 0.3975904541015625,
+      "wall_s": 648.400603669,
+      "shift_consistency": 0.8828333218892416,
+      "alias": {
+        "blocks3": 0.08438938111066818,
+        "blocks6": 0.12938103079795837
+      },
+      "rationale": "the campaign's reference arm, re-run on this batch's assets"
+    },
+    "K_const050": {
+      "n_seeds": 1,
+      "seeds": [
+        0
+      ],
+      "primary_path": "current",
+      "acc": 0.7869,
+      "acc_sd": null,
+      "acc_per_seed": [
+        0.7869
+      ],
+      "acc_target": 0.1394,
+      "acc_current": 0.7869,
+      "ce_target": 7.7264734375,
+      "probe_ce": 0.235650634765625,
+      "wall_s": 737.8838072870001,
+      "shift_consistency": 0.8747333089510599,
+      "alias": {
+        "blocks3": 0.07625968381762505,
+        "blocks6": 0.10512895695865154
+      },
+      "rationale": "fixed level, never annealed: architecture, not continuation. Separates 'the filter helps' from 'annealing helps', and a peak near sigma 0.5-0.8 would be a Nyquist signature"
+    },
+    "P_postblock": {
+      "n_seeds": 1,
+      "seeds": [
+        0
+      ],
+      "primary_path": "target",
+      "acc": 0.7989,
+      "acc_sd": null,
+      "acc_per_seed": [
+        0.7989
+      ],
+      "acc_target": 0.7989,
+      "acc_current": 0.7989,
+      "ce_target": 0.5984609603881836,
+      "probe_ce": 0.30040142822265625,
+      "wall_s": 517.7108438580001,
+      "shift_consistency": 0.8752333124478658,
+      "alias": {
+        "blocks3": 0.08310850895941257,
+        "blocks6": 0.13025040552020073
+      },
+      "rationale": "after the ReLU (10 positions): the only placement that is anti-aliasing-correct at the two decimation points"
+    },
+    "K_const080": {
+      "n_seeds": 1,
+      "seeds": [
+        0
+      ],
+      "primary_path": "current",
+      "acc": 0.7502,
+      "acc_sd": null,
+      "acc_per_seed": [
+        0.7502
+      ],
+      "acc_target": 0.1,
+      "acc_current": 0.7502,
+      "ce_target": 41.909846484375,
+      "probe_ce": 0.3891134033203125,
+      "wall_s": 736.458346479,
+      "shift_consistency": 0.9039999643961588,
+      "alias": {
+        "blocks3": 0.02505639847368002,
+        "blocks6": 0.04999457485973835
+      },
+      "rationale": "fixed level, never annealed: architecture, not continuation. Separates 'the filter helps' from 'annealing helps', and a peak near sigma 0.5-0.8 would be a Nyquist signature"
+    },
+    "M_nodown": {
+      "n_seeds": 1,
+      "seeds": [
+        0
+      ],
+      "primary_path": "target",
+      "acc": 0.7852,
+      "acc_sd": null,
+      "acc_per_seed": [
+        0.7852
+      ],
+      "acc_target": 0.7852,
+      "acc_current": 0.7852,
+      "ce_target": 0.6207582794189453,
+      "probe_ce": 0.3748564453125,
+      "wall_s": 604.8313674369999,
+      "shift_consistency": 0.8795666297276815,
+      "alias": {
+        "blocks3": 0.0819199550896883,
+        "blocks6": 0.13024796545505524
+      },
+      "rationale": "the other 17 sites. Under H these carry almost nothing"
+    },
+    "M_predown": {
+      "n_seeds": 1,
+      "seeds": [
+        0
+      ],
+      "primary_path": "target",
+      "acc": 0.7755,
+      "acc_sd": null,
+      "acc_per_seed": [
+        0.7755
+      ],
+      "acc_target": 0.7755,
+      "acc_current": 0.7755,
+      "ce_target": 0.6892390533447266,
+      "probe_ce": 0.25670236206054686,
+      "wall_s": 436.0516253720001,
+      "shift_consistency": 0.8303332924842834,
+      "alias": {
+        "blocks3": 0.15886453166604042,
+        "blocks6": 0.1699693724513054
+      },
+      "rationale": "sites {6,12} only -- the conv outputs closest to a decimation. Under H these carry most of the effect"
+    },
+    "B_blurpool": {
+      "n_seeds": 1,
+      "seeds": [
+        0
+      ],
+      "primary_path": "target",
+      "acc": 0.7851,
+      "acc_sd": null,
+      "acc_per_seed": [
+        0.7851
+      ],
+      "acc_target": 0.7851,
+      "acc_current": 0.7851,
+      "ce_target": 0.6608906524658203,
+      "probe_ce": 0.19581515502929686,
+      "wall_s": 459.7754712369999,
+      "shift_consistency": 0.852733314037323,
+      "alias": {
+        "blocks3": 0.09403948113322258,
+        "blocks6": 0.08660625480115414
+      },
+      "rationale": "fixed sigma 0.5 on the inputs of blocks[3] and blocks[6], covering both strided convs and both decimating shortcuts; no annealed Gaussian anywhere. The positive test of H"
+    },
+    "K_const100": {
+      "n_seeds": 1,
+      "seeds": [
+        0
+      ],
+      "primary_path": "current",
+      "acc": 0.7115,
+      "acc_sd": null,
+      "acc_per_seed": [
+        0.7115
+      ],
+      "acc_target": 0.0998,
+      "acc_current": 0.7115,
+      "ce_target": 35.0748943359375,
+      "probe_ce": 0.545515869140625,
+      "wall_s": 748.7131098539999,
+      "shift_consistency": 0.9127666552861532,
+      "alias": {
+        "blocks3": 0.015594966243952513,
+        "blocks6": 0.037555272690951824
+      },
+      "rationale": "fixed level, never annealed: architecture, not continuation. Separates 'the filter helps' from 'annealing helps', and a peak near sigma 0.5-0.8 would be a Nyquist signature"
+    },
+    "P_postbn": {
+      "n_seeds": 1,
+      "seeds": [
+        0
+      ],
+      "primary_path": "target",
+      "acc": 0.7839,
+      "acc_sd": null,
+      "acc_per_seed": [
+        0.7839
+      ],
+      "acc_target": 0.7839,
+      "acc_current": 0.7839,
+      "ce_target": 0.628632876586914,
+      "probe_ce": 0.37470208740234373,
+      "wall_s": 673.1079649489999,
+      "shift_consistency": 0.874133308728536,
+      "alias": {
+        "blocks3": 0.07914259284734726,
+        "blocks6": 0.12410864420235157
+      },
+      "rationale": "same 19 positions as the control but after BatchNorm; BN then accumulates statistics on unfiltered activations"
+    },
+    "R2": {
+      "n_seeds": 1,
+      "seeds": [
+        0
+      ],
+      "primary_path": "target",
+      "acc": 0.7915,
+      "acc_sd": null,
+      "acc_per_seed": [
+        0.7915
+      ],
+      "acc_target": 0.7915,
+      "acc_current": 0.7915,
+      "ce_target": 0.5960804931640625,
+      "probe_ce": 0.3352003173828125,
+      "wall_s": 604.291649022,
+      "shift_consistency": 0.8786999980608622,
+      "alias": {
+        "blocks3": 0.1018560528755188,
+        "blocks6": 0.14072462171316147
+      },
+      "rationale": "the campaign's best configuration, re-run on this batch's pinned weights so it can actually be compared to R3"
+    },
+    "R6": {
+      "n_seeds": 1,
+      "seeds": [
+        0
+      ],
+      "primary_path": "current",
+      "acc": 0.7978,
+      "acc_sd": null,
+      "acc_per_seed": [
+        0.7978
+      ],
+      "acc_target": 0.2481,
+      "acc_current": 0.7978,
+      "ce_target": 3.7890419067382815,
+      "probe_ce": 0.1554213409423828,
+      "wall_s": 557.146211472,
+      "shift_consistency": 0.8867666522661845,
+      "alias": {
+        "blocks3": 0.04504602961242199,
+        "blocks6": 0.04917092900723219
+      },
+      "rationale": "wave 1 showed a constant sigma matches the annealed schedule at conv_out; this asks the same question at post_block, the placement that won. Not a continuation: read the current path"
+    },
+    "R4": {
+      "n_seeds": 1,
+      "seeds": [
+        0
+      ],
+      "primary_path": "target",
+      "acc": 0.7995,
+      "acc_sd": null,
+      "acc_per_seed": [
+        0.7995
+      ],
+      "acc_target": 0.7995,
+      "acc_current": 0.7995,
+      "ce_target": 0.5903023498535156,
+      "probe_ce": 0.34212799072265626,
+      "wall_s": 437.244179349,
+      "shift_consistency": 0.8875999649365743,
+      "alias": {
+        "blocks3": 0.1029153186827898,
+        "blocks6": 0.14761536195874214
+      },
+      "rationale": "reduce after the stem's ReLU instead of on the input image, no filter; re-run fresh so it is comparable to R1"
+    },
+    "R5": {
+      "n_seeds": 1,
+      "seeds": [
+        0
+      ],
+      "primary_path": "target",
+      "acc": 0.7965,
+      "acc_sd": null,
+      "acc_per_seed": [
+        0.7965
+      ],
+      "acc_target": 0.7965,
+      "acc_current": 0.7965,
+      "ce_target": 0.5871725830078125,
+      "probe_ce": 0.34162445068359376,
+      "wall_s": 536.3336735590001,
+      "shift_consistency": 0.8749666213989258,
+      "alias": {
+        "blocks3": 0.09354989975690842,
+        "blocks6": 0.1435278244316578
+      },
+      "rationale": "both interventions on the post-ReLU side"
+    },
+    "R1": {
+      "n_seeds": 1,
+      "seeds": [
+        0
+      ],
+      "primary_path": "target",
+      "acc": 0.7892,
+      "acc_sd": null,
+      "acc_per_seed": [
+        0.7892
+      ],
+      "acc_target": 0.7892,
+      "acc_current": 0.7892,
+      "ce_target": 0.6194687042236328,
+      "probe_ce": 0.35487091064453125,
+      "wall_s": 443.10095360400004,
+      "shift_consistency": 0.875166654586792,
+      "alias": {
+        "blocks3": 0.1384548284113407,
+        "blocks6": 0.16749729216098785
+      },
+      "rationale": "progressive resolution with no filter at all: the term every other resolution arm has to be decomposed against"
+    },
+    "R3": {
+      "n_seeds": 1,
+      "seeds": [
+        0
+      ],
+      "primary_path": "target",
+      "acc": 0.8014,
+      "acc_sd": null,
+      "acc_per_seed": [
+        0.8014
+      ],
+      "acc_target": 0.8014,
+      "acc_current": 0.8014,
+      "ce_target": 0.5696465759277344,
+      "probe_ce": 0.2913757019042969,
+      "wall_s": 542.3159003310001,
+      "shift_consistency": 0.8735999663670858,
+      "alias": {
+        "blocks3": 0.11020840518176556,
+        "blocks6": 0.14266833662986755
+      },
+      "rationale": "does the post-ReLU placement's advantage survive on top of progressive resolution"
+    },
+    "D2G": {
+      "n_seeds": 3,
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "primary_path": "target",
+      "acc": 0.8099333333333334,
+      "acc_sd": 0.004135617648348705,
+      "acc_per_seed": [
+        0.8054,
+        0.8109,
+        0.8135
+      ],
+      "acc_target": 0.8099333333333334,
+      "acc_current": 0.8099333333333334,
+      "ce_target": 0.563303953552246,
+      "probe_ce": 0.31675215657552086,
+      "wall_s": 574.1716578036667,
+      "shift_consistency": 0.8865888714790344,
+      "alias": {
+        "blocks3": 0.07731733284890652,
+        "blocks6": 0.13141659398873648
+      },
+      "rationale": "single resolution reduction apres blocks[2], Gaussian plateau after the ReLU"
+    },
+    "D1G": {
+      "n_seeds": 1,
+      "seeds": [
+        0
+      ],
+      "primary_path": "target",
+      "acc": 0.8008,
+      "acc_sd": null,
+      "acc_per_seed": [
+        0.8008
+      ],
+      "acc_target": 0.8008,
+      "acc_current": 0.8008,
+      "ce_target": 0.5900387512207032,
+      "probe_ce": 0.34904373168945313,
+      "wall_s": 519.259120054,
+      "shift_consistency": 0.8822999795277914,
+      "alias": {
+        "blocks3": 0.07618107460439205,
+        "blocks6": 0.14272379875183105
+      },
+      "rationale": "single resolution reduction apres blocks[1], Gaussian plateau after the ReLU"
+    },
+    "D0G": {
+      "n_seeds": 1,
+      "seeds": [
+        0
+      ],
+      "primary_path": "target",
+      "acc": 0.8053,
+      "acc_sd": null,
+      "acc_per_seed": [
+        0.8053
+      ],
+      "acc_target": 0.8053,
+      "acc_current": 0.8053,
+      "ce_target": 0.5632634796142578,
+      "probe_ce": 0.313881103515625,
+      "wall_s": 544.9563959760001,
+      "shift_consistency": 0.8863333066304525,
+      "alias": {
+        "blocks3": 0.0788912158459425,
+        "blocks6": 0.1402299925684929
+      },
+      "rationale": "single resolution reduction apres blocks[0], Gaussian plateau after the ReLU"
+    },
+    "D0": {
+      "n_seeds": 3,
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "primary_path": "target",
+      "acc": 0.8043999999999999,
+      "acc_sd": 0.00428835632847835,
+      "acc_per_seed": [
+        0.8007,
+        0.8034,
+        0.8091
+      ],
+      "acc_target": 0.8043999999999999,
+      "acc_current": 0.8043999999999999,
+      "ce_target": 0.5833079986572266,
+      "probe_ce": 0.32974937947591143,
+      "wall_s": 455.3776495293334,
+      "shift_consistency": 0.8874333169725205,
+      "alias": {
+        "blocks3": 0.11486054584383965,
+        "blocks6": 0.1493139242132505
+      },
+      "rationale": "single resolution reduction apres blocks[0], no blur"
+    },
+    "D1": {
+      "n_seeds": 3,
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "primary_path": "target",
+      "acc": 0.8059,
+      "acc_sd": 0.004121892769104996,
+      "acc_per_seed": [
+        0.8042,
+        0.8029,
+        0.8106
+      ],
+      "acc_target": 0.8059,
+      "acc_current": 0.8059,
+      "ce_target": 0.5754248555501302,
+      "probe_ce": 0.3224319763183594,
+      "wall_s": 447.377761463,
+      "shift_consistency": 0.8875666393174065,
+      "alias": {
+        "blocks3": 0.1386601155002912,
+        "blocks6": 0.14970949913064638
+      },
+      "rationale": "single resolution reduction apres blocks[1], no blur"
+    },
+    "D2": {
+      "n_seeds": 3,
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "primary_path": "target",
+      "acc": 0.8009333333333334,
+      "acc_sd": 0.001703917055884215,
+      "acc_per_seed": [
+        0.7999,
+        0.8,
+        0.8029
+      ],
+      "acc_target": 0.8009333333333334,
+      "acc_current": 0.8009333333333334,
+      "ce_target": 0.5838991531372071,
+      "probe_ce": 0.3163038330078125,
+      "wall_s": 446.9022255073334,
+      "shift_consistency": 0.8761999739540949,
+      "alias": {
+        "blocks3": 0.1715935543179512,
+        "blocks6": 0.14934982856114706
+      },
+      "rationale": "single resolution reduction apres blocks[2], no blur"
+    }
+  },
+  "comparisons": [
+    {
+      "a": "D0",
+      "b": "R4",
+      "seeds": [
+        0
+      ],
+      "n_seeds": 1,
+      "d_acc_pp": 0.12,
+      "d_acc_sd": null,
+      "d_per_seed": [
+        0.12
+      ],
+      "all_same_sign": null,
+      "acc_a": 0.8043999999999999,
+      "acc_b": 0.7995
+    },
+    {
+      "a": "D1",
+      "b": "R4",
+      "seeds": [
+        0
+      ],
+      "n_seeds": 1,
+      "d_acc_pp": 0.47,
+      "d_acc_sd": null,
+      "d_per_seed": [
+        0.47
+      ],
+      "all_same_sign": null,
+      "acc_a": 0.8059,
+      "acc_b": 0.7995
+    },
+    {
+      "a": "D2",
+      "b": "R4",
+      "seeds": [
+        0
+      ],
+      "n_seeds": 1,
+      "d_acc_pp": 0.04,
+      "d_acc_sd": null,
+      "d_per_seed": [
+        0.04
+      ],
+      "all_same_sign": null,
+      "acc_a": 0.8009333333333334,
+      "acc_b": 0.7995
+    },
+    {
+      "a": "D1",
+      "b": "R1",
+      "seeds": [
+        0
+      ],
+      "n_seeds": 1,
+      "d_acc_pp": 1.5,
+      "d_acc_sd": null,
+      "d_per_seed": [
+        1.5
+      ],
+      "all_same_sign": null,
+      "acc_a": 0.8059,
+      "acc_b": 0.7892
+    },
+    {
+      "a": "D0G",
+      "b": "D0",
+      "seeds": [
+        0
+      ],
+      "n_seeds": 1,
+      "d_acc_pp": 0.46,
+      "d_acc_sd": null,
+      "d_per_seed": [
+        0.46
+      ],
+      "all_same_sign": null,
+      "acc_a": 0.8053,
+      "acc_b": 0.8043999999999999
+    },
+    {
+      "a": "D1G",
+      "b": "D1",
+      "seeds": [
+        0
+      ],
+      "n_seeds": 1,
+      "d_acc_pp": -0.34,
+      "d_acc_sd": null,
+      "d_per_seed": [
+        -0.34
+      ],
+      "all_same_sign": null,
+      "acc_a": 0.8008,
+      "acc_b": 0.8059
+    },
+    {
+      "a": "D2G",
+      "b": "D2",
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "n_seeds": 3,
+      "d_acc_pp": 0.9,
+      "d_acc_sd": 0.3,
+      "d_per_seed": [
+        0.55,
+        1.09,
+        1.06
+      ],
+      "all_same_sign": true,
+      "acc_a": 0.8099333333333334,
+      "acc_b": 0.8009333333333334
+    },
+    {
+      "a": "D1",
+      "b": "R3",
+      "seeds": [
+        0
+      ],
+      "n_seeds": 1,
+      "d_acc_pp": 0.28,
+      "d_acc_sd": null,
+      "d_per_seed": [
+        0.28
+      ],
+      "all_same_sign": null,
+      "acc_a": 0.8059,
+      "acc_b": 0.8014
+    },
+    {
+      "a": "D2G",
+      "b": "R3",
+      "seeds": [
+        0
+      ],
+      "n_seeds": 1,
+      "d_acc_pp": 0.4,
+      "d_acc_sd": null,
+      "d_per_seed": [
+        0.4
+      ],
+      "all_same_sign": null,
+      "acc_a": 0.8099333333333334,
+      "acc_b": 0.8014
+    },
+    {
+      "a": "D1",
+      "b": "C_plateau",
+      "seeds": [
+        0
+      ],
+      "n_seeds": 1,
+      "d_acc_pp": 2.24,
+      "d_acc_sd": null,
+      "d_per_seed": [
+        2.24
+      ],
+      "all_same_sign": null,
+      "acc_a": 0.8059,
+      "acc_b": 0.7818
+    },
+    {
+      "a": "R1",
+      "b": "C_plain",
+      "seeds": [
+        0
+      ],
+      "n_seeds": 1,
+      "d_acc_pp": 3.86,
+      "d_acc_sd": null,
+      "d_per_seed": [
+        3.86
+      ],
+      "all_same_sign": null,
+      "acc_a": 0.7892,
+      "acc_b": 0.7506
+    },
+    {
+      "a": "R2",
+      "b": "R1",
+      "seeds": [
+        0
+      ],
+      "n_seeds": 1,
+      "d_acc_pp": 0.23,
+      "d_acc_sd": null,
+      "d_per_seed": [
+        0.23
+      ],
+      "all_same_sign": null,
+      "acc_a": 0.7915,
+      "acc_b": 0.7892
+    },
+    {
+      "a": "R3",
+      "b": "R1",
+      "seeds": [
+        0
+      ],
+      "n_seeds": 1,
+      "d_acc_pp": 1.22,
+      "d_acc_sd": null,
+      "d_per_seed": [
+        1.22
+      ],
+      "all_same_sign": null,
+      "acc_a": 0.8014,
+      "acc_b": 0.7892
+    },
+    {
+      "a": "R3",
+      "b": "R2",
+      "seeds": [
+        0
+      ],
+      "n_seeds": 1,
+      "d_acc_pp": 0.99,
+      "d_acc_sd": null,
+      "d_per_seed": [
+        0.99
+      ],
+      "all_same_sign": null,
+      "acc_a": 0.8014,
+      "acc_b": 0.7915
+    },
+    {
+      "a": "R4",
+      "b": "R1",
+      "seeds": [
+        0
+      ],
+      "n_seeds": 1,
+      "d_acc_pp": 1.03,
+      "d_acc_sd": null,
+      "d_per_seed": [
+        1.03
+      ],
+      "all_same_sign": null,
+      "acc_a": 0.7995,
+      "acc_b": 0.7892
+    },
+    {
+      "a": "R5",
+      "b": "R3",
+      "seeds": [
+        0
+      ],
+      "n_seeds": 1,
+      "d_acc_pp": -0.49,
+      "d_acc_sd": null,
+      "d_per_seed": [
+        -0.49
+      ],
+      "all_same_sign": null,
+      "acc_a": 0.7965,
+      "acc_b": 0.8014
+    },
+    {
+      "a": "R6",
+      "b": "P_postblock",
+      "seeds": [
+        0
+      ],
+      "n_seeds": 1,
+      "d_acc_pp": -0.11,
+      "d_acc_sd": null,
+      "d_per_seed": [
+        -0.11
+      ],
+      "all_same_sign": null,
+      "acc_a": 0.7978,
+      "acc_b": 0.7989
+    },
+    {
+      "a": "R3",
+      "b": "C_plain",
+      "seeds": [
+        0
+      ],
+      "n_seeds": 1,
+      "d_acc_pp": 5.08,
+      "d_acc_sd": null,
+      "d_per_seed": [
+        5.08
+      ],
+      "all_same_sign": null,
+      "acc_a": 0.8014,
+      "acc_b": 0.7506
+    },
+    {
+      "a": "R4",
+      "b": "C_plain",
+      "seeds": [
+        0
+      ],
+      "n_seeds": 1,
+      "d_acc_pp": 4.89,
+      "d_acc_sd": null,
+      "d_per_seed": [
+        4.89
+      ],
+      "all_same_sign": null,
+      "acc_a": 0.7995,
+      "acc_b": 0.7506
+    },
+    {
+      "a": "R3",
+      "b": "P_postblock",
+      "seeds": [
+        0
+      ],
+      "n_seeds": 1,
+      "d_acc_pp": 0.25,
+      "d_acc_sd": null,
+      "d_per_seed": [
+        0.25
+      ],
+      "all_same_sign": null,
+      "acc_a": 0.8014,
+      "acc_b": 0.7989
+    },
+    {
+      "a": "C_plateau",
+      "b": "C_plain",
+      "seeds": [
+        0
+      ],
+      "n_seeds": 1,
+      "d_acc_pp": 3.12,
+      "d_acc_sd": null,
+      "d_per_seed": [
+        3.12
+      ],
+      "all_same_sign": null,
+      "acc_a": 0.7818,
+      "acc_b": 0.7506
+    },
+    {
+      "a": "P_postbn",
+      "b": "C_plateau",
+      "seeds": [
+        0
+      ],
+      "n_seeds": 1,
+      "d_acc_pp": 0.21,
+      "d_acc_sd": null,
+      "d_per_seed": [
+        0.21
+      ],
+      "all_same_sign": null,
+      "acc_a": 0.7839,
+      "acc_b": 0.7818
+    },
+    {
+      "a": "P_postblock",
+      "b": "C_plateau",
+      "seeds": [
+        0
+      ],
+      "n_seeds": 1,
+      "d_acc_pp": 1.71,
+      "d_acc_sd": null,
+      "d_per_seed": [
+        1.71
+      ],
+      "all_same_sign": null,
+      "acc_a": 0.7989,
+      "acc_b": 0.7818
+    },
+    {
+      "a": "P_postbn",
+      "b": "C_plain",
+      "seeds": [
+        0
+      ],
+      "n_seeds": 1,
+      "d_acc_pp": 3.33,
+      "d_acc_sd": null,
+      "d_per_seed": [
+        3.33
+      ],
+      "all_same_sign": null,
+      "acc_a": 0.7839,
+      "acc_b": 0.7506
+    },
+    {
+      "a": "P_postblock",
+      "b": "C_plain",
+      "seeds": [
+        0
+      ],
+      "n_seeds": 1,
+      "d_acc_pp": 4.83,
+      "d_acc_sd": null,
+      "d_per_seed": [
+        4.83
+      ],
+      "all_same_sign": null,
+      "acc_a": 0.7989,
+      "acc_b": 0.7506
+    },
+    {
+      "a": "M_predown",
+      "b": "C_plain",
+      "seeds": [
+        0
+      ],
+      "n_seeds": 1,
+      "d_acc_pp": 2.49,
+      "d_acc_sd": null,
+      "d_per_seed": [
+        2.49
+      ],
+      "all_same_sign": null,
+      "acc_a": 0.7755,
+      "acc_b": 0.7506
+    },
+    {
+      "a": "M_nodown",
+      "b": "C_plain",
+      "seeds": [
+        0
+      ],
+      "n_seeds": 1,
+      "d_acc_pp": 3.46,
+      "d_acc_sd": null,
+      "d_per_seed": [
+        3.46
+      ],
+      "all_same_sign": null,
+      "acc_a": 0.7852,
+      "acc_b": 0.7506
+    },
+    {
+      "a": "M_predown",
+      "b": "C_plateau",
+      "seeds": [
+        0
+      ],
+      "n_seeds": 1,
+      "d_acc_pp": -0.63,
+      "d_acc_sd": null,
+      "d_per_seed": [
+        -0.63
+      ],
+      "all_same_sign": null,
+      "acc_a": 0.7755,
+      "acc_b": 0.7818
+    },
+    {
+      "a": "M_nodown",
+      "b": "C_plateau",
+      "seeds": [
+        0
+      ],
+      "n_seeds": 1,
+      "d_acc_pp": 0.34,
+      "d_acc_sd": null,
+      "d_per_seed": [
+        0.34
+      ],
+      "all_same_sign": null,
+      "acc_a": 0.7852,
+      "acc_b": 0.7818
+    },
+    {
+      "a": "K_const030",
+      "b": "C_plain",
+      "seeds": [
+        0
+      ],
+      "n_seeds": 1,
+      "d_acc_pp": -0.09,
+      "d_acc_sd": null,
+      "d_per_seed": [
+        -0.09
+      ],
+      "all_same_sign": null,
+      "acc_a": 0.7497,
+      "acc_b": 0.7506
+    },
+    {
+      "a": "K_const050",
+      "b": "C_plain",
+      "seeds": [
+        0
+      ],
+      "n_seeds": 1,
+      "d_acc_pp": 3.63,
+      "d_acc_sd": null,
+      "d_per_seed": [
+        3.63
+      ],
+      "all_same_sign": null,
+      "acc_a": 0.7869,
+      "acc_b": 0.7506
+    },
+    {
+      "a": "K_const080",
+      "b": "C_plain",
+      "seeds": [
+        0
+      ],
+      "n_seeds": 1,
+      "d_acc_pp": -0.04,
+      "d_acc_sd": null,
+      "d_per_seed": [
+        -0.04
+      ],
+      "all_same_sign": null,
+      "acc_a": 0.7502,
+      "acc_b": 0.7506
+    },
+    {
+      "a": "K_const100",
+      "b": "C_plain",
+      "seeds": [
+        0
+      ],
+      "n_seeds": 1,
+      "d_acc_pp": -3.91,
+      "d_acc_sd": null,
+      "d_per_seed": [
+        -3.91
+      ],
+      "all_same_sign": null,
+      "acc_a": 0.7115,
+      "acc_b": 0.7506
+    },
+    {
+      "a": "K_const050",
+      "b": "C_plateau",
+      "seeds": [
+        0
+      ],
+      "n_seeds": 1,
+      "d_acc_pp": 0.51,
+      "d_acc_sd": null,
+      "d_per_seed": [
+        0.51
+      ],
+      "all_same_sign": null,
+      "acc_a": 0.7869,
+      "acc_b": 0.7818
+    },
+    {
+      "a": "B_blurpool",
+      "b": "C_plain",
+      "seeds": [
+        0
+      ],
+      "n_seeds": 1,
+      "d_acc_pp": 3.45,
+      "d_acc_sd": null,
+      "d_per_seed": [
+        3.45
+      ],
+      "all_same_sign": null,
+      "acc_a": 0.7851,
+      "acc_b": 0.7506
+    },
+    {
+      "a": "B_blurpool",
+      "b": "C_plateau",
+      "seeds": [
+        0
+      ],
+      "n_seeds": 1,
+      "d_acc_pp": 0.33,
+      "d_acc_sd": null,
+      "d_per_seed": [
+        0.33
+      ],
+      "all_same_sign": null,
+      "acc_a": 0.7851,
+      "acc_b": 0.7818
+    },
+    {
+      "a": "B_blurpool_plateau",
+      "b": "C_plateau",
+      "seeds": [
+        0
+      ],
+      "n_seeds": 1,
+      "d_acc_pp": 1.01,
+      "d_acc_sd": null,
+      "d_per_seed": [
+        1.01
+      ],
+      "all_same_sign": null,
+      "acc_a": 0.7919,
+      "acc_b": 0.7818
+    },
+    {
+      "a": "B_blurpool_plateau",
+      "b": "B_blurpool",
+      "seeds": [
+        0
+      ],
+      "n_seeds": 1,
+      "d_acc_pp": 0.68,
+      "d_acc_sd": null,
+      "d_per_seed": [
+        0.68
+      ],
+      "all_same_sign": null,
+      "acc_a": 0.7919,
+      "acc_b": 0.7851
+    }
+  ],
+  "caveats": [
+    "one seed: signs and magnitudes only, no significance, no SD",
+    "constant-sigma arms are read on the CURRENT path (primary_path)",
+    "not comparable to results/campaign_results.json (different init weights)"
+  ]
+}

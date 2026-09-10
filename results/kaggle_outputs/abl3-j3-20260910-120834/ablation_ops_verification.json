@@ -1,0 +1,74 @@
+{
+  "n_conv_3x3": 19,
+  "n_batchnorm": 19,
+  "strided_conv_sites": [
+    7,
+    13
+  ],
+  "n_blocks": 9,
+  "decimating_blocks_declared": [
+    3,
+    6
+  ],
+  "shortcut_subsampling_blocks": [
+    3,
+    6
+  ],
+  "decimation_consistent": true,
+  "masks_partition_all19": true,
+  "sigma0_is_identity": {
+    "conv_out": {
+      "n_positions": 19,
+      "max_abs_diff": 0.0,
+      "bitwise_identical": true
+    },
+    "post_bn": {
+      "n_positions": 19,
+      "max_abs_diff": 0.0,
+      "bitwise_identical": true
+    },
+    "post_block": {
+      "n_positions": 10,
+      "max_abs_diff": 0.0,
+      "bitwise_identical": true
+    }
+  },
+  "sigma_positive_changes_output": {
+    "conv_out": {
+      "max_abs_diff": 0.3053207993507385,
+      "changes_output": true
+    },
+    "post_bn": {
+      "max_abs_diff": 0.3053207993507385,
+      "changes_output": true
+    },
+    "post_block": {
+      "max_abs_diff": 0.19913959503173828,
+      "changes_output": true
+    }
+  },
+  "blurpool": {
+    "changes_output": true,
+    "max_abs_diff_vs_plain": 0.08252161741256714,
+    "survives_bypass_all": true,
+    "note": "BlurPool is architecture: bypass_all must not disable it"
+  },
+  "gradients": {
+    "conv_out": {
+      "total_grad_norm": 160.15283454582095,
+      "all_finite": true,
+      "nonzero": true
+    },
+    "post_bn": {
+      "total_grad_norm": 160.1528383474797,
+      "all_finite": true,
+      "nonzero": true
+    },
+    "post_block": {
+      "total_grad_norm": 177.63752420805395,
+      "all_finite": true,
+      "nonzero": true
+    }
+  },
+  "all_ok": true
+}

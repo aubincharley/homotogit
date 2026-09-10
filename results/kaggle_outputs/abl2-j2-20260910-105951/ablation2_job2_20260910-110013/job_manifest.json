@@ -1,0 +1,46 @@
+{
+  "job": 2,
+  "n_cells": 2,
+  "cells": [
+    {
+      "id": "R5",
+      "group": "wave2",
+      "test": "reduction + flou tous deux post-ReLU",
+      "operator": "gaussian",
+      "levels": "plateau",
+      "resolution": "Rprog",
+      "reduction": "stem_max",
+      "placement": "post_block",
+      "mask": "all19",
+      "blurpool_sigma": null,
+      "constant": false,
+      "primary_path": "target",
+      "controller_builder": "continuation.ablation_ops.build_from_cell",
+      "diagnostics": true,
+      "rationale": "both interventions on the post-ReLU side",
+      "est_seconds": 605,
+      "seed": 0,
+      "cell_id": "R5__seed0"
+    },
+    {
+      "id": "R4",
+      "group": "wave2",
+      "test": "reduction post-ReLU",
+      "operator": "none",
+      "levels": "none",
+      "resolution": "Rprog",
+      "reduction": "stem_max",
+      "placement": "conv_out",
+      "mask": "all19",
+      "blurpool_sigma": null,
+      "constant": false,
+      "primary_path": "target",
+      "controller_builder": "continuation.ablation_ops.build_from_cell",
+      "diagnostics": true,
+      "rationale": "reduce after the stem's ReLU instead of on the input image, no filter; re-run fresh so it is comparable to R1",
+      "est_seconds": 495,
+      "seed": 0,
+      "cell_id": "R4__seed0"
+    }
+  ]
+}

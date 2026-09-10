@@ -1,0 +1,215 @@
+{
+  "config": {
+    "seeds": "1",
+    "quick": false,
+    "deterministic": false,
+    "batch_size": 128,
+    "eval_batch_size": 1000,
+    "val_size": 0,
+    "train_subset": 4000,
+    "augment": true,
+    "arch": "vgg11",
+    "width": 16,
+    "zero_init_residual": false,
+    "use_residual": true,
+    "epochs": 6,
+    "optimizer": "sgd",
+    "lr": 0.1,
+    "momentum": 0.9,
+    "nesterov": true,
+    "weight_decay": 0.0005,
+    "schedule": "cosine",
+    "warmup_epochs": 0,
+    "grad_clip": 0.0,
+    "label_smoothing": 0.0,
+    "s_schedule": "const",
+    "s_min": 0.0,
+    "s_max": 1.0,
+    "s_ramp_start": 0.0,
+    "s_ramp_end": 0.5,
+    "s_stairs": 0,
+    "s_lr_restart": false,
+    "s_granularity": "step",
+    "lr_gate_control": false,
+    "a_schedule": "none",
+    "a_start": 1.0,
+    "a_end": 0.0,
+    "a_ramp_start": 0.0,
+    "a_ramp_end": 0.5,
+    "a_stairs": 0,
+    "a_lr_restart": false,
+    "a_scope": "global",
+    "a_reverse": false,
+    "a_sites": "all",
+    "a_bn_batches": 32,
+    "anchor_lambda": 0.0,
+    "anchor_target": 0.0,
+    "anchor_calibrate_at": 0.25,
+    "ckpt_every": 0,
+    "diag_every": 0,
+    "per_class": true,
+    "wandb": false,
+    "config": "baseline"
+  },
+  "stats": {
+    "n_seeds": 1,
+    "seeds": [
+      1
+    ],
+    "params": {
+      "mean": 579098.0,
+      "min": 579098,
+      "max": 579098,
+      "n": 1
+    },
+    "epochs": {
+      "mean": 6.0,
+      "min": 6,
+      "max": 6,
+      "n": 1
+    },
+    "wall_s": {
+      "mean": 2.4083669185638428,
+      "min": 2.4083669185638428,
+      "max": 2.4083669185638428,
+      "n": 1
+    },
+    "img_per_s": {
+      "mean": 9885.536882476856,
+      "min": 9885.536882476856,
+      "max": 9885.536882476856,
+      "n": 1
+    },
+    "selected_epoch": {
+      "mean": 5.0,
+      "min": 5,
+      "max": 5,
+      "n": 1
+    },
+    "test_acc_final": {
+      "mean": 0.4291,
+      "min": 0.4291,
+      "max": 0.4291,
+      "n": 1
+    },
+    "test_loss_final": {
+      "mean": 1.532903466796875,
+      "min": 1.532903466796875,
+      "max": 1.532903466796875,
+      "n": 1
+    },
+    "test_acc_selected": {
+      "mean": 0.4291,
+      "min": 0.4291,
+      "max": 0.4291,
+      "n": 1
+    },
+    "test_loss_selected": {
+      "mean": 1.532903466796875,
+      "min": 1.532903466796875,
+      "max": 1.532903466796875,
+      "n": 1
+    },
+    "test_err_selected": {
+      "mean": 57.089999999999996,
+      "min": 57.089999999999996,
+      "max": 57.089999999999996,
+      "n": 1
+    },
+    "train_acc": {
+      "mean": 0.4465,
+      "min": 0.4465,
+      "max": 0.4465,
+      "n": 1
+    },
+    "train_loss": {
+      "mean": 1.4414464721679687,
+      "min": 1.4414464721679687,
+      "max": 1.4414464721679687,
+      "n": 1
+    },
+    "gen_gap": {
+      "mean": 0.017400000000000027,
+      "min": 0.017400000000000027,
+      "max": 0.017400000000000027,
+      "n": 1
+    },
+    "worst_class": {
+      "mean": 3.0,
+      "min": 3,
+      "max": 3,
+      "n": 1
+    },
+    "worst_class_acc": {
+      "mean": 0.08799999952316284,
+      "min": 0.08799999952316284,
+      "max": 0.08799999952316284,
+      "n": 1
+    },
+    "s_final": {
+      "mean": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "n": 1
+    },
+    "alpha_final": {
+      "mean": 0.0,
+      "min": 0.0,
+      "max": 0.0,
+      "n": 1
+    },
+    "anchor_lambda": {
+      "mean": 0.0,
+      "min": 0.0,
+      "max": 0.0,
+      "n": 1
+    },
+    "theta_dist_final": {
+      "mean": 0.0,
+      "min": 0.0,
+      "max": 0.0,
+      "n": 1
+    }
+  },
+  "runs": [
+    {
+      "seed": 1,
+      "params": 579098,
+      "epochs": 6,
+      "wall_s": 2.4083669185638428,
+      "img_per_s": 9885.536882476856,
+      "selection": "final_epoch",
+      "selected_epoch": 5,
+      "best_val_acc": NaN,
+      "test_acc_final": 0.4291,
+      "test_loss_final": 1.532903466796875,
+      "test_acc_selected": 0.4291,
+      "test_loss_selected": 1.532903466796875,
+      "test_err_selected": 57.089999999999996,
+      "train_acc": 0.4465,
+      "train_loss": 1.4414464721679687,
+      "gen_gap": 0.017400000000000027,
+      "worst_class": 3,
+      "worst_class_acc": 0.08799999952316284,
+      "per_class": [
+        0.421999990940094,
+        0.503000020980835,
+        0.4449999928474426,
+        0.08799999952316284,
+        0.30300000309944153,
+        0.3919999897480011,
+        0.45399999618530273,
+        0.48100000619888306,
+        0.6700000166893005,
+        0.5329999923706055
+      ],
+      "s_schedule": "const",
+      "s_final": 1.0,
+      "a_schedule": "none",
+      "a_scope": "global",
+      "alpha_final": 0.0,
+      "anchor_lambda": 0.0,
+      "theta_dist_final": 0.0
+    }
+  ]
+}
