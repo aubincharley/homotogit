@@ -124,6 +124,74 @@ def reflect_pad_axis(x: torch.Tensor, pad: int, dim: int) -> torch.Tensor:
     return torch.index_select(x, dim, idx)
 
 
+# --------------------------------------------------------------------------
+# Differentiable-in-sigma path (sensitivity probe only)
+# --------------------------------------------------------------------------
+#
+# The float path above is the hot path and is deliberately left untouched: it
+# caches kernels, coerces sigma with ``float()`` and short-circuits sigma == 0 to
+# an exact identity object, all of which the recorded bitwise-identity audits
+# depend on.  The two functions here are a *parallel* path used only to measure
+# ``dL/dsigma``.  They never cache -- a cached kernel would carry a graph from a
+# previous iteration -- and they never call ``float()``.
+#
+# Differentiating this operator is unusually well conditioned, for a reason that
+# predates any interest in autograd: the support is fixed by ``sigma_max`` and
+# not by the current sigma (see ``GaussianSmoothing.__init__``), so ``radius``
+# and ``kernel_size`` do not depend on sigma and there is no ``ceil()`` step
+# discontinuity along the parameter path.  Two consequences worth asserting:
+#
+# * because the taps are renormalized, ``sum(k) == 1`` identically in sigma, so
+#   ``sum(dk/dsigma) == 0`` exactly -- the derivative can only redistribute mass,
+#   never change the DC gain;
+# * the gradient is that of the **truncated, renormalized** kernel actually
+#   implemented here, which differs from the ideal Gaussian's by O(tail).  Check
+#   it against finite differences of this operator, never against a closed form
+#   for the ideal Gaussian.
+#
+# Not valid at sigma = 0: the off-centre taps underflow to exactly zero well
+# before that (below sigma ~ 0.075 in float32, ~0.026 in float64), leaving the
+# kernel and its derivative identically constant.  Callers must keep sigma
+# strictly inside that flat region's upper edge; ``continuation.adaptive``
+# enforces a floor and snaps to the exact identity below it.
+
+
+def gaussian_kernel_1d_tensor(sigma: torch.Tensor, radius: int) -> torch.Tensor:
+    """Normalized taps on the fixed support, differentiable w.r.t. ``sigma``.
+
+    ``sigma`` is a 0-dim tensor and must be strictly positive; there is no
+    ``sigma == 0`` branch here precisely because that branch is what breaks the
+    graph in the float path.
+    """
+    if radius < 0:
+        raise ValueError("radius must be >= 0")
+    if not torch.is_tensor(sigma):
+        raise TypeError("gaussian_kernel_1d_tensor needs a tensor sigma; the "
+                        "float path is GaussianSmoothing.kernel")
+    d = torch.arange(-radius, radius + 1, dtype=sigma.dtype, device=sigma.device)
+    k = torch.exp(-(d ** 2) / (2.0 * sigma ** 2))
+    return k / k.sum()
+
+
+def blur_with_sigma_grad(x: torch.Tensor, sigma: torch.Tensor,
+                         radius: int) -> torch.Tensor:
+    """Separable reflection-padded blur carrying a gradient into ``sigma``.
+
+    Same arithmetic as :meth:`GaussianSmoothing.apply`, minus the cache and the
+    identity short-circuit.  The kernel is cast to ``x``'s dtype through a
+    differentiable cast, so a float64 probe against a float32 activation still
+    propagates.
+    """
+    check_image_batch(x)
+    c = x.shape[1]
+    ks = 2 * radius + 1
+    k = gaussian_kernel_1d_tensor(sigma, radius).to(x.dtype)
+    kx = k.view(1, 1, 1, -1).expand(c, 1, 1, ks)
+    ky = k.view(1, 1, -1, 1).expand(c, 1, ks, 1)
+    y = F.conv2d(reflect_pad_axis(x, radius, -1), kx, groups=c)
+    return F.conv2d(reflect_pad_axis(y, radius, -2), ky, groups=c)
+
+
 class GaussianSmoothing(ImageTransform):
     """Deterministic separable Gaussian blur with a fixed support.
 
