@@ -419,6 +419,63 @@ are BatchNorm mismatch, not predictor quality. At epoch 30 current and target
 paths are identical to the digit, confirming the final nine epochs run at the
 exact target configuration.
 
+### Phase 13 — per-layer sigma profiles and an adaptive controller
+`results/kaggle_outputs/per-layer-sigma-20260910-094757/`,
+`results/kaggle_outputs/per-layer-adaptive-fix-20260910-130520/`,
+`docs/research/continuation/experiments/EXP-012_per_layer_sigma.md`,
+`continuation/adaptive.py`, `scripts/study_per_layer_cpu.py`
+
+The internal Gaussian applies one sigma to all 19 sites. Two questions, at the
+campaign protocol (50k/10k, 30 epochs, 11,730 updates, 3 seeds, bypass from e=21):
+does a depth profile help, and can a controller discover it?
+
+Per-site coefficients `c_l = rho**stage(l)` normalised to `max c_l = 1`, so the
+effective width is exactly `c_l * G(e)` at constant r=32.
+
+| arm | c (stem+s1 / s2 / s3) | acc | vs plain |
+|---|---|---|---|
+| plain | - | 0.7442 | - |
+| **rho1** | 1.00 / 1.00 / 1.00 | **0.7765** | **+3.23 pp** |
+| rho0.5 | 1.00 / 0.50 / 0.25 | 0.7465 | +0.23 pp |
+| rho2 | 0.25 / 0.50 / 1.00 | 0.7665 | +2.23 pp |
+
+**No depth profile beats uniform.** rho1 - rho2 = +1.00 pp, positive in all three
+seeds. A second run gave rho1 +3.74 pp and adaptive +3.44 pp, i.e.
+**adaptive - rho1 = -0.30 pp** with clearly worse CE.
+
+**Measured noise floor at this scale: ~0.5 pp** (plain and rho1 re-run identically:
+0.54/0.02/0.96 and 0.25/0.87/0.59). Five times the 0.1 pp measured at 10,000
+images. This is the number whose absence let an invalid conclusion through - see
+errata C-31.
+
+**Two corrections recorded.** A 6,000-image single-seed pilot showed rho2 beating
+rho1 by 1.1 pp; it did not replicate and was noise against an unmeasured floor
+(C-31). And the *first* adaptive run emitted a perfectly uniform linear ramp: a
+stale `delta_ref = 0.15`, left from the pre-phi parameterisation, pushed every step
+below `dmin` so all 19 sites clipped to the same value. The probe was fine (19/19
+non-zero gradients, 32-148x spread); the step rule discarded it (C-32).
+
+**What the controller discovers**, once fixed: it does differentiate the sites
+(spread 0.62), and the shape is the **inverse** of rho2 - deep sites anneal first,
+the stem holds blur longest. That is the direction of rho0.5, the worst fixed
+profile. `results/adaptive_trajectory.png`.
+
+**Numerics worth keeping.** `dL/dsigma` is unusable as a step-size signal: over
+sigma in [0.1, 1.0] its condition number is ~9e17, because the off-centre taps
+`exp(-1/(2 sigma^2))` collapse super-exponentially. Reparameterising to
+`phi = exp(-1/(2 sigma^2))` gives ~18, flat to 1% below sigma=0.25. **Not** heat
+time `a = sigma^2/2` - that is the continuum answer and is wrong for a kernel
+truncated at radius 4 on a unit grid. The fixed support (sized by `sigma_max`, not
+the current sigma) is what makes `d/dsigma` well posed at all: no ceil() step
+discontinuity along the path.
+
+**Caveats.** The fiche was written after execution, not as a `planned` record
+first, contrary to MAINTENANCE §4. Exposure is not exactly matched: adaptive ran
+7,820 filtered updates against 8,211 (20 epochs vs 21), small and unfavourable to
+adaptive. Batch 128 was applied directly rather than as 4x32 micro-batches -
+identical across arms, so the paired comparison holds, but absolute values are not
+strictly comparable to phase 10.
+
 ---
 
 ## 3. Headline conclusion so far

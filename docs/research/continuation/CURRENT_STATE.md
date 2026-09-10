@@ -1,12 +1,12 @@
 ---
 id: DOC-CURRENT
 schema_version: 1
-updated_at: 2026-09-09
+updated_at: 2026-09-10
 status: current_at_snapshot
-latest_completed_experiment: EXP-011
+latest_completed_experiment: EXP-012
 ---
 
-# État actuel au 9 septembre 2026
+# État actuel au 10 septembre 2026
 
 [Accueil](README.md) · [Dernière expérience](experiments/EXP-011_full_grid.md) · [Décisions](DECISIONS.md)
 
@@ -31,6 +31,25 @@ Source : [JSON de la campagne](sources/campaign_results.json), recalculs dans [l
 
 Le gagnant dépasse le témoin de **5,10 points** en moyenne appariée. L'ajout de Gaussian à la résolution progressive bilinéaire apporte **1,23 point**, positif sur les trois graines. L'option max après stem sans Gaussian reste environ **0,75 point** derrière le gagnant, pour environ **70 % de son temps**.
 
+## Ajout du 10 septembre — profils par couche et contrôleur adaptatif ([EXP-012](experiments/EXP-012_per_layer_sigma.md))
+
+Le Gaussian interne applique le même sigma aux 19 sites. Deux questions ont été
+tranchées, à protocole `P-FULL-R20-BN` et trois graines.
+
+- **Aucun profil en profondeur n'améliore le sigma uniforme.** `rho1` (uniforme)
+  fait +3,23 pt puis +3,74 pt sur deux exécutions ; `rho2` (flouter en profondeur)
+  +2,23 pt ; `rho0.5` (échelle physique constante) +0,23 pt, signe variable.
+- **Un contrôleur prédicteur-correcteur adapte réellement** mais ne fait pas mieux :
+  `adaptive − rho1 = −0,30 pt`, dans le bruit, CE moins bonne. Il découvre une forme
+  **inverse** de `rho2` — les sites profonds s'annulent d'abord, le stem garde le
+  flou le plus longtemps — c'est-à-dire la direction du pire profil fixe.
+- **Plancher de bruit mesuré à cette échelle : ≈ 0,5 point**, cinq fois celui de
+  10 000 images. C'est le chiffre manquant qui avait laissé passer une conclusion
+  invalide (voir [C-31](CORRECTIONS.md)).
+
+Conséquence pratique : la piste « profil de sigma par couche » est **à déprioriser**.
+Le calendrier uniforme sur 19 sites reste la référence.
+
 ## Ce que nous retenons réellement
 
 - Le bénéfice du Gaussian interne a été observé sur ResNet-18 BN, puis sur ResNet-20 BN, et répliqué sur le train CIFAR-10 complet. Les changements initiaux d'architecture, de normalisation et d'initialisation n'ont pas été séparés causalement.
@@ -46,6 +65,7 @@ Le gagnant dépasse le témoin de **5,10 points** en moyenne appariée. L'ajout 
 | Résolution progressive bilinéaire + Gaussian paliers, 19 sites | Référence de performance à conserver | Meilleure moyenne de la dernière grille |
 | Résolution progressive max après stem, sans Gaussian | Candidate à conserver | Bon compromis observé entre précision et temps |
 | Résolution progressive seule / Gaussian seul / plain | Contrôles à conserver | Indispensables pour lire les contributions |
+| Profils de sigma par couche (rho fixes) et contrôleur adaptatif | **À déprioriser** — EXP-012, aucun gain sur l'uniforme | Testé à trois graines, plancher de bruit connu |
 | Gmix, Gaussian limité aux sept premiers sites | À déprioriser dans les réglages testés | Coût ou précision moins favorables ; pas un rejet universel des familles |
 | Géométrique comprimé, résolution douce ou ordre inversé | Explorés ; pas prioritaires face au candidat principal | Leurs variantes précises n'améliorent pas le meilleur bras |
 | Ondelette db2 | **Abandonnée par décision utilisateur** | Pilote BN peu convaincant et très coûteux |
