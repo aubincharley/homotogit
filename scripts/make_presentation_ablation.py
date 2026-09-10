@@ -299,10 +299,11 @@ def fig_ablation_curves(curves, arms):
             ax.set_ylabel("précision de test (%)")
     for ax in axes[len(have):]:
         ax.axis("off")
-    fig.suptitle("Ablation anticrénelage — trajectoires (12 bras dont les métriques "
-                 "par époque sont versionnées)\n"
-                 "les bras à sigma constant sont lus sur le chemin courant : ce ne "
-                 "sont pas des continuations", fontsize=11)
+    fig.suptitle("Ablation — trajectoires, moyenne sur les graines disponibles "
+                 "(bande = ± 1 écart-type quand 3 graines)\n"
+                 "chemin courant pour tous les bras ; les bras à sigma constant "
+                 "ne sont pas des continuations et n'atteignent jamais la cible",
+                 fontsize=11)
     fig.tight_layout(rect=(0, 0, 1, 0.92))
     save(fig, "16_ablation_trajectoires")
 
