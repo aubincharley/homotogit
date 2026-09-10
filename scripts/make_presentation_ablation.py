@@ -45,7 +45,7 @@ ABL_ROOT = Path(os.environ.get(
     Path.home() / "AppData/Local/Temp/claude/C--Users-mnica-Documents-Projet-filiere"
                   "/1e7c0fdf-8f5a-466c-b47e-badfce660f23/scratchpad/ablation_data"))
 ABL_JSON = ABL_ROOT / "results" / "ablation_aa_results.json"
-SOURCE_COMMIT = "efe24dc"
+SOURCE_COMMIT = "1cddcbb"
 ABL_BASE = "C_plain"
 
 plt.rcParams.update({"font.size": 10, "axes.titlesize": 11, "axes.labelsize": 10,
@@ -60,6 +60,7 @@ FAM = {
     "B":  ("BlurPool fixe",                  "#8c564b"),
     "R":  ("Résolution × emplacement",       "#2ca02c"),
     "D":  ("Réduction unique interne",       "#d62728"),
+    "A":  ("Profil de σ par couche",         "#17becf"),
 }
 ARMS = {
     "C_plain":            ("Témoin du lot — aucun filtre", "C"),
@@ -86,7 +87,20 @@ ARMS = {
     "D0G":                ("Réduction unique après bloc 0 + Gaussian", "D"),
     "D1G":                ("Réduction unique après bloc 1 + Gaussian", "D"),
     "D2G":                ("Réduction unique après bloc 2 + Gaussian", "D"),
+    # profils de sigma par couche : A1..A4, aux deux emplacements
+    "P_A1":               ("Profil σ ∝ taille de carte — après ReLU", "A"),
+    "P_A2":               ("Profil σ ∝ √taille de carte — après ReLU", "A"),
+    "P_A3":               ("Profil σ croissant en profondeur — après ReLU", "A"),
+    "P_A4":               ("Profil σ ∝ champ réceptif — après ReLU", "A"),
+    "Q_A1":               ("Profil σ ∝ taille de carte — après convolution", "A"),
+    "Q_A2":               ("Profil σ ∝ √taille de carte — après convolution", "A"),
+    "Q_A3":               ("Profil σ croissant en profondeur — après convolution", "A"),
+    "Q_A4":               ("Profil σ ∝ champ réceptif — après convolution", "A"),
 }
+PROFILES = ["A1", "A2", "A3", "A4"]
+PROFILE_FR = {"A1": "σ ∝ taille de carte", "A2": "σ ∝ √taille de carte",
+              "A3": "σ croissant en profondeur\n(contrôle de direction)",
+              "A4": "σ ∝ champ réceptif"}
 TRAJ_PANELS = [
     ("Emplacement du filtre",
      ["C_plain", "C_plateau", "P_postbn", "P_postblock"]),
@@ -97,9 +111,11 @@ TRAJ_PANELS = [
     ("BlurPool fixe et redondance",
      ["C_plain", "C_plateau", "B_blurpool", "B_blurpool_plateau"]),
 ]
-NOTE_BATCH = ("Lot d'ablation : 1 graine, poids initiaux différents de la "
-              "campagne — les niveaux absolus ne sont pas comparables d'un lot "
-              "à l'autre, seuls les écarts au témoin du même lot le sont.")
+NOTE_BATCH = ("Lot d'ablation : poids initiaux différents de ceux de la campagne "
+              "(empreintes vérifiées, distinctes) — les niveaux absolus ne sont "
+              "pas comparables d'un lot à l'autre, seuls les écarts au témoin du "
+              "même lot le sont. Le témoin du lot n'a qu'une graine, donc les "
+              "écarts qui s'y réfèrent en héritent.")
 
 
 def save(fig, name):
@@ -116,15 +132,31 @@ def load_ablation():
 
 
 def load_ablation_curves():
-    """Per-epoch metrics for the arms whose raw outputs were committed."""
+    """{arm: {seed: metrics}} across every ablation wave (abl-, abl2-, abl3-)."""
     curves = {}
     base = ABL_ROOT / "results" / "kaggle_outputs"
     if not base.is_dir():
         return curves
-    for mf in base.glob("abl-j*/ablation_job*/*__seed0/metrics.json"):
-        arm = mf.parent.name.replace("__seed0", "")
-        curves[arm] = json.loads(mf.read_text(encoding="utf-8"))
+    for mf in base.glob("abl*-j*/*job*/*__seed*/metrics.json"):
+        name = mf.parent.name
+        arm, _sep, seed = name.rpartition("__seed")
+        if not arm or not seed.isdigit():
+            continue
+        curves.setdefault(arm, {})[int(seed)] = json.loads(
+            mf.read_text(encoding="utf-8"))
     return curves
+
+
+def curve_stats(per_seed, field="test_acc_current"):
+    """Mean and sample SD over the seeds present, on the recorded epochs only."""
+    tables = {s: {r["epoch"]: r.get(field) for r in m}
+              for s, m in per_seed.items()}
+    epochs = sorted(set.intersection(*[set(t) for t in tables.values()]))
+    epochs = [e for e in epochs if all(t[e] is not None for t in tables.values())]
+    mean = [st.mean([tables[s][e] for s in tables]) for e in epochs]
+    sd = [st.stdev([tables[s][e] for s in tables]) if len(tables) > 1 else 0.0
+          for e in epochs]
+    return epochs, mean, sd, len(tables)
 
 
 def campaign_finals():
@@ -145,26 +177,37 @@ def fig_ablation_final(arms):
         v = arms[k]
         lab, fam = ARMS[k]
         col = "#000000" if k == ABL_BASE else FAM[fam][1]
+        if v["n_seeds"] > 1:
+            for a in v["acc_per_seed"]:
+                ax.scatter([a * 100], [i], color=col, alpha=0.40, s=24, zorder=2)
+            sd = v["acc_sd"] * 100
+            ax.plot([v["acc"] * 100 - sd, v["acc"] * 100 + sd], [i, i],
+                    color=col, lw=1.7, alpha=0.85, zorder=2)
         ax.scatter([v["acc"] * 100], [i], color=col, s=105, zorder=3,
                    marker="D" if k == ABL_BASE else "o",
                    edgecolor="white", linewidth=0.9)
+        if v["n_seeds"] == 1:
+            ax.text(v["acc"] * 100 + 0.10, i, "1 graine", fontsize=6.5,
+                    color="0.55", va="center")
         if v["primary_path"] == "current":
             ax.scatter([v["acc"] * 100], [i], facecolor="none", edgecolor=col,
                        s=280, lw=1.1, zorder=2)
     ax.set_yticks(range(len(order)))
     ax.set_yticklabels([ARMS[k][0] for k in order], fontsize=9)
-    ax.set_xlabel("précision de test finale (%) — époque 30, 1 graine")
+    ax.set_xlabel("précision de test finale (%) — époque 30")
     ax.grid(axis="x", alpha=0.3)
-    ax.set_title("Ablation anticrénelage — 24 bras, précision finale\n"
-                 "commit %s, lot séparé de la campagne" % SOURCE_COMMIT,
+    ax.set_title("Ablation — %d bras, précision finale\n"
+                 "commit %s ; barres = ± 1 écart-type quand 3 graines, "
+                 "sinon une seule graine" % (len(arms), SOURCE_COMMIT),
                  fontsize=11.5)
     handles = [Line2D([], [], color=c, marker="o", ls="", label=n)
                for n, c in FAM.values()]
     handles.append(Line2D([], [], color="0.35", marker="o", ls="", mfc="none",
                           ms=13, label="lu sur le chemin courant (filtre actif)"))
-    ax.legend(handles=handles, loc="lower right", frameon=False, fontsize=8.5)
-    fig.text(0.5, -0.02, NOTE_BATCH, ha="center", fontsize=8.5, color="0.35",
-             wrap=True)
+    ax.legend(handles=handles, loc="upper center", bbox_to_anchor=(0.5, -0.07),
+              ncol=4, frameon=False, fontsize=8.5)
+    fig.text(0.5, -0.115, NOTE_BATCH, ha="center", fontsize=8.5,
+             color="0.35", wrap=True)
     fig.tight_layout()
     save(fig, "14_ablation_precision_finale")
 
@@ -180,13 +223,14 @@ def fig_delta_combined(arms, cfgs):
         camp.append((label_for(cid), 100 * (c["acc_mean"] - camp_base),
                      st.stdev(per_seed) if len(per_seed) > 1 else 0.0))
     abl_base = arms[ABL_BASE]["acc"]
-    abl = [(ARMS[k][0], 100 * (v["acc"] - abl_base), None)
+    abl = [(ARMS[k][0], 100 * (v["acc"] - abl_base),
+            100 * v["acc_sd"] if v["n_seeds"] > 1 else 0.0)
            for k, v in arms.items() if k != ABL_BASE]
 
     fig, axes = plt.subplots(1, 2, figsize=(15.5, 9.2))
     for ax, (data, title, col) in zip(axes, [
             (camp, "Campagne — 21 configurations, 3 graines", "#1f77b4"),
-            (abl, "Ablation — 24 bras, 1 graine", "#d62728")]):
+            (abl, "Ablation — %d bras, 1 ou 3 graines" % len(arms), "#d62728")]):
         data = sorted(data, key=lambda t: t[1])
         ax.axvline(0, color="0.2", lw=1.5, zorder=1)
         for i, (lab, d, sd) in enumerate(data):
@@ -203,38 +247,44 @@ def fig_delta_combined(arms, cfgs):
         ax.set_title(title, fontsize=10.5)
         ax.set_xlim(-5.5, 6.6)
     fig.suptitle("Écart au témoin — la seule lecture comparable entre les deux lots\n"
-                 "à gauche barres = ± 1 écart-type sur 3 graines ; à droite une "
-                 "seule graine, donc aucune barre", fontsize=11.5)
+                 "barres = ± 1 écart-type sur 3 graines ; leur absence signale un bras "
+                 "à une seule graine", fontsize=11.5)
     fig.text(0.5, -0.015, NOTE_BATCH, ha="center", fontsize=8.5, color="0.35")
     fig.tight_layout(rect=(0, 0, 1, 0.93))
     save(fig, "15_ecart_au_temoin_deux_lots")
 
 
 def fig_ablation_curves(curves, arms):
+    TRAJ_PANELS.append(("Profils de σ par couche (3 graines)",
+                        ["C_plain", "P_postblock", "P_A2", "P_A3", "P_A4"]))
     have = [p for p in TRAJ_PANELS if all(a in curves for a in p[1])]
-    fig, axes = plt.subplots(2, 2, figsize=(14.5, 9.4), sharey=True)
-    axes = axes.ravel()
+    rows = (len(have) + 1) // 2
+    fig, axes = plt.subplots(rows, 2, figsize=(14.5, 4.7 * rows), sharey=True)
+    axes = np.atleast_1d(axes).ravel()
     # One distinct colour per arm inside a panel: a family colour would make the
     # two blues (or three purples) of a panel indistinguishable.
     cycle = ["#1f77b4", "#ff7f0e", "#2ca02c", "#9467bd", "#8c564b"]
     for ax, (title, keys) in zip(axes, have):
         n = 0
         for k in keys:
-            m = curves[k]
-            ep = [r["epoch"] for r in m]
             # Current path for every arm, as in the campaign figures: it is the
             # configuration actually trained under.  The target path during
             # continuation is the premature-ablation diagnostic and belongs in
             # the appendix, not here.
-            y = [100 * r["test_acc_current"] for r in m]
-            lab, _fam = ARMS[k]
-            if k == ABL_BASE:
-                ax.plot(ep, y, "-", color="#000000", lw=2.8, label=lab, zorder=4)
-            elif k == "C_plateau":
-                ax.plot(ep, y, "--", color="#000000", lw=1.8, label=lab, zorder=4)
-            else:
-                ax.plot(ep, y, "-", color=cycle[n % len(cycle)], lw=1.9,
-                        label=lab, zorder=3)
+            ep, mean, sd, n_seeds = curve_stats(curves[k])
+            y = [100 * v for v in mean]
+            lab = ARMS[k][0] + (" (%d graines)" % n_seeds if n_seeds > 1 else "")
+            col = ("#000000" if k in (ABL_BASE, "C_plateau")
+                   else cycle[n % len(cycle)])
+            style = "--" if k == "C_plateau" else "-"
+            lw = 2.8 if k == ABL_BASE else (1.8 if k == "C_plateau" else 1.9)
+            if n_seeds > 1:
+                lo = [100 * (m - d) for m, d in zip(mean, sd)]
+                hi = [100 * (m + d) for m, d in zip(mean, sd)]
+                ax.fill_between(ep, lo, hi, color=col, alpha=0.15, lw=0)
+            ax.plot(ep, y, style, color=col, lw=lw, label=lab,
+                    zorder=4 if col == "#000000" else 3)
+            if k not in (ABL_BASE, "C_plateau"):
                 n += 1
         for x in (6, 12):
             ax.axvline(x, color="0.85", lw=0.7, ls="--", zorder=0)
@@ -244,8 +294,11 @@ def fig_ablation_curves(curves, arms):
         ax.grid(alpha=0.25)
         ax.set_ylim(38, 84)
         ax.legend(loc="lower right", frameon=False, fontsize=8)
-    axes[0].set_ylabel("précision de test (%)")
-    axes[2].set_ylabel("précision de test (%)")
+    for j, ax in enumerate(axes):
+        if j % 2 == 0:
+            ax.set_ylabel("précision de test (%)")
+    for ax in axes[len(have):]:
+        ax.axis("off")
     fig.suptitle("Ablation anticrénelage — trajectoires (12 bras dont les métriques "
                  "par époque sont versionnées)\n"
                  "les bras à sigma constant sont lus sur le chemin courant : ce ne "
