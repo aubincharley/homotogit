@@ -1,0 +1,139 @@
+# The study. Three regimes x four arms x three seeds, one process, one push.
+#
+# THE QUESTION. A curriculum arm differs from its baseline in two ways at once,
+# not one. It sees the examples in a chosen order -- and, because an epoch is a
+# fixed number of SGD steps whatever the pool holds, it also sees the early pool
+# repeatedly (at lambda 0.5, twice per epoch against the baseline's once). An
+# accuracy gap alone cannot say which of the two moved it.
+#
+# So every regime runs four arms sharing one pacing function and one teacher:
+#
+#   baseline     no pacing, no ordering            the reference
+#   curriculum   easy-first, cross-fit teacher     the thing being tested
+#   random       the SAME pacing, shuffled order   pacing with no information
+#   anti         the same teacher, hard-first      the direction of the order
+#
+# which decomposes the effect, all differences paired by seed:
+#
+#   pacing    = random     - baseline
+#   ordering  = curriculum - random
+#   direction = curriculum - anti
+#   total     = curriculum - baseline  =  pacing + ordering
+#
+# This is the design of Wu, Dyer & Neyshabur (ICLR 2021), whose random-ordering
+# control is what lets them attribute much of the apparent benefit of curricula
+# to the pacing rather than to the difficulty ranking.
+#
+# THE REGIMES. Wu et al. find curricula useful in two places and nowhere else:
+# a short training budget, and noisy labels. So the grid is the full 2x2 of
+# those two axes rather than three of its four cells -- with clean_short,
+# noisy20_short and clean_long alone you can vary the budget at zero noise and
+# the noise at a short budget, but never both, and nothing says whether the two
+# interact. clean_long is the null: if the decomposition does not go flat at 20
+# epochs on clean data, something in the harness is broken rather than something
+# in the literature. noisy20_long is the cell the earlier ResNet-18 probe ran,
+# so it is what connects this grid to that result.
+#
+# COST. 224 epochs plus two cross-fit teachers -- one per noise level, each
+# shared by that level's short and long regime, which is also what makes the two
+# comparable to each other. A ResNet-20 is ~13x fewer FLOPs per image than the
+# ResNet-18 that ran at 55 s/epoch here, but it is also small enough that
+# kernel-launch overhead starts to matter, so the honest range is 10-20 s/epoch:
+# somewhere between 37 and 75 minutes. budget_min cuts the tail rather than the
+# middle, and the regimes are ordered so that what gets cut is a long regime
+# rather than either of the short ones carrying the claim.
+#
+# ONE SEED, AND WHAT THAT COSTS. Every difference below is a single number with
+# no interval. The effects this design is looking for are tenths of a point and
+# seed-to-seed spread on CIFAR-10 is around half a point, so nothing here can be
+# declared non-zero -- the decomposition reads as the DIRECTION of an effect and
+# not as a measurement of one. Pairing still helps a little (the arms share an
+# initialisation and the same corrupted labels, so those do not vary between
+# them) but nothing quantifies what is left. `seeds: "0,1,2"` restores the
+# intervals and still fits inside budget_min; it is one edit, and it is the
+# first thing to change if any line of the decomposition looks interesting.
+
+name: pacing_vs_order
+seeds: "0"
+budget_min: 110
+
+base:
+  arch: resnet20
+  width: 16
+  zero_init_residual: true
+
+  batch_size: 128
+  eval_batch_size: 1000
+  val_size: 0
+  augment: true
+
+  optimizer: sgd
+  lr: 0.1
+  momentum: 0.9
+  nesterov: true
+  weight_decay: 5.0e-4
+  schedule: cosine
+  grad_clip: 0.0
+  label_smoothing: 0.0
+
+  # The pacing every non-baseline arm shares. Only `curriculum` and `scoring`
+  # are allowed to differ between arms -- that is what makes the differences
+  # between them attributable.
+  pacing: linear
+  easy_frac: 0.5
+  scoring: transfer
+  teacher_folds: 2
+  teacher_epochs: 8
+
+  per_class: true
+  wandb: false            # 36 arms is not a thing to stream anywhere
+
+# Ordered by priority: budget_min cuts from the end, so the two cheap regimes
+# that carry the argument finish before the expensive null control starts.
+regimes:
+  - name: clean_short     # where Wu et al. find an effect: a short budget
+    epochs: 8
+    warmup_epochs: 1
+    ramp_epochs: 4
+    label_noise: 0.0
+
+  - name: noisy20_short   # short budget AND noise, the other positive regime
+    epochs: 8
+    warmup_epochs: 1
+    ramp_epochs: 4
+    label_noise: 0.2
+
+  # The null: a comfortable budget on clean data. 20 rather than 30 epochs
+  # because this regime is the least informative and the most expensive, and
+  # 2.5x the short budget is already enough for "the effect decays as the budget
+  # grows" to be visible. It is also the regime budget_min will eat first.
+  - name: clean_long
+    epochs: 20
+    warmup_epochs: 2
+    ramp_epochs: 10
+    label_noise: 0.0
+
+  # The fourth cell: noise at a comfortable budget. Without it the grid cannot
+  # say whether the budget and the noise interact, and it is the regime the
+  # earlier ResNet-18 study ran, so it is the one that ties the two together.
+  - name: noisy20_long
+    epochs: 20
+    warmup_epochs: 2
+    ramp_epochs: 10
+    label_noise: 0.2
+
+arms:
+  - name: baseline
+    curriculum: none
+    ramp_epochs: 0        # overrides the regime: lambda is 1.0 from step one
+
+  - name: curriculum
+    curriculum: easy_first
+    scoring: transfer
+
+  - name: random
+    curriculum: random_order
+
+  - name: anti
+    curriculum: hard_first
+    scoring: transfer

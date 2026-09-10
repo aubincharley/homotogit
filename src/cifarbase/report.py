@@ -39,14 +39,20 @@ def _out_dir():
     return "/kaggle/working" if os.path.isdir("/kaggle/working") else "."
 
 
-def run_dir(cfg, root=None):
+def run_dir(cfg, root=None, base=None, stem=None, link=True):
     """A fresh directory for this run: runs/<stamp>_<config>_<arch>/.
 
     Created before training rather than after, so a crashed run still leaves its
     invocation on disk, and so the path can be printed for tailing.
+
+    `base` and `stem` are what a study uses: its arms live side by side under one
+    parent as <regime>__<arm>/, because analyze.py groups a folder of runs and a
+    timestamp in the name would only make the grid harder to read. Those arms
+    pass link=False -- `latest` means the newest experiment, and 36 arms of one
+    grid repointing it 36 times says nothing.
     """
-    base = os.path.join(root or _out_dir(), "runs")
-    stem = f"{time.strftime('%Y%m%d-%H%M%S')}_{cfg['config']}_{cfg['arch']}"
+    base = base or os.path.join(root or _out_dir(), "runs")
+    stem = stem or f"{time.strftime('%Y%m%d-%H%M%S')}_{cfg['config']}_{cfg['arch']}"
     path = os.path.join(base, stem)
     # A scripted sweep can start two runs inside the same second; that must
     # append rather than land both in one directory.
@@ -55,7 +61,39 @@ def run_dir(cfg, root=None):
         attempt += 1
         path = os.path.join(base, f"{stem}-{attempt}")
     os.makedirs(path)
+    if link:
+        _point_latest_at(base, os.path.basename(path))
+    return path
+
+
+def study_dir(name, root=None):
+    """The parent every arm of one grid is written under."""
+    base = os.path.join(root or _out_dir(), "runs")
+    stem = f"{time.strftime('%Y%m%d-%H%M%S')}_{name}"
+    path = os.path.join(base, stem)
+    attempt = 0
+    while os.path.exists(path):
+        attempt += 1
+        path = os.path.join(base, f"{stem}-{attempt}")
+    os.makedirs(path)
     _point_latest_at(base, os.path.basename(path))
+    return path
+
+
+def dump_arm(cfg, directory):
+    """The two labels analyze.py groups by, next to the numbers they label.
+
+    In its own file rather than inferred from the directory name: an arm is a
+    fact about the experiment, and a comparison that reads it out of a string
+    breaks the first time someone renames a folder.
+    """
+    payload = {k: cfg.get(k) for k in
+               ("study", "regime", "arm", "seeds", "curriculum", "scoring",
+                "pacing", "ramp_epochs", "easy_frac", "epochs", "label_noise",
+                "arch", "width", "batch_size", "lr")}
+    path = os.path.join(directory, "arm.json")
+    with open(path, "w") as fh:
+        json.dump(payload, fh, indent=2, default=str)
     return path
 
 

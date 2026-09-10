@@ -12,6 +12,7 @@ the two coincide, and the report says `selection: final_epoch` rather than
 pretending a selection happened.
 """
 import math
+import os
 import time
 
 import torch
@@ -19,6 +20,8 @@ import torch.nn.functional as F
 
 from cifarbase.metrics import evaluate
 from cifarbase.model import build_model, count_params
+from cifarbase.scoring import (curriculum_order, lambda_at, margins, pool_at,
+                               save_scores)
 from cifarbase.utils.seeding import seed_everything
 
 
@@ -57,7 +60,8 @@ def lr_at(step, total_steps, cfg):
     return 1.0
 
 
-def train_once(cfg, train, val, test, device, seed, run=None, verbose=True):
+def train_once(cfg, train, val, test, device, seed, run=None, verbose=True,
+               out=None, order_scores=None, return_model=False):
     seed_everything(seed, cfg["deterministic"])
     model = build_model(cfg, device, quiet=not verbose)
     optimizer = build_optimizer(model, cfg)
@@ -75,6 +79,15 @@ def train_once(cfg, train, val, test, device, seed, run=None, verbose=True):
     base_lrs = [group["lr"] for group in optimizer.param_groups]
     eval_bs = cfg["eval_batch_size"]
 
+    # The difficulty ordering, resolved once: it comes from a teacher or a file,
+    # so it is the same for every epoch and every seed. What moves per epoch is
+    # only how far down it we read. `None` here means no curriculum, and
+    # `batches` then behaves exactly as it did before curricula existed.
+    # `order_scores` is the in-memory path a study takes, so the 36 arms of a
+    # grid share one cross-fit teacher instead of re-reading a file 36 times.
+    order = curriculum_order(cfg, train, device, seed=seed,
+                             scores=order_scores, verbose=verbose)
+
     generator = torch.Generator(device=device).manual_seed(seed)
     best = {"val_acc": -1.0, "epoch": -1, "state": None}
     history = []
@@ -86,8 +99,12 @@ def train_once(cfg, train, val, test, device, seed, run=None, verbose=True):
     for epoch in range(cfg["epochs"]):
         epoch_start = time.time()
         running = correct = seen = 0
+        # One point on the curriculum's path: the epoch is drawn from the
+        # lambda(t)-easiest prefix of the ordering, and `None` once lambda has
+        # reached 1 and the pool is the whole training set again.
+        active = pool_at(order, epoch, cfg)
         for x, y in train.batches(cfg["batch_size"], generator,
-                                  augment=cfg["augment"]):
+                                  augment=cfg["augment"], pool=active):
             for group, base in zip(optimizer.param_groups, base_lrs, strict=True):
                 group["lr"] = base * lr_at(step, total_steps, cfg)
 
@@ -109,6 +126,10 @@ def train_once(cfg, train, val, test, device, seed, run=None, verbose=True):
         epoch_s = time.time() - epoch_start
         row = {"seed": seed, "epoch": epoch,
                "lr": optimizer.param_groups[0]["lr"],
+               # Not decoration: lam and pool_k are the only in-band evidence
+               # that the curriculum did what the config says it did.
+               "lam": lambda_at(cfg, epoch),
+               "pool_k": active.numel() if active is not None else len(train),
                "train_loss": running / seen, "train_acc_batchwise": correct / seen,
                "epoch_s": epoch_s, "img_per_s": seen / epoch_s}
 
@@ -128,6 +149,20 @@ def train_once(cfg, train, val, test, device, seed, run=None, verbose=True):
         row["test_loss"] = test_metrics["loss"]
         row["test_acc"] = test_metrics["acc"]
         history.append(row)
+
+        # Scoring runs under no_grad in eval() and draws nothing from the
+        # generator, so a run with --dump-scores produces the same weights as
+        # one without: the instrument does not disturb what it measures. The
+        # file lands in the run directory, next to results.json, so a set of
+        # scores is always attached to the run that produced it.
+        if cfg["dump_scores"] and epoch + 1 == cfg["score_epoch"] and out:
+            scores = margins(model, train, eval_bs)
+            path = os.path.join(out, f"scores_s{seed}.pt")
+            save_scores(scores, path, cfg, seed, epoch + 1)
+            if verbose:
+                wrong = float((scores < 0).float().mean())
+                print(f"  [seed {seed}] scored {scores.numel()} train examples "
+                      f"after epoch {epoch}: {wrong:.1%} misclassified -> {path}")
 
         if run is not None:
             run.log({f"s{seed}/{k}": v for k, v in row.items() if k != "seed"})
@@ -179,7 +214,9 @@ def train_once(cfg, train, val, test, device, seed, run=None, verbose=True):
     if run is not None:
         run.log({f"summary/s{seed}/{k}": v for k, v in summary.items()
                  if k not in ("per_class",)})
-    return summary, history
+    # The model itself only leaves this function for the cross-fit teacher,
+    # which has to score a split with the weights it just trained.
+    return (summary, history, model) if return_model else (summary, history)
 
 
 def _describe(model, cfg, train, test):

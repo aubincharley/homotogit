@@ -3,8 +3,11 @@
 # override with a flag or an env var for an experiment, and edit this only when
 # you mean to move the reference itself.
 #
-# ResNet-18, SGD + nesterov, cosine with a 5-epoch linear warmup, standard
-# crop+flip augmentation, trained on all 50k and evaluated on the 10k test set.
+# ResNet-20 (He et al. section 4.2: three stages, width 16, 0.27M parameters),
+# SGD + nesterov, cosine with a 5-epoch linear warmup, standard crop+flip
+# augmentation, trained on all 50k and evaluated on the 10k test set. The small
+# net is deliberate: the curriculum study runs 36 arms, and 36 ResNet-18s do not
+# fit in a session.
 
 seeds: "0,1,2"
 
@@ -12,8 +15,8 @@ batch_size: 128
 val_size: 0
 augment: true
 
-arch: resnet18
-width: 64
+arch: resnet20
+width: 16
 zero_init_residual: true
 
 epochs: 100

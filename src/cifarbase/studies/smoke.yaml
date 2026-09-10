@@ -1,0 +1,73 @@
+# The same grid as pacing_vs_order, shrunk until it runs on a CPU in ~2 minutes.
+#
+# A plumbing check, not an experiment: two epochs of a narrow net on 4k images
+# proves nothing about accuracy. What it does prove is everything the real study
+# would otherwise discover an hour into a GPU session -- that the teacher folds
+# cover the train set, that all four arms build, that lam and pool_k move the way
+# the config says, that analyze.py can group and difference the arms.
+#
+# Pair with CIFAR_ALLOW_CPU=1 (see `make smoke`): pick_device refuses to fall
+# back to CPU inside a Kaggle session, which is right there and wrong here.
+
+name: smoke
+seeds: "0"
+budget_min: 0
+
+base:
+  arch: resnet20
+  width: 16
+  batch_size: 128
+  eval_batch_size: 500
+  train_subset: 4000
+  val_size: 0
+  augment: true
+
+  lr: 0.05
+  warmup_epochs: 0
+  schedule: cosine
+
+  # ramp_epochs 1 puts epoch 0 at easy_frac and epoch 1 at 1.0, so a two-epoch
+  # run still exercises both branches of pool_at -- the restricted pool and the
+  # None that makes the post-ramp epochs identical to the baseline's.
+  epochs: 2
+  ramp_epochs: 1
+  easy_frac: 0.5
+  pacing: linear
+  scoring: transfer
+  teacher_folds: 2
+  teacher_epochs: 1
+
+  per_class: false
+  wandb: false
+
+regimes:
+  - name: clean_short
+    label_noise: 0.0
+  - name: noisy20_short
+    label_noise: 0.2
+  # Deliberately a different budget from clean_short, and clean like it: with
+  # identical settings the two regimes would produce byte-identical numbers and
+  # the smoke test would not notice a driver that ran one regime twice. It also
+  # exercises the teacher cache -- same data, so the ordering is fitted once and
+  # reused here, which is what the real grid does.
+  - name: clean_long
+    label_noise: 0.0
+    epochs: 3
+    ramp_epochs: 2
+  - name: noisy20_long
+    label_noise: 0.2
+    epochs: 3
+    ramp_epochs: 2
+
+arms:
+  - name: baseline
+    curriculum: none
+    ramp_epochs: 0
+  - name: curriculum
+    curriculum: easy_first
+    scoring: transfer
+  - name: random
+    curriculum: random_order
+  - name: anti
+    curriculum: hard_first
+    scoring: transfer

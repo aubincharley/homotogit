@@ -14,12 +14,17 @@ train_subset: 4000
 val_size: 1000
 augment: true
 
-arch: resnet18
+arch: resnet20
 width: 16
 
 epochs: 2
 lr: 0.05
 warmup_epochs: 0
 schedule: cosine
+
+# Same reason as warmup_epochs above: CONFIG's default of 10 falls outside a
+# 2-epoch run, so --dump-scores here would write nothing and the smoke test
+# would pass without having tested the thing it was run for.
+score_epoch: 1
 
 per_class: false

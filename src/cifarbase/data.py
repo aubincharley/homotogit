@@ -30,6 +30,8 @@ MEAN = (0.4914, 0.4822, 0.4465)
 STD = (0.2470, 0.2435, 0.2616)
 NUM_CLASSES = 10
 PAD = 4
+# Fixed, and deliberately unrelated to any run seed: see _corrupt_labels.
+_NOISE_SEED = 20090601
 
 _URL = "https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz"
 _TRAIN_BATCHES = [f"data_batch_{i}" for i in range(1, 6)]
@@ -148,6 +150,22 @@ class Split:
     def __len__(self):
         return self.y.numel()
 
+    def subset(self, index):
+        """A new Split over `index`, sharing this one's padding state.
+
+        Not `Split(self.raw[index], ...)`: __init__ pads, and a train split is
+        already padded, so rebuilding one that way would pad it twice and hand
+        the model 48x48 rows. The cross-fit teacher needs complementary halves
+        of the train split, which is the only caller.
+        """
+        out = object.__new__(type(self))
+        out.raw = self.raw[index].contiguous()
+        out.y = self.y[index]
+        out.device = self.device
+        out.pad = self.pad
+        out._mean, out._std = self._mean, self._std
+        return out
+
     def _view(self, index, augment=False, generator=None):
         """uint8 rows -> normalised float32 [B,3,32,32], cropped and maybe flipped."""
         raw = self.raw[index]
@@ -163,8 +181,39 @@ class Split:
             x = torch.where(flip, x.flip(-1), x)
         return x
 
-    def batches(self, batch_size, generator=None, drop_last=True, augment=False):
-        order = torch.randperm(len(self), device=self.device, generator=generator)
+    def _epoch_order(self, pool, needed, generator):
+        """`needed` indices drawn from `pool`, reshuffled on every pass over it.
+
+        A pool shorter than an epoch is walked more than once rather than
+        ending the epoch early -- see `batches` for why that matters.
+        """
+        if pool.numel() == 0:
+            raise ValueError("empty pool: an epoch cannot be filled from it")
+        passes, have = [], 0
+        while have < needed:
+            perm = torch.randperm(pool.numel(), device=self.device,
+                                  generator=generator)
+            passes.append(pool[perm])
+            have += pool.numel()
+        return torch.cat(passes)[:needed]
+
+    def batches(self, batch_size, generator=None, drop_last=True, augment=False,
+                pool=None):
+        """One epoch's worth of batches, shuffled.
+
+        `pool` restricts the epoch to a subset of the split WITHOUT shortening
+        it: an epoch is always a full split's worth of examples, so a curriculum
+        that trains on half the data still takes the same number of SGD steps.
+        Anything else would be a silent bug -- `lr_at` derives the whole
+        schedule from `steps_per_epoch * epochs`, so an epoch that ran short
+        would leave the cosine somewhere in the middle at the end of training,
+        and the curriculum would be charged for the lr schedule's mistake.
+        """
+        if pool is None:
+            order = torch.randperm(len(self), device=self.device,
+                                   generator=generator)
+        else:
+            order = self._epoch_order(pool, len(self), generator)
         stop = len(self) - (len(self) % batch_size if drop_last else 0)
         for start in range(0, stop, batch_size):
             index = order[start:start + batch_size]
@@ -189,6 +238,67 @@ def _random_crop(raw, pad, generator=None):
     return raw[batch, :, rows[:, :, None], cols[:, None, :]].permute(0, 3, 1, 2)
 
 
+def _noise_draw(n_train, frac):
+    """The examples `_corrupt_labels` mislabels, and the generator behind them.
+
+    Split out so `corrupted_mask` can regenerate exactly the same draw later in
+    the run without anything having to be remembered or threaded through. One
+    definition of the draw, used twice.
+    """
+    k = int(round(frac * n_train)) if frac > 0 else 0
+    if k == 0:
+        return None
+    generator = torch.Generator().manual_seed(_NOISE_SEED)
+    return torch.randperm(n_train, generator=generator)[:k], generator
+
+
+def corrupted_mask(n_train, frac):
+    """True where the label is one of the permuted ones.
+
+    Asked for by `scoring.curriculum_order`, which reports how much of the easy
+    pool is corrupted -- the one number that says whether sorting by margin
+    actually separated the clean examples from the rest.
+    """
+    mask = torch.zeros(n_train, dtype=torch.bool)
+    draw = _noise_draw(n_train, frac)
+    if draw is not None:
+        mask[draw[0]] = True
+    return mask
+
+
+def _corrupt_labels(y, n_train, frac):
+    """Permute `frac` of the FIRST n_train labels, deterministically.
+
+    Seeded from a constant rather than from the run's seed, so every arm and
+    every seed trains against exactly the same corruption. The experiment varies
+    the order in which examples arrive, never which labels are wrong -- if the
+    corruption moved between arms, the comparison would be measuring the draw.
+
+    Only the train portion is touched: the validation slice keeps its true
+    labels, so model selection and every reported number stay honest. It is the
+    objective that is meant to be hard, not the measurement.
+
+    Why this exists at all: with clean CIFAR-10 the easy subproblem and the full
+    problem are both well posed, so a curriculum connects two nearly identical
+    points and has nothing to bridge. Corrupting the labels makes the target
+    genuinely hard -- it can only be fitted by memorising contradictions -- while
+    the easy end stays well posed. That is the gap a curriculum is for.
+    """
+    draw = _noise_draw(n_train, frac)
+    if draw is None:
+        return y
+    victims, generator = draw
+    y = y.clone()
+    # A uniform redraw would leave about a tenth of them accidentally correct.
+    # Shifting by 1..9 guarantees every victim really is mislabelled, which is
+    # what keeps "margin < 0" lined up with "corrupted".
+    shift = torch.randint(1, NUM_CLASSES, (victims.numel(),), generator=generator)
+    y[victims] = (y[victims] + shift) % NUM_CLASSES
+    print(f"label noise: {victims.numel()}/{n_train} train labels permuted "
+          f"({frac:.0%}); val and test untouched")
+    return y
+
+
 def load_cifar10(device, cfg):
     """The three splits, already on `device`. Called once per run, not per seed."""
     train_x, train_y, test_x, test_y = _load_raw()
@@ -205,6 +315,8 @@ def load_cifar10(device, cfg):
     # use. Set it above 0 and train.py selects on validation accuracy instead.
     val_size = min(int(cfg["val_size"]), len(train_y) - 1)
     cut = len(train_y) - val_size if val_size > 0 else len(train_y)
+
+    train_y = _corrupt_labels(train_y, cut, float(cfg.get("label_noise", 0.0)))
 
     train = Split(train_x[:cut], train_y[:cut], device, padded=True)
     val = Split(train_x[cut:], train_y[cut:], device) if val_size > 0 else None

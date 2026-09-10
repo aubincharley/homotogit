@@ -1,6 +1,6 @@
-.PHONY: build run quick baseline push status pull clean runs plot
+.PHONY: build study smoke quick baseline push status pull clean runs plot
 
-KERNEL = aubincharley/cifar10-resnet
+KERNEL = alexandrecorrard/cifar-10-resnet-baseline
 # Override if the venv is not activated: make quick PYTHON=.venv/bin/python
 PYTHON ?= python3
 DIR ?= runs/latest
@@ -8,17 +8,21 @@ DIR ?= runs/latest
 build:          ## bundle src/ + main.py into dist/main.py
 	$(PYTHON) build.py
 
-run:            ## the reference recipe, all seeds (slow without a GPU)
-	$(PYTHON) main.py
+study:          ## the campaign: 4 regimes x 4 arms x 1 seed (needs a GPU)
+	$(PYTHON) main.py --study pacing_vs_order
 
-quick:          ## CPU smoke test: resnet18 w=16, 4k images, 2 epochs, 1 seed
-	CIFAR_ALLOW_CPU=1 $(PYTHON) main.py --config quick
+smoke:          ## the SAME grid on a CPU: 16 arms, 4k images, 2-3 epochs
+	CIFAR_ALLOW_CPU=1 $(PYTHON) main.py --study smoke
 
-baseline:       ## the reference recipe, one seed -- for timing a change
-	$(PYTHON) main.py --seeds 0
+quick:          ## CPU plumbing check of the single-arm path, no grid
+	CIFAR_ALLOW_CPU=1 $(PYTHON) main.py --config quick --study ""
+
+baseline:       ## one arm, one seed -- for timing a change
+	$(PYTHON) main.py --config baseline --study "" --seeds 0
 
 push: build     ## rebuild, then push the kernel to Kaggle
-	@echo "NOTE: a push resets the accelerator. Set GPU T4 x2 in the UI, then Save & Run All."
+	@echo "NOTE: this STARTS the run. machine_shape NvidiaTeslaT4 is honoured by the API,"
+	@echo "      so it lands on a T4 without touching the UI. Watch it with 'make status'."
 	kaggle kernels push -p .
 
 status:         ## last kernel run status
@@ -26,6 +30,7 @@ status:         ## last kernel run status
 
 pull:           ## fetch the finished run log, results.json and history.* into out/
 	mkdir -p out && kaggle kernels output $(KERNEL) -p out/
+	@echo "Then: $(PYTHON) analyze.py out/runs/<stamp>_pacing_vs_order"
 
 clean:          ## drop generated artifacts -- deliberately NOT runs/
 	rm -rf dist out
@@ -52,5 +57,5 @@ export LIST_RUNS
 runs:           ## one line per run: which config, how many seeds, what accuracy
 	@$(PYTHON) -c "$$LIST_RUNS"
 
-plot:           ## plot the last run  (make plot DIR=runs to compare them all)
+plot:           ## plot a study dir (DIR=runs/latest), or any folder of runs
 	$(PYTHON) analyze.py $(DIR)
