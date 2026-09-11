@@ -1,7 +1,7 @@
 ---
 id: DOC-DECISIONS
 schema_version: 1
-updated_at: 2026-09-09
+updated_at: 2026-09-11
 status: decision_log
 ---
 
@@ -35,6 +35,10 @@ L'ordre décrit l'évolution scientifique. Les timestamps exacts de certains pre
 | D-20 | Lecture de la grille | Recommandation d'analyse | Déprioriser Gmix et early7 dans leurs réglages ; conserver combo bilinéaire+Gaussian et stem_max sans Gaussian | Candidates à discuter, pas nouveaux entraînements autorisés |
 | D-21 | Dernière discussion opérateurs | Idée discutée | Gaussian explicite avant réduction RGB ; clarifier AA et linéarité | **Non exécuté**, protocole à arrêter |
 | D-22 | Passation actuelle | Demande utilisateur | Base Markdown détaillée, sourcée, maintenable, à intégrer/enrichir par l'agent du dépôt | Livraison présente |
+| D-24 | Question utilisateur sur l'anti-aliasing | Protocole adopté | Tester placement, masques, sigma constant et BlurPool avant d'interpréter les +3 points comme une continuation | [EXP-012](experiments/EXP-012_aa_ablation.md) achevée |
+| D-25 | Assets d'EXP-011 irrécupérables | Contrainte subie, choix documenté | Générer un jeu épinglé neuf et relancer les témoins dans le même lot plutôt que citer les anciens chiffres | Appliqué ; voir [INTEGRATION](INTEGRATION.md) C-43 |
+| D-26 | Six meilleurs bras dans 0,47 point à une graine | Protocole adopté | Rejouer les quatre premiers aux graines 0/1/2 avant de conclure | Fait ; a renversé la lecture, voir [CORRECTIONS](CORRECTIONS.md) C-36 |
+| D-27 | A priori de profondeur sur sigma | Piste explorée puis écartée | Quatre profils × deux architectures × trois graines ; le profil plat gagne | Écartée sur données, pas sur opinion |
 
 ## Règle de prolongation
 

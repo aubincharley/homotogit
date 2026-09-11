@@ -1,7 +1,7 @@
 ---
 id: DOC-EXPERIMENTS
 schema_version: 1
-updated_at: 2026-09-09
+updated_at: 2026-09-11
 status: index
 ---
 
@@ -25,10 +25,11 @@ Les IDs sont propres à cette base. Les campagnes antérieures aux runs datés d
 | [EXP-009](EXP-009_db2_bn.md) | Pilote db2 avec BN et bon contrôle | 10k, 2 400 updates, db2 + plain frais | +0,94 point sur une graine, coût ~64 min ; abandon utilisateur |
 | [EXP-010](EXP-010_resolution_pilot.md) | Résolution seule et avec Gaussian | Deux nouveaux bras seed0, 50k, 30 époques | 79,57 / 79,93 %, signal favorable à confirmer |
 | [EXP-011](EXP-011_full_grid.md) | Calendriers × résolution + ablations | **21 configs × 3 graines, 63 fraîches** | 80,71 % pour combo principal ; alternative max après stem sans Gaussian |
+| [EXP-012](EXP-012_aa_ablation.md) | Le flou interne est-il de l'anti-aliasing ? Placement, masques, annelage, profondeur, a priori sigma | **32 configs, 58 cellules, 5 vagues** | Le placement n'a que deux valeurs et le depot avait la mauvaise ; l'annelage n'achete pas d'accuracy mais l'architecture cible ; aucun a priori de profondeur sur sigma ne bat le profil plat |
 
 ## Différents niveaux de preuve
 
-- **JSON numérique local** : EXP-002, EXP-003 et EXP-011 ; détails de calcul et agrégats accessibles.
+- **JSON numérique local** : EXP-002, EXP-003, EXP-011 et EXP-012 ; détails de calcul et agrégats accessibles.
 - **Rapport local d'exécution** : EXP-000, EXP-001, EXP-010, EXP-011.
 - **Compte rendu copié dans la conversation + figures** : EXP-006 à EXP-009.
 - **Sources partielles, lectures graphiques** : EXP-004 et une partie d'EXP-005.
@@ -37,4 +38,4 @@ Ces niveaux ne disent pas si un résultat est vrai ou faux ; ils disent ce qui a
 
 ## Ce qui n'a pas de fiche de résultat
 
-STL-10, Gaussian RGB explicite avant réduction, diffusion TV à M étapes, compression à budget de bits, ablation causale BN/initialisation, recalibration BN, mélange de logits aux transitions et nouvelle optimisation de db2 sont des idées ou propositions. Leurs statuts figurent dans [OPEN_QUESTIONS](../OPEN_QUESTIONS.md).
+STL-10, Gaussian RGB explicite avant réduction (EXP-012 ne le teste pas), diffusion TV à M étapes, compression à budget de bits, ablation causale BN/initialisation, recalibration BN, mélange de logits aux transitions et nouvelle optimisation de db2 sont des idées ou propositions. Leurs statuts figurent dans [OPEN_QUESTIONS](../OPEN_QUESTIONS.md).

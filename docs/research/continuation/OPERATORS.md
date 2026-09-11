@@ -1,7 +1,7 @@
 ---
 id: DOC-OPERATORS
 schema_version: 1
-updated_at: 2026-09-09
+updated_at: 2026-09-11
 status: definitions_and_reported_implementation
 ---
 
@@ -345,3 +345,73 @@ Attention : le JSON des **ondelettes** définit son contraste en recentrant la s
 La [note de diffusion TV à coût fixé](sources/note_tv_cout_fixe.md) propose M étapes explicites de descente d'une TV lissée, pas la projection ci-dessus. La [note de résolution](sources/note_filtrage_resolution_progressive.md) discute également mélange d'images ou de logits pendant une transition ; ces mélanges n'ont pas été les opérateurs du benchmark.
 
 Le préfiltre RGB récent serait de la forme \(R_r(G_{\tau(r)}x)\). Il est distinct du Gaussian interne \(G_{\sigma_\ell}\). Les paramètres, comparateurs et statut de cette proposition figurent dans [OPEN_QUESTIONS](OPEN_QUESTIONS.md).
+
+## 12. Variantes nommées ajoutées par EXP-012
+
+Ces définitions **s'ajoutent** aux précédentes ; aucune variante historique n'est réécrite.
+Implémentation dans `continuation/ablation_ops.py`, posé à côté de `continuation/campaign_ops.py`
+qui n'est pas modifié.
+
+### 12.1 Placements du flou
+
+Le Gaussian est linéaire et commute exactement avec la convolution et avec BatchNorm ; il ne
+commute pas avec le ReLU. **Il n'existe donc que deux emplacements distincts dans un bloc.**
+
+| Nom | Où | Positions | Note |
+|---|---|---:|---|
+| `conv_out` | sortie de chaque conv 3×3, avant BN et ReLU | 19 | placement historique depuis EXP-004, celui de CBS |
+| `post_bn` | sortie de chaque BatchNorm, avant ReLU | 19 | **même opérateur que `conv_out`** ; ne diffère que par les statistiques que BN accumule |
+| `post_block` | après le ReLU : activation post-stem + 9 sorties de bloc | 10 | seul placement correct au sens anti-aliasing aux deux points de décimation |
+
+### 12.2 Masques de sites (indexation `conv_out`)
+
+| Nom | Sites | Intention |
+|---|---|---|
+| `predown` | {6, 12} | les sorties de conv les plus proches d'une décimation |
+| `nodown` | les 17 autres | complémentaire |
+
+Limite à conserver : ce découpage suppose une localité que la cascade n'a pas. Lisser au site 3
+réduit encore ce qui arrive au site 7. Il teste la localité, pas le mécanisme.
+
+### 12.3 BlurPool
+
+Gaussian **fixe**, jamais annelé, appliqué par `forward_pre_hook` sur les entrées de `blocks[3]`
+et `blocks[6]`. Un seul hook par bloc préfiltre **les quatre** décimations, car la convolution
+stridée et le shortcut décimant consomment le même tenseur. C'est de l'architecture : il n'est
+**pas** désactivé par `bypass_all`, et l'endpoint d'un tel bras est « réseau + BlurPool », pas le
+réseau plain.
+
+### 12.4 Réductions internes et mode relatif
+
+`block{k}_max` réduit le tenseur entrant dans `blocks[k+1]`, pour k de 0 à 7. `blocks[8]` est
+exclu : sa sortie va directement au pooling moyen global.
+
+Le calendrier de résolution étant écrit en pixels absolus pour une carte 32×32 (16/24/32), il
+cesse d'avoir un sens au-delà de `blocks[3]`, où la carte fait déjà 16 : r=16 y serait un no-op
+et r=24 un **upsampling**. Le mode `relative` lit le calendrier comme un **rapport** `r/32`
+appliqué à la taille locale ; aux positions 32×32 il reproduit exactement l'absolu.
+
+### 12.5 Profils de profondeur sur sigma
+
+Multiplicateur `m_l` par position, appliqué **par-dessus** `q_l`. Avec un profil calculé sur les
+tailles naturelles, `m_l · q_l` fait suivre à sigma la taille **courante**. Normalisation sur le
+**maximum** et non sur le budget : cela garde σ ≤ G(e) ≤ 1, donc `sigma_max` reste à 1,0 et le
+noyau à 9 taps — condition pour que le témoin uniforme reste valide sans changement de support.
+
+```
+position       0     1     2     3     4     5     6     7     8     9
+carte naturelle 32   32    32    32    16    16    16     8     8     8
+A2  ~ √H     1,00  1,00  1,00  1,00  0,71  0,71  0,71  0,50  0,50  0,50
+A1  ~ H      1,00  1,00  1,00  1,00  0,50  0,50  0,50  0,25  0,25  0,25
+A3  ~ 1/H    0,25  0,25  0,25  0,25  0,50  0,50  0,50  1,00  1,00  1,00
+A4  ~ RF     0,09  0,22  0,34  0,47  0,66  0,91  1,00  1,00  1,00  1,00
+```
+
+**Tous écartés par EXP-012.** A1 et A2 n'atténuent pas le flou en profondeur, ils l'éteignent
+(σ → 0,25 et 0,125, soit ~100 % d'énergie retenue) ; voir [CORRECTIONS](CORRECTIONS.md) C-40.
+
+### 12.6 Avertissement sur `input_max`
+
+`input_max` **n'applique pas de max-pooling** : le chemin d'entrée du driver passe par
+`resize_unit_float`, bilinéaire+antialias en dur. Voir [INTEGRATION](INTEGRATION.md) C-42.
+La variante max n'est réelle qu'aux emplacements `stem_*` et `block{k}_*`.

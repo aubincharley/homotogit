@@ -39,8 +39,8 @@ Généré par `tools/enrich_records.py` depuis [`data/repo_evidence.json`](../da
 |---|---|---|
 | Implémentation | [`scripts/kaggle_pilot_continuation.py`](../../../../scripts/kaggle_pilot_continuation.py) | d643f75 2026-09-08 |
 | Implémentation | [`scripts/kaggle_run.py`](../../../../scripts/kaggle_run.py) | 776c0a1 2026-09-09 |
-| Sorties d'exécution | [`results/kaggle_outputs/pilot-continuation-20260908-103434`](../../../../results/kaggle_outputs/pilot-continuation-20260908-103434) | 51 fichiers |
-| Sorties d'exécution | [`results/kaggle_outputs/pilot-continuation-20260908-122558`](../../../../results/kaggle_outputs/pilot-continuation-20260908-122558) | 67 fichiers |
+| Sorties d'exécution | [`results/kaggle_outputs/pilot-continuation-20260908-103434`](../../../../results/kaggle_outputs/pilot-continuation-20260908-103434) | 3 fichiers |
+| Sorties d'exécution | [`results/kaggle_outputs/pilot-continuation-20260908-122558`](../../../../results/kaggle_outputs/pilot-continuation-20260908-122558) | 10 fichiers |
 | Documentation du dépôt | [`docs/kaggle_cli.md`](../../../../docs/kaggle_cli.md) | 0160bd1 2026-09-09 |
 
 Un chemin listé existe dans le dépôt au moment de la génération. Cela ne prouve pas seul quelle version du code a exécuté ce run : pour les runs Kaggle, le code réellement expédié est archivé dans le sous-dossier `_repo/` de la sortie correspondante.

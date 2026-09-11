@@ -68,7 +68,7 @@ Généré par `tools/enrich_records.py` depuis [`data/repo_evidence.json`](../da
 | Implémentation | [`continuation/models/resnet20_bn.py`](../../../../continuation/models/resnet20_bn.py) | d643f75 2026-09-08 |
 | Implémentation | [`scripts/job_resnet20bn_gaussian.py`](../../../../scripts/job_resnet20bn_gaussian.py) | d643f75 2026-09-08 |
 | Implémentation | [`scripts/continuation_driver.py`](../../../../scripts/continuation_driver.py) | 26cfb82 2026-09-09 |
-| Sorties d'exécution | [`results/kaggle_outputs/resnet20bn-gaussian-20260908-154226`](../../../../results/kaggle_outputs/resnet20bn-gaussian-20260908-154226) | 87 fichiers |
+| Sorties d'exécution | [`results/kaggle_outputs/resnet20bn-gaussian-20260908-154226`](../../../../results/kaggle_outputs/resnet20bn-gaussian-20260908-154226) | 8 fichiers |
 | Sorties d'exécution | [`results/resnet20bn_plain_vs_gaussian.png`](../../../../results/resnet20bn_plain_vs_gaussian.png) | d643f75 2026-09-08 |
 | Sorties d'exécution | [`results/resnet20bn_pilot_corrected.png`](../../../../results/resnet20bn_pilot_corrected.png) | d643f75 2026-09-08 |
 

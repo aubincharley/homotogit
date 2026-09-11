@@ -57,7 +57,7 @@ Généré par `tools/enrich_records.py` depuis [`data/repo_evidence.json`](../da
 | Implémentation | [`continuation/models/resnet18_bn.py`](../../../../continuation/models/resnet18_bn.py) | d643f75 2026-09-08 |
 | Implémentation | [`scripts/job_resnet18_gaussian.py`](../../../../scripts/job_resnet18_gaussian.py) | d643f75 2026-09-08 |
 | Implémentation | [`scripts/continuation_driver.py`](../../../../scripts/continuation_driver.py) | 26cfb82 2026-09-09 |
-| Sorties d'exécution | [`results/kaggle_outputs/resnet18-gaussian-20260908-144640`](../../../../results/kaggle_outputs/resnet18-gaussian-20260908-144640) | 71 fichiers |
+| Sorties d'exécution | [`results/kaggle_outputs/resnet18-gaussian-20260908-144640`](../../../../results/kaggle_outputs/resnet18-gaussian-20260908-144640) | 5 fichiers |
 | Sorties d'exécution | [`results/resnet18_plain_vs_gaussian.png`](../../../../results/resnet18_plain_vs_gaussian.png) | d643f75 2026-09-08 |
 
 Un chemin listé existe dans le dépôt au moment de la génération. Cela ne prouve pas seul quelle version du code a exécuté ce run : pour les runs Kaggle, le code réellement expédié est archivé dans le sous-dossier `_repo/` de la sortie correspondante.

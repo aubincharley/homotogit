@@ -34,13 +34,24 @@ def anchors(text):
 
 def main():
     errors=[]
+    eol_normalised=[]
     manifest=json.loads((ROOT/'sources/manifest.json').read_text(encoding='utf-8'))
     for entry in manifest['files']:
         p=ROOT/'sources'/entry['path']
         if not p.is_file():
             errors.append(f'Missing source {p.name}');continue
-        if hashlib.sha256(p.read_bytes()).hexdigest()!=entry['sha256']:
-            errors.append(f'Changed source bytes: {p.name}')
+        raw=p.read_bytes()
+        if hashlib.sha256(raw).hexdigest()==entry['sha256']:
+            continue
+        # Le manifeste a ete calcule sur la machine de maintenance Windows, avant
+        # que git ne normalise les fins de ligne. Reinserer \r devant chaque \n
+        # doit alors redonner l'empreinte d'origine : cela **prouve** que le
+        # contenu est intact et distingue ce cas d'une alteration reelle.
+        # Voir INTEGRATION.md C-45.
+        if hashlib.sha256(raw.replace(b'\n', b'\r\n')).hexdigest()==entry['sha256']:
+            eol_normalised.append(p.name)
+            continue
+        errors.append(f'Changed source bytes: {p.name}')
     docs=[p for p in ROOT.rglob('*.md') if 'sources' not in p.relative_to(ROOT).parts]
     ids={}
     link_count=0
@@ -72,13 +83,19 @@ def main():
             if sep and q.suffix=='.md' and unquote(frag) not in anchors(q.read_text(encoding='utf-8')):
                 errors.append(f'{p.name}: unknown anchor {target}')
     registry=json.loads((ROOT/'data/experiments.json').read_text(encoding='utf-8'))
-    assert len(registry['experiments'])==12
+    # Le compte suit le nombre de fiches plutot qu'un nombre fige, pour que
+    # l'ajout d'une experience n'oblige pas a editer ce garde-fou tout en
+    # continuant a detecter une fiche perdue ou une entree non enregistree.
+    records=sorted(q.stem.split('_')[0] for q in (ROOT/'experiments').glob('EXP-*.md'))
+    if sorted(e['experiment_id'] for e in registry['experiments'])!=records:
+        errors.append(f'registry/files mismatch: {records}')
     for e in registry['experiments']:
         if e['experiment_id'] not in ids:errors.append(f'Unresolved experiment {e["experiment_id"]}')
         elif ids[e['experiment_id']]!=(ROOT/e['file']):errors.append(f'Wrong experiment file {e["experiment_id"]}')
     numeric=check_numeric(json.loads((ROOT/'sources/campaign_results.json').read_text(encoding='utf-8')))
     print(json.dumps(dict(editorial_markdown_files=len(docs),source_files=len(manifest['files']),
                           local_links_checked=link_count,experiment_records=len(registry['experiments']),
+                          sources_eol_normalised=eol_normalised,
                           numeric=numeric,errors=errors),ensure_ascii=False,indent=2))
     if errors:raise SystemExit(1)
 

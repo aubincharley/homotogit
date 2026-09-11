@@ -1,7 +1,7 @@
 ---
 id: DOC-QUESTIONS
 schema_version: 1
-updated_at: 2026-09-09
+updated_at: 2026-09-11
 status: unexecuted_research_options
 ---
 
@@ -91,3 +91,29 @@ Budgets de bits réellement mesurés, chemins d'activations, régularisation dé
 ## Q-09 — Compléments de preuve à demander au dépôt
 
 Priorité documentaire : configs complètes et commits des runs, code exact des réductions et de Gmix, normalisation 50k, bornes des paliers pilotes, logs par epoch, scripts des figures corrigées, données de contrôle LR, manifests et empreintes. Les numéros de version PyTorch seuls ne prouvent pas l'identité de tout l'environnement. Cette collecte améliore la solidité sans nouveaux entraînements.
+
+## Q-10 — Le flou interne est-il un anti-aliasing ? (partiellement tranchée)
+
+[EXP-012](experiments/EXP-012_aa_ablation.md) donne un faisceau mitigé et **ne tranche pas**.
+Ce qui reste à faire pour conclure, par ordre de coût croissant :
+
+* **Anti-aliaser les shortcuts option-A séparément des convolutions stridées.** `x[:,:,::2,::2]`
+  ne retire quasiment rien du repliement (0,171 contre 0,178 non filtré) et n'est **jamais** hooké
+  par `attach_sites`. C'est le chemin le plus aliasé du réseau et il n'a jamais été touché.
+* **`conv_out` à σ ≈ 0,65** — séparerait le placement du dosage effectif au groupe A, le
+  confondant que EXP-012 n'a pas levé.
+* **Faire bouger le facteur de décimation** pour voir si l'optimum de σ se déplace avec lui.
+  C'est la seule mesure qui validerait une signature de Nyquist ; voir [CORRECTIONS](CORRECTIONS.md) C-37.
+
+## Q-11 — Le plafond vers 80 % est-il un déficit de biais inductif ?
+
+Cinq interventions sans rapport atterrissent dans une bande de 0,5 point autour de 78,5 % à
+résolution constante, et l'ensemble des bras d'EXP-012 plafonne vers 81 %. Le protocole n'a
+**aucune augmentation de données**. Si le plafond est bien un biais inductif manquant, le même
+protocole **avec augmentation** devrait faire largement s'évaporer tous ces gains. Non exécuté.
+
+## Q-12 — `input_max` n'a jamais été testé
+
+[INTEGRATION](INTEGRATION.md) C-42 établit que les cellules `input_max` d'EXP-011 sont des
+re-exécutions de `input_bilinear`. Le max-pooling **sur l'image** n'a donc jamais été mesuré,
+et le confondant lieu/opérateur d'EXP-012 (C-39) ne peut pas être levé sans lui.

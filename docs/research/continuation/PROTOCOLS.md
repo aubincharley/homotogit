@@ -1,7 +1,7 @@
 ---
 id: DOC-PROTOCOLS
 schema_version: 1
-updated_at: 2026-09-09
+updated_at: 2026-09-11
 status: historical_profiles
 ---
 
@@ -141,3 +141,28 @@ La campagne à six T4 utilise des entraînements indépendants, un processus par
 ## 10. Recettes proposées puis remplacées
 
 Ne décrivent **pas** les runs exécutés : 200 époques ResNet-18, batch physique 64, LR 0,1 avec milestones 30/60/90 ; warmup 5 % de l'horizon des campagnes courtes ; extinction à 600 dans le pilote ResNet-20 à 2 400 ; 15 époques filtrées sur 30 dans un ancien brouillon. Voir [DECISIONS](DECISIONS.md) pour leur remplacement.
+
+## 11. Calendriers de sigma constants (EXP-012)
+
+`const0.30`, `const0.50`, `const0.80`, `const1.00` : sigma tenu à la même valeur sur les 30
+époques, **sans extinction**. Ce ne sont donc **pas des continuations** — le chemin n'atteint
+jamais l'endpoint cible — et ils sont présents comme contrôles, pas comme candidats.
+
+Conséquence d'évaluation, à ne jamais oublier : pour un tel bras le chiffre honnête est celui du
+**chemin courant**, filtre actif. Le chemin cible y mesure une ablation prématurée avec décalage
+des statistiques BatchNorm et tombe à 10–25 %. Les fiches et le JSON portent un champ
+`primary_path` qui indique lequel lire ; `final_test_acc_primary` applique la règle.
+
+## 12. Appariement d'EXP-012
+
+Assets épinglés **neufs** (`r20bn-ablation-assets`), publiés sur les deux comptes. Les 58
+cellules partagent poids initiaux, buffers BN, permutations par époque et indices de sonde, donc
+toutes leurs comparaisons internes sont appariées. **Aucune n'est comparable à EXP-011**, dont
+les poids initiaux sont irrécupérables ([INTEGRATION](INTEGRATION.md) C-43).
+
+Vérifications exécutées avant le premier update de chaque job, chacune capable d'interrompre le
+run : sha256 des assets, opérateurs d'ablation (placements, identité bit à bit à σ=0, gradients
+finis, BlurPool survivant à `bypass_all`), formes réelles des réductions à chaque profondeur, et
+action effective de chaque profil de sigma. Cette dernière a été ajoutée après avoir constaté en
+développement qu'un profil stocké mais jamais lu par `apply_at` aurait fait tourner trois bras
+identiques au témoin en rapportant trois configurations distinctes.

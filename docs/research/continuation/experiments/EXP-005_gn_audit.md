@@ -54,10 +54,10 @@ Généré par `tools/enrich_records.py` depuis [`data/repo_evidence.json`](../da
 | Implémentation | [`scripts/verify_grad_accumulation.py`](../../../../scripts/verify_grad_accumulation.py) | d643f75 2026-09-08 |
 | Implémentation | [`continuation/models/resnet_gn.py`](../../../../continuation/models/resnet_gn.py) | 86c00bc 2026-09-08 |
 | Configuration | [`scripts/_study_common.py`](../../../../scripts/_study_common.py) | d643f75 2026-09-08 |
-| Sorties d'exécution | [`results/kaggle_outputs/plain-study-20260908-132611`](../../../../results/kaggle_outputs/plain-study-20260908-132611) | 76 fichiers |
-| Sorties d'exécution | [`results/kaggle_outputs/gaussian-study-20260908-132957`](../../../../results/kaggle_outputs/gaussian-study-20260908-132957) | 76 fichiers |
-| Sorties d'exécution | [`results/kaggle_outputs/lr-diagnostic-20260908-132240`](../../../../results/kaggle_outputs/lr-diagnostic-20260908-132240) | 66 fichiers |
-| Sorties d'exécution | [`results/kaggle_outputs/lr-control-002-20260908-140604`](../../../../results/kaggle_outputs/lr-control-002-20260908-140604) | 73 fichiers |
+| Sorties d'exécution | [`results/kaggle_outputs/plain-study-20260908-132611`](../../../../results/kaggle_outputs/plain-study-20260908-132611) | 10 fichiers |
+| Sorties d'exécution | [`results/kaggle_outputs/gaussian-study-20260908-132957`](../../../../results/kaggle_outputs/gaussian-study-20260908-132957) | 10 fichiers |
+| Sorties d'exécution | [`results/kaggle_outputs/lr-diagnostic-20260908-132240`](../../../../results/kaggle_outputs/lr-diagnostic-20260908-132240) | 8 fichiers |
+| Sorties d'exécution | [`results/kaggle_outputs/lr-control-002-20260908-140604`](../../../../results/kaggle_outputs/lr-control-002-20260908-140604) | 8 fichiers |
 | Sorties d'exécution | [`results/gaussian_placement_audit.json`](../../../../results/gaussian_placement_audit.json) | d643f75 2026-09-08 |
 | Sorties d'exécution | [`results/grad_accumulation_check.json`](../../../../results/grad_accumulation_check.json) | d643f75 2026-09-08 |
 | Sorties d'exécution | [`results/plain_vs_gaussian_paired.json`](../../../../results/plain_vs_gaussian_paired.json) | d643f75 2026-09-08 |

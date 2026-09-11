@@ -80,7 +80,7 @@ Généré par `tools/enrich_records.py` depuis [`data/repo_evidence.json`](../da
 | Implémentation | [`scripts/plot_progressive_resolution.py`](../../../../scripts/plot_progressive_resolution.py) | 26cfb82 2026-09-09 |
 | Implémentation | [`continuation/pipeline.py`](../../../../continuation/pipeline.py) | 26cfb82 2026-09-09 |
 | Implémentation | [`scripts/continuation_driver.py`](../../../../scripts/continuation_driver.py) | 26cfb82 2026-09-09 |
-| Sorties d'exécution | [`results/kaggle_outputs/progres-r20bn-20260909-075846`](../../../../results/kaggle_outputs/progres-r20bn-20260909-075846) | 94 fichiers |
+| Sorties d'exécution | [`results/kaggle_outputs/progres-r20bn-20260909-075846`](../../../../results/kaggle_outputs/progres-r20bn-20260909-075846) | 10 fichiers |
 | Sorties d'exécution | [`results/progressive_resolution.png`](../../../../results/progressive_resolution.png) | 26cfb82 2026-09-09 |
 | Sorties d'exécution | [`results/progressive_resolution_verification.json`](../../../../results/progressive_resolution_verification.json) | 26cfb82 2026-09-09 |
 

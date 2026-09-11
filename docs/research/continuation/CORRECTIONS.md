@@ -1,7 +1,7 @@
 ---
 id: DOC-CORRECTIONS
 schema_version: 1
-updated_at: 2026-09-09
+updated_at: 2026-09-11
 status: interpretive_errata
 ---
 
@@ -43,6 +43,12 @@ Les rapports originaux sont conservés sans réécriture. Ce fichier explicite l
 | C-28 | La résolution remet d'abord une image 16×16 à 32×32 avant le réseau | Les expériences utilisent réellement la petite grille ; aucune remontée systématique avant le CNN |
 | C-29 | Les contrastes TV et ondelettes étaient définis identiquement | Le JSON ondelettes recentre z sur sa propre moyenne, le prompt TV sur celle de x ; la petite dérive db2 empêche une identité exacte |
 | C-30 | Le statut/plan du 8 septembre décrit la suite actuelle | Depuis : pilote db2 exécuté puis branche abandonnée ; résolution et grande grille terminées ; préfloutage RGB encore non testé |
+| C-36 | Un ecart de +0,12 point entre deux bras a une graine est du bruit | Il avait ete compare a une dispersion **non appariee** de 0,77 point. Les bras partagent poids initiaux et permutations : la variation de graine est commune. Apparie sur trois graines, `D2G − D1` vaut +0,40 pp, positif sur les trois. Voir [EXP-012](experiments/EXP-012_aa_ablation.md) §11 |
+| C-37 | Le pic de sigma a 0,50 est une signature de Nyquist | Toute intervention parametree par une intensite a un optimum. Une signature de Nyquist exigerait que l'optimum **se deplace** quand le facteur de decimation change ; cela n'a pas ete teste. Affirmation retiree |
+| C-38 | Le sigma uniforme sur-floute en profondeur, il y retire plus d'information | L'attenuation d'energie **par pixel** est identique aux trois etages (0,080 a sigma=1, mesure). Ce qui se degrade est le caractere local et bien pose de l'operateur — support/carte 0,28 → 1,12, padding miroir 2 % → 18 % — pas la quantite retiree |
+| C-39 | Reduire a l'interieur plutot que sur l'image vaut +1,03 point | Cette comparaison change **deux facteurs** : le lieu et l'operateur (`input_bilinear` = bilineaire+antialias contre `stem_max` = max-pooling). L'effet de lieu seul n'est pas isole. Voir aussi C-42 |
+| C-40 | Les profils A1 et A2 attenuent le flou en profondeur | Ils l'**eteignent** : sigma tombe a 0,25 et 0,125, soit 99,7 % et 100 % d'energie retenue, le noyau est numeriquement une delta. C'est un masque, pas un reequilibrage — ce que le masque `early7` d'EXP-011 avait deja sanctionne |
+| C-41 | Le placement post-ReLU gagne parce qu'il est correct au sens anti-aliasing | L'energie repliee residuelle des poids appris est **identique aux trois placements** (~0,08 / 0,13) alors que l'accuracy s'etale sur 1,7 point. Accuracy et repliement residuel sont decouples ; l'anti-aliasing n'explique pas seul l'avantage |
 
 ## Correction particulière du compte rendu de la grille
 

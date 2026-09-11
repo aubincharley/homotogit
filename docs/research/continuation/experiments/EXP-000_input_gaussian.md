@@ -69,7 +69,7 @@ Généré par `tools/enrich_records.py` depuis [`data/repo_evidence.json`](../da
 | Implémentation | [`continuation/engine.py`](../../../../continuation/engine.py) | 86c00bc 2026-09-08 |
 | Implémentation | [`continuation/transforms/gaussian.py`](../../../../continuation/transforms/gaussian.py) | d643f75 2026-09-08 |
 | Configuration | [`configs/exp0_gaussian.yaml`](../../../../configs/exp0_gaussian.yaml) | 86c00bc 2026-09-08 |
-| Sorties d'exécution | [`results/exp0_gaussian`](../../../../results/exp0_gaussian) | 88 fichiers |
+| Sorties d'exécution | [`results/exp0_gaussian`](../../../../results/exp0_gaussian) | 73 fichiers |
 | Documentation du dépôt | [`docs/experiment0.md`](../../../../docs/experiment0.md) | 86c00bc 2026-09-08 |
 | Documentation du dépôt | [`docs/results.md`](../../../../docs/results.md) | 86c00bc 2026-09-08 |
 

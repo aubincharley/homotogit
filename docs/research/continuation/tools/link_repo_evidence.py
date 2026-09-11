@@ -151,6 +151,40 @@ EVIDENCE = {
                       "la verification d'appariement par empreintes est dans le "
                       "job.",
     },
+    "EXP-012": {
+        "code": ["continuation/ablation_ops.py",
+                 "continuation/campaign_ops.py",
+                 "scripts/campaign_driver.py",
+                 "scripts/ablation_manifest.py", "scripts/ablation2_manifest.py",
+                 "scripts/ablation3_manifest.py", "scripts/ablation4_manifest.py",
+                 "scripts/ablation5_manifest.py",
+                 "scripts/job_ablation.py", "scripts/job_ablation2.py",
+                 "scripts/job_ablation3.py", "scripts/job_ablation4.py",
+                 "scripts/job_ablation5.py",
+                 "scripts/stage_ablation_assets.py",
+                 "scripts/analyze_ablation.py",
+                 "scripts/plot_ablation.py", "scripts/plot_ablation_full.py",
+                 "scripts/plot_ablation_all.py", "scripts/plot_priors.py",
+                 "scripts/plot_seeds.py"],
+        "config": [],
+        "results": ["results/ablation_aa_results.json",
+                    "results/ablation_aa_curves.png",
+                    "results/ablation_aa_synthesis.png",
+                    "results/ablation_full_curves.png",
+                    "results/ablation_full_synthesis.png",
+                    "results/ablation_all_grid.png",
+                    "results/ablation_all_ranking.png",
+                    "results/ablation_seeds.png",
+                    "results/ablation_priors.png",
+                    "results/ablation_priors_curves.png"],
+        "docs": [],
+        "code_state": "ablation_ops.py ajoute a cote de campaign_ops.py, qui n'est pas "
+                      "modifie ; campaign_driver.py recoit une factory de controleur "
+                      "dispatchee sur un champ de cellule, les deux chemins d'evaluation "
+                      "dans le summary et un appel de diagnostics opt-in, le chemin "
+                      "historique restant inchange par defaut. Assets epingles neufs "
+                      "(INTEGRATION C-43).",
+    },
     "EXP-011": {
         "code": ["continuation/campaign_ops.py", "scripts/campaign_driver.py",
                  "scripts/campaign_manifest.py", "scripts/job_campaign.py",

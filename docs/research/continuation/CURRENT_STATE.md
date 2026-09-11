@@ -1,12 +1,12 @@
 ---
 id: DOC-CURRENT
 schema_version: 1
-updated_at: 2026-09-09
+updated_at: 2026-09-11
 status: current_at_snapshot
-latest_completed_experiment: EXP-011
+latest_completed_experiment: EXP-012
 ---
 
-# État actuel au 9 septembre 2026
+# État actuel au 11 septembre 2026
 
 [Accueil](README.md) · [Dernière expérience](experiments/EXP-011_full_grid.md) · [Décisions](DECISIONS.md)
 
@@ -31,6 +31,41 @@ Source : [JSON de la campagne](sources/campaign_results.json), recalculs dans [l
 
 Le gagnant dépasse le témoin de **5,10 points** en moyenne appariée. L'ajout de Gaussian à la résolution progressive bilinéaire apporte **1,23 point**, positif sur les trois graines. L'option max après stem sans Gaussian reste environ **0,75 point** derrière le gagnant, pour environ **70 % de son temps**.
 
+## Depuis EXP-012 — ce qui a changé le 10 septembre
+
+[EXP-012](experiments/EXP-012_aa_ablation.md) a cherché **pourquoi** le Gaussian interne aide,
+avec 58 cellules sur 32 configurations. Assets épinglés neufs : ces chiffres **ne se comparent
+pas cellule-à-cellule** à ceux de la grille ci-dessus (voir [INTEGRATION](INTEGRATION.md) C-43).
+
+Quatre conclusions déplacent la pratique :
+
+1. **Le placement du flou n'a que deux valeurs possibles, et le dépôt avait la mauvaise.**
+   Le Gaussian commute exactement avec la convolution et avec BatchNorm (écarts 7·10⁻⁷ et 9·10⁻⁷)
+   mais pas avec le ReLU (1,02). Donc `conv_out` et `post_bn` sont le même opérateur — mesuré,
+   +0,21 pp entre eux — et le seul choix réel est de quel côté du ReLU on se place.
+   Après le ReLU : **+1,71 pp** à résolution constante, **+0,99 pp** avec résolution, pour
+   **moins cher** (10 positions au lieu de 19).
+
+2. **L'annelage n'achète pas d'accuracy, il achète l'architecture cible.** Un sigma constant
+   égale le calendrier annelé aux deux placements (+0,51 et −0,11 pp, une graine). Mais il
+   s'effondre à 14–25 % dès qu'on retire son filtre, contre **0,00 pp** d'écart pour les bras
+   annelés. C'est le contrôle qui manquait depuis EXP-004.
+
+3. **Meilleure configuration mesurée : réduction après `blocks[2]` + flou post-ReLU**,
+   **80,99 ± 0,41 %** sur trois graines, 574 s. Alternative en coût : même réduction après
+   `blocks[1]`, **sans flou**, 80,59 %, 447 s — à peine plus cher que le témoin.
+
+4. **Aucun a priori de profondeur sur sigma ne bat le profil plat.** Quatre profils motivés
+   différemment, deux architectures, trois graines : sept comparaisons sur huit négatives avec
+   le même signe partout. Les deux directions perdent, donc ce n'est pas une question de sens.
+
+Sur l'hypothèse anti-aliasing, le faisceau reste **mitigé**. Pour : un préfiltre fixe à deux
+positions reproduit l'effet à 1,09× le coût du témoin ; il existe du repliement réel (17–20 %
+chez le témoin). Contre : un masque excluant tous les sites pré-décimation récupère l'effet
+complet, et **l'énergie repliée résiduelle est identique aux trois placements** alors que
+l'accuracy s'étale sur 1,7 point.
+
+
 ## Ce que nous retenons réellement
 
 - Le bénéfice du Gaussian interne a été observé sur ResNet-18 BN, puis sur ResNet-20 BN, et répliqué sur le train CIFAR-10 complet. Les changements initiaux d'architecture, de normalisation et d'initialisation n'ont pas été séparés causalement.
@@ -52,6 +87,10 @@ Le gagnant dépasse le témoin de **5,10 points** en moyenne appariée. L'ajout 
 | TV–L² et TV–Ḣ⁻¹ exactes | Aperçus réalisés ; pas d'entraînement de classification | Coût élevé, plusieurs solves non convergés |
 | Diffusion TV à nombre fixé d'étapes | Idée en réserve | Pas de résultat expérimental retrouvé |
 | Gaussian explicite sur RGB avant la réduction | **Discuté, non exécuté** | Ne pas le confondre avec l'antialiasing bilinéaire déjà présent |
+| Flou après le ReLU plutôt qu'après la convolution | **Établi par EXP-012, à adopter** | Gain démontrable analytiquement, et moins cher |
+| Réduction de résolution à l'intérieur du réseau | **Établi par EXP-012** | Plateau entre `blocks[0..2]` ; réduire l'image est moins bon |
+| A priori de profondeur sur sigma | **Écarté par EXP-012** | Quatre profils, deux architectures, trois graines : le plat gagne |
+| BlurPool fixe aux deux points de décimation | Candidate à confirmer | +3,45 pp pour 1,09× le coût, une seule graine |
 | STL-10 | Suite envisagée, non exécutée | Aucun résultat STL-10 dans cette base |
 
 ## Prochain travail utile, sans lancer automatiquement

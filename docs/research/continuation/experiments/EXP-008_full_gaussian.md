@@ -63,9 +63,9 @@ Généré par `tools/enrich_records.py` depuis [`data/repo_evidence.json`](../da
 |---|---|---|
 | Implémentation | [`scripts/job_fulldata_campaign.py`](../../../../scripts/job_fulldata_campaign.py) | d643f75 2026-09-08 |
 | Implémentation | [`scripts/continuation_driver.py`](../../../../scripts/continuation_driver.py) | 26cfb82 2026-09-09 |
-| Sorties d'exécution | [`results/kaggle_outputs/fulldata-r20bn-20260908-161221`](../../../../results/kaggle_outputs/fulldata-r20bn-20260908-161221) | 120 fichiers |
+| Sorties d'exécution | [`results/kaggle_outputs/fulldata-r20bn-20260908-161221`](../../../../results/kaggle_outputs/fulldata-r20bn-20260908-161221) | 22 fichiers |
 | Sorties d'exécution | [`results/fulldata_campaign.png`](../../../../results/fulldata_campaign.png) | d643f75 2026-09-08 |
-| Documentation du dépôt | [`docs/HANDOVER.md`](../../../../docs/HANDOVER.md) | 5ec3217 2026-09-09 |
+| Documentation du dépôt | [`docs/HANDOVER.md`](../../../../docs/HANDOVER.md) | 8112db0 2026-09-09 |
 
 Un chemin listé existe dans le dépôt au moment de la génération. Cela ne prouve pas seul quelle version du code a exécuté ce run : pour les runs Kaggle, le code réellement expédié est archivé dans le sous-dossier `_repo/` de la sortie correspondante.
 

@@ -82,7 +82,7 @@ Généré par `tools/enrich_records.py` depuis [`data/repo_evidence.json`](../da
 | Implémentation | [`scripts/verify_db2_operator.py`](../../../../scripts/verify_db2_operator.py) | 26cfb82 2026-09-09 |
 | Implémentation | [`continuation/transforms/wavelet.py`](../../../../continuation/transforms/wavelet.py) | d643f75 2026-09-08 |
 | Implémentation | [`scripts/continuation_driver.py`](../../../../scripts/continuation_driver.py) | 26cfb82 2026-09-09 |
-| Sorties d'exécution | [`results/kaggle_outputs/db2-pilot-r20bn-20260908-191741`](../../../../results/kaggle_outputs/db2-pilot-r20bn-20260908-191741) | 91 fichiers |
+| Sorties d'exécution | [`results/kaggle_outputs/db2-pilot-r20bn-20260908-191741`](../../../../results/kaggle_outputs/db2-pilot-r20bn-20260908-191741) | 9 fichiers |
 | Sorties d'exécution | [`results/db2_operator_verification.json`](../../../../results/db2_operator_verification.json) | 26cfb82 2026-09-09 |
 | Sorties d'exécution | [`results/db2_pilot.png`](../../../../results/db2_pilot.png) | 26cfb82 2026-09-09 |
 
