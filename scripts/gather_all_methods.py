@@ -233,12 +233,46 @@ def from_aubin(rows):
              b["accs"], ep, st.mean(b["wall"]) if b["wall"] else None, b["curves"])
 
 
+def _unified_family(cfg):
+    blur = cfg["operator"] == "gaussian"
+    red = cfg["resolution"] != "R32"
+    if not blur and not red:
+        return "plain"
+    if blur and not red:
+        return "gauss"
+    if red and not blur:
+        return "res"
+    return "profile" if cfg.get("sigma_profile") else "res_gauss"
+
+
+def from_unified(rows):
+    """The one batch where every arm shares assets AND is evaluated every epoch."""
+    f = ROOT / "results" / "unified_summary.json"
+    if not f.is_file():
+        return
+    from scripts.unified_manifest import build_configs
+    cfgs = {c["id"]: c for c in build_configs()}
+    res = json.loads(f.read_text(encoding="utf-8"))
+    base = ROOT / "results" / "kaggle_outputs"
+    for cid, r in res.items():
+        curves = {}
+        for s in r["per_seed"]:
+            for p in base.glob("unified-j*/unified_job*/%s__seed%s/metrics.json"
+                               % (cid, s)):
+                curves[int(s)] = json.loads(p.read_text(encoding="utf-8"))
+                break
+        lab = r["label"] + (" (unified batch)" if cid == "plain" else "")
+        _add(rows, "unified/" + cid, lab, _unified_family(cfgs[cid]),
+             "unified", list(r["per_seed"].values()), 30, None, curves)
+
+
 def main():
     rows = {}
     from_campaign(rows)
     from_resbench(rows)
     from_ablation(rows)
     from_aubin(rows)
+    from_unified(rows)
     payload = {"n_configurations": len(rows),
                "batches": sorted({r["batch"] for r in rows.values()}),
                "families": FAMILY,

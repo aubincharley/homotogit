@@ -136,18 +136,20 @@ ADAPTIVE_LABEL = {
     "plain": ("Baseline: no blur, full 32x32 throughout (per-layer batch)", "plain"),
 }
 
-#: the curves worth drawing -- one per idea, not one per cell
+#: the curves worth drawing -- one per idea, not one per cell.
+#: Eight of the twelve come from the unified batch, which is internally paired
+#: and evaluated every epoch; the other four are ideas only run elsewhere.
 REPRESENTATIVE = [
-    "campaign/R32__Gnone__input_bilinear__all19",
-    "campaign/R32__Gplateau__input_bilinear__all19",
-    "campaign/Rprog__Gnone__input_bilinear__all19",
-    "campaign/Rprog__Gplateau__input_bilinear__all19",
-    "resbench/max__D1__Rprog",
+    "unified/plain",
+    "unified/blur_conv",
+    "unified/blur_relu",
+    "unified/shrink_input",
+    "unified/shrink_b1",
+    "unified/shrink_b1_relu",
+    "unified/shrink_b1_conv",
+    "unified/shrink_b2_relu_rf",
     "resbench/max__D1__fixed16",
-    "ablation/P_postblock",
-    "ablation/D2G",
-    "ablation/P_A4",
     "ablation/K_const050",
-    "adaptive/ADAPTGAP2@30",
     "campaign/R32__Gmix__input_bilinear__all19",
+    "adaptive/ADAPTGAP2@30",
 ]

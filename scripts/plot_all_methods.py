@@ -44,11 +44,13 @@ FAM_COLOR = {
     "control": "#7f7f7f",
 }
 BATCH_MARKER = {"campaign": "o", "resbench": "^", "ablation": "s",
-                "adaptive": "D", "long120": "*"}
-BATCH_NOTE = ("Marker = batch.  campaign / resbench / adaptive share pinned "
-              "initial weights and are mutually paired; the ablation batch used a "
-              "different pinned set (its plain baseline is 0.56 pp lower), so its "
-              "arms carry a batch offset of roughly that size.")
+                "adaptive": "D", "long120": "*", "unified": "P"}
+BATCH_NOTE = ("Marker = batch.  The unified batch (16 arms, plus markers) is the one "
+              "internally paired set: same pinned weights, same data order, evaluated "
+              "every epoch, so differences inside it are seed-paired.  campaign / "
+              "resbench / adaptive share a second pinned set and are mutually paired; "
+              "the ablation batch used a third (its plain baseline is 0.56 pp lower), "
+              "so its arms carry a batch offset of roughly that size.")
 SD_NOTE = ("Bars / bands = +/- 1 sample SD over the seeds available "
            "(descriptive, not confidence intervals); arms with one seed have none.")
 
@@ -91,7 +93,7 @@ def fig_final(rows):
 
     base = next((v["acc_mean"] for v in rows.values()
                  if v["label"].startswith("Baseline: no blur, full 32x32 throughout")
-                 and v["batch"] == "campaign"), None)
+                 and v["batch"] == "unified"), None)
     if base:
         ax.axvline(base * 100, color="0.2", lw=1.5, ls="--", zorder=1)
         ax.text(base * 100, n * 0.5, " baseline %.2f %% " % (base * 100),
@@ -171,11 +173,15 @@ def fig_curves(rows):
     az.set_title("Zoom on the last third — where the ordering settles", fontsize=11)
     ax.legend(loc="lower right", frameon=False, fontsize=8)
     fig.suptitle("Test accuracy against epoch — one representative run per idea\n"
-                 "CIFAR-10, ResNet-20 + BatchNorm, 30 epochs, seed-averaged",
+                 "CIFAR-10, ResNet-20 + BatchNorm, 30 epochs, seed-averaged; the eight leading curves come from one internally paired batch",
                  fontsize=12.5)
     fig.text(0.5, 0.005,
              "Dashed lines mark the resolution changes (epochs 6 and 12); the "
-             "dotted line marks where the blur switches off (epoch 21).  " + BATCH_NOTE,
+             "dotted line marks where the blur switches off (epoch 21).  The eight "
+             "leading curves share pinned weights and data order, so their ordering "
+             "is paired; the four grey-area ideas (fixed 16x16, fixed blur, the "
+             "mixture, the adaptive schedule) come from other batches and carry a "
+             "batch offset of up to ~0.6 pp.",
              ha="center", fontsize=8, color="0.35", wrap=True)
     fig.tight_layout(rect=(0, 0.05, 1, 0.92))
     save(fig, "25_representative_accuracy_vs_epoch")
