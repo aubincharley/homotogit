@@ -476,6 +476,48 @@ adaptive. Batch 128 was applied directly rather than as 4x32 micro-batches -
 identical across arms, so the paired comparison holds, but absolute values are not
 strictly comparable to phase 10.
 
+### Phase 14 — sigma0 amplitude sweep: the one axis nobody had varied
+`results/kaggle_outputs/sigma0-sweep-20260910-203015/`, `results/sigma0_sweep.png`,
+`docs/research/continuation/experiments/EXP-013_sigma0_sweep.md`,
+`scripts/job_sigma0_sweep.py`
+
+`SiteController` hardcoded `GaussianSmoothing(sigma_max=1.0)` and every profile
+normalises to `max c_l = 1`, so **sigma0 = 1.0 has capped this entire family since
+the beginning** - inherited from the reference implementation, never chosen.
+Phase 13 had shown schedule *shape* to be a flat axis, so amplitude was the
+obvious untested one.
+
+Six arms per seed, identical apart from an amplitude multiplying one shared
+plateau schedule. `radius = ceil(4*sigma_max)` follows the amplitude, so every arm
+keeps the same **relative** truncation of +-4 sigma; pixel support differs, operator
+quality is matched. At sigma0 = 2 the radius reaches 8 on the 8x8 stage-3 maps -
+exactly where native reflect padding refuses and the explicit gather takes over.
+
+| sigma0 | 0.25 | 0.50 | **1.00** | 1.50 | 2.00 |
+|---|---:|---:|---:|---:|---:|
+| acc | 0.7381 | 0.7641 | **0.7784** | 0.7455 | 0.7059 |
+| vs plain | -0.32 | +2.27 | **+3.71** | +0.41 | **-3.55** |
+| CE | 0.867 | 0.808 | **0.655** | 0.735 | 0.839 |
+
+**sigma0 = 1.0 is a genuine optimum, not just an inherited default.** rho1 beats
+every alternative in all three seeds: +1.44 pp over 0.5, +3.30 pp over 1.5, +7.26
+pp over 2.0 - all far outside the measured 0.5 pp floor.
+
+**Too much blur actively hurts.** sigma0 = 2 is -3.55 pp, *worse than not filtering
+at all*. That bounds the "more blur = gentler curriculum" intuition: past a
+threshold the operator destroys the signal rather than softening it. And the effect
+switches off below 0.5 - sigma0 = 0.25 is indistinguishable from plain.
+
+**Three axes of the internal Gaussian are now explored, and only one is sensitive:**
+depth profile flat (phase 13), adaptation flat (phase 13), amplitude sharply peaked
+and already at its peak. The practical consequence is to **stop tuning the internal
+Gaussian**; the remaining headroom is progressive resolution (+4.47 pp alone,
++5.10 pp combined in the 21-config grid).
+
+**Caveat.** Amplitude and effective schedule are not separable: a larger sigma0
+also spends time at widths the smaller arms never reach. This establishes that the
+incumbent is near-optimal, not a mechanism.
+
 ---
 
 ## 3. Headline conclusion so far

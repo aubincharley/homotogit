@@ -26,10 +26,11 @@ Les IDs sont propres à cette base. Les campagnes antérieures aux runs datés d
 | [EXP-010](EXP-010_resolution_pilot.md) | Résolution seule et avec Gaussian | Deux nouveaux bras seed0, 50k, 30 époques | 79,57 / 79,93 %, signal favorable à confirmer |
 | [EXP-011](EXP-011_full_grid.md) | Calendriers × résolution + ablations | **21 configs × 3 graines, 63 fraîches** | 80,71 % pour combo principal ; alternative max après stem sans Gaussian |
 | [EXP-012](EXP-012_per_layer_sigma.md) | Profils de sigma par couche + contrôleur prédicteur-correcteur | 5 bras × 3 graines, puis 3 bras × 3 graines | Le sigma **uniforme** reste le meilleur (+3,2 à +3,7 pt) ; aucun profil en profondeur, fixe ou découvert, ne l'améliore ; plancher de bruit ≈ 0,5 pt mesuré |
+| [EXP-013](EXP-013_sigma0_sweep.md) | Balayage d'amplitude sigma0 | 6 bras × 3 graines | Réponse **fortement piquée** : sigma0=1,0 est un vrai optimum, pas un défaut hérité. sigma0=2 fait −3,55 pt, **moins bien que ne pas filtrer** |
 
 ## Différents niveaux de preuve
 
-- **JSON numérique local** : EXP-002, EXP-003, EXP-011 et EXP-012 ; détails de calcul et agrégats accessibles.
+- **JSON numérique local** : EXP-002, EXP-003, EXP-011, EXP-012 et EXP-013 ; détails de calcul et agrégats accessibles.
 - **Rapport local d'exécution** : EXP-000, EXP-001, EXP-010, EXP-011.
 - **Compte rendu copié dans la conversation + figures** : EXP-006 à EXP-009.
 - **Sources partielles, lectures graphiques** : EXP-004 et une partie d'EXP-005.

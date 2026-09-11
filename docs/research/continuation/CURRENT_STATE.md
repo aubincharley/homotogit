@@ -1,12 +1,12 @@
 ---
 id: DOC-CURRENT
 schema_version: 1
-updated_at: 2026-09-10
+updated_at: 2026-09-11
 status: current_at_snapshot
-latest_completed_experiment: EXP-012
+latest_completed_experiment: EXP-013
 ---
 
-# État actuel au 10 septembre 2026
+# État actuel au 11 septembre 2026
 
 [Accueil](README.md) · [Dernière expérience](experiments/EXP-011_full_grid.md) · [Décisions](DECISIONS.md)
 
@@ -50,6 +50,25 @@ tranchées, à protocole `P-FULL-R20-BN` et trois graines.
 Conséquence pratique : la piste « profil de sigma par couche » est **à déprioriser**.
 Le calendrier uniforme sur 19 sites reste la référence.
 
+## Ajout du 11 septembre — amplitude du Gaussian ([EXP-013](experiments/EXP-013_sigma0_sweep.md))
+
+`sigma_max = 1.0` était codé en dur et plafonnait toute la famille depuis le
+début, sans avoir jamais été varié. Balayage à six bras, trois graines :
+
+| sigma crête | 0,25 | 0,50 | **1,00** | 1,50 | 2,00 |
+|---|---:|---:|---:|---:|---:|
+| Δ vs témoin | −0,32 | +2,27 | **+3,71** | +0,41 | **−3,55** |
+
+- **C'est un vrai optimum.** `rho1` bat chaque alternative sur les trois graines,
+  largement hors du plancher de 0,5 point. Le défaut hérité tombait sur le sommet.
+- **Trop de flou nuit activement** : `sigma0 = 2` fait moins bien que ne pas
+  filtrer du tout. L'opérateur détruit le signal au lieu de l'adoucir.
+- **Trois axes du Gaussian interne sont maintenant explorés** — profil en
+  profondeur (plat), adaptation (plate), amplitude (piquée, déjà au sommet).
+
+Conséquence : **arrêter de régler le Gaussian interne.** La marge restante est dans
+la résolution progressive (+4,47 pt seule, +5,10 pt combinée, EXP-011).
+
 ## Ce que nous retenons réellement
 
 - Le bénéfice du Gaussian interne a été observé sur ResNet-18 BN, puis sur ResNet-20 BN, et répliqué sur le train CIFAR-10 complet. Les changements initiaux d'architecture, de normalisation et d'initialisation n'ont pas été séparés causalement.
@@ -65,6 +84,7 @@ Le calendrier uniforme sur 19 sites reste la référence.
 | Résolution progressive bilinéaire + Gaussian paliers, 19 sites | Référence de performance à conserver | Meilleure moyenne de la dernière grille |
 | Résolution progressive max après stem, sans Gaussian | Candidate à conserver | Bon compromis observé entre précision et temps |
 | Résolution progressive seule / Gaussian seul / plain | Contrôles à conserver | Indispensables pour lire les contributions |
+| Amplitude du Gaussian (sigma0) | **Clos** — EXP-013, optimum à 1,0, réglage courant déjà au sommet | Réponse piquée, trois graines |
 | Profils de sigma par couche (rho fixes) et contrôleur adaptatif | **À déprioriser** — EXP-012, aucun gain sur l'uniforme | Testé à trois graines, plancher de bruit connu |
 | Gmix, Gaussian limité aux sept premiers sites | À déprioriser dans les réglages testés | Coût ou précision moins favorables ; pas un rejet universel des familles |
 | Géométrique comprimé, résolution douce ou ordre inversé | Explorés ; pas prioritaires face au candidat principal | Leurs variantes précises n'améliorent pas le meilleur bras |

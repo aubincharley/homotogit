@@ -155,6 +155,7 @@ def train_arm(arm, shared, cfg, out_dir: Path) -> dict:
     else:
         ctrl = SiteController(
             arm["operator"],
+            sigma_max=arm.get("sigma_max", 1.0),
             levels=arm.get("levels"),
             site_coeffs=arm.get("site_coeffs"),
             profile=arm.get("profile"),
@@ -252,6 +253,7 @@ def train_arm(arm, shared, cfg, out_dir: Path) -> dict:
         "n_train": n, "n_test": int(te_imgs.shape[0]),
         "epochs": cfg.epochs, "updates": gstep, "batch": cfg.batch,
         "lr": cfg.lr, "warmup": cfg.warmup, "probe_size": cfg.probe_size,
+        "sigma0": arm.get("sigma0", 1.0), "sigma_max": arm.get("sigma_max", 1.0),
         "final_test_acc": last["test_acc_target"],
         "final_test_ce": last["test_ce_target"],
         "final_train_probe_acc": last["train_probe_acc_target"],
@@ -423,6 +425,16 @@ def main(argv=None):
         "adaptive": {"name": "adaptive", "operator": "gaussian", "adaptive": True,
                      "profile": ["adaptive_predictor_corrector", {}]},
     }
+    # sigma0 sweep.  sigma0 = 1.0 is the historical ceiling, inherited from the
+    # reference implementation rather than chosen; every arm here keeps the same
+    # uniform profile and the same time schedule, and varies only the amplitude.
+    for s0 in (0.25, 0.5, 1.5, 2.0):
+        catalogue["s0_%g" % s0] = {
+            "name": "s0_%g" % s0, "operator": "gaussian",
+            "levels": [v * s0 for v in levels],
+            "site_coeffs": per_stage_coeffs(1.0),
+            "sigma0": s0, "sigma_max": s0,
+            "profile": ["sigma0_sweep", {"sigma0": s0}]}
 
     dev = torch.device(cfg.device)
     probe_t = torch.as_tensor(probe_idx, dtype=torch.long)

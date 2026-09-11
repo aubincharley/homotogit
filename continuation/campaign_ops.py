@@ -229,7 +229,7 @@ class SiteController:
     def __init__(self, operator: str, levels=None, sites=None,
                  resolution_by_epoch=None, reduction="input_bilinear",
                  site_coeffs=None, sigma_table=None, profile=None,
-                 require_terminal_identity: int = 0):
+                 require_terminal_identity: int = 0, sigma_max: float = 1.0):
         if operator not in ("none", "gaussian", "gmix"):
             raise ValueError("unknown operator %r" % (operator,))
         self.operator = operator
@@ -240,7 +240,11 @@ class SiteController:
         self.resolution_by_epoch = ([int(v) for v in resolution_by_epoch]
                                     if resolution_by_epoch else None)
         self.reduction = reduction
-        self.gauss = (GaussianSmoothing(sigma_max=1.0, truncate=4.0)
+        # sigma_max was fixed at 1.0, inherited from the reference implementation
+        # rather than chosen; it caps every schedule, so it is the ceiling of the
+        # whole family.  Raising it grows the fixed support (radius = ceil(4*sigma_max))
+        # and therefore the cost and the border effects -- which is why it is explicit.
+        self.gauss = (GaussianSmoothing(sigma_max=float(sigma_max), truncate=4.0)
                       if operator in ("gaussian", "gmix") else None)
 
         self.L = build_level_table(levels, site_coeffs, sigma_table)
