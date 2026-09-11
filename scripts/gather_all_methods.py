@@ -32,6 +32,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from scripts.method_labels import (ABLATION_LABEL, ADAPTIVE_LABEL,
+                                   campaign_label, resbench_label)
+
 ROOT = Path(__file__).resolve().parents[1]
 SCRATCH = Path(os.environ.get(
     "SCRATCH_ROOT",
@@ -79,17 +82,7 @@ def from_campaign(rows):
     res = json.loads(f.read_text(encoding="utf-8"))
     studies = [ROOT / j["study"] for j in res["jobs"]]
     for cid, c in res["configurations"].items():
-        r, g, red, mask = cid.split("__")
-        if g == "Gnone" and r == "R32":
-            fam, lab = "plain", "Plain baseline"
-        elif g == "Gnone":
-            fam, lab = "res", "Resolution %s, %s" % (r, red)
-        elif r == "R32":
-            fam = "mix" if g == "Gmix" else "gauss"
-            lab = "%s at 32x32%s" % (g, "" if mask == "all19" else ", 7 sites")
-        else:
-            fam = "res_gauss"
-            lab = "Resolution %s + %s%s" % (r, g, "" if mask == "all19" else ", 7 sites")
+        lab, fam = campaign_label(cid)
         curves = {}
         for s in c["seeds"]:
             for st_dir in studies:
@@ -110,12 +103,7 @@ def from_resbench(rows):
     for cid, c in res["configurations"].items():
         if not c.get("n_seeds"):
             continue
-        op, loc, path = cid.split("__")
-        if op == "none":
-            fam, lab = "plain", "Plain baseline (resolution batch)"
-        else:
-            fam = "operator" if loc in ("input", "D1") and path == "Rprog" else "res"
-            lab = "%s @ %s, %s" % (op, loc, path)
+        lab, fam = resbench_label(cid)
         curves = {}
         for s in c.get("seeds", []):
             for p in base.glob("resbench-j*/resbench_job*/%s__seed%d/metrics.json"
@@ -168,7 +156,7 @@ def from_ablation(rows):
         return
     arms = json.loads(f.read_text(encoding="utf-8"))["arms"]
     for k, v in arms.items():
-        lab, fam = ABL_LABEL.get(k, (k, "operator"))
+        lab, fam = ABLATION_LABEL.get(k, (k, "operator"))
         curves = {}
         for p in (ABL / "kaggle_outputs").glob("abl*-j*/*job*/%s__seed*/metrics.json" % k):
             seed = int(p.parent.name.rsplit("__seed", 1)[1])
@@ -236,13 +224,12 @@ def from_aubin(rows):
         if m.is_file():
             b["curves"][seed] = json.loads(m.read_text(encoding="utf-8"))
     for (arm, ep), b in buckets.items():
-        lab, fam = AUBIN_LABEL.get(arm, (None, "adaptive"))
+        if ep and ep > 30:
+            continue          # 120-epoch runs: four times the budget, excluded
+        lab, fam = ADAPTIVE_LABEL.get(arm, (None, "adaptive"))
         if lab is None:
             lab = "%s (%s)" % (arm.replace("_", " "), b.get("job", "Aubin batch"))
-        if ep and ep > 30:
-            fam = "long"
-        _add(rows, "adaptive/%s@%d" % (arm, ep), lab, fam,
-             "long120" if ep and ep > 30 else "adaptive",
+        _add(rows, "adaptive/%s@%d" % (arm, ep), lab, fam, "adaptive",
              b["accs"], ep, st.mean(b["wall"]) if b["wall"] else None, b["curves"])
 
 

@@ -1,10 +1,9 @@
 {
-  "n_configurations": 101,
+  "n_configurations": 95,
   "batches": [
     "ablation",
     "adaptive",
     "campaign",
-    "long120",
     "resbench"
   ],
   "families": {
@@ -22,7 +21,7 @@
   "configurations": {
     "campaign/R32__Gnone__input_bilinear__all19": {
       "key": "campaign/R32__Gnone__input_bilinear__all19",
-      "label": "Plain baseline",
+      "label": "Baseline: no blur, full 32x32 throughout",
       "family": "plain",
       "batch": "campaign",
       "acc_mean": 0.7561666666666667,
@@ -39,7 +38,7 @@
     },
     "campaign/R32__Gplateau__input_bilinear__all19": {
       "key": "campaign/R32__Gplateau__input_bilinear__all19",
-      "label": "Gplateau at 32x32",
+      "label": "Blur every conv layer, annealed to zero",
       "family": "gauss",
       "batch": "campaign",
       "acc_mean": 0.7869333333333334,
@@ -56,7 +55,7 @@
     },
     "campaign/R32__Ggeo__input_bilinear__all19": {
       "key": "campaign/R32__Ggeo__input_bilinear__all19",
-      "label": "Ggeo at 32x32",
+      "label": "Blur every conv layer, geometric decay",
       "family": "gauss",
       "batch": "campaign",
       "acc_mean": 0.7828333333333334,
@@ -73,7 +72,7 @@
     },
     "campaign/Rprog__Gnone__input_bilinear__all19": {
       "key": "campaign/Rprog__Gnone__input_bilinear__all19",
-      "label": "Resolution Rprog, input_bilinear",
+      "label": "Shrink the input image (bilinear), 16 to 24 to 32",
       "family": "res",
       "batch": "campaign",
       "acc_mean": 0.7948333333333334,
@@ -90,7 +89,7 @@
     },
     "campaign/Rprog__Gplateau__input_bilinear__all19": {
       "key": "campaign/Rprog__Gplateau__input_bilinear__all19",
-      "label": "Resolution Rprog + Gplateau",
+      "label": "Shrink the input image (bilinear), 16 to 24 to 32, plus blur every conv layer, annealed to zero",
       "family": "res_gauss",
       "batch": "campaign",
       "acc_mean": 0.8071333333333334,
@@ -107,7 +106,7 @@
     },
     "campaign/Rprog__Ggeo__input_bilinear__all19": {
       "key": "campaign/Rprog__Ggeo__input_bilinear__all19",
-      "label": "Resolution Rprog + Ggeo",
+      "label": "Shrink the input image (bilinear), 16 to 24 to 32, plus blur every conv layer, geometric decay",
       "family": "res_gauss",
       "batch": "campaign",
       "acc_mean": 0.7990666666666666,
@@ -124,7 +123,7 @@
     },
     "campaign/Rgentle__Gnone__input_bilinear__all19": {
       "key": "campaign/Rgentle__Gnone__input_bilinear__all19",
-      "label": "Resolution Rgentle, input_bilinear",
+      "label": "Shrink the input image (bilinear), 24 to 32 only",
       "family": "res",
       "batch": "campaign",
       "acc_mean": 0.7856333333333333,
@@ -141,7 +140,7 @@
     },
     "campaign/Rgentle__Gplateau__input_bilinear__all19": {
       "key": "campaign/Rgentle__Gplateau__input_bilinear__all19",
-      "label": "Resolution Rgentle + Gplateau",
+      "label": "Shrink the input image (bilinear), 24 to 32 only, plus blur every conv layer, annealed to zero",
       "family": "res_gauss",
       "batch": "campaign",
       "acc_mean": 0.7977,
@@ -158,7 +157,7 @@
     },
     "campaign/Rgentle__Ggeo__input_bilinear__all19": {
       "key": "campaign/Rgentle__Ggeo__input_bilinear__all19",
-      "label": "Resolution Rgentle + Ggeo",
+      "label": "Shrink the input image (bilinear), 24 to 32 only, plus blur every conv layer, geometric decay",
       "family": "res_gauss",
       "batch": "campaign",
       "acc_mean": 0.7968333333333334,
@@ -175,7 +174,7 @@
     },
     "campaign/R32__Gmix__input_bilinear__all19": {
       "key": "campaign/R32__Gmix__input_bilinear__all19",
-      "label": "Gmix at 32x32",
+      "label": "Blend each layer between itself and its blur",
       "family": "mix",
       "batch": "campaign",
       "acc_mean": 0.7818333333333333,
@@ -192,7 +191,7 @@
     },
     "campaign/Rprog__Gmix__input_bilinear__all19": {
       "key": "campaign/Rprog__Gmix__input_bilinear__all19",
-      "label": "Resolution Rprog + Gmix",
+      "label": "Shrink the input image (bilinear), 16 to 24 to 32, plus blend each layer between itself and its blur",
       "family": "res_gauss",
       "batch": "campaign",
       "acc_mean": 0.7951,
@@ -209,7 +208,7 @@
     },
     "campaign/R32__Gplateau__input_bilinear__early7": {
       "key": "campaign/R32__Gplateau__input_bilinear__early7",
-      "label": "Gplateau at 32x32, 7 sites",
+      "label": "Blur every conv layer, annealed to zero, first 7 layers only",
       "family": "gauss",
       "batch": "campaign",
       "acc_mean": 0.7523666666666666,
@@ -226,7 +225,7 @@
     },
     "campaign/Rprog__Gplateau__input_bilinear__early7": {
       "key": "campaign/Rprog__Gplateau__input_bilinear__early7",
-      "label": "Resolution Rprog + Gplateau, 7 sites",
+      "label": "Shrink the input image (bilinear), 16 to 24 to 32, plus blur every conv layer, annealed to zero, first 7 layers only",
       "family": "res_gauss",
       "batch": "campaign",
       "acc_mean": 0.7927,
@@ -243,7 +242,7 @@
     },
     "campaign/Rprog__Gnone__input_max__all19": {
       "key": "campaign/Rprog__Gnone__input_max__all19",
-      "label": "Resolution Rprog, input_max",
+      "label": "Shrink the input image (max-pool), 16 to 24 to 32",
       "family": "res",
       "batch": "campaign",
       "acc_mean": 0.7979666666666667,
@@ -260,7 +259,7 @@
     },
     "campaign/Rprog__Gplateau__input_max__all19": {
       "key": "campaign/Rprog__Gplateau__input_max__all19",
-      "label": "Resolution Rprog + Gplateau",
+      "label": "Shrink the input image (max-pool), 16 to 24 to 32, plus blur every conv layer, annealed to zero",
       "family": "res_gauss",
       "batch": "campaign",
       "acc_mean": 0.8034,
@@ -277,7 +276,7 @@
     },
     "campaign/Rprog__Gnone__stem_bilinear__all19": {
       "key": "campaign/Rprog__Gnone__stem_bilinear__all19",
-      "label": "Resolution Rprog, stem_bilinear",
+      "label": "Shrink the first conv layer (bilinear), 16 to 24 to 32",
       "family": "res",
       "batch": "campaign",
       "acc_mean": 0.7890666666666667,
@@ -294,7 +293,7 @@
     },
     "campaign/Rprog__Gplateau__stem_bilinear__all19": {
       "key": "campaign/Rprog__Gplateau__stem_bilinear__all19",
-      "label": "Resolution Rprog + Gplateau",
+      "label": "Shrink the first conv layer (bilinear), 16 to 24 to 32, plus blur every conv layer, annealed to zero",
       "family": "res_gauss",
       "batch": "campaign",
       "acc_mean": 0.7929666666666667,
@@ -311,7 +310,7 @@
     },
     "campaign/Rprog__Gnone__stem_max__all19": {
       "key": "campaign/Rprog__Gnone__stem_max__all19",
-      "label": "Resolution Rprog, stem_max",
+      "label": "Shrink the first conv layer (max-pool), 16 to 24 to 32",
       "family": "res",
       "batch": "campaign",
       "acc_mean": 0.7996666666666666,
@@ -328,7 +327,7 @@
     },
     "campaign/Rprog__Gplateau__stem_max__all19": {
       "key": "campaign/Rprog__Gplateau__stem_max__all19",
-      "label": "Resolution Rprog + Gplateau",
+      "label": "Shrink the first conv layer (max-pool), 16 to 24 to 32, plus blur every conv layer, annealed to zero",
       "family": "res_gauss",
       "batch": "campaign",
       "acc_mean": 0.7981,
@@ -345,7 +344,7 @@
     },
     "campaign/Rreverse__Gnone__input_bilinear__all19": {
       "key": "campaign/Rreverse__Gnone__input_bilinear__all19",
-      "label": "Resolution Rreverse, input_bilinear",
+      "label": "Shrink the input image (bilinear), 24 to 16 to 32 (order control)",
       "family": "res",
       "batch": "campaign",
       "acc_mean": 0.7922666666666667,
@@ -362,7 +361,7 @@
     },
     "campaign/Rreverse__Gplateau__input_bilinear__all19": {
       "key": "campaign/Rreverse__Gplateau__input_bilinear__all19",
-      "label": "Resolution Rreverse + Gplateau",
+      "label": "Shrink the input image (bilinear), 24 to 16 to 32 (order control), plus blur every conv layer, annealed to zero",
       "family": "res_gauss",
       "batch": "campaign",
       "acc_mean": 0.7932666666666667,
@@ -379,7 +378,7 @@
     },
     "resbench/bilinear__D1__Rprog": {
       "key": "resbench/bilinear__D1__Rprog",
-      "label": "bilinear @ D1, Rprog",
+      "label": "Shrink block 1 with bilinear, 16 to 24 to 32",
       "family": "operator",
       "batch": "resbench",
       "acc_mean": 0.8023,
@@ -396,7 +395,7 @@
     },
     "resbench/max__D1__Rprog": {
       "key": "resbench/max__D1__Rprog",
-      "label": "max @ D1, Rprog",
+      "label": "Shrink block 1 with max-pool, 16 to 24 to 32",
       "family": "operator",
       "batch": "resbench",
       "acc_mean": 0.8059666666666666,
@@ -413,7 +412,7 @@
     },
     "resbench/maxblur__D1__Rprog": {
       "key": "resbench/maxblur__D1__Rprog",
-      "label": "maxblur @ D1, Rprog",
+      "label": "Shrink block 1 with max-pool then anti-alias blur, 16 to 24 to 32",
       "family": "operator",
       "batch": "resbench",
       "acc_mean": 0.8042666666666667,
@@ -430,7 +429,7 @@
     },
     "resbench/softpool__D1__Rprog": {
       "key": "resbench/softpool__D1__Rprog",
-      "label": "softpool @ D1, Rprog",
+      "label": "Shrink block 1 with softmax-weighted pooling, 16 to 24 to 32",
       "family": "operator",
       "batch": "resbench",
       "acc_mean": 0.8034333333333333,
@@ -447,7 +446,7 @@
     },
     "resbench/l2__D1__Rprog": {
       "key": "resbench/l2__D1__Rprog",
-      "label": "l2 @ D1, Rprog",
+      "label": "Shrink block 1 with least-squares reconstruction, 16 to 24 to 32",
       "family": "operator",
       "batch": "resbench",
       "acc_mean": 0.8011,
@@ -464,7 +463,7 @@
     },
     "resbench/hminus1__D1__Rprog": {
       "key": "resbench/hminus1__D1__Rprog",
-      "label": "hminus1 @ D1, Rprog",
+      "label": "Shrink block 1 with smoothness-optimal reconstruction, 16 to 24 to 32",
       "family": "operator",
       "batch": "resbench",
       "acc_mean": 0.7984666666666667,
@@ -481,7 +480,7 @@
     },
     "resbench/bilinear__input__Rprog": {
       "key": "resbench/bilinear__input__Rprog",
-      "label": "bilinear @ input, Rprog",
+      "label": "Shrink the input image with bilinear, 16 to 24 to 32",
       "family": "operator",
       "batch": "resbench",
       "acc_mean": 0.7956333333333333,
@@ -498,7 +497,7 @@
     },
     "resbench/max__input__Rprog": {
       "key": "resbench/max__input__Rprog",
-      "label": "max @ input, Rprog",
+      "label": "Shrink the input image with max-pool, 16 to 24 to 32",
       "family": "operator",
       "batch": "resbench",
       "acc_mean": 0.7922666666666667,
@@ -515,7 +514,7 @@
     },
     "resbench/maxblur__input__Rprog": {
       "key": "resbench/maxblur__input__Rprog",
-      "label": "maxblur @ input, Rprog",
+      "label": "Shrink the input image with max-pool then anti-alias blur, 16 to 24 to 32",
       "family": "operator",
       "batch": "resbench",
       "acc_mean": 0.7917333333333333,
@@ -532,7 +531,7 @@
     },
     "resbench/softpool__input__Rprog": {
       "key": "resbench/softpool__input__Rprog",
-      "label": "softpool @ input, Rprog",
+      "label": "Shrink the input image with softmax-weighted pooling, 16 to 24 to 32",
       "family": "operator",
       "batch": "resbench",
       "acc_mean": 0.7928333333333334,
@@ -549,7 +548,7 @@
     },
     "resbench/l2__input__Rprog": {
       "key": "resbench/l2__input__Rprog",
-      "label": "l2 @ input, Rprog",
+      "label": "Shrink the input image with least-squares reconstruction, 16 to 24 to 32",
       "family": "operator",
       "batch": "resbench",
       "acc_mean": 0.7963666666666667,
@@ -566,7 +565,7 @@
     },
     "resbench/hminus1__input__Rprog": {
       "key": "resbench/hminus1__input__Rprog",
-      "label": "hminus1 @ input, Rprog",
+      "label": "Shrink the input image with smoothness-optimal reconstruction, 16 to 24 to 32",
       "family": "operator",
       "batch": "resbench",
       "acc_mean": 0.7976333333333333,
@@ -583,7 +582,7 @@
     },
     "resbench/perceptual__input__Rprog": {
       "key": "resbench/perceptual__input__Rprog",
-      "label": "perceptual @ input, Rprog",
+      "label": "Shrink the input image with perceptual (SSIM-style), 16 to 24 to 32",
       "family": "operator",
       "batch": "resbench",
       "acc_mean": 0.7998333333333333,
@@ -600,7 +599,7 @@
     },
     "resbench/max__stem__Rprog": {
       "key": "resbench/max__stem__Rprog",
-      "label": "max @ stem, Rprog",
+      "label": "Shrink the first conv layer with max-pool, 16 to 24 to 32",
       "family": "res",
       "batch": "resbench",
       "acc_mean": 0.7961,
@@ -617,7 +616,7 @@
     },
     "resbench/max__D0__Rprog": {
       "key": "resbench/max__D0__Rprog",
-      "label": "max @ D0, Rprog",
+      "label": "Shrink block 0 with max-pool, 16 to 24 to 32",
       "family": "res",
       "batch": "resbench",
       "acc_mean": 0.8007666666666667,
@@ -634,7 +633,7 @@
     },
     "resbench/max__D2__Rprog": {
       "key": "resbench/max__D2__Rprog",
-      "label": "max @ D2, Rprog",
+      "label": "Shrink block 2 with max-pool, 16 to 24 to 32",
       "family": "res",
       "batch": "resbench",
       "acc_mean": 0.8024333333333333,
@@ -651,7 +650,7 @@
     },
     "resbench/max__D1__Rgentle": {
       "key": "resbench/max__D1__Rgentle",
-      "label": "max @ D1, Rgentle",
+      "label": "Shrink block 1 with max-pool, 24 to 32 only",
       "family": "res",
       "batch": "resbench",
       "acc_mean": 0.7977666666666666,
@@ -668,7 +667,7 @@
     },
     "resbench/max__D1__Rreverse": {
       "key": "resbench/max__D1__Rreverse",
-      "label": "max @ D1, Rreverse",
+      "label": "Shrink block 1 with max-pool, 24 to 16 to 32 (order control)",
       "family": "res",
       "batch": "resbench",
       "acc_mean": 0.8021333333333334,
@@ -685,7 +684,7 @@
     },
     "resbench/max__D1__Rlate": {
       "key": "resbench/max__D1__Rlate",
-      "label": "max @ D1, Rlate",
+      "label": "Shrink block 1 with max-pool, 16 to 24 to 32, longer at low res",
       "family": "res",
       "batch": "resbench",
       "acc_mean": 0.8007,
@@ -702,7 +701,7 @@
     },
     "resbench/maxblur__D1__Rgentle": {
       "key": "resbench/maxblur__D1__Rgentle",
-      "label": "maxblur @ D1, Rgentle",
+      "label": "Shrink block 1 with max-pool then anti-alias blur, 24 to 32 only",
       "family": "res",
       "batch": "resbench",
       "acc_mean": 0.8031666666666667,
@@ -719,7 +718,7 @@
     },
     "resbench/maxblur__D1__Rreverse": {
       "key": "resbench/maxblur__D1__Rreverse",
-      "label": "maxblur @ D1, Rreverse",
+      "label": "Shrink block 1 with max-pool then anti-alias blur, 24 to 16 to 32 (order control)",
       "family": "res",
       "batch": "resbench",
       "acc_mean": 0.8045666666666667,
@@ -736,7 +735,7 @@
     },
     "resbench/maxblur__D1__Rlate": {
       "key": "resbench/maxblur__D1__Rlate",
-      "label": "maxblur @ D1, Rlate",
+      "label": "Shrink block 1 with max-pool then anti-alias blur, 16 to 24 to 32, longer at low res",
       "family": "res",
       "batch": "resbench",
       "acc_mean": 0.8020333333333334,
@@ -753,7 +752,7 @@
     },
     "resbench/hminus1__D1__Rgentle": {
       "key": "resbench/hminus1__D1__Rgentle",
-      "label": "hminus1 @ D1, Rgentle",
+      "label": "Shrink block 1 with smoothness-optimal reconstruction, 24 to 32 only",
       "family": "res",
       "batch": "resbench",
       "acc_mean": 0.7889666666666667,
@@ -770,7 +769,7 @@
     },
     "resbench/hminus1__D1__Rreverse": {
       "key": "resbench/hminus1__D1__Rreverse",
-      "label": "hminus1 @ D1, Rreverse",
+      "label": "Shrink block 1 with smoothness-optimal reconstruction, 24 to 16 to 32 (order control)",
       "family": "res",
       "batch": "resbench",
       "acc_mean": 0.795,
@@ -787,7 +786,7 @@
     },
     "resbench/hminus1__D1__Rlate": {
       "key": "resbench/hminus1__D1__Rlate",
-      "label": "hminus1 @ D1, Rlate",
+      "label": "Shrink block 1 with smoothness-optimal reconstruction, 16 to 24 to 32, longer at low res",
       "family": "res",
       "batch": "resbench",
       "acc_mean": 0.7955333333333333,
@@ -804,7 +803,7 @@
     },
     "resbench/none__none__none": {
       "key": "resbench/none__none__none",
-      "label": "Plain baseline (resolution batch)",
+      "label": "Baseline: no blur, full 32x32 throughout (resolution batch)",
       "family": "plain",
       "batch": "resbench",
       "acc_mean": 0.7553333333333333,
@@ -821,8 +820,8 @@
     },
     "resbench/max__D1__fixed16": {
       "key": "resbench/max__D1__fixed16",
-      "label": "max @ D1, fixed16",
-      "family": "res",
+      "label": "Shrink block 1 with max-pool, fixed 16x16, never restored",
+      "family": "control",
       "batch": "resbench",
       "acc_mean": 0.7313333333333333,
       "acc_sd": 0.005387330817142521,
@@ -838,8 +837,8 @@
     },
     "resbench/max__D1__fixed24": {
       "key": "resbench/max__D1__fixed24",
-      "label": "max @ D1, fixed24",
-      "family": "res",
+      "label": "Shrink block 1 with max-pool, fixed 24x24, never restored",
+      "family": "control",
       "batch": "resbench",
       "acc_mean": 0.7614666666666666,
       "acc_sd": 0.0049237519569261005,
@@ -855,7 +854,7 @@
     },
     "ablation/B_blurpool_plateau": {
       "key": "ablation/B_blurpool_plateau",
-      "label": "BlurPool + Gaussian plateau",
+      "label": "Fixed anti-alias blur before each downsample, plus annealed blur everywhere",
       "family": "res_gauss",
       "batch": "ablation",
       "acc_mean": 0.7919,
@@ -870,7 +869,7 @@
     },
     "ablation/C_plain": {
       "key": "ablation/C_plain",
-      "label": "Plain baseline (ablation batch)",
+      "label": "Baseline: no blur, full 32x32 throughout (ablation batch)",
       "family": "plain",
       "batch": "ablation",
       "acc_mean": 0.7506,
@@ -885,7 +884,7 @@
     },
     "ablation/K_const030": {
       "key": "ablation/K_const030",
-      "label": "Constant sigma 0.30",
+      "label": "Fixed blur 0.30, never annealed (control)",
       "family": "constant",
       "batch": "ablation",
       "acc_mean": 0.7497,
@@ -900,7 +899,7 @@
     },
     "ablation/C_plateau": {
       "key": "ablation/C_plateau",
-      "label": "Gaussian plateau, conv output",
+      "label": "Blur every conv layer, annealed to zero",
       "family": "gauss",
       "batch": "ablation",
       "acc_mean": 0.7818,
@@ -915,7 +914,7 @@
     },
     "ablation/K_const050": {
       "key": "ablation/K_const050",
-      "label": "Constant sigma 0.50",
+      "label": "Fixed blur 0.50, never annealed (control)",
       "family": "constant",
       "batch": "ablation",
       "acc_mean": 0.7869,
@@ -930,7 +929,7 @@
     },
     "ablation/P_postblock": {
       "key": "ablation/P_postblock",
-      "label": "Gaussian after ReLU (10 sites)",
+      "label": "Blur after every ReLU (10 places), annealed to zero",
       "family": "gauss",
       "batch": "ablation",
       "acc_mean": 0.8008333333333334,
@@ -947,7 +946,7 @@
     },
     "ablation/K_const080": {
       "key": "ablation/K_const080",
-      "label": "Constant sigma 0.80",
+      "label": "Fixed blur 0.80, never annealed (control)",
       "family": "constant",
       "batch": "ablation",
       "acc_mean": 0.7502,
@@ -962,7 +961,7 @@
     },
     "ablation/M_nodown": {
       "key": "ablation/M_nodown",
-      "label": "Gaussian at the other 17 sites",
+      "label": "Blur the 17 layers away from a downsample",
       "family": "gauss",
       "batch": "ablation",
       "acc_mean": 0.7852,
@@ -977,7 +976,7 @@
     },
     "ablation/M_predown": {
       "key": "ablation/M_predown",
-      "label": "Gaussian at 2 pre-decimation sites",
+      "label": "Blur only the 2 layers feeding a downsample",
       "family": "gauss",
       "batch": "ablation",
       "acc_mean": 0.7755,
@@ -992,7 +991,7 @@
     },
     "ablation/B_blurpool": {
       "key": "ablation/B_blurpool",
-      "label": "BlurPool (fixed, pre-decimation)",
+      "label": "Fixed anti-alias blur before each downsample (control)",
       "family": "constant",
       "batch": "ablation",
       "acc_mean": 0.7851,
@@ -1007,7 +1006,7 @@
     },
     "ablation/K_const100": {
       "key": "ablation/K_const100",
-      "label": "Constant sigma 1.00",
+      "label": "Fixed blur 1.00, never annealed (control)",
       "family": "constant",
       "batch": "ablation",
       "acc_mean": 0.7115,
@@ -1022,7 +1021,7 @@
     },
     "ablation/P_postbn": {
       "key": "ablation/P_postbn",
-      "label": "Gaussian after BatchNorm",
+      "label": "Blur after every BatchNorm, annealed to zero",
       "family": "gauss",
       "batch": "ablation",
       "acc_mean": 0.7839,
@@ -1037,7 +1036,7 @@
     },
     "ablation/R2": {
       "key": "ablation/R2",
-      "label": "Campaign best, replayed",
+      "label": "Shrink the input image, 16 to 24 to 32, plus blur every conv layer",
       "family": "res_gauss",
       "batch": "ablation",
       "acc_mean": 0.7915,
@@ -1052,7 +1051,7 @@
     },
     "ablation/R6": {
       "key": "ablation/R6",
-      "label": "Constant sigma, post-ReLU placement",
+      "label": "Fixed blur after every ReLU, never annealed (control)",
       "family": "constant",
       "batch": "ablation",
       "acc_mean": 0.7978,
@@ -1067,7 +1066,7 @@
     },
     "ablation/R4": {
       "key": "ablation/R4",
-      "label": "Reduction after stem, no filter",
+      "label": "Shrink the first conv layer, 16 to 24 to 32",
       "family": "res",
       "batch": "ablation",
       "acc_mean": 0.7995,
@@ -1082,7 +1081,7 @@
     },
     "ablation/R5": {
       "key": "ablation/R5",
-      "label": "Both interventions post-ReLU",
+      "label": "Shrink after the first ReLU, plus blur after every ReLU",
       "family": "res_gauss",
       "batch": "ablation",
       "acc_mean": 0.7965,
@@ -1097,7 +1096,7 @@
     },
     "ablation/R1": {
       "key": "ablation/R1",
-      "label": "Progressive resolution only",
+      "label": "Shrink the input image, 16 to 24 to 32",
       "family": "res",
       "batch": "ablation",
       "acc_mean": 0.7892,
@@ -1112,7 +1111,7 @@
     },
     "ablation/R3": {
       "key": "ablation/R3",
-      "label": "Progressive resolution + Gaussian after ReLU",
+      "label": "Shrink the input image, 16 to 24 to 32, plus blur after every ReLU",
       "family": "res_gauss",
       "batch": "ablation",
       "acc_mean": 0.8014,
@@ -1127,7 +1126,7 @@
     },
     "ablation/D2G": {
       "key": "ablation/D2G",
-      "label": "Reduction after block 2 + Gaussian",
+      "label": "Shrink block 2, plus blur after every ReLU",
       "family": "res_gauss",
       "batch": "ablation",
       "acc_mean": 0.8099333333333333,
@@ -1144,7 +1143,7 @@
     },
     "ablation/D1G": {
       "key": "ablation/D1G",
-      "label": "Reduction after block 1 + Gaussian",
+      "label": "Shrink block 1, plus blur after every ReLU",
       "family": "res_gauss",
       "batch": "ablation",
       "acc_mean": 0.8008,
@@ -1159,7 +1158,7 @@
     },
     "ablation/D0G": {
       "key": "ablation/D0G",
-      "label": "Reduction after block 0 + Gaussian",
+      "label": "Shrink block 0, plus blur after every ReLU",
       "family": "res_gauss",
       "batch": "ablation",
       "acc_mean": 0.8053,
@@ -1174,7 +1173,7 @@
     },
     "ablation/D0": {
       "key": "ablation/D0",
-      "label": "Single reduction after block 0",
+      "label": "Shrink block 0 with max-pool, 16 to 24 to 32",
       "family": "res",
       "batch": "ablation",
       "acc_mean": 0.8044,
@@ -1191,7 +1190,7 @@
     },
     "ablation/D1": {
       "key": "ablation/D1",
-      "label": "Single reduction after block 1",
+      "label": "Shrink block 1 with max-pool, 16 to 24 to 32",
       "family": "res",
       "batch": "ablation",
       "acc_mean": 0.8059,
@@ -1208,7 +1207,7 @@
     },
     "ablation/D2": {
       "key": "ablation/D2",
-      "label": "Single reduction after block 2",
+      "label": "Shrink block 2 with max-pool, 16 to 24 to 32",
       "family": "res",
       "batch": "ablation",
       "acc_mean": 0.8009333333333334,
@@ -1225,7 +1224,7 @@
     },
     "ablation/P_A2": {
       "key": "ablation/P_A2",
-      "label": "Profile: sigma ~ sqrt(map size) (post-ReLU)",
+      "label": "Blur strength scaled by sqrt of map size, after every ReLU",
       "family": "profile",
       "batch": "ablation",
       "acc_mean": 0.8027666666666666,
@@ -1242,7 +1241,7 @@
     },
     "ablation/P_A3": {
       "key": "ablation/P_A3",
-      "label": "Profile: sigma rising with depth (post-ReLU)",
+      "label": "Blur strength rising with depth, after every ReLU (direction control)",
       "family": "profile",
       "batch": "ablation",
       "acc_mean": 0.8018,
@@ -1259,7 +1258,7 @@
     },
     "ablation/Q_A1": {
       "key": "ablation/Q_A1",
-      "label": "Profile: sigma ~ map size (conv out)",
+      "label": "Blur strength scaled by map size, after every conv",
       "family": "profile",
       "batch": "ablation",
       "acc_mean": 0.7847666666666667,
@@ -1276,7 +1275,7 @@
     },
     "ablation/Q_A3": {
       "key": "ablation/Q_A3",
-      "label": "Profile: sigma rising with depth (conv out)",
+      "label": "Blur strength rising with depth, after every conv (direction control)",
       "family": "profile",
       "batch": "ablation",
       "acc_mean": 0.7700666666666667,
@@ -1293,7 +1292,7 @@
     },
     "ablation/Q_A4": {
       "key": "ablation/Q_A4",
-      "label": "Profile: sigma ~ receptive field (conv out)",
+      "label": "Blur strength scaled by receptive field, after every conv",
       "family": "profile",
       "batch": "ablation",
       "acc_mean": 0.7958666666666667,
@@ -1310,7 +1309,7 @@
     },
     "ablation/P_A4": {
       "key": "ablation/P_A4",
-      "label": "Profile: sigma ~ receptive field (post-ReLU)",
+      "label": "Blur strength scaled by receptive field, after every ReLU",
       "family": "profile",
       "batch": "ablation",
       "acc_mean": 0.8114333333333333,
@@ -1327,7 +1326,7 @@
     },
     "ablation/Q_A2": {
       "key": "ablation/Q_A2",
-      "label": "Profile: sigma ~ sqrt(map size) (conv out)",
+      "label": "Blur strength scaled by sqrt of map size, after every conv",
       "family": "profile",
       "batch": "ablation",
       "acc_mean": 0.7955333333333333,
@@ -1344,7 +1343,7 @@
     },
     "ablation/P_A1": {
       "key": "ablation/P_A1",
-      "label": "Profile: sigma ~ map size (post-ReLU)",
+      "label": "Blur strength scaled by map size, after every ReLU",
       "family": "profile",
       "batch": "ablation",
       "acc_mean": 0.7961,
@@ -1361,7 +1360,7 @@
     },
     "adaptive/ADAPTGAP@30": {
       "key": "adaptive/ADAPTGAP@30",
-      "label": "Adaptive sigma, transfer-gap trigger (mis-set)",
+      "label": "Blur schedule chosen by a transfer-gap trigger (mis-set)",
       "family": "adaptive",
       "batch": "adaptive",
       "acc_mean": 0.7539,
@@ -1376,7 +1375,7 @@
     },
     "adaptive/ADAPTGAP2@30": {
       "key": "adaptive/ADAPTGAP2@30",
-      "label": "Adaptive sigma, transfer-gap trigger",
+      "label": "Blur schedule chosen by a transfer-gap trigger",
       "family": "adaptive",
       "batch": "adaptive",
       "acc_mean": 0.7713,
@@ -1391,7 +1390,7 @@
     },
     "adaptive/ADAPTRES@30": {
       "key": "adaptive/ADAPTRES@30",
-      "label": "Adaptive resolution, transfer-gap trigger",
+      "label": "Resolution schedule chosen by a transfer-gap trigger",
       "family": "adaptive",
       "batch": "adaptive",
       "acc_mean": 0.7729,
@@ -1406,7 +1405,7 @@
     },
     "adaptive/ADAPT@30": {
       "key": "adaptive/ADAPT@30",
-      "label": "Adaptive sigma, first trigger version",
+      "label": "Blur schedule chosen by the network (first trigger)",
       "family": "adaptive",
       "batch": "adaptive",
       "acc_mean": 0.7634,
@@ -1421,7 +1420,7 @@
     },
     "adaptive/alloc_back@30": {
       "key": "adaptive/alloc_back@30",
-      "label": "Allocation search (back-loaded dwell)",
+      "label": "Blur schedule, more time at low blur",
       "family": "adaptive",
       "batch": "adaptive",
       "acc_mean": 0.7874,
@@ -1436,7 +1435,7 @@
     },
     "adaptive/alloc_front@30": {
       "key": "adaptive/alloc_front@30",
-      "label": "Allocation search (front-loaded dwell)",
+      "label": "Blur schedule, more time at high blur",
       "family": "adaptive",
       "batch": "adaptive",
       "acc_mean": 0.7657,
@@ -1451,7 +1450,7 @@
     },
     "adaptive/Gplateau_cal@30": {
       "key": "adaptive/Gplateau_cal@30",
-      "label": "Gaussian plateau, instrumented rerun",
+      "label": "Blur every conv layer, annealed (instrumented rerun)",
       "family": "gauss",
       "batch": "adaptive",
       "acc_mean": 0.7797,
@@ -1466,7 +1465,7 @@
     },
     "adaptive/Gplateau_cal2@30": {
       "key": "adaptive/Gplateau_cal2@30",
-      "label": "Gaussian plateau, instrumented rerun 2",
+      "label": "Blur every conv layer, annealed (instrumented rerun 2)",
       "family": "gauss",
       "batch": "adaptive",
       "acc_mean": 0.7794,
@@ -1479,99 +1478,9 @@
       "wall_mean": 719.241384594,
       "note": null
     },
-    "adaptive/adaptgap_hi@120": {
-      "key": "adaptive/adaptgap_hi@120",
-      "label": "Adaptive gap, 120 epochs, high LR",
-      "family": "long",
-      "batch": "long120",
-      "acc_mean": 0.8673,
-      "acc_sd": 0.0,
-      "acc_per_seed": [
-        0.8673
-      ],
-      "n_seeds": 1,
-      "epochs": 120,
-      "wall_mean": 2638.541452998,
-      "note": null
-    },
-    "adaptive/adaptgap_lo@120": {
-      "key": "adaptive/adaptgap_lo@120",
-      "label": "Adaptive gap, 120 epochs, low LR",
-      "family": "long",
-      "batch": "long120",
-      "acc_mean": 0.784,
-      "acc_sd": 0.0,
-      "acc_per_seed": [
-        0.784
-      ],
-      "n_seeds": 1,
-      "epochs": 120,
-      "wall_mean": 2597.7473797699995,
-      "note": null
-    },
-    "adaptive/gplateau_hi@120": {
-      "key": "adaptive/gplateau_hi@120",
-      "label": "Gaussian plateau, 120 epochs, high LR",
-      "family": "long",
-      "batch": "long120",
-      "acc_mean": 0.8716,
-      "acc_sd": 0.0,
-      "acc_per_seed": [
-        0.8716
-      ],
-      "n_seeds": 1,
-      "epochs": 120,
-      "wall_mean": 2593.757749624,
-      "note": null
-    },
-    "adaptive/gplateau_lo@120": {
-      "key": "adaptive/gplateau_lo@120",
-      "label": "Gaussian plateau, 120 epochs, low LR",
-      "family": "long",
-      "batch": "long120",
-      "acc_mean": 0.8068,
-      "acc_sd": 0.0,
-      "acc_per_seed": [
-        0.8068
-      ],
-      "n_seeds": 1,
-      "epochs": 120,
-      "wall_mean": 2765.08322507,
-      "note": null
-    },
-    "adaptive/plain_hi@120": {
-      "key": "adaptive/plain_hi@120",
-      "label": "Plain, 120 epochs, high LR",
-      "family": "long",
-      "batch": "long120",
-      "acc_mean": 0.8604,
-      "acc_sd": 0.0,
-      "acc_per_seed": [
-        0.8604
-      ],
-      "n_seeds": 1,
-      "epochs": 120,
-      "wall_mean": 1752.3950720539997,
-      "note": null
-    },
-    "adaptive/plain_lo@120": {
-      "key": "adaptive/plain_lo@120",
-      "label": "Plain, 120 epochs, low LR",
-      "family": "long",
-      "batch": "long120",
-      "acc_mean": 0.771,
-      "acc_sd": 0.0,
-      "acc_per_seed": [
-        0.771
-      ],
-      "n_seeds": 1,
-      "epochs": 120,
-      "wall_mean": 1773.5286515600003,
-      "note": null
-    },
     "adaptive/rho1@30": {
       "key": "adaptive/rho1@30",
-      "label": "Per-layer sigma, rho = 1",
+      "label": "Per-layer blur strength, exponent 1",
       "family": "profile",
       "batch": "adaptive",
       "acc_mean": 0.7765166666666666,
@@ -1591,7 +1500,7 @@
     },
     "adaptive/adaptive@30": {
       "key": "adaptive/adaptive@30",
-      "label": "Per-layer sigma, adaptive rho",
+      "label": "Per-layer blur strength chosen by the network",
       "family": "profile",
       "batch": "adaptive",
       "acc_mean": 0.775,
@@ -1608,7 +1517,7 @@
     },
     "adaptive/plain@30": {
       "key": "adaptive/plain@30",
-      "label": "Plain baseline (per-layer batch)",
+      "label": "Baseline: no blur, full 32x32 throughout (per-layer batch)",
       "family": "plain",
       "batch": "adaptive",
       "acc_mean": 0.7442,
@@ -1625,7 +1534,7 @@
     },
     "adaptive/rho0.5@30": {
       "key": "adaptive/rho0.5@30",
-      "label": "Per-layer sigma, rho = 0.5",
+      "label": "Per-layer blur strength, exponent 0.5",
       "family": "profile",
       "batch": "adaptive",
       "acc_mean": 0.7465333333333334,
@@ -1642,7 +1551,7 @@
     },
     "adaptive/rho2@30": {
       "key": "adaptive/rho2@30",
-      "label": "Per-layer sigma, rho = 2",
+      "label": "Per-layer blur strength, exponent 2",
       "family": "profile",
       "batch": "adaptive",
       "acc_mean": 0.7665,
@@ -1659,7 +1568,7 @@
     },
     "adaptive/Gplateau_cal3@30": {
       "key": "adaptive/Gplateau_cal3@30",
-      "label": "Gaussian plateau, instrumented rerun 3",
+      "label": "Blur every conv layer, annealed (instrumented rerun 3)",
       "family": "gauss",
       "batch": "adaptive",
       "acc_mean": 0.7833,
