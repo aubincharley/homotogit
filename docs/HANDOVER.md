@@ -1,5 +1,7 @@
 # Project handover — continuation through image / feature simplification
 
+> Chronological record, kept as written. For the current map of the repository see [docs/README.md](README.md); for corrections to claims below see [AUDIT.md](AUDIT.md).
+
 **Read this first after any context reset.** It records what exists, what was
 measured, what was decided, and where to look. Newest work is most detailed.
 
@@ -159,7 +161,7 @@ with a fused grouped-convolution path (2.0–2.1x forward for db2/sym4/coif1,
 win** and was dropped. In-network at microbatch 4 with 19 insertions: 163.7 ms
 and 578 MiB vs plain 10.1 ms / 24 MiB.
 
-**db2 continuation prepared but never launched** — `scripts/job_db2_study.py`,
+**db2 continuation prepared but never launched** — `archive/scripts/job_db2_study.py`,
 `s_k = 1 − 0.5·max(1 − k/600, 0)`. **On hold.**
 
 ### Phase 5 — Kaggle infrastructure
@@ -338,7 +340,7 @@ tensors, same torch build) — but the two plain runs did **not** reproduce
 bitwise: 0.5540 vs 0.5536 final accuracy, transient excursions to 0.011. That is
 float32 GPU reduction-order nondeterminism and gives a **measured single-seed
 noise floor of ~±0.1 pp final accuracy**, which is the number to compare small
-effects against.
+effects against. *[Superseded 2026-09-13: one pair of runs is not a noise floor, and same-asset plain runs later differed by up to 0.73 pp; see docs/AUDIT.md A2, A13.]*
 
 | arm | final test acc | test CE | train-probe CE |
 |---|---|---|---|
@@ -434,7 +436,7 @@ neutral (+0.94 pp, one seed) at ~61x the cost — set aside.
 The GroupNorm-vs-BatchNorm contrast is the most interesting unresolved variable —
 but data scale, duration and schedule changed alongside it, so **the cause is not
 isolated**. Everything after phase 9 is **one seed**; the measured noise floor is
-~±0.1 pp on final accuracy.
+~±0.1 pp on final accuracy. *[Superseded 2026-09-13: one pair of runs is not a noise floor, and same-asset plain runs later differed by up to 0.73 pp; see docs/AUDIT.md A2, A13.]*
 
 ---
 
@@ -465,7 +467,7 @@ isolated**. Everything after phase 9 is **one seed**; the measured noise floor i
   read the rendered PNG back rather than trusting the script.
 * Single-seed GPU nondeterminism is **~±0.1 pp** on final accuracy (measured by
   running the same paired plain configuration twice). Compare small effects
-  against it.
+  against it. *[Superseded 2026-09-13: one pair of runs is not a noise floor, and same-asset plain runs later differed by up to 0.73 pp; see docs/AUDIT.md A2, A13.]*
 
 ---
 
@@ -510,7 +512,7 @@ proximal operator for redundant wavelet analysis.
 
 * **db2 wavelet continuation** — **closed** (phase 11): run at one seed, roughly
   neutral (+0.94 pp) at ~61x plain per update. User instruction: *set db2 aside,
-  do not spend further time optimizing it.* `scripts/job_db2_study.py` (the older
+  do not spend further time optimizing it.* `archive/scripts/job_db2_study.py` (the older
   3-seed 1,200-update config) was never launched and is now superseded by
   `scripts/job_db2_pilot.py`.
 * **Additional seeds for phases 11–12** — everything after phase 9 is one seed.

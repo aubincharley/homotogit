@@ -6,7 +6,7 @@ No new wavelet calibration and no family sweep.
 """
 import sys
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from scripts._study_common import BASE, runs
 from scripts.continuation_driver import run_study
 

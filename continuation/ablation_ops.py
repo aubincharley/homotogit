@@ -156,6 +156,14 @@ class AblationController(SiteController):
                  relative=False, sigma_profile=None):
         if placement not in PLACEMENTS:
             raise ValueError("unknown placement %r; known: %s" % (placement, PLACEMENTS))
+        # Everything ``q_for`` reads must exist before the parent constructor
+        # runs: since the merge of the adaptive-continuation commits,
+        # ``SiteController.__init__`` validates the schedule by calling
+        # ``q_for`` for every epoch, which the override below needs these for.
+        # Setting them first changes no value; it only fixes the order.
+        self.placement = placement
+        self.n_positions = int(n_positions) if n_positions else N_SITES
+        self.reduction = reduction
         super().__init__(operator=operator, levels=levels, sites=sites,
                          resolution_by_epoch=resolution_by_epoch,
                          reduction=reduction)

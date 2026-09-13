@@ -183,10 +183,19 @@ def test_sigma_above_max_is_an_error_not_silent_retruncation():
         T(rand_image(), -0.1)
 
 
-def test_radius_must_fit_the_image():
+def test_radius_beyond_the_image_uses_explicit_reflection():
+    """Radius >= axis length is supported, not an error (errata C-04).
+
+    The native-reflect restriction was lifted when the explicit whole-sample
+    reflection gather was added for 4x4 feature maps; this test used to expect
+    the old ValueError and is updated to the executed behaviour.
+    """
     T = GaussianSmoothing(sigma_max=10.0, truncate=4.0)   # radius 40 > 32
-    with pytest.raises(ValueError, match="reflection padding radius"):
-        T(rand_image(h=32, w=32), 5.0)
+    x = rand_image(h=32, w=32)
+    y = T(x, 5.0)
+    assert y.shape == x.shape and torch.isfinite(y).all()
+    c = torch.full_like(x, 0.25)
+    assert torch.allclose(T(c, 5.0), c, atol=1e-6)        # constants preserved
 
 
 def test_heat_time_helpers():

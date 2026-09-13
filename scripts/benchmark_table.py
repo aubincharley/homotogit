@@ -1,279 +1,195 @@
-"""Emit the complete benchmark table: every trained configuration, with the
-conditions it ran under, plus the pilots that were never part of a batch.
+"""Render ``docs/BENCHMARK_TABLE.md`` from ``experiments/index.json``.
 
-Conditions are read out of each cell's own ``summary.json`` -- not retyped --
-so the table cannot drift from what was actually run.  Writes
-``docs/BENCHMARK_TABLE.md``.  Reads only; no training.
+Every number comes from the index, which in turn points at the record files.
+Rebuild both with::
+
+    py scripts/build_experiment_index.py
+    py scripts/benchmark_table.py
 """
 from __future__ import annotations
 
-import glob
 import json
 import sys
 from collections import defaultdict
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-
-from scripts.gather_all_methods import SCRATCH, main as gather
-
 ROOT = Path(__file__).resolve().parents[1]
+INDEX = ROOT / "experiments" / "index.json"
 OUT = ROOT / "docs" / "BENCHMARK_TABLE.md"
 
-SOURCES = {
-    "campaign": "results/kaggle_outputs/campaign-j*/*/*/summary.json",
-    "resbench": "results/kaggle_outputs/resbench-j*/*/*/summary.json",
-    "unified": "results/kaggle_outputs/unified-j*/*/*/summary.json",
-    "ablation": str(SCRATCH / "ablation_data/results/kaggle_outputs/abl*-j*/*/*/summary.json"),
-    "adaptive": str(SCRATCH / "aubin/results/kaggle_outputs/*/*/*/summary.json"),
+ORDER = ["unified_selected", "resbench_resolution_only", "campaign_grid21",
+         "ablation_aa", "per_layer_sigma", "adaptive_continuation",
+         "fulldata_gaussian", "progressive_resolution_pilot",
+         "resnet20bn_gaussian_pilot", "resnet18bn_gaussian_pilot", "db2_pilot",
+         "gn_lr_audit", "pilot_internal_gaussian", "exp0_input_gaussian",
+         "exp1_input_warmstart", "tv_budget_previews", "wavelet_previews",
+         "loss_landscape_blur", "infrastructure_probes"]
+
+PAIRING = {
+    "r20bn-campaign-assets": "same initial weights, BN buffers, probe and per-epoch order for "
+                             "seeds 0-2 as every other experiment on this set (seed 0 only "
+                             "where only seed 0 ran)",
+    "r20bn-ablation-assets": "same subset, probe and per-epoch order as "
+                             "`r20bn-campaign-assets`; **different initial weights**",
+    "per-layer-self-paired": "self-paired within the study; digests use another scheme, so "
+                             "pairing with the other sets is not established",
+    "None": "no pinned assets recorded for these groups",
 }
 
-#: batch -> the pinned asset set it used.  Arms sharing a set are seed-paired.
-ASSETS = {"campaign": "A", "resbench": "A", "adaptive": "A",
-          "ablation": "B", "unified": "C"}
 
-PLACE = {"conv_out": "conv output", "post_block": "post-ReLU",
-         "post_bn": "post-BatchNorm"}
-#: ``input_bilinear`` with an R32 schedule is not a reduction -- it is the
-#: default no-op path.  Only spell it out when the schedule actually moves.
-REDUCTION = {"input_bilinear": "input image (bilinear)",
-             "input_max": "input image (max-pool)",
-             "stem_max": "first conv layer (max-pool)",
-             "stem_bilinear": "first conv layer (bilinear)",
-             "block0_max": "block 0 (max-pool)",
-             "block1_max": "block 1 (max-pool)",
-             "block2_max": "block 2 (max-pool)"}
-OPERATOR_NAME = {"max": "max-pool", "bilinear": "bilinear",
-                 "maxblur": "max-pool + anti-alias", "softpool": "softpool",
-                 "l2": "least-squares", "hminus1": "smoothness-optimal",
-                 "perceptual": "perceptual (SSIM-style)", "none": "none"}
-WHERE_NAME = {"input": "the input image", "stem": "the first conv layer",
-              "D0": "block 0", "D1": "block 1", "D2": "block 2"}
+def pct(v):
+    return "—" if v is None else "%.2f" % (100 * v)
 
 
-def conditions():
-    """(batch, id, epochs) -> run conditions, from one representative cell."""
-    out = {}
-    for batch, pat in SOURCES.items():
-        for f in glob.glob(pat):
-            try:
-                s = json.loads(Path(f).read_text(encoding="utf-8"))
-            except Exception:
-                continue
-            # same arm-name recovery gather_all_methods uses: Aubin's cells
-            # spell the seed with one underscore, ours with two.
-            cell = str(s.get("cell_id") or s.get("label") or "")
-            cid = (cell.rpartition("__seed")[0]
-                   or cell.rsplit("_seed", 1)[0]
-                   or s.get("id"))
-            if not cid:
-                continue
-            key = (batch, cid, s.get("epochs", 30))
-            if key in out:
-                continue
-            ctrl = s.get("controller") or {}
-            res = ctrl.get("resolution_by_epoch") or []
-            if not res:
-                path = "32"
-            elif len(set(res)) == 1:
-                path = str(res[0])
-            else:
-                seen, seq = set(), []
-                for r in res:
-                    if not seq or seq[-1] != r:
-                        seq.append(r)
-                path = "-".join(str(r) for r in seq)
-            out[key] = {
-                "operator": s.get("operator") or ctrl.get("operator") or "none",
-                "placement": s.get("placement") or ctrl.get("placement") or "-",
-                "mask": s.get("mask") or ctrl.get("mask") or "-",
-                "n_sites": ctrl.get("n_sites") or ctrl.get("n_positions") or "-",
-                "location": s.get("location") or ctrl.get("location"),
-                "reduction": s.get("reduction") or ctrl.get("reduction") or "none",
-                "res_path": path,
-                "constant": bool(s.get("constant") or ctrl.get("constant_level")),
-                "profile": bool(s.get("sigma_profile") or ctrl.get("sigma_profile")),
-                "adaptive": bool(s.get("adaptive") or s.get("trigger_kind")),
-                "n_train": s.get("n_train"), "n_test": s.get("n_test"),
-                "updates": s.get("updates"),
-            }
-    return out
+def sd_cell(c):
+    if c["acc_sd"] is not None:
+        return "%.2f" % (100 * c["acc_sd"])
+    return "n/a (1 seed)" if c["n_valid"] == 1 else "n/a"
 
 
-def describe(batch, c):
-    """(filter, placement, sites, reduction) as the *reader* means them.
-
-    ``operator`` does not mean the same thing in every batch: in resbench it is
-    the resolution operator and there is no filter at all, while elsewhere it
-    names the activation filter.  Reading it uniformly mislabels 28 rows.
-    """
-    if batch == "resbench":
-        op = OPERATOR_NAME.get(c.get("operator", ""), c.get("operator", "?"))
-        loc = c.get("location", "?")
-        if op == "none":
-            return "-", "-", "-", "-"
-        return "none (disabled)", "-", "-", "%s at %s" % (op, WHERE_NAME.get(loc, loc))
-
-    if not c:
-        return "not recorded", "-", "-", "-"
-    filt = c.get("operator") or "none"
-    if filt == "gaussian":
-        filt = ("constant sigma" if c.get("constant") else
-                "Gaussian, per-layer profile" if c.get("profile") else
-                "Gaussian, annealed")
-    elif filt in ("none", None):
-        filt = "-"
-    if c.get("adaptive"):
-        filt = (filt if filt != "-" else "Gaussian") + ", data-triggered"
-    # campaign and adaptive predate the placement experiment: every filter
-    # there sits at the conv output, and their summaries do not record it.
-    place = c.get("placement") or ("conv_out" if batch in ("campaign", "adaptive")
-                                   else "-")
-    place = "-" if filt == "-" else PLACE.get(place, place)
-    mask = c.get("mask", "-")
-    sites = "-" if filt == "-" else "%s%s" % (
-        c.get("n_sites", "-"),
-        "" if mask in ("all19", "-", None) else " (%s)" % mask)
-    red = c.get("reduction", "none")
-    red = REDUCTION.get(red, red)
-    return filt, place, sites, (red if red not in ("none", None) else "-")
+def short(h, n=8):
+    return h[:n] if isinstance(h, str) else "—"
 
 
 def main():
-    rows = gather()
-    cond = conditions()
-    by_batch = defaultdict(list)
-    for k, v in rows.items():
-        by_batch[v["batch"]].append((k, v))
+    ix = json.loads(INDEX.read_text(encoding="utf-8"))
+    exps = {e["id"]: e for e in ix["experiments"]}
+    cfgs = defaultdict(list)
+    for c in ix["configurations"]:
+        cfgs[c["experiment"]].append(c)
 
-    lines = []
-    w = lines.append
-    w("# Complete benchmark table")
+    L = []
+    w = L.append
+    w("# Benchmark table")
     w("")
-    w("Generated by `scripts/benchmark_table.py` from the cells' own")
-    w("`summary.json` files. Every row is a trained configuration; accuracy is the")
-    w("**final-epoch test accuracy on the current path**, mean +/- sample SD over")
-    w("the seeds listed. No best-epoch selection anywhere.")
+    w("Generated by `scripts/benchmark_table.py` from `experiments/index.json` "
+      "(index built at commit `%s`). Do not edit by hand. Schema: "
+      "[experiments/README.md](../experiments/README.md). Corrections to earlier "
+      "tables: [AUDIT.md](AUDIT.md)." % ix["built_from_commit"][:10])
     w("")
-    w("## Shared conditions")
+    w("## How to read it")
     w("")
-    w("Unless a row says otherwise, every trained arm below ran under exactly this")
-    w("setup:")
+    w("* **acc %**: final record of each run, mean over numerically valid seeds. No "
+      "best-epoch selection. **SD**: sample SD in points; *n/a (1 seed)* when only one "
+      "valid seed exists, never reported as 0.")
+    w("* **seeds**: `valid / attempted`. Diverged cells (non-finite loss) stay listed and "
+      "are excluded from the mean.")
+    w("* **path**: which evaluation the final number is. `current=target`: the run ends in "
+      "its target configuration and both evaluations agree. `current`: the arm's own "
+      "intervention is still active at inference (a control, see flags). `target`: 32x32 "
+      "with annealed operators bypassed.")
+    w("* The test set has been examined many times. Three seeds give a descriptive spread, "
+      "not a significance statement.")
+    w("")
+    w("## Reference recipe")
     w("")
     w("| | |")
     w("|---|---|")
-    w("| Dataset | CIFAR-10, official split: **50,000 train / 10,000 test** |")
-    w("| Augmentation | **none** (no crop, no flip) |")
-    w("| Model | ResNet-20 + BatchNorm, widths 16/32/64, option-A shortcuts, 269,722 params |")
-    w("| Budget | 30 epochs = 11,730 updates, 391 updates/epoch |")
-    w("| Optimiser | SGD, LR 0.005, momentum 0.9, weight decay 5e-4 |")
-    w("| Schedule | 60 warmup updates, then cosine, indexed by global update |")
-    w("| Batch | effective 128, as microbatches of 32 weighted by example count |")
-    w("| Normalisation | statistics computed on the full 50,000 train set |")
-    w("| Evaluation | full 10,000-image test set; train probe = fixed held-in subset |")
-    w("| Hardware | NVIDIA T4 (Kaggle), 4 accounts / 8 GPUs |")
-    w("| Endpoint | all operators bypassed at 32x32; verified **bitwise** identical to plain ResNet-20 |")
+    for k, v in ix["reference_recipe"].items():
+        w("| %s | %s |" % (k, v))
     w("")
-    w("**Pairing.** Arms sharing a pinned asset set (initial weights, BN buffers,")
-    w("probe indices, per-epoch permutations) are seed-paired, so their differences")
-    w("are meaningful cell by cell. Three sets exist, each verified by sha256:")
+    w("## Asset sets and pairing")
     w("")
-    w("| set | batches | plain baseline |")
+    w("Pairing is decided by content digests, not by batch name.")
+    w("")
+    w("| asset set | content id | subset | probe | perm seed 0 / 1 / 2 | init seed 0 / 1 / 2 "
+      "| produced by |")
+    w("|---|---|---|---|---|---|---|")
+    for name, s in ix["asset_sets"].items():
+        a, st = s["arrays"], s["states"]
+        w("| `%s` | `%s` | `%s` | `%s` | `%s` / `%s` / `%s` | `%s` / `%s` / `%s` | %s |" % (
+            name, s["content_id"], short(a.get("subset")), short(a.get("train_probe")),
+            short(a.get("perm_seed0")), short(a.get("perm_seed1")), short(a.get("perm_seed2")),
+            short(st.get("init_seed0")), short(st.get("init_seed1")), short(st.get("init_seed2")),
+            s.get("produced_by") or "—"))
+    w("")
+    w("| experiment | asset set(s) | pairing |")
     w("|---|---|---|")
-    w("| **A** | campaign, resbench, adaptive | 75.62 / 75.53 / 74.42 % |")
-    w("| **B** | ablation (Idriss) | 75.06 % |")
-    w("| **C** | unified | 75.43 % |")
+    for eid in ORDER:
+        e = exps[eid]
+        if e["asset_sets"]:
+            w("| `%s` | %s | %s |" % (eid, ", ".join("`%s`" % s for s in e["asset_sets"]),
+                                      "; ".join(PAIRING.get(s, s) for s in e["asset_sets"])))
     w("")
-    w("Comparisons *across* sets carry a batch offset of up to ~0.6 pp.")
+    for o in ix["observations"]:
+        w("**Observation `%s`.** %s" % (o["id"], o["statement"]))
+        w("")
+        if "plain_final_acc_by_experiment_and_seed" in o:
+            w("| plain arm in | seed 0 | seed 1 | seed 2 |")
+            w("|---|---:|---:|---:|")
+            for k, v in o["plain_final_acc_by_experiment_and_seed"].items():
+                w("| `%s` | %s | %s | %s |" % (k, pct(v.get("0")), pct(v.get("1")),
+                                               pct(v.get("2"))))
+            w("")
+    w("## Status by experiment")
     w("")
-    w("**Column meanings.** *filter* = what is applied to activations and how its")
-    w("strength moves; *placement* = where in each block; *sites* = how many")
-    w("insertion points; *reduction* = what spatial reduction is applied and where;")
-    w("*resolution* = the internal resolution schedule across the 30 epochs.")
+    w("| experiment | kind | owner | attempted | with summary | valid | diverged | "
+      "failure markers | configurations | record |")
+    w("|---|---|---|---:|---:|---:|---:|---:|---:|---|")
+    for eid in ORDER:
+        e, c = exps[eid], exps[eid]["counts"]
+        w("| `%s` | %s | %s | %s | %d | %d | %d | %d | %d | %s |" % (
+            eid, e["kind"], e["owner"], c["cells_attempted_per_manifests"] or "—",
+            c["cells_with_summary"], c["cells_numerically_valid"], c["cells_diverged"],
+            c["failure_markers"], c["configurations"], e["knowledge_base_record"] or "—"))
     w("")
 
-    titles = {
-        "campaign": ("campaign -- 21 configurations, 3 seeds",
-                     "Sigma schedules x reduction site x insertion mask. The "
-                     "first full-data batch."),
-        "resbench": ("resbench -- 28 configurations, 3 seeds",
-                     "Resolution reduction **only**, all internal Gaussian "
-                     "disabled: 7 operators x 5 sites x 4 schedules."),
-        "ablation": ("ablation (Idriss) -- 32 configurations, 1-3 seeds",
-                     "Blur placement, insertion masks, constant-sigma controls "
-                     "and per-layer sigma profiles."),
-        "adaptive": ("adaptive (Aubin) -- 14 configurations, 1-6 seeds",
-                     "Data-triggered schedules and dwell-time allocation. The "
-                     "120-epoch arms are excluded: four times the budget is not "
-                     "a method effect."),
-        "unified": ("unified -- 16 configurations, 3 seeds",
-                    "Every promising method in **one** batch, one asset set, "
-                    "evaluated every epoch. The only internally paired set."),
-    }
-
-    for batch in ("unified", "ablation", "resbench", "campaign", "adaptive"):
-        items = sorted(by_batch[batch], key=lambda kv: -kv[1]["acc_mean"])
-        if not items:
-            continue
-        title, blurb = titles[batch]
-        w("## %s" % title)
+    def section(eid):
+        e = exps[eid]
+        rows = sorted(cfgs[eid], key=lambda c: (c["acc_mean"] is None, -(c["acc_mean"] or 0)))
+        w("### `%s`: %s" % (eid, e["title"]))
         w("")
-        w("%s Asset set **%s**." % (blurb, ASSETS[batch]))
+        w("%s. Owner: %s.%s" % (e["conditions"][0].upper() + e["conditions"][1:], e["owner"],
+                                " Reference recipe." if e["reference_recipe"] else ""))
         w("")
-        w("| acc % | SD | seeds | method | filter | placement | sites | reduction | resolution |")
-        w("|---:|---:|---:|---|---|---|---:|---|---|")
-        for k, v in items:
-            cid = k.split("/", 1)[1].split("@")[0]
-            c = cond.get((batch, cid, v["epochs"]), {})
-            filt, place, sites, red = describe(batch, c)
-            if red != "-" and c.get("res_path") == "32":
-                red = "-"          # no-op default path, not a reduction
-            w("| %.2f | %.2f | %d | %s | %s | %s | %s | %s | %s |"
-              % (100 * v["acc_mean"], 100 * v["acc_sd"], v["n_seeds"],
-                 v["label"], filt, place, sites, red, c.get("res_path", "32")))
+        if not rows:
+            return
+        w("| acc % | SD | seeds | path | method | config id | flags |")
+        w("|---:|---:|---:|---|---|---|---|")
+        for c in rows:
+            status = ("" if c["status"] == "valid" else
+                      ": **%s**, seeds %s" % (c["status"], c["seeds_diverged"]))
+            fp = c["final_path"] if isinstance(c["final_path"], str) else ", ".join(c["final_path"])
+            w("| %s | %s | %d / %d | %s | %s%s | `%s` | %s |" % (
+                pct(c["acc_mean"]), sd_cell(c), c["n_valid"], len(c["seeds_attempted"]), fp,
+                c["label"], status, c["config_id"], "; ".join(c["flags"])))
         w("")
 
-    w("## Pilots and preview-only work (different conditions)")
+    w("## Training benchmarks")
     w("")
-    w("These predate the batches and do **not** share their setup -- read the")
-    w("conditions column before comparing any of these numbers to the tables above.")
+    for eid in ORDER:
+        if exps[eid]["kind"] == "training_benchmark":
+            section(eid)
+    w("## Pilots under other conditions")
     w("")
-    w("| study | dataset / budget | seeds | condition | result |")
-    w("|---|---|---|---|---|")
-    for r in [
-        ("Fixed input Gaussian", "CIFAR-10, 45k/5k val split", "1",
-         "Blur the **image**, fixed sigma; ResNet-20 GroupNorm",
-         "**-3.45 pp**. Input-space intervention hurts; thread closed"),
-        ("Warm starts", "10,000 images, 1,200 updates", "3 paired",
-         "Transfer weights across sigma levels", "No usable gain"),
-        ("TV-L2 / TV-Hminus1 budgets", "preview only, **never trained**", "-",
-         "Hard relative TV budget via Chambolle-Pock (PDHG)",
-         "Hminus1 retains more contrast at equal TV; 1,113 s / 2,222 s per preview -- too slow to train"),
-        ("Wavelet previews", "preview only, **never trained**", "-",
-         "Undecimated 2-level shrinkage: haar, db2, sym4, coif1",
-         "Tight frame verified; fused path 2.0-2.1x forward"),
-        ("ResNet-20+BN Gaussian pilot", "10,000 images, 2,400 updates", "1",
-         "Feature-space Gaussian, 19 sites, sigma 1.00 -> 0.30",
-         "**+4.26 pp**. The pivot: feature space works where input space did not"),
-        ("db2 wavelet continuation", "10,000 images, 2,400 updates", "1",
-         "db2 shrinkage replacing the Gaussian at the same 19 sites",
-         "**+0.94 pp**, sign flips at update 1200; 4-5x weaker. **Closed**"),
-        ("Progressive resolution", "50,000 / 10,000, 30 epochs", "1",
-         "Input resized 16 -> 24 -> 32 before normalisation, bilinear antialias",
-         "**+4.47 pp** and 6.4 % *faster*. Largest single effect found"),
-    ]:
-        w("| %s | %s | %s | %s | %s |" % r)
+    w("Different data sizes, splits (val rather than test), normalisation layers or budgets. "
+      "Not comparable with the benchmark rows above.")
     w("")
-    w("The 24 % reduction in convolution work did **not** become wall time: at")
-    w("16x16 with 16 channels a T4 is far from saturated (per-update 0.0328 s at")
-    w("r=16 against 0.0324 s at r=32). Memory does scale, 35 -> 72 MiB.")
+    for eid in ORDER:
+        if exps[eid]["kind"] == "training_pilot":
+            section(eid)
+    w("## Records without training")
     w("")
-
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    OUT.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    print("wrote %s -- %d configurations"
-          % (OUT, sum(len(v) for v in by_batch.values())))
+    w("`tv_budget_previews` are image-space TV-L2 / TV-H^-1 projections computed on ten "
+      "images; no network was trained. They are unrelated to the `l2` and `hminus1` "
+      "*resolution-reduction* operators of `resbench_resolution_only`, which are "
+      "constrained quadratic down-sampling layers trained inside ResNet-20.")
+    w("")
+    w("| experiment | kind | content | code |")
+    w("|---|---|---|---|")
+    for eid in ORDER:
+        e = exps[eid]
+        if e["kind"] in ("preview_no_training", "analysis_no_training", "infrastructure_probe"):
+            n = sum(g.get("n_files", 0) for g in e["groups"])
+            paths = ", ".join("`%s`" % g["location"]["path"] for g in e["groups"][:2])
+            more = " (+%d more)" % (len(e["groups"]) - 2) if len(e["groups"]) > 2 else ""
+            w("| `%s` | %s | %d files in %s%s. %s | %s |" % (
+                eid, e["kind"], n, paths, more, e["conditions"],
+                ", ".join("`%s`" % c for c in e["code"])))
+    w("")
+    OUT.write_text("\n".join(L) + "\n", encoding="utf-8")
+    print("wrote %s (%d lines)" % (OUT, len(L)))
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

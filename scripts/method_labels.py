@@ -152,5 +152,5 @@ REPRESENTATIVE = [
     "resbench/max__D1__fixed16",
     "ablation/K_const050",
     "campaign/R32__Gmix__input_bilinear__all19",
-    "adaptive/ADAPTGAP2@30",
+    "adaptive/ADAPTGAP@adaptive-gap2-20260910-121319",
 ]

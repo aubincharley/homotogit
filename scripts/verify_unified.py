@@ -72,11 +72,18 @@ def main():
         ref.load_state_dict(model.state_dict())
         xb = torch.rand(2, 3, 32, 32)
         with torch.no_grad():
-            prev = (ctrl.value, ctrl.resolution, ctrl.bypass_all)
+            # since the adaptive merge the level is a per-site row and `value` is a
+            # read-only property; save whichever representation the controller has
+            prev = (list(ctrl.row) if getattr(ctrl, "row", None) is not None else None,
+                    ctrl.value, ctrl.resolution, ctrl.bypass_all)
             ctrl.bypass_all = True
             ctrl.set_state(0.0, 32)
             got = model(xb)
-            ctrl.value, ctrl.resolution, ctrl.bypass_all = prev
+            if hasattr(ctrl, "row"):
+                ctrl.row = prev[0]
+            else:
+                ctrl.value = prev[1]
+            ctrl.resolution, ctrl.bypass_all = prev[2], prev[3]
             want = ref(xb)
         d = float((got - want).abs().max())
         entry["target_path_max_abs_diff"] = d

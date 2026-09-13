@@ -43,6 +43,20 @@ Les rapports originaux sont conservés sans réécriture. Ce fichier explicite l
 | C-28 | La résolution remet d'abord une image 16×16 à 32×32 avant le réseau | Les expériences utilisent réellement la petite grille ; aucune remontée systématique avant le CNN |
 | C-29 | Les contrastes TV et ondelettes étaient définis identiquement | Le JSON ondelettes recentre z sur sa propre moyenne, le prompt TV sur celle de x ; la petite dérive db2 empêche une identité exacte |
 | C-30 | Le statut/plan du 8 septembre décrit la suite actuelle | Depuis : pilote db2 exécuté puis branche abandonnée ; résolution et grande grille terminées ; préfloutage RGB encore non testé |
+| C-26 | Le lot `unified` utilisait un « ensemble d'actifs C » et était « le seul lot apparié en interne » | Il a monté `r20bn-campaign-assets`, comme `campaign`, `resbench`, `fulldata` et `progres` ; voir docs/AUDIT.md A1 |
+| C-27 | Les comparaisons entre lots portent un « décalage de lot » d'environ 0,56–0,6 point | Aucun décalage universel : des plain aux actifs identiques diffèrent jusqu'à 0,73 point entre lots, cause non établie ; AUDIT A2 |
+| C-28 | L'ablation de l'anti-repliement utilisait un ensemble d'actifs entièrement différent | Même sous-ensemble, même sonde et mêmes permutations ; seuls les poids initiaux et tampons BN diffèrent ; AUDIT A3 |
+| C-29 | Un bras à une graine a un écart-type de 0 | Écart-type indisponible pour une graine ; AUDIT A4 |
+| C-30 | Le tableau d'ensemble lisait toujours le chemin courant | Chemin variable selon le lot ; contrôles fixes lus sur leur propre chemin réduit ou filtré ; AUDIT A6 |
+| C-31 | « Exposant 1, 6 graines » dans l'étude par couche | Graines 0–2 dans deux lancements distincts ; copies de mise en forme dédupliquées ; AUDIT A7 |
+| C-32 | EXP-012 désigne une seule expérience | Deux fiches EXP-012 sur deux branches (ablation d'Idriss, sigma par couche d'Aubin) ; AUDIT A9 |
+| C-33 | Le lot `unified` utilisait un « ensemble d'actifs C » et était « le seul lot apparié en interne » | Il a monté `r20bn-campaign-assets`, comme `campaign`, `resbench`, `fulldata` et `progres` ; docs/AUDIT.md A1 |
+| C-34 | Les comparaisons entre lots portent un « décalage de lot » d'environ 0,56–0,6 point | Aucun décalage universel : des plain aux actifs identiques diffèrent jusqu'à 0,73 point entre lots, cause non établie ; AUDIT A2 |
+| C-35 | L'ablation de l'anti-repliement utilisait un ensemble d'actifs entièrement différent | Même sous-ensemble, même sonde et mêmes permutations ; seuls les poids initiaux et tampons BN diffèrent ; AUDIT A3 |
+| C-36 | Un bras à une graine a un écart-type de 0 | Écart-type indisponible pour une graine ; AUDIT A4 |
+| C-37 | Le tableau d'ensemble lisait toujours le chemin courant | Chemin variable selon le lot ; les contrôles fixes sont lus sur leur propre chemin réduit ou filtré ; AUDIT A6 |
+| C-38 | « Exposant 1, 6 graines » dans l'étude par couche | Graines 0–2 dans deux lancements distincts ; copies de mise en forme dédupliquées ; AUDIT A7 |
+| C-39 | EXP-012 désigne une seule expérience | Deux fiches EXP-012 sur deux branches (ablation d'Idriss, sigma par couche d'Aubin) ; AUDIT A9 |
 
 ## Correction particulière du compte rendu de la grille
 

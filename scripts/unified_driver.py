@@ -107,7 +107,10 @@ def evaluate(model, ctrl, images, labels, pipe, epoch_index, force_target=False,
              batch=500):
     """Evaluate at the configuration of ``epoch_index``, or on the plain path."""
     mode = model.training
-    prev = (ctrl.value, ctrl.resolution, ctrl.bypass_all)
+    # since the adaptive merge the level is a per-site row and `value` is a
+    # read-only property; save whichever representation the controller has
+    prev = (list(ctrl.row) if getattr(ctrl, "row", None) is not None else None,
+            ctrl.value, ctrl.resolution, ctrl.bypass_all)
     if force_target:
         ctrl.bypass_all = True
         ctrl.set_state(0.0, 32)
@@ -121,7 +124,11 @@ def evaluate(model, ctrl, images, labels, pipe, epoch_index, force_target=False,
         logits = model(pipe(images[i:i + batch], 0.0, res=res_in))
         tot += float(F.cross_entropy(logits, labels[i:i + batch], reduction="sum"))
         correct += int((logits.argmax(1) == labels[i:i + batch]).sum())
-    ctrl.value, ctrl.resolution, ctrl.bypass_all = prev
+    if hasattr(ctrl, "row"):
+        ctrl.row = prev[0]
+    else:
+        ctrl.value = prev[1]
+    ctrl.resolution, ctrl.bypass_all = prev[2], prev[3]
     ctrl.q = ctrl.q_for(ctrl.resolution)
     if mode:
         model.train()

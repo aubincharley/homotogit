@@ -1,12 +1,6 @@
 {
-  "n_configurations": 111,
-  "batches": [
-    "ablation",
-    "adaptive",
-    "campaign",
-    "resbench",
-    "unified"
-  ],
+  "source": "experiments/index.json @ c78ae05b91",
+  "n_configurations": 121,
   "families": {
     "plain": "Baseline (no intervention)",
     "gauss": "Internal Gaussian",
@@ -17,1842 +11,2507 @@
     "adaptive": "Adaptive (data-driven) schedule",
     "constant": "Constant filter (architecture)",
     "mix": "Identity-Gaussian mixture",
-    "long": "120-epoch budget"
+    "control": "Fixed-resolution control"
   },
   "configurations": {
-    "campaign/R32__Gnone__input_bilinear__all19": {
-      "key": "campaign/R32__Gnone__input_bilinear__all19",
-      "label": "Baseline: no blur, full 32x32 throughout",
-      "family": "plain",
-      "batch": "campaign",
-      "acc_mean": 0.7561666666666667,
-      "acc_sd": 0.004850085909892065,
-      "acc_per_seed": [
-        0.7513,
-        0.7562,
-        0.761
-      ],
-      "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": 488.71135311166626,
-      "note": null
-    },
-    "campaign/R32__Gplateau__input_bilinear__all19": {
-      "key": "campaign/R32__Gplateau__input_bilinear__all19",
-      "label": "Blur every conv layer, annealed to zero",
-      "family": "gauss",
-      "batch": "campaign",
-      "acc_mean": 0.7869333333333334,
-      "acc_sd": 0.0067855238068503755,
-      "acc_per_seed": [
-        0.7791,
-        0.7907,
-        0.791
-      ],
-      "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": 696.1203925216668,
-      "note": null
-    },
     "campaign/R32__Ggeo__input_bilinear__all19": {
       "key": "campaign/R32__Ggeo__input_bilinear__all19",
       "label": "Blur every conv layer, geometric decay",
       "family": "gauss",
       "batch": "campaign",
+      "status": "valid",
       "acc_mean": 0.7828333333333334,
       "acc_sd": 0.0050302418762255725,
+      "sd_status": null,
       "acc_per_seed": [
         0.7784,
         0.7818,
         0.7883
       ],
       "n_seeds": 3,
+      "n_attempted": 3,
       "epochs": 30,
       "wall_mean": 702.6579938233334,
-      "note": null
-    },
-    "campaign/Rprog__Gnone__input_bilinear__all19": {
-      "key": "campaign/Rprog__Gnone__input_bilinear__all19",
-      "label": "Shrink the input image (bilinear), 16 to 24 to 32",
-      "family": "res",
-      "batch": "campaign",
-      "acc_mean": 0.7948333333333334,
-      "acc_sd": 0.0054353779384080985,
-      "acc_per_seed": [
-        0.7914,
-        0.792,
-        0.8011
-      ],
-      "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": 492.32312198866657,
-      "note": null
-    },
-    "campaign/Rprog__Gplateau__input_bilinear__all19": {
-      "key": "campaign/Rprog__Gplateau__input_bilinear__all19",
-      "label": "Shrink the input image (bilinear), 16 to 24 to 32, plus blur every conv layer, annealed to zero",
-      "family": "res_gauss",
-      "batch": "campaign",
-      "acc_mean": 0.8071333333333334,
-      "acc_sd": 0.006470188044665601,
-      "acc_per_seed": [
-        0.8015,
-        0.8057,
-        0.8142
-      ],
-      "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": 699.6321766893333,
-      "note": null
-    },
-    "campaign/Rprog__Ggeo__input_bilinear__all19": {
-      "key": "campaign/Rprog__Ggeo__input_bilinear__all19",
-      "label": "Shrink the input image (bilinear), 16 to 24 to 32, plus blur every conv layer, geometric decay",
-      "family": "res_gauss",
-      "batch": "campaign",
-      "acc_mean": 0.7990666666666666,
-      "acc_sd": 0.009226230721878418,
-      "acc_per_seed": [
-        0.7906,
-        0.7977,
-        0.8089
-      ],
-      "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": 708.8524587810001,
-      "note": null
-    },
-    "campaign/Rgentle__Gnone__input_bilinear__all19": {
-      "key": "campaign/Rgentle__Gnone__input_bilinear__all19",
-      "label": "Shrink the input image (bilinear), 24 to 32 only",
-      "family": "res",
-      "batch": "campaign",
-      "acc_mean": 0.7856333333333333,
-      "acc_sd": 0.0034063665882188014,
-      "acc_per_seed": [
-        0.7817,
-        0.7876,
-        0.7876
-      ],
-      "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": 486.2098572813332,
-      "note": null
-    },
-    "campaign/Rgentle__Gplateau__input_bilinear__all19": {
-      "key": "campaign/Rgentle__Gplateau__input_bilinear__all19",
-      "label": "Shrink the input image (bilinear), 24 to 32 only, plus blur every conv layer, annealed to zero",
-      "family": "res_gauss",
-      "batch": "campaign",
-      "acc_mean": 0.7977,
-      "acc_sd": 0.007238093671679072,
-      "acc_per_seed": [
-        0.7927,
-        0.7944,
-        0.806
-      ],
-      "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": 694.1474467700001,
-      "note": null
-    },
-    "campaign/Rgentle__Ggeo__input_bilinear__all19": {
-      "key": "campaign/Rgentle__Ggeo__input_bilinear__all19",
-      "label": "Shrink the input image (bilinear), 24 to 32 only, plus blur every conv layer, geometric decay",
-      "family": "res_gauss",
-      "batch": "campaign",
-      "acc_mean": 0.7968333333333334,
-      "acc_sd": 0.00565803263805835,
-      "acc_per_seed": [
-        0.7903,
-        0.8001,
-        0.8001
-      ],
-      "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": 703.5308784273334,
-      "note": null
+      "final_path": "current=target",
+      "flags": []
     },
     "campaign/R32__Gmix__input_bilinear__all19": {
       "key": "campaign/R32__Gmix__input_bilinear__all19",
       "label": "Blend each layer between itself and its blur",
       "family": "mix",
       "batch": "campaign",
+      "status": "valid",
       "acc_mean": 0.7818333333333333,
       "acc_sd": 0.0036143233576056105,
+      "sd_status": null,
       "acc_per_seed": [
         0.7777,
         0.7834,
         0.7844
       ],
       "n_seeds": 3,
+      "n_attempted": 3,
       "epochs": 30,
       "wall_mean": 789.3697964593333,
-      "note": null
+      "final_path": "current=target",
+      "flags": []
     },
-    "campaign/Rprog__Gmix__input_bilinear__all19": {
-      "key": "campaign/Rprog__Gmix__input_bilinear__all19",
-      "label": "Shrink the input image (bilinear), 16 to 24 to 32, plus blend each layer between itself and its blur",
-      "family": "res_gauss",
+    "campaign/R32__Gnone__input_bilinear__all19": {
+      "key": "campaign/R32__Gnone__input_bilinear__all19",
+      "label": "Baseline: no blur, full 32x32 throughout",
+      "family": "plain",
       "batch": "campaign",
-      "acc_mean": 0.7951,
-      "acc_sd": 0.00797307970611107,
+      "status": "valid",
+      "acc_mean": 0.7561666666666667,
+      "acc_sd": 0.004850085909892065,
+      "sd_status": null,
       "acc_per_seed": [
-        0.7875,
-        0.7944,
-        0.8034
+        0.7513,
+        0.7562,
+        0.761
       ],
       "n_seeds": 3,
+      "n_attempted": 3,
       "epochs": 30,
-      "wall_mean": 783.0454702176667,
-      "note": null
+      "wall_mean": 488.71135311166626,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "campaign/R32__Gplateau__input_bilinear__all19": {
+      "key": "campaign/R32__Gplateau__input_bilinear__all19",
+      "label": "Blur every conv layer, annealed to zero",
+      "family": "gauss",
+      "batch": "campaign",
+      "status": "valid",
+      "acc_mean": 0.7869333333333334,
+      "acc_sd": 0.0067855238068503755,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.7791,
+        0.7907,
+        0.791
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 696.1203925216668,
+      "final_path": "current=target",
+      "flags": []
     },
     "campaign/R32__Gplateau__input_bilinear__early7": {
       "key": "campaign/R32__Gplateau__input_bilinear__early7",
       "label": "Blur every conv layer, annealed to zero, first 7 layers only",
       "family": "gauss",
       "batch": "campaign",
+      "status": "valid",
       "acc_mean": 0.7523666666666666,
       "acc_sd": 0.0073921129140005586,
+      "sd_status": null,
       "acc_per_seed": [
         0.7442,
         0.7543,
         0.7586
       ],
       "n_seeds": 3,
+      "n_attempted": 3,
       "epochs": 30,
       "wall_mean": 593.1259691156665,
-      "note": null
+      "final_path": "current=target",
+      "flags": []
     },
-    "campaign/Rprog__Gplateau__input_bilinear__early7": {
-      "key": "campaign/Rprog__Gplateau__input_bilinear__early7",
-      "label": "Shrink the input image (bilinear), 16 to 24 to 32, plus blur every conv layer, annealed to zero, first 7 layers only",
+    "campaign/Rgentle__Ggeo__input_bilinear__all19": {
+      "key": "campaign/Rgentle__Ggeo__input_bilinear__all19",
+      "label": "Shrink the input image (bilinear), 24 to 32 only, plus blur every conv layer, geometric decay",
       "family": "res_gauss",
       "batch": "campaign",
-      "acc_mean": 0.7927,
-      "acc_sd": 0.005699999999999983,
+      "status": "valid",
+      "acc_mean": 0.7968333333333334,
+      "acc_sd": 0.00565803263805835,
+      "sd_status": null,
       "acc_per_seed": [
-        0.787,
-        0.7927,
-        0.7984
+        0.7903,
+        0.8001,
+        0.8001
       ],
       "n_seeds": 3,
+      "n_attempted": 3,
       "epochs": 30,
-      "wall_mean": 596.3290658229998,
-      "note": null
+      "wall_mean": 703.5308784273334,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "campaign/Rgentle__Gnone__input_bilinear__all19": {
+      "key": "campaign/Rgentle__Gnone__input_bilinear__all19",
+      "label": "Shrink the input image (bilinear), 24 to 32 only",
+      "family": "res",
+      "batch": "campaign",
+      "status": "valid",
+      "acc_mean": 0.7856333333333333,
+      "acc_sd": 0.0034063665882188014,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.7817,
+        0.7876,
+        0.7876
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 486.2098572813332,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "campaign/Rgentle__Gplateau__input_bilinear__all19": {
+      "key": "campaign/Rgentle__Gplateau__input_bilinear__all19",
+      "label": "Shrink the input image (bilinear), 24 to 32 only, plus blur every conv layer, annealed to zero",
+      "family": "res_gauss",
+      "batch": "campaign",
+      "status": "valid",
+      "acc_mean": 0.7977,
+      "acc_sd": 0.007238093671679072,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.7927,
+        0.7944,
+        0.806
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 694.1474467700001,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "campaign/Rprog__Ggeo__input_bilinear__all19": {
+      "key": "campaign/Rprog__Ggeo__input_bilinear__all19",
+      "label": "Shrink the input image (bilinear), 16 to 24 to 32, plus blur every conv layer, geometric decay",
+      "family": "res_gauss",
+      "batch": "campaign",
+      "status": "valid",
+      "acc_mean": 0.7990666666666666,
+      "acc_sd": 0.009226230721878418,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.7906,
+        0.7977,
+        0.8089
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 708.8524587810001,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "campaign/Rprog__Gmix__input_bilinear__all19": {
+      "key": "campaign/Rprog__Gmix__input_bilinear__all19",
+      "label": "Shrink the input image (bilinear), 16 to 24 to 32, plus blend each layer between itself and its blur",
+      "family": "res_gauss",
+      "batch": "campaign",
+      "status": "valid",
+      "acc_mean": 0.7951,
+      "acc_sd": 0.00797307970611107,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.7875,
+        0.7944,
+        0.8034
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 783.0454702176667,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "campaign/Rprog__Gnone__input_bilinear__all19": {
+      "key": "campaign/Rprog__Gnone__input_bilinear__all19",
+      "label": "Shrink the input image (bilinear), 16 to 24 to 32",
+      "family": "res",
+      "batch": "campaign",
+      "status": "valid",
+      "acc_mean": 0.7948333333333334,
+      "acc_sd": 0.0054353779384080985,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.7914,
+        0.792,
+        0.8011
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 492.32312198866657,
+      "final_path": "current=target",
+      "flags": []
     },
     "campaign/Rprog__Gnone__input_max__all19": {
       "key": "campaign/Rprog__Gnone__input_max__all19",
       "label": "Shrink the input image (max-pool), 16 to 24 to 32",
       "family": "res",
       "batch": "campaign",
+      "status": "valid",
       "acc_mean": 0.7979666666666667,
       "acc_sd": 0.00500533049191893,
+      "sd_status": null,
       "acc_per_seed": [
         0.7931,
         0.7977,
         0.8031
       ],
       "n_seeds": 3,
+      "n_attempted": 3,
       "epochs": 30,
       "wall_mean": 489.28971313500006,
-      "note": null
-    },
-    "campaign/Rprog__Gplateau__input_max__all19": {
-      "key": "campaign/Rprog__Gplateau__input_max__all19",
-      "label": "Shrink the input image (max-pool), 16 to 24 to 32, plus blur every conv layer, annealed to zero",
-      "family": "res_gauss",
-      "batch": "campaign",
-      "acc_mean": 0.8034,
-      "acc_sd": 0.007562407024221819,
-      "acc_per_seed": [
-        0.7969,
-        0.8016,
-        0.8117
-      ],
-      "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": 737.719607009,
-      "note": null
+      "final_path": "current=target",
+      "flags": []
     },
     "campaign/Rprog__Gnone__stem_bilinear__all19": {
       "key": "campaign/Rprog__Gnone__stem_bilinear__all19",
       "label": "Shrink the first conv layer (bilinear), 16 to 24 to 32",
       "family": "res",
       "batch": "campaign",
+      "status": "valid",
       "acc_mean": 0.7890666666666667,
       "acc_sd": 0.003700450423034088,
+      "sd_status": null,
       "acc_per_seed": [
         0.7848,
         0.791,
         0.7914
       ],
       "n_seeds": 3,
+      "n_attempted": 3,
       "epochs": 30,
       "wall_mean": 484.00407235700004,
-      "note": null
-    },
-    "campaign/Rprog__Gplateau__stem_bilinear__all19": {
-      "key": "campaign/Rprog__Gplateau__stem_bilinear__all19",
-      "label": "Shrink the first conv layer (bilinear), 16 to 24 to 32, plus blur every conv layer, annealed to zero",
-      "family": "res_gauss",
-      "batch": "campaign",
-      "acc_mean": 0.7929666666666667,
-      "acc_sd": 0.00616143922580868,
-      "acc_per_seed": [
-        0.7866,
-        0.7934,
-        0.7989
-      ],
-      "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": 749.8711291166668,
-      "note": null
+      "final_path": "current=target",
+      "flags": []
     },
     "campaign/Rprog__Gnone__stem_max__all19": {
       "key": "campaign/Rprog__Gnone__stem_max__all19",
       "label": "Shrink the first conv layer (max-pool), 16 to 24 to 32",
       "family": "res",
       "batch": "campaign",
+      "status": "valid",
       "acc_mean": 0.7996666666666666,
       "acc_sd": 0.005832095106677644,
+      "sd_status": null,
       "acc_per_seed": [
         0.7962,
         0.7964,
         0.8064
       ],
       "n_seeds": 3,
+      "n_attempted": 3,
       "epochs": 30,
       "wall_mean": 490.6531613096665,
-      "note": null
+      "final_path": "current=target",
+      "flags": []
+    },
+    "campaign/Rprog__Gplateau__input_bilinear__all19": {
+      "key": "campaign/Rprog__Gplateau__input_bilinear__all19",
+      "label": "Shrink the input image (bilinear), 16 to 24 to 32, plus blur every conv layer, annealed to zero",
+      "family": "res_gauss",
+      "batch": "campaign",
+      "status": "valid",
+      "acc_mean": 0.8071333333333334,
+      "acc_sd": 0.006470188044665601,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.8015,
+        0.8057,
+        0.8142
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 699.6321766893333,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "campaign/Rprog__Gplateau__input_bilinear__early7": {
+      "key": "campaign/Rprog__Gplateau__input_bilinear__early7",
+      "label": "Shrink the input image (bilinear), 16 to 24 to 32, plus blur every conv layer, annealed to zero, first 7 layers only",
+      "family": "res_gauss",
+      "batch": "campaign",
+      "status": "valid",
+      "acc_mean": 0.7927,
+      "acc_sd": 0.005699999999999983,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.787,
+        0.7927,
+        0.7984
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 596.3290658229998,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "campaign/Rprog__Gplateau__input_max__all19": {
+      "key": "campaign/Rprog__Gplateau__input_max__all19",
+      "label": "Shrink the input image (max-pool), 16 to 24 to 32, plus blur every conv layer, annealed to zero",
+      "family": "res_gauss",
+      "batch": "campaign",
+      "status": "valid",
+      "acc_mean": 0.8034,
+      "acc_sd": 0.007562407024221819,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.7969,
+        0.8016,
+        0.8117
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 737.719607009,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "campaign/Rprog__Gplateau__stem_bilinear__all19": {
+      "key": "campaign/Rprog__Gplateau__stem_bilinear__all19",
+      "label": "Shrink the first conv layer (bilinear), 16 to 24 to 32, plus blur every conv layer, annealed to zero",
+      "family": "res_gauss",
+      "batch": "campaign",
+      "status": "valid",
+      "acc_mean": 0.7929666666666667,
+      "acc_sd": 0.00616143922580868,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.7866,
+        0.7934,
+        0.7989
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 749.8711291166668,
+      "final_path": "current=target",
+      "flags": []
     },
     "campaign/Rprog__Gplateau__stem_max__all19": {
       "key": "campaign/Rprog__Gplateau__stem_max__all19",
       "label": "Shrink the first conv layer (max-pool), 16 to 24 to 32, plus blur every conv layer, annealed to zero",
       "family": "res_gauss",
       "batch": "campaign",
+      "status": "valid",
       "acc_mean": 0.7981,
       "acc_sd": 0.007861933604400408,
+      "sd_status": null,
       "acc_per_seed": [
         0.7905,
         0.7976,
         0.8062
       ],
       "n_seeds": 3,
+      "n_attempted": 3,
       "epochs": 30,
       "wall_mean": 747.2482563863333,
-      "note": null
+      "final_path": "current=target",
+      "flags": []
     },
     "campaign/Rreverse__Gnone__input_bilinear__all19": {
       "key": "campaign/Rreverse__Gnone__input_bilinear__all19",
       "label": "Shrink the input image (bilinear), 24 to 16 to 32 (order control)",
       "family": "res",
       "batch": "campaign",
+      "status": "valid",
       "acc_mean": 0.7922666666666667,
       "acc_sd": 0.004021608301828198,
+      "sd_status": null,
       "acc_per_seed": [
         0.7878,
         0.7934,
         0.7956
       ],
       "n_seeds": 3,
+      "n_attempted": 3,
       "epochs": 30,
       "wall_mean": 466.82327381266686,
-      "note": null
+      "final_path": "current=target",
+      "flags": []
     },
     "campaign/Rreverse__Gplateau__input_bilinear__all19": {
       "key": "campaign/Rreverse__Gplateau__input_bilinear__all19",
       "label": "Shrink the input image (bilinear), 24 to 16 to 32 (order control), plus blur every conv layer, annealed to zero",
       "family": "res_gauss",
       "batch": "campaign",
+      "status": "valid",
       "acc_mean": 0.7932666666666667,
       "acc_sd": 0.0037753587026047226,
+      "sd_status": null,
       "acc_per_seed": [
         0.79,
         0.7924,
         0.7974
       ],
       "n_seeds": 3,
+      "n_attempted": 3,
       "epochs": 30,
       "wall_mean": 756.992424031,
-      "note": null
-    },
-    "resbench/bilinear__D1__Rprog": {
-      "key": "resbench/bilinear__D1__Rprog",
-      "label": "Shrink block 1 with bilinear, 16 to 24 to 32",
-      "family": "operator",
-      "batch": "resbench",
-      "acc_mean": 0.8023,
-      "acc_sd": 0.003815756805667752,
-      "acc_per_seed": [
-        0.7983,
-        0.8027,
-        0.8059
-      ],
-      "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": 436.37209187666605,
-      "note": null
-    },
-    "resbench/max__D1__Rprog": {
-      "key": "resbench/max__D1__Rprog",
-      "label": "Shrink block 1 with max-pool, 16 to 24 to 32",
-      "family": "operator",
-      "batch": "resbench",
-      "acc_mean": 0.8059666666666666,
-      "acc_sd": 0.002003330560175573,
-      "acc_per_seed": [
-        0.8037,
-        0.8067,
-        0.8075
-      ],
-      "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": 432.69399885466646,
-      "note": null
-    },
-    "resbench/maxblur__D1__Rprog": {
-      "key": "resbench/maxblur__D1__Rprog",
-      "label": "Shrink block 1 with max-pool then anti-alias blur, 16 to 24 to 32",
-      "family": "operator",
-      "batch": "resbench",
-      "acc_mean": 0.8042666666666667,
-      "acc_sd": 0.007536798613027478,
-      "acc_per_seed": [
-        0.799,
-        0.8009,
-        0.8129
-      ],
-      "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": 518.5642806473335,
-      "note": null
-    },
-    "resbench/softpool__D1__Rprog": {
-      "key": "resbench/softpool__D1__Rprog",
-      "label": "Shrink block 1 with softmax-weighted pooling, 16 to 24 to 32",
-      "family": "operator",
-      "batch": "resbench",
-      "acc_mean": 0.8034333333333333,
-      "acc_sd": 0.004819059382631975,
-      "acc_per_seed": [
-        0.7998,
-        0.8016,
-        0.8089
-      ],
-      "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": 482.49326539199996,
-      "note": null
-    },
-    "resbench/l2__D1__Rprog": {
-      "key": "resbench/l2__D1__Rprog",
-      "label": "Shrink block 1 with least-squares reconstruction, 16 to 24 to 32",
-      "family": "operator",
-      "batch": "resbench",
-      "acc_mean": 0.8011,
-      "acc_sd": 0.005173973328110612,
-      "acc_per_seed": [
-        0.7954,
-        0.8024,
-        0.8055
-      ],
-      "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": 509.50568323033326,
-      "note": null
-    },
-    "resbench/hminus1__D1__Rprog": {
-      "key": "resbench/hminus1__D1__Rprog",
-      "label": "Shrink block 1 with smoothness-optimal reconstruction, 16 to 24 to 32",
-      "family": "operator",
-      "batch": "resbench",
-      "acc_mean": 0.7984666666666667,
-      "acc_sd": 0.0076291109136867145,
-      "acc_per_seed": [
-        0.7897,
-        0.8021,
-        0.8036
-      ],
-      "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": 507.1727978376666,
-      "note": null
-    },
-    "resbench/bilinear__input__Rprog": {
-      "key": "resbench/bilinear__input__Rprog",
-      "label": "Shrink the input image with bilinear, 16 to 24 to 32",
-      "family": "operator",
-      "batch": "resbench",
-      "acc_mean": 0.7956333333333333,
-      "acc_sd": 0.006798774399355655,
-      "acc_per_seed": [
-        0.7898,
-        0.794,
-        0.8031
-      ],
-      "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": 426.7930171103338,
-      "note": null
-    },
-    "resbench/max__input__Rprog": {
-      "key": "resbench/max__input__Rprog",
-      "label": "Shrink the input image with max-pool, 16 to 24 to 32",
-      "family": "operator",
-      "batch": "resbench",
-      "acc_mean": 0.7922666666666667,
-      "acc_sd": 0.004818021724041195,
-      "acc_per_seed": [
-        0.789,
-        0.79,
-        0.7978
-      ],
-      "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": 432.9169612750002,
-      "note": null
-    },
-    "resbench/maxblur__input__Rprog": {
-      "key": "resbench/maxblur__input__Rprog",
-      "label": "Shrink the input image with max-pool then anti-alias blur, 16 to 24 to 32",
-      "family": "operator",
-      "batch": "resbench",
-      "acc_mean": 0.7917333333333333,
-      "acc_sd": 0.00426653645634643,
-      "acc_per_seed": [
-        0.7871,
-        0.7926,
-        0.7955
-      ],
-      "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": 505.006039232,
-      "note": null
-    },
-    "resbench/softpool__input__Rprog": {
-      "key": "resbench/softpool__input__Rprog",
-      "label": "Shrink the input image with softmax-weighted pooling, 16 to 24 to 32",
-      "family": "operator",
-      "batch": "resbench",
-      "acc_mean": 0.7928333333333334,
-      "acc_sd": 0.004552288801617635,
-      "acc_per_seed": [
-        0.7882,
-        0.793,
-        0.7973
-      ],
-      "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": 455.684894853,
-      "note": null
-    },
-    "resbench/l2__input__Rprog": {
-      "key": "resbench/l2__input__Rprog",
-      "label": "Shrink the input image with least-squares reconstruction, 16 to 24 to 32",
-      "family": "operator",
-      "batch": "resbench",
-      "acc_mean": 0.7963666666666667,
-      "acc_sd": 0.0033321664624285418,
-      "acc_per_seed": [
-        0.7928,
-        0.7969,
-        0.7994
-      ],
-      "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": 537.1630823903332,
-      "note": null
-    },
-    "resbench/hminus1__input__Rprog": {
-      "key": "resbench/hminus1__input__Rprog",
-      "label": "Shrink the input image with smoothness-optimal reconstruction, 16 to 24 to 32",
-      "family": "operator",
-      "batch": "resbench",
-      "acc_mean": 0.7976333333333333,
-      "acc_sd": 0.0064593601334291375,
-      "acc_per_seed": [
-        0.7906,
-        0.799,
-        0.8033
-      ],
-      "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": 560.1214672463333,
-      "note": null
-    },
-    "resbench/perceptual__input__Rprog": {
-      "key": "resbench/perceptual__input__Rprog",
-      "label": "Shrink the input image with perceptual (SSIM-style), 16 to 24 to 32",
-      "family": "operator",
-      "batch": "resbench",
-      "acc_mean": 0.7998333333333333,
-      "acc_sd": 0.00400790884793222,
-      "acc_per_seed": [
-        0.7954,
-        0.8009,
-        0.8032
-      ],
-      "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": 462.29573248466664,
-      "note": null
-    },
-    "resbench/max__stem__Rprog": {
-      "key": "resbench/max__stem__Rprog",
-      "label": "Shrink the first conv layer with max-pool, 16 to 24 to 32",
-      "family": "res",
-      "batch": "resbench",
-      "acc_mean": 0.7961,
-      "acc_sd": 0.008243785538209975,
-      "acc_per_seed": [
-        0.7901,
-        0.7927,
-        0.8055
-      ],
-      "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": 408.5150679256667,
-      "note": null
-    },
-    "resbench/max__D0__Rprog": {
-      "key": "resbench/max__D0__Rprog",
-      "label": "Shrink block 0 with max-pool, 16 to 24 to 32",
-      "family": "res",
-      "batch": "resbench",
-      "acc_mean": 0.8007666666666667,
-      "acc_sd": 0.006146001410131081,
-      "acc_per_seed": [
-        0.7951,
-        0.7999,
-        0.8073
-      ],
-      "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": 437.5632546906666,
-      "note": null
-    },
-    "resbench/max__D2__Rprog": {
-      "key": "resbench/max__D2__Rprog",
-      "label": "Shrink block 2 with max-pool, 16 to 24 to 32",
-      "family": "res",
-      "batch": "resbench",
-      "acc_mean": 0.8024333333333333,
-      "acc_sd": 0.005559076661940662,
-      "acc_per_seed": [
-        0.7967,
-        0.8028,
-        0.8078
-      ],
-      "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": 427.8049398973332,
-      "note": null
-    },
-    "resbench/max__D1__Rgentle": {
-      "key": "resbench/max__D1__Rgentle",
-      "label": "Shrink block 1 with max-pool, 24 to 32 only",
-      "family": "res",
-      "batch": "resbench",
-      "acc_mean": 0.7977666666666666,
-      "acc_sd": 0.003194265695482041,
-      "acc_per_seed": [
-        0.7954,
-        0.7965,
-        0.8014
-      ],
-      "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": 429.540004283,
-      "note": null
-    },
-    "resbench/max__D1__Rreverse": {
-      "key": "resbench/max__D1__Rreverse",
-      "label": "Shrink block 1 with max-pool, 24 to 16 to 32 (order control)",
-      "family": "res",
-      "batch": "resbench",
-      "acc_mean": 0.8021333333333334,
-      "acc_sd": 0.002953528962670483,
-      "acc_per_seed": [
-        0.7991,
-        0.8023,
-        0.805
-      ],
-      "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": 437.9975158529999,
-      "note": null
-    },
-    "resbench/max__D1__Rlate": {
-      "key": "resbench/max__D1__Rlate",
-      "label": "Shrink block 1 with max-pool, 16 to 24 to 32, longer at low res",
-      "family": "res",
-      "batch": "resbench",
-      "acc_mean": 0.8007,
-      "acc_sd": 0.005301886456724589,
-      "acc_per_seed": [
-        0.7972,
-        0.7981,
-        0.8068
-      ],
-      "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": 436.15852766100033,
-      "note": null
-    },
-    "resbench/maxblur__D1__Rgentle": {
-      "key": "resbench/maxblur__D1__Rgentle",
-      "label": "Shrink block 1 with max-pool then anti-alias blur, 24 to 32 only",
-      "family": "res",
-      "batch": "resbench",
-      "acc_mean": 0.8031666666666667,
-      "acc_sd": 0.0021962088546705356,
-      "acc_per_seed": [
-        0.8018,
-        0.802,
-        0.8057
-      ],
-      "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": 499.284359897333,
-      "note": null
-    },
-    "resbench/maxblur__D1__Rreverse": {
-      "key": "resbench/maxblur__D1__Rreverse",
-      "label": "Shrink block 1 with max-pool then anti-alias blur, 24 to 16 to 32 (order control)",
-      "family": "res",
-      "batch": "resbench",
-      "acc_mean": 0.8045666666666667,
-      "acc_sd": 0.004428694314731295,
-      "acc_per_seed": [
-        0.7995,
-        0.8065,
-        0.8077
-      ],
-      "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": 448.0028577000001,
-      "note": null
-    },
-    "resbench/maxblur__D1__Rlate": {
-      "key": "resbench/maxblur__D1__Rlate",
-      "label": "Shrink block 1 with max-pool then anti-alias blur, 16 to 24 to 32, longer at low res",
-      "family": "res",
-      "batch": "resbench",
-      "acc_mean": 0.8020333333333334,
-      "acc_sd": 0.005220472520120454,
-      "acc_per_seed": [
-        0.7979,
-        0.8003,
-        0.8079
-      ],
-      "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": 445.53093296700007,
-      "note": null
-    },
-    "resbench/hminus1__D1__Rgentle": {
-      "key": "resbench/hminus1__D1__Rgentle",
-      "label": "Shrink block 1 with smoothness-optimal reconstruction, 24 to 32 only",
-      "family": "res",
-      "batch": "resbench",
-      "acc_mean": 0.7889666666666667,
-      "acc_sd": 0.0011239810200058223,
-      "acc_per_seed": [
-        0.788,
-        0.7887,
-        0.7902
-      ],
-      "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": 548.3039167259999,
-      "note": null
-    },
-    "resbench/hminus1__D1__Rreverse": {
-      "key": "resbench/hminus1__D1__Rreverse",
-      "label": "Shrink block 1 with smoothness-optimal reconstruction, 24 to 16 to 32 (order control)",
-      "family": "res",
-      "batch": "resbench",
-      "acc_mean": 0.795,
-      "acc_sd": 0.004050925820105817,
-      "acc_per_seed": [
-        0.791,
-        0.7949,
-        0.7991
-      ],
-      "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": 527.0424750000001,
-      "note": null
-    },
-    "resbench/hminus1__D1__Rlate": {
-      "key": "resbench/hminus1__D1__Rlate",
-      "label": "Shrink block 1 with smoothness-optimal reconstruction, 16 to 24 to 32, longer at low res",
-      "family": "res",
-      "batch": "resbench",
-      "acc_mean": 0.7955333333333333,
-      "acc_sd": 0.006601010023726179,
-      "acc_per_seed": [
-        0.7882,
-        0.7974,
-        0.801
-      ],
-      "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": 564.1345543486665,
-      "note": null
-    },
-    "resbench/none__none__none": {
-      "key": "resbench/none__none__none",
-      "label": "Baseline: no blur, full 32x32 throughout (resolution batch)",
-      "family": "plain",
-      "batch": "resbench",
-      "acc_mean": 0.7553333333333333,
-      "acc_sd": 0.0036115555282084802,
-      "acc_per_seed": [
-        0.7531,
-        0.7534,
-        0.7595
-      ],
-      "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": 428.38099844966655,
-      "note": null
-    },
-    "resbench/max__D1__fixed16": {
-      "key": "resbench/max__D1__fixed16",
-      "label": "Shrink block 1 with max-pool, fixed 16x16, never restored",
-      "family": "control",
-      "batch": "resbench",
-      "acc_mean": 0.7313333333333333,
-      "acc_sd": 0.005387330817142521,
-      "acc_per_seed": [
-        0.7252,
-        0.7335,
-        0.7353
-      ],
-      "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": 418.7514463050002,
-      "note": null
-    },
-    "resbench/max__D1__fixed24": {
-      "key": "resbench/max__D1__fixed24",
-      "label": "Shrink block 1 with max-pool, fixed 24x24, never restored",
-      "family": "control",
-      "batch": "resbench",
-      "acc_mean": 0.7614666666666666,
-      "acc_sd": 0.0049237519569261005,
-      "acc_per_seed": [
-        0.7573,
-        0.7602,
-        0.7669
-      ],
-      "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": 436.3353859676669,
-      "note": null
-    },
-    "ablation/B_blurpool_plateau": {
-      "key": "ablation/B_blurpool_plateau",
-      "label": "Fixed anti-alias blur before each downsample, plus annealed blur everywhere",
-      "family": "res_gauss",
-      "batch": "ablation",
-      "acc_mean": 0.7919,
-      "acc_sd": 0.0,
-      "acc_per_seed": [
-        0.7919
-      ],
-      "n_seeds": 1,
-      "epochs": 30,
-      "wall_mean": 697.9397827759999,
-      "note": null
-    },
-    "ablation/C_plain": {
-      "key": "ablation/C_plain",
-      "label": "Baseline: no blur, full 32x32 throughout (ablation batch)",
-      "family": "plain",
-      "batch": "ablation",
-      "acc_mean": 0.7506,
-      "acc_sd": 0.0,
-      "acc_per_seed": [
-        0.7506
-      ],
-      "n_seeds": 1,
-      "epochs": 30,
-      "wall_mean": 422.74991600400006,
-      "note": null
-    },
-    "ablation/K_const030": {
-      "key": "ablation/K_const030",
-      "label": "Fixed blur 0.30, never annealed (control)",
-      "family": "constant",
-      "batch": "ablation",
-      "acc_mean": 0.7497,
-      "acc_sd": 0.0,
-      "acc_per_seed": [
-        0.7497
-      ],
-      "n_seeds": 1,
-      "epochs": 30,
-      "wall_mean": 754.985266783,
-      "note": "read on the current path (never reaches the target)"
-    },
-    "ablation/C_plateau": {
-      "key": "ablation/C_plateau",
-      "label": "Blur every conv layer, annealed to zero",
-      "family": "gauss",
-      "batch": "ablation",
-      "acc_mean": 0.7818,
-      "acc_sd": 0.0,
-      "acc_per_seed": [
-        0.7818
-      ],
-      "n_seeds": 1,
-      "epochs": 30,
-      "wall_mean": 648.400603669,
-      "note": null
-    },
-    "ablation/K_const050": {
-      "key": "ablation/K_const050",
-      "label": "Fixed blur 0.50, never annealed (control)",
-      "family": "constant",
-      "batch": "ablation",
-      "acc_mean": 0.7869,
-      "acc_sd": 0.0,
-      "acc_per_seed": [
-        0.7869
-      ],
-      "n_seeds": 1,
-      "epochs": 30,
-      "wall_mean": 737.8838072870001,
-      "note": "read on the current path (never reaches the target)"
-    },
-    "ablation/P_postblock": {
-      "key": "ablation/P_postblock",
-      "label": "Blur after every ReLU (10 places), annealed to zero",
-      "family": "gauss",
-      "batch": "ablation",
-      "acc_mean": 0.8008333333333334,
-      "acc_sd": 0.002119748412744615,
-      "acc_per_seed": [
-        0.7989,
-        0.8005,
-        0.8031
-      ],
-      "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": 538.1907630936668,
-      "note": null
-    },
-    "ablation/K_const080": {
-      "key": "ablation/K_const080",
-      "label": "Fixed blur 0.80, never annealed (control)",
-      "family": "constant",
-      "batch": "ablation",
-      "acc_mean": 0.7502,
-      "acc_sd": 0.0,
-      "acc_per_seed": [
-        0.7502
-      ],
-      "n_seeds": 1,
-      "epochs": 30,
-      "wall_mean": 736.458346479,
-      "note": "read on the current path (never reaches the target)"
-    },
-    "ablation/M_nodown": {
-      "key": "ablation/M_nodown",
-      "label": "Blur the 17 layers away from a downsample",
-      "family": "gauss",
-      "batch": "ablation",
-      "acc_mean": 0.7852,
-      "acc_sd": 0.0,
-      "acc_per_seed": [
-        0.7852
-      ],
-      "n_seeds": 1,
-      "epochs": 30,
-      "wall_mean": 604.8313674369999,
-      "note": null
-    },
-    "ablation/M_predown": {
-      "key": "ablation/M_predown",
-      "label": "Blur only the 2 layers feeding a downsample",
-      "family": "gauss",
-      "batch": "ablation",
-      "acc_mean": 0.7755,
-      "acc_sd": 0.0,
-      "acc_per_seed": [
-        0.7755
-      ],
-      "n_seeds": 1,
-      "epochs": 30,
-      "wall_mean": 436.0516253720001,
-      "note": null
+      "final_path": "current=target",
+      "flags": []
     },
     "ablation/B_blurpool": {
       "key": "ablation/B_blurpool",
       "label": "Fixed anti-alias blur before each downsample (control)",
       "family": "constant",
       "batch": "ablation",
+      "status": "valid",
       "acc_mean": 0.7851,
       "acc_sd": 0.0,
+      "sd_status": "unavailable: one valid seed",
       "acc_per_seed": [
         0.7851
       ],
       "n_seeds": 1,
+      "n_attempted": 1,
       "epochs": 30,
       "wall_mean": 459.7754712369999,
-      "note": null
+      "final_path": "target (declared primary_path)",
+      "flags": [
+        "fixed BlurPool architecture kept at inference: its target path is not the plain ResNet-20"
+      ]
     },
-    "ablation/K_const100": {
-      "key": "ablation/K_const100",
-      "label": "Fixed blur 1.00, never annealed (control)",
-      "family": "constant",
+    "ablation/B_blurpool_plateau": {
+      "key": "ablation/B_blurpool_plateau",
+      "label": "Fixed anti-alias blur before each downsample, plus annealed blur everywhere",
+      "family": "res_gauss",
       "batch": "ablation",
-      "acc_mean": 0.7115,
+      "status": "valid",
+      "acc_mean": 0.7919,
       "acc_sd": 0.0,
+      "sd_status": "unavailable: one valid seed",
       "acc_per_seed": [
-        0.7115
+        0.7919
       ],
       "n_seeds": 1,
+      "n_attempted": 1,
       "epochs": 30,
-      "wall_mean": 748.7131098539999,
-      "note": "read on the current path (never reaches the target)"
+      "wall_mean": 697.9397827759999,
+      "final_path": "target (declared primary_path)",
+      "flags": [
+        "fixed BlurPool architecture kept at inference: its target path is not the plain ResNet-20"
+      ]
     },
-    "ablation/P_postbn": {
-      "key": "ablation/P_postbn",
-      "label": "Blur after every BatchNorm, annealed to zero",
+    "ablation/C_plain": {
+      "key": "ablation/C_plain",
+      "label": "Baseline: no blur, full 32x32 throughout (ablation batch)",
+      "family": "plain",
+      "batch": "ablation",
+      "status": "valid",
+      "acc_mean": 0.7506,
+      "acc_sd": 0.0,
+      "sd_status": "unavailable: one valid seed",
+      "acc_per_seed": [
+        0.7506
+      ],
+      "n_seeds": 1,
+      "n_attempted": 1,
+      "epochs": 30,
+      "wall_mean": 422.74991600400006,
+      "final_path": "target (declared primary_path)",
+      "flags": []
+    },
+    "ablation/C_plateau": {
+      "key": "ablation/C_plateau",
+      "label": "Blur every conv layer, annealed to zero",
       "family": "gauss",
       "batch": "ablation",
-      "acc_mean": 0.7839,
+      "status": "valid",
+      "acc_mean": 0.7818,
       "acc_sd": 0.0,
+      "sd_status": "unavailable: one valid seed",
       "acc_per_seed": [
-        0.7839
+        0.7818
       ],
       "n_seeds": 1,
+      "n_attempted": 1,
       "epochs": 30,
-      "wall_mean": 673.1079649489999,
-      "note": null
-    },
-    "ablation/R2": {
-      "key": "ablation/R2",
-      "label": "Shrink the input image, 16 to 24 to 32, plus blur every conv layer",
-      "family": "res_gauss",
-      "batch": "ablation",
-      "acc_mean": 0.7915,
-      "acc_sd": 0.0,
-      "acc_per_seed": [
-        0.7915
-      ],
-      "n_seeds": 1,
-      "epochs": 30,
-      "wall_mean": 604.291649022,
-      "note": null
-    },
-    "ablation/R6": {
-      "key": "ablation/R6",
-      "label": "Fixed blur after every ReLU, never annealed (control)",
-      "family": "constant",
-      "batch": "ablation",
-      "acc_mean": 0.7978,
-      "acc_sd": 0.0,
-      "acc_per_seed": [
-        0.7978
-      ],
-      "n_seeds": 1,
-      "epochs": 30,
-      "wall_mean": 557.146211472,
-      "note": "read on the current path (never reaches the target)"
-    },
-    "ablation/R4": {
-      "key": "ablation/R4",
-      "label": "Shrink the first conv layer, 16 to 24 to 32",
-      "family": "res",
-      "batch": "ablation",
-      "acc_mean": 0.7995,
-      "acc_sd": 0.0,
-      "acc_per_seed": [
-        0.7995
-      ],
-      "n_seeds": 1,
-      "epochs": 30,
-      "wall_mean": 437.244179349,
-      "note": null
-    },
-    "ablation/R5": {
-      "key": "ablation/R5",
-      "label": "Shrink after the first ReLU, plus blur after every ReLU",
-      "family": "res_gauss",
-      "batch": "ablation",
-      "acc_mean": 0.7965,
-      "acc_sd": 0.0,
-      "acc_per_seed": [
-        0.7965
-      ],
-      "n_seeds": 1,
-      "epochs": 30,
-      "wall_mean": 536.3336735590001,
-      "note": null
-    },
-    "ablation/R1": {
-      "key": "ablation/R1",
-      "label": "Shrink the input image, 16 to 24 to 32",
-      "family": "res",
-      "batch": "ablation",
-      "acc_mean": 0.7892,
-      "acc_sd": 0.0,
-      "acc_per_seed": [
-        0.7892
-      ],
-      "n_seeds": 1,
-      "epochs": 30,
-      "wall_mean": 443.10095360400004,
-      "note": null
-    },
-    "ablation/R3": {
-      "key": "ablation/R3",
-      "label": "Shrink the input image, 16 to 24 to 32, plus blur after every ReLU",
-      "family": "res_gauss",
-      "batch": "ablation",
-      "acc_mean": 0.8014,
-      "acc_sd": 0.0,
-      "acc_per_seed": [
-        0.8014
-      ],
-      "n_seeds": 1,
-      "epochs": 30,
-      "wall_mean": 542.3159003310001,
-      "note": null
-    },
-    "ablation/D2G": {
-      "key": "ablation/D2G",
-      "label": "Shrink block 2, plus blur after every ReLU",
-      "family": "res_gauss",
-      "batch": "ablation",
-      "acc_mean": 0.8099333333333333,
-      "acc_sd": 0.004135617648348705,
-      "acc_per_seed": [
-        0.8054,
-        0.8109,
-        0.8135
-      ],
-      "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": 574.1716578036667,
-      "note": null
-    },
-    "ablation/D1G": {
-      "key": "ablation/D1G",
-      "label": "Shrink block 1, plus blur after every ReLU",
-      "family": "res_gauss",
-      "batch": "ablation",
-      "acc_mean": 0.8008,
-      "acc_sd": 0.0,
-      "acc_per_seed": [
-        0.8008
-      ],
-      "n_seeds": 1,
-      "epochs": 30,
-      "wall_mean": 519.259120054,
-      "note": null
-    },
-    "ablation/D0G": {
-      "key": "ablation/D0G",
-      "label": "Shrink block 0, plus blur after every ReLU",
-      "family": "res_gauss",
-      "batch": "ablation",
-      "acc_mean": 0.8053,
-      "acc_sd": 0.0,
-      "acc_per_seed": [
-        0.8053
-      ],
-      "n_seeds": 1,
-      "epochs": 30,
-      "wall_mean": 544.9563959760001,
-      "note": null
+      "wall_mean": 648.400603669,
+      "final_path": "target (declared primary_path)",
+      "flags": []
     },
     "ablation/D0": {
       "key": "ablation/D0",
       "label": "Shrink block 0 with max-pool, 16 to 24 to 32",
       "family": "res",
       "batch": "ablation",
+      "status": "valid",
       "acc_mean": 0.8044,
       "acc_sd": 0.00428835632847835,
+      "sd_status": null,
       "acc_per_seed": [
         0.8007,
         0.8034,
         0.8091
       ],
       "n_seeds": 3,
+      "n_attempted": 3,
       "epochs": 30,
-      "wall_mean": 455.3776495293334,
-      "note": null
+      "wall_mean": 455.3776495293333,
+      "final_path": "target (declared primary_path)",
+      "flags": []
+    },
+    "ablation/D0G": {
+      "key": "ablation/D0G",
+      "label": "Shrink block 0, plus blur after every ReLU",
+      "family": "res_gauss",
+      "batch": "ablation",
+      "status": "valid",
+      "acc_mean": 0.8053,
+      "acc_sd": 0.0,
+      "sd_status": "unavailable: one valid seed",
+      "acc_per_seed": [
+        0.8053
+      ],
+      "n_seeds": 1,
+      "n_attempted": 1,
+      "epochs": 30,
+      "wall_mean": 544.9563959760001,
+      "final_path": "target (declared primary_path)",
+      "flags": []
     },
     "ablation/D1": {
       "key": "ablation/D1",
       "label": "Shrink block 1 with max-pool, 16 to 24 to 32",
       "family": "res",
       "batch": "ablation",
+      "status": "valid",
       "acc_mean": 0.8059,
       "acc_sd": 0.004121892769104996,
+      "sd_status": null,
       "acc_per_seed": [
         0.8029,
         0.8042,
         0.8106
       ],
       "n_seeds": 3,
+      "n_attempted": 3,
       "epochs": 30,
-      "wall_mean": 447.377761463,
-      "note": null
+      "wall_mean": 447.37776146299996,
+      "final_path": "target (declared primary_path)",
+      "flags": []
+    },
+    "ablation/D1G": {
+      "key": "ablation/D1G",
+      "label": "Shrink block 1, plus blur after every ReLU",
+      "family": "res_gauss",
+      "batch": "ablation",
+      "status": "valid",
+      "acc_mean": 0.8008,
+      "acc_sd": 0.0,
+      "sd_status": "unavailable: one valid seed",
+      "acc_per_seed": [
+        0.8008
+      ],
+      "n_seeds": 1,
+      "n_attempted": 1,
+      "epochs": 30,
+      "wall_mean": 519.259120054,
+      "final_path": "target (declared primary_path)",
+      "flags": []
     },
     "ablation/D2": {
       "key": "ablation/D2",
       "label": "Shrink block 2 with max-pool, 16 to 24 to 32",
       "family": "res",
       "batch": "ablation",
+      "status": "valid",
       "acc_mean": 0.8009333333333334,
       "acc_sd": 0.001703917055884215,
+      "sd_status": null,
       "acc_per_seed": [
         0.7999,
         0.8,
         0.8029
       ],
       "n_seeds": 3,
+      "n_attempted": 3,
       "epochs": 30,
-      "wall_mean": 446.9022255073334,
-      "note": null
+      "wall_mean": 446.90222550733336,
+      "final_path": "target (declared primary_path)",
+      "flags": []
     },
-    "ablation/P_A2": {
-      "key": "ablation/P_A2",
-      "label": "Shrink block 2, plus blur scaled by sqrt of map size after every ReLU",
-      "family": "profile",
+    "ablation/D2G": {
+      "key": "ablation/D2G",
+      "label": "Shrink block 2, plus blur after every ReLU",
+      "family": "res_gauss",
       "batch": "ablation",
-      "acc_mean": 0.8027666666666666,
-      "acc_sd": 0.0024378952670968354,
+      "status": "valid",
+      "acc_mean": 0.8099333333333333,
+      "acc_sd": 0.004135617648348705,
+      "sd_status": null,
       "acc_per_seed": [
-        0.8,
-        0.8037,
-        0.8046
-      ],
-      "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": 550.6919706903333,
-      "note": null
-    },
-    "ablation/P_A3": {
-      "key": "ablation/P_A3",
-      "label": "Shrink block 2, plus blur rising with depth after every ReLU (direction control)",
-      "family": "profile",
-      "batch": "ablation",
-      "acc_mean": 0.8018,
-      "acc_sd": 0.004582575694955844,
-      "acc_per_seed": [
-        0.7978,
-        0.8008,
-        0.8068
-      ],
-      "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": 582.5056657609999,
-      "note": null
-    },
-    "ablation/Q_A1": {
-      "key": "ablation/Q_A1",
-      "label": "Blur scaled by map size, after every ReLU",
-      "family": "profile",
-      "batch": "ablation",
-      "acc_mean": 0.7847666666666667,
-      "acc_sd": 0.003251666239535234,
-      "acc_per_seed": [
-        0.7819,
-        0.7841,
-        0.7883
-      ],
-      "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": 550.0632760479999,
-      "note": null
-    },
-    "ablation/Q_A3": {
-      "key": "ablation/Q_A3",
-      "label": "Blur rising with depth, after every ReLU (direction control)",
-      "family": "profile",
-      "batch": "ablation",
-      "acc_mean": 0.7700666666666667,
-      "acc_sd": 0.003821430796617064,
-      "acc_per_seed": [
-        0.7657,
-        0.7717,
-        0.7728
-      ],
-      "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": 585.4597696876666,
-      "note": null
-    },
-    "ablation/Q_A4": {
-      "key": "ablation/Q_A4",
-      "label": "Blur scaled by receptive field, after every ReLU",
-      "family": "profile",
-      "batch": "ablation",
-      "acc_mean": 0.7958666666666667,
-      "acc_sd": 0.0009504384952921687,
-      "acc_per_seed": [
-        0.7949,
-        0.7959,
-        0.7968
-      ],
-      "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": 532.2203067626666,
-      "note": null
-    },
-    "ablation/P_A4": {
-      "key": "ablation/P_A4",
-      "label": "Shrink block 2, plus blur scaled by receptive field after every ReLU",
-      "family": "profile",
-      "batch": "ablation",
-      "acc_mean": 0.8114333333333333,
-      "acc_sd": 0.0022479620400116316,
-      "acc_per_seed": [
-        0.8095,
+        0.8054,
         0.8109,
-        0.8139
+        0.8135
       ],
       "n_seeds": 3,
+      "n_attempted": 3,
       "epochs": 30,
-      "wall_mean": 593.6692725556667,
-      "note": null
+      "wall_mean": 574.1716578036667,
+      "final_path": "target (declared primary_path)",
+      "flags": []
     },
-    "ablation/Q_A2": {
-      "key": "ablation/Q_A2",
-      "label": "Blur scaled by sqrt of map size, after every ReLU",
-      "family": "profile",
+    "ablation/K_const030": {
+      "key": "ablation/K_const030",
+      "label": "Fixed blur 0.30, never annealed (control)",
+      "family": "constant",
       "batch": "ablation",
-      "acc_mean": 0.7955333333333333,
-      "acc_sd": 0.004636090306856987,
+      "status": "valid",
+      "acc_mean": 0.7497,
+      "acc_sd": 0.0,
+      "sd_status": "unavailable: one valid seed",
       "acc_per_seed": [
-        0.7906,
-        0.7962,
-        0.7998
+        0.7497
       ],
-      "n_seeds": 3,
+      "n_seeds": 1,
+      "n_attempted": 1,
       "epochs": 30,
-      "wall_mean": 578.8097621516666,
-      "note": null
+      "wall_mean": 754.985266783,
+      "final_path": "current (declared primary_path)",
+      "flags": [
+        "fixed-filter control: constant sigma, never annealed; final metric is the filtered (current) path"
+      ]
+    },
+    "ablation/K_const050": {
+      "key": "ablation/K_const050",
+      "label": "Fixed blur 0.50, never annealed (control)",
+      "family": "constant",
+      "batch": "ablation",
+      "status": "valid",
+      "acc_mean": 0.7869,
+      "acc_sd": 0.0,
+      "sd_status": "unavailable: one valid seed",
+      "acc_per_seed": [
+        0.7869
+      ],
+      "n_seeds": 1,
+      "n_attempted": 1,
+      "epochs": 30,
+      "wall_mean": 737.8838072870001,
+      "final_path": "current (declared primary_path)",
+      "flags": [
+        "fixed-filter control: constant sigma, never annealed; final metric is the filtered (current) path"
+      ]
+    },
+    "ablation/K_const080": {
+      "key": "ablation/K_const080",
+      "label": "Fixed blur 0.80, never annealed (control)",
+      "family": "constant",
+      "batch": "ablation",
+      "status": "valid",
+      "acc_mean": 0.7502,
+      "acc_sd": 0.0,
+      "sd_status": "unavailable: one valid seed",
+      "acc_per_seed": [
+        0.7502
+      ],
+      "n_seeds": 1,
+      "n_attempted": 1,
+      "epochs": 30,
+      "wall_mean": 736.458346479,
+      "final_path": "current (declared primary_path)",
+      "flags": [
+        "fixed-filter control: constant sigma, never annealed; final metric is the filtered (current) path"
+      ]
+    },
+    "ablation/K_const100": {
+      "key": "ablation/K_const100",
+      "label": "Fixed blur 1.00, never annealed (control)",
+      "family": "constant",
+      "batch": "ablation",
+      "status": "valid",
+      "acc_mean": 0.7115,
+      "acc_sd": 0.0,
+      "sd_status": "unavailable: one valid seed",
+      "acc_per_seed": [
+        0.7115
+      ],
+      "n_seeds": 1,
+      "n_attempted": 1,
+      "epochs": 30,
+      "wall_mean": 748.7131098539999,
+      "final_path": "current (declared primary_path)",
+      "flags": [
+        "fixed-filter control: constant sigma, never annealed; final metric is the filtered (current) path"
+      ]
+    },
+    "ablation/M_nodown": {
+      "key": "ablation/M_nodown",
+      "label": "Blur the 17 layers away from a downsample",
+      "family": "gauss",
+      "batch": "ablation",
+      "status": "valid",
+      "acc_mean": 0.7852,
+      "acc_sd": 0.0,
+      "sd_status": "unavailable: one valid seed",
+      "acc_per_seed": [
+        0.7852
+      ],
+      "n_seeds": 1,
+      "n_attempted": 1,
+      "epochs": 30,
+      "wall_mean": 604.8313674369999,
+      "final_path": "target (declared primary_path)",
+      "flags": []
+    },
+    "ablation/M_predown": {
+      "key": "ablation/M_predown",
+      "label": "Blur only the 2 layers feeding a downsample",
+      "family": "gauss",
+      "batch": "ablation",
+      "status": "valid",
+      "acc_mean": 0.7755,
+      "acc_sd": 0.0,
+      "sd_status": "unavailable: one valid seed",
+      "acc_per_seed": [
+        0.7755
+      ],
+      "n_seeds": 1,
+      "n_attempted": 1,
+      "epochs": 30,
+      "wall_mean": 436.0516253720001,
+      "final_path": "target (declared primary_path)",
+      "flags": []
     },
     "ablation/P_A1": {
       "key": "ablation/P_A1",
       "label": "Shrink block 2, plus blur scaled by map size after every ReLU",
       "family": "profile",
       "batch": "ablation",
+      "status": "valid",
       "acc_mean": 0.7961,
       "acc_sd": 0.0043577517139001525,
+      "sd_status": null,
       "acc_per_seed": [
         0.7919,
         0.7958,
         0.8006
       ],
       "n_seeds": 3,
+      "n_attempted": 3,
       "epochs": 30,
       "wall_mean": 632.6406352416667,
-      "note": null
+      "final_path": "target (declared primary_path)",
+      "flags": []
     },
-    "adaptive/ADAPTGAP@30": {
-      "key": "adaptive/ADAPTGAP@30",
-      "label": "Blur schedule chosen by a transfer-gap trigger (mis-set)",
-      "family": "adaptive",
-      "batch": "adaptive",
-      "acc_mean": 0.7539,
-      "acc_sd": 0.0,
+    "ablation/P_A2": {
+      "key": "ablation/P_A2",
+      "label": "Shrink block 2, plus blur scaled by sqrt of map size after every ReLU",
+      "family": "profile",
+      "batch": "ablation",
+      "status": "valid",
+      "acc_mean": 0.8027666666666666,
+      "acc_sd": 0.0024378952670968354,
+      "sd_status": null,
       "acc_per_seed": [
-        0.7539
+        0.8,
+        0.8037,
+        0.8046
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 550.6919706903334,
+      "final_path": "target (declared primary_path)",
+      "flags": []
+    },
+    "ablation/P_A3": {
+      "key": "ablation/P_A3",
+      "label": "Shrink block 2, plus blur rising with depth after every ReLU (direction control)",
+      "family": "profile",
+      "batch": "ablation",
+      "status": "valid",
+      "acc_mean": 0.8018,
+      "acc_sd": 0.004582575694955844,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.7978,
+        0.8008,
+        0.8068
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 582.5056657609999,
+      "final_path": "target (declared primary_path)",
+      "flags": []
+    },
+    "ablation/P_A4": {
+      "key": "ablation/P_A4",
+      "label": "Shrink block 2, plus blur scaled by receptive field after every ReLU",
+      "family": "profile",
+      "batch": "ablation",
+      "status": "valid",
+      "acc_mean": 0.8114333333333333,
+      "acc_sd": 0.0022479620400116316,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.8095,
+        0.8109,
+        0.8139
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 593.6692725556667,
+      "final_path": "target (declared primary_path)",
+      "flags": []
+    },
+    "ablation/P_postblock": {
+      "key": "ablation/P_postblock",
+      "label": "Blur after every ReLU (10 places), annealed to zero",
+      "family": "gauss",
+      "batch": "ablation",
+      "status": "valid",
+      "acc_mean": 0.8008333333333334,
+      "acc_sd": 0.002119748412744615,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.7989,
+        0.8005,
+        0.8031
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 538.1907630936668,
+      "final_path": "target (declared primary_path)",
+      "flags": []
+    },
+    "ablation/P_postbn": {
+      "key": "ablation/P_postbn",
+      "label": "Blur after every BatchNorm, annealed to zero",
+      "family": "gauss",
+      "batch": "ablation",
+      "status": "valid",
+      "acc_mean": 0.7839,
+      "acc_sd": 0.0,
+      "sd_status": "unavailable: one valid seed",
+      "acc_per_seed": [
+        0.7839
       ],
       "n_seeds": 1,
+      "n_attempted": 1,
       "epochs": 30,
-      "wall_mean": 618.792438752,
-      "note": null
+      "wall_mean": 673.1079649489999,
+      "final_path": "target (declared primary_path)",
+      "flags": []
     },
-    "adaptive/ADAPTGAP2@30": {
-      "key": "adaptive/ADAPTGAP2@30",
-      "label": "Blur schedule chosen by a transfer-gap trigger",
-      "family": "adaptive",
-      "batch": "adaptive",
-      "acc_mean": 0.7713,
-      "acc_sd": 0.0,
+    "ablation/Q_A1": {
+      "key": "ablation/Q_A1",
+      "label": "Blur scaled by map size, after every ReLU",
+      "family": "profile",
+      "batch": "ablation",
+      "status": "valid",
+      "acc_mean": 0.7847666666666667,
+      "acc_sd": 0.003251666239535234,
+      "sd_status": null,
       "acc_per_seed": [
-        0.7713
+        0.7819,
+        0.7841,
+        0.7883
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 550.0632760479999,
+      "final_path": "target (declared primary_path)",
+      "flags": []
+    },
+    "ablation/Q_A2": {
+      "key": "ablation/Q_A2",
+      "label": "Blur scaled by sqrt of map size, after every ReLU",
+      "family": "profile",
+      "batch": "ablation",
+      "status": "valid",
+      "acc_mean": 0.7955333333333333,
+      "acc_sd": 0.004636090306856987,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.7906,
+        0.7962,
+        0.7998
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 578.8097621516666,
+      "final_path": "target (declared primary_path)",
+      "flags": []
+    },
+    "ablation/Q_A3": {
+      "key": "ablation/Q_A3",
+      "label": "Blur rising with depth, after every ReLU (direction control)",
+      "family": "profile",
+      "batch": "ablation",
+      "status": "valid",
+      "acc_mean": 0.7700666666666667,
+      "acc_sd": 0.003821430796617064,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.7657,
+        0.7717,
+        0.7728
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 585.4597696876666,
+      "final_path": "target (declared primary_path)",
+      "flags": []
+    },
+    "ablation/Q_A4": {
+      "key": "ablation/Q_A4",
+      "label": "Blur scaled by receptive field, after every ReLU",
+      "family": "profile",
+      "batch": "ablation",
+      "status": "valid",
+      "acc_mean": 0.7958666666666667,
+      "acc_sd": 0.0009504384952921687,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.7949,
+        0.7959,
+        0.7968
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 532.2203067626666,
+      "final_path": "target (declared primary_path)",
+      "flags": []
+    },
+    "ablation/R1": {
+      "key": "ablation/R1",
+      "label": "Shrink the input image, 16 to 24 to 32",
+      "family": "res",
+      "batch": "ablation",
+      "status": "valid",
+      "acc_mean": 0.7892,
+      "acc_sd": 0.0,
+      "sd_status": "unavailable: one valid seed",
+      "acc_per_seed": [
+        0.7892
       ],
       "n_seeds": 1,
+      "n_attempted": 1,
       "epochs": 30,
-      "wall_mean": 621.5481440410001,
-      "note": null
+      "wall_mean": 443.10095360400004,
+      "final_path": "target (declared primary_path)",
+      "flags": []
     },
-    "adaptive/ADAPTRES@30": {
-      "key": "adaptive/ADAPTRES@30",
-      "label": "Resolution schedule chosen by a transfer-gap trigger",
-      "family": "adaptive",
-      "batch": "adaptive",
-      "acc_mean": 0.7729,
+    "ablation/R2": {
+      "key": "ablation/R2",
+      "label": "Shrink the input image, 16 to 24 to 32, plus blur every conv layer",
+      "family": "res_gauss",
+      "batch": "ablation",
+      "status": "valid",
+      "acc_mean": 0.7915,
       "acc_sd": 0.0,
+      "sd_status": "unavailable: one valid seed",
       "acc_per_seed": [
-        0.7729
+        0.7915
       ],
       "n_seeds": 1,
+      "n_attempted": 1,
       "epochs": 30,
-      "wall_mean": 410.38168239400005,
-      "note": null
+      "wall_mean": 604.291649022,
+      "final_path": "target (declared primary_path)",
+      "flags": []
     },
-    "adaptive/ADAPT@30": {
-      "key": "adaptive/ADAPT@30",
+    "ablation/R3": {
+      "key": "ablation/R3",
+      "label": "Shrink the input image, 16 to 24 to 32, plus blur after every ReLU",
+      "family": "res_gauss",
+      "batch": "ablation",
+      "status": "valid",
+      "acc_mean": 0.8014,
+      "acc_sd": 0.0,
+      "sd_status": "unavailable: one valid seed",
+      "acc_per_seed": [
+        0.8014
+      ],
+      "n_seeds": 1,
+      "n_attempted": 1,
+      "epochs": 30,
+      "wall_mean": 542.3159003310001,
+      "final_path": "target (declared primary_path)",
+      "flags": []
+    },
+    "ablation/R4": {
+      "key": "ablation/R4",
+      "label": "Shrink the first conv layer, 16 to 24 to 32",
+      "family": "res",
+      "batch": "ablation",
+      "status": "valid",
+      "acc_mean": 0.7995,
+      "acc_sd": 0.0,
+      "sd_status": "unavailable: one valid seed",
+      "acc_per_seed": [
+        0.7995
+      ],
+      "n_seeds": 1,
+      "n_attempted": 1,
+      "epochs": 30,
+      "wall_mean": 437.244179349,
+      "final_path": "target (declared primary_path)",
+      "flags": []
+    },
+    "ablation/R5": {
+      "key": "ablation/R5",
+      "label": "Shrink after the first ReLU, plus blur after every ReLU",
+      "family": "res_gauss",
+      "batch": "ablation",
+      "status": "valid",
+      "acc_mean": 0.7965,
+      "acc_sd": 0.0,
+      "sd_status": "unavailable: one valid seed",
+      "acc_per_seed": [
+        0.7965
+      ],
+      "n_seeds": 1,
+      "n_attempted": 1,
+      "epochs": 30,
+      "wall_mean": 536.3336735590001,
+      "final_path": "target (declared primary_path)",
+      "flags": []
+    },
+    "ablation/R6": {
+      "key": "ablation/R6",
+      "label": "Fixed blur after every ReLU, never annealed (control)",
+      "family": "constant",
+      "batch": "ablation",
+      "status": "valid",
+      "acc_mean": 0.7978,
+      "acc_sd": 0.0,
+      "sd_status": "unavailable: one valid seed",
+      "acc_per_seed": [
+        0.7978
+      ],
+      "n_seeds": 1,
+      "n_attempted": 1,
+      "epochs": 30,
+      "wall_mean": 557.146211472,
+      "final_path": "current (declared primary_path)",
+      "flags": [
+        "fixed-filter control: constant post-ReLU sigma; final metric is the filtered (current) path"
+      ]
+    },
+    "adaptive/ADAPT": {
+      "key": "adaptive/ADAPT",
       "label": "Blur schedule chosen by the network (first trigger)",
       "family": "adaptive",
       "batch": "adaptive",
+      "status": "valid",
       "acc_mean": 0.7634,
       "acc_sd": 0.0,
+      "sd_status": "unavailable: one valid seed",
       "acc_per_seed": [
         0.7634
       ],
       "n_seeds": 1,
+      "n_attempted": 1,
       "epochs": 30,
       "wall_mean": 610.152784268,
-      "note": null
+      "final_path": "current=target",
+      "flags": []
     },
-    "adaptive/alloc_back@30": {
-      "key": "adaptive/alloc_back@30",
-      "label": "Blur schedule, more time at low blur",
+    "adaptive/ADAPTGAP@adaptive-gap-20260910-115703": {
+      "key": "adaptive/ADAPTGAP@adaptive-gap-20260910-115703",
+      "label": "Blur schedule chosen by a transfer-gap trigger (mis-set) [launch adaptive-gap-20260910-115703]",
       "family": "adaptive",
       "batch": "adaptive",
-      "acc_mean": 0.7874,
+      "status": "valid",
+      "acc_mean": 0.7539,
       "acc_sd": 0.0,
+      "sd_status": "unavailable: one valid seed",
       "acc_per_seed": [
-        0.7874
+        0.7539
       ],
       "n_seeds": 1,
+      "n_attempted": 1,
       "epochs": 30,
-      "wall_mean": 654.411293457,
-      "note": null
+      "wall_mean": 618.792438752,
+      "final_path": "current=target",
+      "flags": []
     },
-    "adaptive/alloc_front@30": {
-      "key": "adaptive/alloc_front@30",
-      "label": "Blur schedule, more time at high blur",
+    "adaptive/ADAPTGAP@adaptive-gap2-20260910-121319": {
+      "key": "adaptive/ADAPTGAP@adaptive-gap2-20260910-121319",
+      "label": "Blur schedule chosen by a transfer-gap trigger [launch adaptive-gap2-20260910-121319]",
       "family": "adaptive",
       "batch": "adaptive",
-      "acc_mean": 0.7657,
+      "status": "valid",
+      "acc_mean": 0.7713,
       "acc_sd": 0.0,
+      "sd_status": "unavailable: one valid seed",
       "acc_per_seed": [
-        0.7657
+        0.7713
       ],
       "n_seeds": 1,
+      "n_attempted": 1,
       "epochs": 30,
-      "wall_mean": 663.2753145529999,
-      "note": null
+      "wall_mean": 621.5481440410001,
+      "final_path": "current=target",
+      "flags": []
     },
-    "adaptive/Gplateau_cal@30": {
-      "key": "adaptive/Gplateau_cal@30",
-      "label": "Blur every conv layer, annealed (instrumented rerun)",
+    "adaptive/ADAPTRES": {
+      "key": "adaptive/ADAPTRES",
+      "label": "Resolution schedule chosen by a transfer-gap trigger",
+      "family": "adaptive",
+      "batch": "adaptive",
+      "status": "valid",
+      "acc_mean": 0.7729,
+      "acc_sd": 0.0,
+      "sd_status": "unavailable: one valid seed",
+      "acc_per_seed": [
+        0.7729
+      ],
+      "n_seeds": 1,
+      "n_attempted": 1,
+      "epochs": 30,
+      "wall_mean": 410.38168239400005,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "adaptive/Gplateau_cal@gradnorm-cal-20260910-105845": {
+      "key": "adaptive/Gplateau_cal@gradnorm-cal-20260910-105845",
+      "label": "Blur every conv layer, annealed (instrumented rerun) [launch gradnorm-cal-20260910-105845]",
       "family": "gauss",
       "batch": "adaptive",
+      "status": "valid",
       "acc_mean": 0.7797,
       "acc_sd": 0.0,
+      "sd_status": "unavailable: one valid seed",
       "acc_per_seed": [
         0.7797
       ],
       "n_seeds": 1,
+      "n_attempted": 1,
       "epochs": 30,
       "wall_mean": 637.455730764,
-      "note": null
+      "final_path": "current=target",
+      "flags": []
     },
-    "adaptive/Gplateau_cal2@30": {
-      "key": "adaptive/Gplateau_cal2@30",
-      "label": "Blur every conv layer, annealed (instrumented rerun 2)",
+    "adaptive/Gplateau_cal@gradnorm-cal2-20260910-111547": {
+      "key": "adaptive/Gplateau_cal@gradnorm-cal2-20260910-111547",
+      "label": "Blur every conv layer, annealed (instrumented rerun) [launch gradnorm-cal2-20260910-111547]",
       "family": "gauss",
       "batch": "adaptive",
+      "status": "valid",
       "acc_mean": 0.7794,
       "acc_sd": 0.0,
+      "sd_status": "unavailable: one valid seed",
       "acc_per_seed": [
         0.7794
       ],
       "n_seeds": 1,
+      "n_attempted": 1,
       "epochs": 30,
       "wall_mean": 719.241384594,
-      "note": null
+      "final_path": "current=target",
+      "flags": []
     },
-    "adaptive/rho1@30": {
-      "key": "adaptive/rho1@30",
-      "label": "Per-layer blur strength, exponent 1",
-      "family": "profile",
+    "adaptive/Gplateau_cal@signals-cal3-20260910-113759": {
+      "key": "adaptive/Gplateau_cal@signals-cal3-20260910-113759",
+      "label": "Blur every conv layer, annealed (instrumented rerun) [launch signals-cal3-20260910-113759]",
+      "family": "gauss",
       "batch": "adaptive",
-      "acc_mean": 0.7765166666666666,
-      "acc_sd": 0.006357174424747729,
+      "status": "valid",
+      "acc_mean": 0.7833,
+      "acc_sd": 0.0,
+      "sd_status": "unavailable: one valid seed",
       "acc_per_seed": [
-        0.7689,
-        0.7714,
-        0.773,
-        0.7791,
-        0.7817,
-        0.785
+        0.7833
       ],
-      "n_seeds": 6,
+      "n_seeds": 1,
+      "n_attempted": 1,
       "epochs": 30,
-      "wall_mean": 0,
-      "note": null
+      "wall_mean": 721.3117316709998,
+      "final_path": "current=target",
+      "flags": []
     },
-    "adaptive/adaptive@30": {
-      "key": "adaptive/adaptive@30",
-      "label": "Per-layer blur strength chosen by the network",
+    "adaptive/alloc_back": {
+      "key": "adaptive/alloc_back",
+      "label": "Blur schedule, more time at low blur",
+      "family": "adaptive",
+      "batch": "adaptive",
+      "status": "valid",
+      "acc_mean": 0.7874,
+      "acc_sd": 0.0,
+      "sd_status": "unavailable: one valid seed",
+      "acc_per_seed": [
+        0.7874
+      ],
+      "n_seeds": 1,
+      "n_attempted": 1,
+      "epochs": 30,
+      "wall_mean": 654.411293457,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "adaptive/alloc_front": {
+      "key": "adaptive/alloc_front",
+      "label": "Blur schedule, more time at high blur",
+      "family": "adaptive",
+      "batch": "adaptive",
+      "status": "valid",
+      "acc_mean": 0.7657,
+      "acc_sd": 0.0,
+      "sd_status": "unavailable: one valid seed",
+      "acc_per_seed": [
+        0.7657
+      ],
+      "n_seeds": 1,
+      "n_attempted": 1,
+      "epochs": 30,
+      "wall_mean": 663.2753145529999,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "adaptive/adaptive@per-layer-adaptive-fix-20260910-130520": {
+      "key": "adaptive/adaptive@per-layer-adaptive-fix-20260910-130520",
+      "label": "Per-layer blur strength chosen by the network [launch per-layer-adaptive-fix-20260910-130520]",
       "family": "profile",
       "batch": "adaptive",
+      "status": "valid",
+      "acc_mean": 0.7735333333333333,
+      "acc_sd": 0.0048809152147248945,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.769,
+        0.7729,
+        0.7787
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": null,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "adaptive/adaptive@per-layer-sigma-20260910-094757": {
+      "key": "adaptive/adaptive@per-layer-sigma-20260910-094757",
+      "label": "Per-layer blur strength chosen by the network [launch per-layer-sigma-20260910-094757]",
+      "family": "profile",
+      "batch": "adaptive",
+      "status": "valid",
       "acc_mean": 0.775,
       "acc_sd": 0.006069596362197414,
+      "sd_status": null,
       "acc_per_seed": [
         0.7712,
         0.7718,
         0.782
       ],
       "n_seeds": 3,
+      "n_attempted": 3,
       "epochs": 30,
-      "wall_mean": 0,
-      "note": null
+      "wall_mean": null,
+      "final_path": "current=target",
+      "flags": []
     },
-    "adaptive/plain@30": {
-      "key": "adaptive/plain@30",
-      "label": "Baseline: no blur, full 32x32 throughout (per-layer batch)",
+    "adaptive/plain@per-layer-adaptive-fix-20260910-130520": {
+      "key": "adaptive/plain@per-layer-adaptive-fix-20260910-130520",
+      "label": "Baseline: no blur, full 32x32 throughout (per-layer batch) [launch per-layer-adaptive-fix-20260910-130520]",
       "family": "plain",
       "batch": "adaptive",
+      "status": "valid",
+      "acc_mean": 0.7391333333333333,
+      "acc_sd": 0.006206716791777502,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.7355,
+        0.7356,
+        0.7463
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": null,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "adaptive/plain@per-layer-sigma-20260910-094757": {
+      "key": "adaptive/plain@per-layer-sigma-20260910-094757",
+      "label": "Baseline: no blur, full 32x32 throughout (per-layer batch) [launch per-layer-sigma-20260910-094757]",
+      "family": "plain",
+      "batch": "adaptive",
+      "status": "valid",
       "acc_mean": 0.7442,
       "acc_sd": 0.0028583211855913136,
+      "sd_status": null,
       "acc_per_seed": [
         0.741,
         0.7451,
         0.7465
       ],
       "n_seeds": 3,
+      "n_attempted": 3,
       "epochs": 30,
-      "wall_mean": 0,
-      "note": null
+      "wall_mean": null,
+      "final_path": "current=target",
+      "flags": []
     },
-    "adaptive/rho0.5@30": {
-      "key": "adaptive/rho0.5@30",
+    "adaptive/plain@sigma0=1": {
+      "key": "adaptive/plain@sigma0=1",
+      "label": "Baseline: no blur, full 32x32 throughout (per-layer batch), sigma0 = 1",
+      "family": "plain",
+      "batch": "adaptive",
+      "status": "valid",
+      "acc_mean": 0.7413333333333333,
+      "acc_sd": 0.007266590213665074,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.7338,
+        0.7419,
+        0.7483
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": null,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "adaptive/rho0.5": {
+      "key": "adaptive/rho0.5",
       "label": "Per-layer blur strength, exponent 0.5",
       "family": "profile",
       "batch": "adaptive",
+      "status": "valid",
       "acc_mean": 0.7465333333333334,
       "acc_sd": 0.006657577136866924,
+      "sd_status": null,
       "acc_per_seed": [
         0.7397,
         0.7469,
         0.753
       ],
       "n_seeds": 3,
+      "n_attempted": 3,
       "epochs": 30,
-      "wall_mean": 0,
-      "note": null
+      "wall_mean": null,
+      "final_path": "current=target",
+      "flags": []
     },
-    "adaptive/rho2@30": {
-      "key": "adaptive/rho2@30",
+    "adaptive/rho1@per-layer-adaptive-fix-20260910-130520": {
+      "key": "adaptive/rho1@per-layer-adaptive-fix-20260910-130520",
+      "label": "Per-layer blur strength, exponent 1 [launch per-layer-adaptive-fix-20260910-130520]",
+      "family": "profile",
+      "batch": "adaptive",
+      "status": "valid",
+      "acc_mean": 0.7765666666666666,
+      "acc_sd": 0.0067655992589964195,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.7689,
+        0.7791,
+        0.7817
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": null,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "adaptive/rho1@per-layer-sigma-20260910-094757": {
+      "key": "adaptive/rho1@per-layer-sigma-20260910-094757",
+      "label": "Per-layer blur strength, exponent 1 [launch per-layer-sigma-20260910-094757]",
+      "family": "profile",
+      "batch": "adaptive",
+      "status": "valid",
+      "acc_mean": 0.7764666666666666,
+      "acc_sd": 0.007433258594542077,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.7714,
+        0.773,
+        0.785
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": null,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "adaptive/rho1@sigma0=1": {
+      "key": "adaptive/rho1@sigma0=1",
+      "label": "Per-layer blur strength, exponent 1, sigma0 = 1",
+      "family": "profile",
+      "batch": "adaptive",
+      "status": "valid",
+      "acc_mean": 0.7784333333333333,
+      "acc_sd": 0.006334298172120829,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.7713,
+        0.7806,
+        0.7834
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": null,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "adaptive/rho2": {
+      "key": "adaptive/rho2",
       "label": "Per-layer blur strength, exponent 2",
       "family": "profile",
       "batch": "adaptive",
+      "status": "valid",
       "acc_mean": 0.7665,
       "acc_sd": 0.002066397831977183,
+      "sd_status": null,
       "acc_per_seed": [
         0.7643,
         0.7668,
         0.7684
       ],
       "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": 0,
-      "note": null
-    },
-    "adaptive/Gplateau_cal3@30": {
-      "key": "adaptive/Gplateau_cal3@30",
-      "label": "Blur every conv layer, annealed (instrumented rerun 3)",
-      "family": "gauss",
-      "batch": "adaptive",
-      "acc_mean": 0.7833,
-      "acc_sd": 0.0,
-      "acc_per_seed": [
-        0.7833
-      ],
-      "n_seeds": 1,
-      "epochs": 30,
-      "wall_mean": 721.3117316709998,
-      "note": null
-    },
-    "unified/plain": {
-      "key": "unified/plain",
-      "label": "Baseline: no blur, full 32x32 throughout (unified batch)",
-      "family": "plain",
-      "batch": "unified",
-      "acc_mean": 0.7543,
-      "acc_sd": 0.007615116545398348,
-      "acc_per_seed": [
-        0.7458,
-        0.7566,
-        0.7605
-      ],
-      "n_seeds": 3,
+      "n_attempted": 3,
       "epochs": 30,
       "wall_mean": null,
-      "note": null
+      "final_path": "current=target",
+      "flags": []
+    },
+    "adaptive/s0_0.25@sigma0=0.25": {
+      "key": "adaptive/s0_0.25@sigma0=0.25",
+      "label": "Per-layer blur strength, exponent 1, sigma0 = 0.25",
+      "family": "adaptive",
+      "batch": "adaptive",
+      "status": "valid",
+      "acc_mean": 0.7381,
+      "acc_sd": 0.00955196314900765,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.7319,
+        0.7333,
+        0.7491
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": null,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "adaptive/s0_0.5@sigma0=0.5": {
+      "key": "adaptive/s0_0.5@sigma0=0.5",
+      "label": "Per-layer blur strength, exponent 1, sigma0 = 0.5",
+      "family": "adaptive",
+      "batch": "adaptive",
+      "status": "valid",
+      "acc_mean": 0.7640666666666667,
+      "acc_sd": 0.008578072821638517,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.7549,
+        0.7654,
+        0.7719
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": null,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "adaptive/s0_1.5@sigma0=1.5": {
+      "key": "adaptive/s0_1.5@sigma0=1.5",
+      "label": "Per-layer blur strength, exponent 1, sigma0 = 1.5",
+      "family": "adaptive",
+      "batch": "adaptive",
+      "status": "valid",
+      "acc_mean": 0.7454666666666667,
+      "acc_sd": 0.003758102358017058,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.7431,
+        0.7435,
+        0.7498
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": null,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "adaptive/s0_2@sigma0=2": {
+      "key": "adaptive/s0_2@sigma0=2",
+      "label": "Per-layer blur strength, exponent 1, sigma0 = 2",
+      "family": "adaptive",
+      "batch": "adaptive",
+      "status": "valid",
+      "acc_mean": 0.7058666666666666,
+      "acc_sd": 0.007115007613020051,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.6985,
+        0.7064,
+        0.7127
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": null,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "resbench/bilinear__D1__Rprog": {
+      "key": "resbench/bilinear__D1__Rprog",
+      "label": "Shrink block 1 with bilinear, 16 to 24 to 32",
+      "family": "operator",
+      "batch": "resbench",
+      "status": "valid",
+      "acc_mean": 0.8023,
+      "acc_sd": 0.003815756805667752,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.7983,
+        0.8027,
+        0.8059
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 436.37209187666605,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "resbench/bilinear__input__Rprog": {
+      "key": "resbench/bilinear__input__Rprog",
+      "label": "Shrink the input image with bilinear, 16 to 24 to 32",
+      "family": "operator",
+      "batch": "resbench",
+      "status": "valid",
+      "acc_mean": 0.7956333333333333,
+      "acc_sd": 0.006798774399355655,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.7898,
+        0.794,
+        0.8031
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 426.7930171103338,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "resbench/hminus1__D1__Rgentle": {
+      "key": "resbench/hminus1__D1__Rgentle",
+      "label": "Shrink block 1 with smoothness-optimal reconstruction, 24 to 32 only",
+      "family": "res",
+      "batch": "resbench",
+      "status": "valid",
+      "acc_mean": 0.7889666666666667,
+      "acc_sd": 0.0011239810200058223,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.788,
+        0.7887,
+        0.7902
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 548.3039167259999,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "resbench/hminus1__D1__Rlate": {
+      "key": "resbench/hminus1__D1__Rlate",
+      "label": "Shrink block 1 with smoothness-optimal reconstruction, 16 to 24 to 32, longer at low res",
+      "family": "res",
+      "batch": "resbench",
+      "status": "valid",
+      "acc_mean": 0.7955333333333333,
+      "acc_sd": 0.006601010023726179,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.7882,
+        0.7974,
+        0.801
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 564.1345543486665,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "resbench/hminus1__D1__Rprog": {
+      "key": "resbench/hminus1__D1__Rprog",
+      "label": "Shrink block 1 with smoothness-optimal reconstruction, 16 to 24 to 32",
+      "family": "operator",
+      "batch": "resbench",
+      "status": "valid",
+      "acc_mean": 0.7984666666666667,
+      "acc_sd": 0.0076291109136867145,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.7897,
+        0.8021,
+        0.8036
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 507.1727978376666,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "resbench/hminus1__D1__Rreverse": {
+      "key": "resbench/hminus1__D1__Rreverse",
+      "label": "Shrink block 1 with smoothness-optimal reconstruction, 24 to 16 to 32 (order control)",
+      "family": "res",
+      "batch": "resbench",
+      "status": "valid",
+      "acc_mean": 0.795,
+      "acc_sd": 0.004050925820105817,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.791,
+        0.7949,
+        0.7991
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 527.0424750000001,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "resbench/hminus1__input__Rprog": {
+      "key": "resbench/hminus1__input__Rprog",
+      "label": "Shrink the input image with smoothness-optimal reconstruction, 16 to 24 to 32",
+      "family": "operator",
+      "batch": "resbench",
+      "status": "valid",
+      "acc_mean": 0.7976333333333333,
+      "acc_sd": 0.0064593601334291375,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.7906,
+        0.799,
+        0.8033
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 560.1214672463333,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "resbench/l2__D1__Rprog": {
+      "key": "resbench/l2__D1__Rprog",
+      "label": "Shrink block 1 with least-squares reconstruction, 16 to 24 to 32",
+      "family": "operator",
+      "batch": "resbench",
+      "status": "valid",
+      "acc_mean": 0.8011,
+      "acc_sd": 0.005173973328110612,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.7954,
+        0.8024,
+        0.8055
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 509.50568323033326,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "resbench/l2__input__Rprog": {
+      "key": "resbench/l2__input__Rprog",
+      "label": "Shrink the input image with least-squares reconstruction, 16 to 24 to 32",
+      "family": "operator",
+      "batch": "resbench",
+      "status": "valid",
+      "acc_mean": 0.7963666666666667,
+      "acc_sd": 0.0033321664624285418,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.7928,
+        0.7969,
+        0.7994
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 537.1630823903332,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "resbench/max__D0__Rprog": {
+      "key": "resbench/max__D0__Rprog",
+      "label": "Shrink block 0 with max-pool, 16 to 24 to 32",
+      "family": "res",
+      "batch": "resbench",
+      "status": "valid",
+      "acc_mean": 0.8007666666666667,
+      "acc_sd": 0.006146001410131081,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.7951,
+        0.7999,
+        0.8073
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 437.5632546906666,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "resbench/max__D1__Rgentle": {
+      "key": "resbench/max__D1__Rgentle",
+      "label": "Shrink block 1 with max-pool, 24 to 32 only",
+      "family": "res",
+      "batch": "resbench",
+      "status": "valid",
+      "acc_mean": 0.7977666666666666,
+      "acc_sd": 0.003194265695482041,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.7954,
+        0.7965,
+        0.8014
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 429.540004283,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "resbench/max__D1__Rlate": {
+      "key": "resbench/max__D1__Rlate",
+      "label": "Shrink block 1 with max-pool, 16 to 24 to 32, longer at low res",
+      "family": "res",
+      "batch": "resbench",
+      "status": "valid",
+      "acc_mean": 0.8007,
+      "acc_sd": 0.005301886456724589,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.7972,
+        0.7981,
+        0.8068
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 436.15852766100033,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "resbench/max__D1__Rprog": {
+      "key": "resbench/max__D1__Rprog",
+      "label": "Shrink block 1 with max-pool, 16 to 24 to 32",
+      "family": "operator",
+      "batch": "resbench",
+      "status": "valid",
+      "acc_mean": 0.8059666666666666,
+      "acc_sd": 0.002003330560175573,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.8037,
+        0.8067,
+        0.8075
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 432.69399885466646,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "resbench/max__D1__Rreverse": {
+      "key": "resbench/max__D1__Rreverse",
+      "label": "Shrink block 1 with max-pool, 24 to 16 to 32 (order control)",
+      "family": "res",
+      "batch": "resbench",
+      "status": "valid",
+      "acc_mean": 0.8021333333333334,
+      "acc_sd": 0.002953528962670483,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.7991,
+        0.8023,
+        0.805
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 437.9975158529999,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "resbench/max__D1__fixed16": {
+      "key": "resbench/max__D1__fixed16",
+      "label": "Shrink block 1 with max-pool, fixed 16x16, never restored",
+      "family": "control",
+      "batch": "resbench",
+      "status": "valid",
+      "acc_mean": 0.7313333333333333,
+      "acc_sd": 0.005387330817142521,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.7252,
+        0.7335,
+        0.7353
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 418.7514463050002,
+      "final_path": "current",
+      "flags": [
+        "fixed-resolution control: trained and evaluated at 16x16 after block/site reduction; final metric is that reduced path, the 32x32 path is a diagnostic"
+      ]
+    },
+    "resbench/max__D1__fixed24": {
+      "key": "resbench/max__D1__fixed24",
+      "label": "Shrink block 1 with max-pool, fixed 24x24, never restored",
+      "family": "control",
+      "batch": "resbench",
+      "status": "valid",
+      "acc_mean": 0.7614666666666666,
+      "acc_sd": 0.0049237519569261005,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.7573,
+        0.7602,
+        0.7669
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 436.3353859676669,
+      "final_path": "current",
+      "flags": [
+        "fixed-resolution control: trained and evaluated at 24x24; final metric is that reduced path"
+      ]
+    },
+    "resbench/max__D2__Rprog": {
+      "key": "resbench/max__D2__Rprog",
+      "label": "Shrink block 2 with max-pool, 16 to 24 to 32",
+      "family": "res",
+      "batch": "resbench",
+      "status": "valid",
+      "acc_mean": 0.8024333333333333,
+      "acc_sd": 0.005559076661940662,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.7967,
+        0.8028,
+        0.8078
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 427.8049398973332,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "resbench/max__input__Rprog": {
+      "key": "resbench/max__input__Rprog",
+      "label": "Shrink the input image with max-pool, 16 to 24 to 32",
+      "family": "operator",
+      "batch": "resbench",
+      "status": "valid",
+      "acc_mean": 0.7922666666666667,
+      "acc_sd": 0.004818021724041195,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.789,
+        0.79,
+        0.7978
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 432.9169612750002,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "resbench/max__stem__Rprog": {
+      "key": "resbench/max__stem__Rprog",
+      "label": "Shrink the first conv layer with max-pool, 16 to 24 to 32",
+      "family": "res",
+      "batch": "resbench",
+      "status": "valid",
+      "acc_mean": 0.7961,
+      "acc_sd": 0.008243785538209975,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.7901,
+        0.7927,
+        0.8055
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 408.5150679256667,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "resbench/maxblur__D1__Rgentle": {
+      "key": "resbench/maxblur__D1__Rgentle",
+      "label": "Shrink block 1 with max-pool then anti-alias blur, 24 to 32 only",
+      "family": "res",
+      "batch": "resbench",
+      "status": "valid",
+      "acc_mean": 0.8031666666666667,
+      "acc_sd": 0.0021962088546705356,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.8018,
+        0.802,
+        0.8057
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 499.284359897333,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "resbench/maxblur__D1__Rlate": {
+      "key": "resbench/maxblur__D1__Rlate",
+      "label": "Shrink block 1 with max-pool then anti-alias blur, 16 to 24 to 32, longer at low res",
+      "family": "res",
+      "batch": "resbench",
+      "status": "valid",
+      "acc_mean": 0.8020333333333334,
+      "acc_sd": 0.005220472520120454,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.7979,
+        0.8003,
+        0.8079
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 445.53093296700007,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "resbench/maxblur__D1__Rprog": {
+      "key": "resbench/maxblur__D1__Rprog",
+      "label": "Shrink block 1 with max-pool then anti-alias blur, 16 to 24 to 32",
+      "family": "operator",
+      "batch": "resbench",
+      "status": "valid",
+      "acc_mean": 0.8042666666666667,
+      "acc_sd": 0.007536798613027478,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.799,
+        0.8009,
+        0.8129
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 518.5642806473335,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "resbench/maxblur__D1__Rreverse": {
+      "key": "resbench/maxblur__D1__Rreverse",
+      "label": "Shrink block 1 with max-pool then anti-alias blur, 24 to 16 to 32 (order control)",
+      "family": "res",
+      "batch": "resbench",
+      "status": "valid",
+      "acc_mean": 0.8045666666666667,
+      "acc_sd": 0.004428694314731295,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.7995,
+        0.8065,
+        0.8077
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 448.0028577000001,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "resbench/maxblur__input__Rprog": {
+      "key": "resbench/maxblur__input__Rprog",
+      "label": "Shrink the input image with max-pool then anti-alias blur, 16 to 24 to 32",
+      "family": "operator",
+      "batch": "resbench",
+      "status": "valid",
+      "acc_mean": 0.7917333333333333,
+      "acc_sd": 0.00426653645634643,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.7871,
+        0.7926,
+        0.7955
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 505.006039232,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "resbench/none__none__none": {
+      "key": "resbench/none__none__none",
+      "label": "Baseline: no blur, full 32x32 throughout (resolution batch)",
+      "family": "plain",
+      "batch": "resbench",
+      "status": "valid",
+      "acc_mean": 0.7553333333333333,
+      "acc_sd": 0.0036115555282084802,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.7531,
+        0.7534,
+        0.7595
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 428.38099844966655,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "resbench/perceptual__D1__Rprog": {
+      "key": "resbench/perceptual__D1__Rprog",
+      "label": "Shrink block 1 with perceptual (SSIM-style), 16 to 24 to 32",
+      "family": "operator",
+      "batch": "resbench",
+      "status": "diverged",
+      "acc_mean": null,
+      "acc_sd": 0.0,
+      "sd_status": "no valid seeds",
+      "acc_per_seed": [],
+      "n_seeds": 0,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": null,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "resbench/perceptual__input__Rprog": {
+      "key": "resbench/perceptual__input__Rprog",
+      "label": "Shrink the input image with perceptual (SSIM-style), 16 to 24 to 32",
+      "family": "operator",
+      "batch": "resbench",
+      "status": "valid",
+      "acc_mean": 0.7998333333333333,
+      "acc_sd": 0.00400790884793222,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.7954,
+        0.8009,
+        0.8032
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 462.29573248466664,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "resbench/softpool__D1__Rprog": {
+      "key": "resbench/softpool__D1__Rprog",
+      "label": "Shrink block 1 with softmax-weighted pooling, 16 to 24 to 32",
+      "family": "operator",
+      "batch": "resbench",
+      "status": "valid",
+      "acc_mean": 0.8034333333333333,
+      "acc_sd": 0.004819059382631975,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.7998,
+        0.8016,
+        0.8089
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 482.49326539199996,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "resbench/softpool__input__Rprog": {
+      "key": "resbench/softpool__input__Rprog",
+      "label": "Shrink the input image with softmax-weighted pooling, 16 to 24 to 32",
+      "family": "operator",
+      "batch": "resbench",
+      "status": "valid",
+      "acc_mean": 0.7928333333333334,
+      "acc_sd": 0.004552288801617635,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.7882,
+        0.793,
+        0.7973
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 455.684894853,
+      "final_path": "current=target",
+      "flags": []
     },
     "unified/blur_conv": {
       "key": "unified/blur_conv",
       "label": "Blur every conv layer, annealed to zero",
       "family": "gauss",
       "batch": "unified",
+      "status": "valid",
       "acc_mean": 0.7836666666666666,
       "acc_sd": 0.00771837634048333,
+      "sd_status": null,
       "acc_per_seed": [
         0.775,
         0.7862,
         0.7898
       ],
       "n_seeds": 3,
+      "n_attempted": 3,
       "epochs": 30,
-      "wall_mean": null,
-      "note": null
+      "wall_mean": 736.6896218306667,
+      "final_path": "current=target",
+      "flags": []
     },
     "unified/blur_relu": {
       "key": "unified/blur_relu",
       "label": "Blur after every ReLU, annealed to zero",
       "family": "gauss",
       "batch": "unified",
+      "status": "valid",
       "acc_mean": 0.7990666666666667,
       "acc_sd": 0.0026558112382722423,
+      "sd_status": null,
       "acc_per_seed": [
         0.796,
         0.8006,
         0.8006
       ],
       "n_seeds": 3,
+      "n_attempted": 3,
       "epochs": 30,
-      "wall_mean": null,
-      "note": null
+      "wall_mean": 623.604718079,
+      "final_path": "current=target",
+      "flags": []
     },
-    "unified/shrink_input": {
-      "key": "unified/shrink_input",
-      "label": "Shrink the input image, 16 to 24 to 32",
-      "family": "res",
+    "unified/plain": {
+      "key": "unified/plain",
+      "label": "Baseline: no blur, full 32x32 throughout",
+      "family": "plain",
       "batch": "unified",
-      "acc_mean": 0.7928,
-      "acc_sd": 0.005300000000000027,
+      "status": "valid",
+      "acc_mean": 0.7543,
+      "acc_sd": 0.007615116545398348,
+      "sd_status": null,
       "acc_per_seed": [
-        0.7875,
-        0.7928,
-        0.7981
+        0.7458,
+        0.7566,
+        0.7605
       ],
       "n_seeds": 3,
+      "n_attempted": 3,
       "epochs": 30,
-      "wall_mean": null,
-      "note": null
+      "wall_mean": 505.16844024233325,
+      "final_path": "current=target",
+      "flags": []
     },
     "unified/shrink_b0": {
       "key": "unified/shrink_b0",
       "label": "Shrink block 0 with max-pool, 16 to 24 to 32",
       "family": "res",
       "batch": "unified",
+      "status": "valid",
       "acc_mean": 0.8023666666666667,
       "acc_sd": 0.004764801499887791,
+      "sd_status": null,
       "acc_per_seed": [
         0.7989,
         0.8004,
         0.8078
       ],
       "n_seeds": 3,
+      "n_attempted": 3,
       "epochs": 30,
-      "wall_mean": null,
-      "note": null
-    },
-    "unified/shrink_b1": {
-      "key": "unified/shrink_b1",
-      "label": "Shrink block 1 with max-pool, 16 to 24 to 32",
-      "family": "res",
-      "batch": "unified",
-      "acc_mean": 0.8036666666666666,
-      "acc_sd": 0.006107645481962207,
-      "acc_per_seed": [
-        0.7997,
-        0.8006,
-        0.8107
-      ],
-      "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": null,
-      "note": null
-    },
-    "unified/shrink_b2": {
-      "key": "unified/shrink_b2",
-      "label": "Shrink block 2 with max-pool, 16 to 24 to 32",
-      "family": "res",
-      "batch": "unified",
-      "acc_mean": 0.8012333333333334,
-      "acc_sd": 0.00445009363197376,
-      "acc_per_seed": [
-        0.7968,
-        0.8012,
-        0.8057
-      ],
-      "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": null,
-      "note": null
-    },
-    "unified/shrink_b2_relu": {
-      "key": "unified/shrink_b2_relu",
-      "label": "Shrink block 2, plus blur after every ReLU",
-      "family": "res_gauss",
-      "batch": "unified",
-      "acc_mean": 0.8095,
-      "acc_sd": 0.002515949125081839,
-      "acc_per_seed": [
-        0.8066,
-        0.8108,
-        0.8111
-      ],
-      "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": null,
-      "note": null
-    },
-    "unified/shrink_b2_relu_rf": {
-      "key": "unified/shrink_b2_relu_rf",
-      "label": "Shrink block 2, plus blur scaled by receptive field after every ReLU",
-      "family": "profile",
-      "batch": "unified",
-      "acc_mean": 0.8093666666666667,
-      "acc_sd": 0.0017243356208503213,
-      "acc_per_seed": [
-        0.8075,
-        0.8097,
-        0.8109
-      ],
-      "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": null,
-      "note": null
+      "wall_mean": 482.7259709993332,
+      "final_path": "current=target",
+      "flags": []
     },
     "unified/shrink_b0_relu": {
       "key": "unified/shrink_b0_relu",
       "label": "Shrink block 0, plus blur after every ReLU",
       "family": "res_gauss",
       "batch": "unified",
+      "status": "valid",
       "acc_mean": 0.8080333333333334,
       "acc_sd": 0.004147690120215498,
+      "sd_status": null,
       "acc_per_seed": [
         0.8045,
         0.807,
         0.8126
       ],
       "n_seeds": 3,
+      "n_attempted": 3,
       "epochs": 30,
-      "wall_mean": null,
-      "note": null
+      "wall_mean": 622.975497291,
+      "final_path": "current=target",
+      "flags": []
     },
     "unified/shrink_b0_relu_rf": {
       "key": "unified/shrink_b0_relu_rf",
       "label": "Shrink block 0, plus blur scaled by receptive field after every ReLU",
       "family": "profile",
       "batch": "unified",
+      "status": "valid",
       "acc_mean": 0.8110666666666666,
       "acc_sd": 0.00366651514838456,
+      "sd_status": null,
       "acc_per_seed": [
         0.8069,
         0.8125,
         0.8138
       ],
       "n_seeds": 3,
+      "n_attempted": 3,
       "epochs": 30,
-      "wall_mean": null,
-      "note": null
+      "wall_mean": 620.2751325600001,
+      "final_path": "current=target",
+      "flags": []
     },
-    "unified/shrink_b1_relu": {
-      "key": "unified/shrink_b1_relu",
-      "label": "Shrink block 1, plus blur after every ReLU",
-      "family": "res_gauss",
+    "unified/shrink_b1": {
+      "key": "unified/shrink_b1",
+      "label": "Shrink block 1 with max-pool, 16 to 24 to 32",
+      "family": "res",
       "batch": "unified",
-      "acc_mean": 0.8099666666666667,
-      "acc_sd": 0.004331666346030498,
+      "status": "valid",
+      "acc_mean": 0.8036666666666666,
+      "acc_sd": 0.006107645481962207,
+      "sd_status": null,
       "acc_per_seed": [
-        0.8051,
-        0.8114,
-        0.8134
+        0.7997,
+        0.8006,
+        0.8107
       ],
       "n_seeds": 3,
+      "n_attempted": 3,
       "epochs": 30,
-      "wall_mean": null,
-      "note": null
-    },
-    "unified/shrink_b1_relu_rf": {
-      "key": "unified/shrink_b1_relu_rf",
-      "label": "Shrink block 1, plus blur scaled by receptive field after every ReLU",
-      "family": "profile",
-      "batch": "unified",
-      "acc_mean": 0.8105333333333333,
-      "acc_sd": 0.005658032638058325,
-      "acc_per_seed": [
-        0.8058,
-        0.809,
-        0.8168
-      ],
-      "n_seeds": 3,
-      "epochs": 30,
-      "wall_mean": null,
-      "note": null
+      "wall_mean": 499.29805371233334,
+      "final_path": "current=target",
+      "flags": []
     },
     "unified/shrink_b1_conv": {
       "key": "unified/shrink_b1_conv",
       "label": "Shrink block 1, plus blur every conv layer",
       "family": "res_gauss",
       "batch": "unified",
+      "status": "valid",
       "acc_mean": 0.8150999999999999,
       "acc_sd": 0.002151743479135043,
+      "sd_status": null,
       "acc_per_seed": [
         0.813,
         0.815,
         0.8173
       ],
       "n_seeds": 3,
+      "n_attempted": 3,
       "epochs": 30,
-      "wall_mean": null,
-      "note": null
+      "wall_mean": 733.352342248,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "unified/shrink_b1_relu": {
+      "key": "unified/shrink_b1_relu",
+      "label": "Shrink block 1, plus blur after every ReLU",
+      "family": "res_gauss",
+      "batch": "unified",
+      "status": "valid",
+      "acc_mean": 0.8099666666666667,
+      "acc_sd": 0.004331666346030498,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.8051,
+        0.8114,
+        0.8134
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 631.1124702373334,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "unified/shrink_b1_relu_rf": {
+      "key": "unified/shrink_b1_relu_rf",
+      "label": "Shrink block 1, plus blur scaled by receptive field after every ReLU",
+      "family": "profile",
+      "batch": "unified",
+      "status": "valid",
+      "acc_mean": 0.8105333333333333,
+      "acc_sd": 0.005658032638058325,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.8058,
+        0.809,
+        0.8168
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 623.6557379433333,
+      "final_path": "current=target",
+      "flags": []
     },
     "unified/shrink_b1_relu_sqrt": {
       "key": "unified/shrink_b1_relu_sqrt",
       "label": "Shrink block 1, plus blur scaled by sqrt of map size after every ReLU",
       "family": "profile",
       "batch": "unified",
+      "status": "valid",
       "acc_mean": 0.8010333333333334,
       "acc_sd": 0.0019553345834749485,
+      "sd_status": null,
       "acc_per_seed": [
         0.799,
         0.8012,
         0.8029
       ],
       "n_seeds": 3,
+      "n_attempted": 3,
       "epochs": 30,
-      "wall_mean": null,
-      "note": null
+      "wall_mean": 636.3707067616668,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "unified/shrink_b2": {
+      "key": "unified/shrink_b2",
+      "label": "Shrink block 2 with max-pool, 16 to 24 to 32",
+      "family": "res",
+      "batch": "unified",
+      "status": "valid",
+      "acc_mean": 0.8012333333333334,
+      "acc_sd": 0.00445009363197376,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.7968,
+        0.8012,
+        0.8057
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 498.6308294916668,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "unified/shrink_b2_relu": {
+      "key": "unified/shrink_b2_relu",
+      "label": "Shrink block 2, plus blur after every ReLU",
+      "family": "res_gauss",
+      "batch": "unified",
+      "status": "valid",
+      "acc_mean": 0.8095,
+      "acc_sd": 0.002515949125081839,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.8066,
+        0.8108,
+        0.8111
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 619.8629724153333,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "unified/shrink_b2_relu_rf": {
+      "key": "unified/shrink_b2_relu_rf",
+      "label": "Shrink block 2, plus blur scaled by receptive field after every ReLU",
+      "family": "profile",
+      "batch": "unified",
+      "status": "valid",
+      "acc_mean": 0.8093666666666667,
+      "acc_sd": 0.0017243356208503213,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.8075,
+        0.8097,
+        0.8109
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 621.4016611446667,
+      "final_path": "current=target",
+      "flags": []
+    },
+    "unified/shrink_input": {
+      "key": "unified/shrink_input",
+      "label": "Shrink the input image, 16 to 24 to 32",
+      "family": "res",
+      "batch": "unified",
+      "status": "valid",
+      "acc_mean": 0.7928,
+      "acc_sd": 0.005300000000000027,
+      "sd_status": null,
+      "acc_per_seed": [
+        0.7875,
+        0.7928,
+        0.7981
+      ],
+      "n_seeds": 3,
+      "n_attempted": 3,
+      "epochs": 30,
+      "wall_mean": 481.50206805099987,
+      "final_path": "current=target",
+      "flags": []
     },
     "unified/shrink_input_relu": {
       "key": "unified/shrink_input_relu",
       "label": "Shrink the input image, plus blur after every ReLU",
       "family": "res_gauss",
       "batch": "unified",
+      "status": "valid",
       "acc_mean": 0.8091666666666667,
       "acc_sd": 0.003758102358017058,
+      "sd_status": null,
       "acc_per_seed": [
         0.8068,
         0.8072,
         0.8135
       ],
       "n_seeds": 3,
+      "n_attempted": 3,
       "epochs": 30,
-      "wall_mean": null,
-      "note": null
+      "wall_mean": 618.9203341713334,
+      "final_path": "current=target",
+      "flags": []
     }
   }
 }

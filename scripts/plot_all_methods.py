@@ -11,7 +11,7 @@ so the ordering is readable.
 Honest about what is being overlaid: ``campaign``, ``resbench`` and ``adaptive``
 share pinned initial weights and are mutually paired; ``ablation`` used a
 different pinned set, and its shared plain baseline lands 0.56 pp lower, so its
-arms carry a batch offset of about that size.  Marker shape encodes the batch so
+arms share its data order but not its initial weights (docs/AUDIT.md A1-A3).  Marker shape encodes the batch so
 the reader can see which is which.
 """
 from __future__ import annotations
@@ -45,12 +45,11 @@ FAM_COLOR = {
 }
 BATCH_MARKER = {"campaign": "o", "resbench": "^", "ablation": "s",
                 "adaptive": "D", "long120": "*", "unified": "P"}
-BATCH_NOTE = ("Marker = batch.  The unified batch (16 arms, plus markers) is the one "
-              "internally paired set: same pinned weights, same data order, evaluated "
-              "every epoch, so differences inside it are seed-paired.  campaign / "
-              "resbench / adaptive share a second pinned set and are mutually paired; "
-              "the ablation batch used a third (its plain baseline is 0.56 pp lower), "
-              "so its arms carry a batch offset of roughly that size.")
+BATCH_NOTE = ("Marker = batch.  campaign, resbench and unified (and Aubin's seed-0 "
+              "runs) share the pinned asset set r20bn-campaign-assets; the ablation "
+              "batch shares its data order but not its initial weights.  Plain runs on "
+              "identical assets still finish up to 0.73 pp apart across batches (cause "
+              "not established), so cross-batch gaps of that size are not interpretable.")
 SD_NOTE = ("Bars / bands = +/- 1 sample SD over the seeds available "
            "(descriptive, not confidence intervals); arms with one seed have none.")
 
@@ -87,7 +86,8 @@ def curve(rec, field="test_acc_current", fallback="test_acc_target"):
 # --------------------------------------------------------------------------
 
 def fig_final(rows):
-    order = sorted(rows, key=lambda k: rows[k]["acc_mean"])
+    order = sorted(rows, key=lambda k: (rows[k]["acc_mean"] is not None,
+                                        rows[k]["acc_mean"] or 0.0))
     n = len(order)
     fig, ax = plt.subplots(figsize=(14.5, 0.235 * n + 2.6))
 
@@ -102,6 +102,11 @@ def fig_final(rows):
     for i, k in enumerate(order):
         v = rows[k]
         col = FAM_COLOR[v["family"]]
+        if v["acc_mean"] is None:
+            ax.text(0.01, i, "diverged: non-finite loss in %d / %d seeds (no accuracy)"
+                    % (v["n_attempted"], v["n_attempted"]), transform=ax.get_yaxis_transform(),
+                    fontsize=7, color="#b00000", va="center")
+            continue
         if v["n_seeds"] > 1:
             sd = v["acc_sd"] * 100
             ax.plot([v["acc_mean"] * 100 - sd, v["acc_mean"] * 100 + sd], [i, i],
@@ -112,7 +117,7 @@ def fig_final(rows):
                    marker=BATCH_MARKER[v["batch"]], edgecolor="white",
                    linewidth=0.7, zorder=3)
         if v["n_seeds"] == 1:
-            ax.text(v["acc_mean"] * 100 + 0.09, i, "1 seed", fontsize=6,
+            ax.text(v["acc_mean"] * 100 + 0.09, i, "1 seed, no SD", fontsize=6,
                     color="0.6", va="center")
     ax.set_yticks(range(n))
     ax.set_yticklabels([rows[k]["label"] for k in order], fontsize=7.6)
@@ -147,7 +152,7 @@ def fig_curves(rows):
     ci = 0
     for k in keys:
         v = rows[k]
-        c = curve(v)
+        c = curve(v) if v["acc_mean"] is not None else None
         if not c:
             continue
         plain = v["family"] == "plain"
@@ -173,15 +178,11 @@ def fig_curves(rows):
     az.set_title("Zoom on the last third — where the ordering settles", fontsize=11)
     ax.legend(loc="lower right", frameon=False, fontsize=8)
     fig.suptitle("Test accuracy against epoch — one representative run per idea\n"
-                 "CIFAR-10, ResNet-20 + BatchNorm, 30 epochs, seed-averaged; the eight leading curves come from one internally paired batch",
+                 "CIFAR-10, ResNet-20 + BatchNorm, 30 epochs, seed-averaged; eight curves from the unified batch, four from other batches",
                  fontsize=12.5)
     fig.text(0.5, 0.005,
              "Dashed lines mark the resolution changes (epochs 6 and 12); the "
-             "dotted line marks where the blur switches off (epoch 21).  The eight "
-             "leading curves share pinned weights and data order, so their ordering "
-             "is paired; the four grey-area ideas (fixed 16x16, fixed blur, the "
-             "mixture, the adaptive schedule) come from other batches and carry a "
-             "batch offset of up to ~0.6 pp.",
+             "dotted line marks where the blur switches off (epoch 21).  " + BATCH_NOTE.replace("Marker = batch.  ", ""),
              ha="center", fontsize=8, color="0.35", wrap=True)
     fig.tight_layout(rect=(0, 0.05, 1, 0.92))
     save(fig, "25_representative_accuracy_vs_epoch")

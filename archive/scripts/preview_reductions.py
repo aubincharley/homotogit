@@ -1,7 +1,7 @@
 """input_bilinear vs input_max at 16 and 24, on the existing ten preview images."""
 import json, sys
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import torch
