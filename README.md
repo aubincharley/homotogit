@@ -59,7 +59,7 @@ every distinct state and checks the target-state bypass. It trains nothing.
 [docs/RESULTS_SCHEMA.md](docs/RESULTS_SCHEMA.md); an example is in
 `docs/examples/synthetic_run/`.
 
-## Visualization tools (Max)
+## Visualization tools 
 
 Save checkpoints around transitions, then export, project and evaluate:
 
@@ -98,7 +98,7 @@ record the path label, state, per-site sigma and BN policy. Python API:
 `continuation_core.analysis.CheckpointEvaluator`, `pca_plane`, `plane_grid`,
 `perturbation_sensitivity`, `to_vector` / `from_vector`.
 
-## Transfer (Aubin, Alexandre)
+## Transfer 
 
 Dataset, architecture, optimizer, method, budget, evaluation and checkpoint
 cadence are independent config sections (`continuation_core/config.py`). The
@@ -109,7 +109,7 @@ decay) and marks the result `unvalidated`. Available adapters: `cifar10`,
 `stl10`; `resnet20_bn_cifar`, `vgg11_bn` (no `block1` mapping, fails clearly);
 `sgd`, `adamw`. Guide: [docs/EXTENDING.md](docs/EXTENDING.md).
 
-## Theory (Idriss)
+## Theory 
 
 The final records keep training-probe CE and test CE on both the current and
 target paths each epoch (`metrics.json`), and checkpoints hold the full state.
