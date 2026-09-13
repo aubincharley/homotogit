@@ -1,26 +1,13 @@
-# Datasets: re-downloadable, 341 MB.  Anchored to the repository root so it
-# does not swallow docs/research/continuation/data/ (the knowledge-base
-# registry and generated tables, which are versioned).
+# datasets are external (see README: CIFAR-10 python batches, STL-10 binaries)
 /data/
-
-# Model/optimizer checkpoints: regenerable from configs + seeds
+# training outputs and checkpoints
+/runs/
 *.pt
-
-# Generated Kaggle job bundles (base64 payload, regenerable by kaggle_run.py)
-kaggle_jobs/
-
-# Kaggle downloads: keep the scientific record (metrics/summaries/configs and
-# figures), drop the bulky regenerable parts.
-results/kaggle_outputs/**/_repo/
-results/kaggle_outputs/**/*.log
-results/kaggle_outputs/**/*.npz
-
+*.npz
+# ...except the pinned reference assets, which are versioned with their hashes
+!/assets/**/*.pt
+!/assets/**/*.npz
 __pycache__/
 *.pyc
 .pytest_cache/
-
-# Local virtualenv
 .venv/
-
-# LaTeX build logs from the figure scripts
-figures/**/*.log

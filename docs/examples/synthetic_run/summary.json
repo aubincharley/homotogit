@@ -1,0 +1,166 @@
+{
+  "schema": "continuation_core.results/1",
+  "method": "resolution_max_b1_gaussian_conv",
+  "seed": 0,
+  "validation_status": "example-synthetic",
+  "dataset": "synthetic",
+  "arch": "resnet20_bn_cifar",
+  "arch_validated": true,
+  "epochs": 7,
+  "updates": 35,
+  "updates_per_epoch": 5,
+  "n_train": 160,
+  "n_test": 40,
+  "final": {
+    "current": {
+      "train_probe": {
+        "ce": 2.312240982055664,
+        "acc": 0.05,
+        "n": 20
+      },
+      "test": {
+        "ce": 2.3089317321777343,
+        "acc": 0.175,
+        "n": 40
+      }
+    },
+    "target": {
+      "train_probe": {
+        "ce": 12.558829498291015,
+        "acc": 0.05,
+        "n": 20
+      },
+      "test": {
+        "ce": 12.409718322753907,
+        "acc": 0.05,
+        "n": 40
+      }
+    }
+  },
+  "final_state_used": {
+    "state": {
+      "resolution": 24,
+      "sigma": 0.7,
+      "label": "epoch 6"
+    },
+    "per_site_sigma": [
+      0.5249999999999999,
+      0.5249999999999999,
+      0.5249999999999999,
+      0.5249999999999999,
+      0.5249999999999999,
+      0.5249999999999999,
+      0.5249999999999999,
+      0.5249999999999999,
+      0.5249999999999999,
+      0.5249999999999999,
+      0.5249999999999999,
+      0.5249999999999999,
+      0.5249999999999999,
+      0.5249999999999999,
+      0.5249999999999999,
+      0.5249999999999999,
+      0.5249999999999999,
+      0.5249999999999999,
+      0.5249999999999999
+    ]
+  },
+  "final_state_is_target": false,
+  "transition_updates": [
+    15,
+    30
+  ],
+  "timing": {
+    "wall_seconds": 29.491878499975428,
+    "eval_seconds": 3.9231324999127537,
+    "train_seconds": 25.568746000062674,
+    "scope": "from the start of run() (after data and model construction) to the last evaluation, including checkpoint writes; resumed runs add the wall time stored in the checkpoint"
+  },
+  "method_definition": {
+    "id": "resolution_max_b1_gaussian_conv",
+    "description": "Adaptive max pooling after blocks[1] (16 / 24 / 32) plus the Gaussian at all 19 convolution outputs, sigma scaled by r(e)/32 at every site.",
+    "gaussian": {
+      "placement": "conv_out",
+      "schedule": {
+        "starts": [
+          0,
+          3,
+          6,
+          9,
+          12,
+          15,
+          18,
+          21
+        ],
+        "values": [
+          1.0,
+          0.85,
+          0.7,
+          0.6,
+          0.5,
+          0.4,
+          0.3,
+          0.0
+        ]
+      },
+      "sigma_scale": "resolution_ratio_all_sites",
+      "sigma_max": 1.0,
+      "truncate": 4.0,
+      "units": "pixels of the feature map at the site"
+    },
+    "resolution": {
+      "point": "block1",
+      "schedule": {
+        "starts": [
+          0,
+          6,
+          12
+        ],
+        "values": [
+          16,
+          24,
+          32
+        ]
+      },
+      "reference_resolution": 32,
+      "operator": "adaptive_max"
+    },
+    "source": {
+      "experiment": "unified_selected",
+      "branch": "benchmark-organized",
+      "config_id": "shrink_b1_conv",
+      "label": "Shrink block 1, plus blur every conv layer",
+      "cells": [
+        "shrink_b1_conv__seed0",
+        "shrink_b1_conv__seed1",
+        "shrink_b1_conv__seed2"
+      ],
+      "final_test_acc_per_seed": {
+        "0": 0.813,
+        "1": 0.815,
+        "2": 0.8173
+      },
+      "final_test_acc_mean": 0.8151,
+      "final_test_acc_sd": 0.002152,
+      "final_path": "target (equal to current at epoch 30)",
+      "asset_set": "r20bn-campaign-assets"
+    },
+    "validated_on": [
+      "cifar10",
+      "resnet20_bn_cifar"
+    ]
+  },
+  "provenance": {
+    "assets_dir": "C:\\Users\\mnica\\AppData\\Local\\Temp\\example_ex_7u8fb\\assets",
+    "asset_states": {
+      "init_seed0": "b9500a6d3cef6f5795e107fafec07c97dd395fa8428a876b212d6c9c326770bf"
+    },
+    "asset_arrays": {
+      "subset": "dde9250df0a72a5970ecb157efb5e7e8002b6386fb94c5066a20d60dc2becaf8",
+      "train_probe": "55e034627fc46d7a47eca626b2b8b4e72a4b596c18a622ca40351464618c9d5e",
+      "perm_seed0": "794110346574a094b77f63b3b50dcbbb10bdb72f2cda234de6972ce992852ef9"
+    },
+    "torch": "2.5.1+cu121",
+    "code": "c78ae05b912d3267fca1093467ab18a9de23b4da"
+  }
+}
