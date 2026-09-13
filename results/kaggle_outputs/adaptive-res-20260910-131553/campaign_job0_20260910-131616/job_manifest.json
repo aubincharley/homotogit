@@ -1,0 +1,40 @@
+{
+  "job": 0,
+  "n_cells": 1,
+  "cells": [
+    {
+      "id": "ADAPTRES",
+      "cell_id": "ADAPTRES__seed0",
+      "group": "ADAPTRES",
+      "seed": 0,
+      "resolution": "R32",
+      "gaussian": "Gnone",
+      "operator": "none",
+      "reduction": "input_bilinear",
+      "mask": "all19",
+      "adaptive": false,
+      "adaptive_resolution": true,
+      "trigger": "gap",
+      "res_stages": [
+        16,
+        24,
+        32
+      ],
+      "res_force_by": [
+        12,
+        21
+      ],
+      "adaptive_params": {
+        "gap": {
+          "cadence": 100,
+          "window": 3,
+          "eps": 0.005,
+          "patience": 2,
+          "blackout": 2,
+          "min_dwell_updates": 391,
+          "max_dwell_updates": 11730
+        }
+      }
+    }
+  ]
+}

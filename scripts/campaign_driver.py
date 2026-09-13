@@ -33,6 +33,9 @@ import torch.nn.functional as F
 
 from continuation.campaign_ops import (EARLY7, N_SITES, SiteController,
                                        attach_sites, reduce_spatial)
+from continuation.adaptive import (AdaptiveSiteController, GradNormTracker,
+                                   SensitivityStepper)
+from continuation.gap_trigger import GapTriggerConfig, TransferGapTracker
 from continuation.config import DataConfig, ModelConfig, OptimConfig
 from continuation.data import build_dataset
 from continuation.models import build_model
@@ -118,7 +121,11 @@ def data_source():
 def evaluate(model, ctrl, images, labels, pipe, level, resolution, batch=500):
     """Evaluate at an explicit (level, resolution).  BN statistics untouched."""
     prev_mode = model.training
-    prev = (ctrl.value, ctrl.resolution, ctrl.bypass_all)
+    # Save the per-site row: with a level table the controller's state is a
+    # 19-vector and ``value`` is a derived scalar, so restoring ``value`` would
+    # leak this evaluation's uniform level into training.
+    prev = (None if ctrl.row is None else list(ctrl.row),
+            ctrl.resolution, ctrl.bypass_all)
     ctrl.bypass_all = False
     ctrl.set_state(level, resolution)
     if level is None or float(level or 0.0) == 0.0:
@@ -130,11 +137,45 @@ def evaluate(model, ctrl, images, labels, pipe, level, resolution, batch=500):
         logits = model(pipe(images[i:i + batch], 0.0, res=res_in))
         tot += float(F.cross_entropy(logits, labels[i:i + batch], reduction="sum"))
         correct += int((logits.argmax(1) == labels[i:i + batch]).sum())
-    ctrl.value, ctrl.resolution, ctrl.bypass_all = prev
+    ctrl.row, ctrl.resolution, ctrl.bypass_all = prev
     ctrl.q = ctrl.q_for(ctrl.resolution)
     if prev_mode:
         model.train()
     return tot / n, correct / n
+
+
+@torch.no_grad()
+def eval_paths(model, ctrl, images, labels, pipe, batch=500):
+    """(current, target) probe CE at the controller's actual per-site row.
+
+    ``evaluate`` above takes a *uniform* level, which cannot represent an
+    adaptive 19-vector, so the current path is measured with the row left in
+    place.  Mode, row, resolution, bypass flag and q are all restored, and
+    BatchNorm buffers are never updated.
+    """
+    prev_mode = model.training
+    prev = (None if ctrl.row is None else list(ctrl.row),
+            ctrl.resolution, ctrl.bypass_all)
+    model.eval()
+
+    def _ce():
+        res_in, tot, n = ctrl.input_resolution(), 0.0, images.shape[0]
+        for i in range(0, n, batch):
+            logits = model(pipe(images[i:i + batch], 0.0, res=res_in))
+            tot += float(F.cross_entropy(logits, labels[i:i + batch],
+                                         reduction="sum"))
+        return tot / n
+
+    ctrl.bypass_all = False
+    cur = _ce()                                   # row as trained
+    ctrl.set_state(0.0, 32)
+    ctrl.bypass_all = True
+    tgt = _ce()                                   # exact target endpoint
+    ctrl.row, ctrl.resolution, ctrl.bypass_all = prev
+    ctrl.q = ctrl.q_for(ctrl.resolution)
+    if prev_mode:
+        model.train()
+    return cur, tgt
 
 
 def train_cell(cell, assets: Path, gpu: int, out_dir: Path, job: int, worker: int):
@@ -176,24 +217,70 @@ def train_cell(cell, assets: Path, gpu: int, out_dir: Path, job: int, worker: in
 
     from scripts.campaign_manifest import GAUSSIAN, RESOLUTIONS
     sites = EARLY7 if cell["mask"] == "early7" else tuple(range(N_SITES))
-    ctrl = SiteController(operator=cell["operator"],
-                          levels=GAUSSIAN[cell["gaussian"]], sites=sites,
-                          resolution_by_epoch=RESOLUTIONS[cell["resolution"]],
-                          reduction=cell["reduction"])
+    # An explicit table overrides the manifest lookup: the manifest's tables are
+    # 30 entries long and a different horizon needs its own.
+    levels_tab = cell.get("gaussian_table", GAUSSIAN[cell["gaussian"]])
+    res_tab = cell.get("resolution_table", RESOLUTIONS[cell["resolution"]])
+    adaptive = bool(cell.get("adaptive"))
+    if adaptive:
+        # The row is walked, not read from a table: sigma starts uniform and each
+        # predictor step is scaled by the measured per-site sensitivity.
+        a = cell.get("adaptive_params", {})
+        ctrl = AdaptiveSiteController(
+            sigma_init=[float(a.get("sigma_init", 1.0))] * N_SITES,
+            sites=sites,
+            resolution_by_epoch=res_tab,
+            reduction=cell["reduction"],
+            tracker=GradNormTracker(**a.get("tracker", {})),
+            stepper=SensitivityStepper(**a.get("stepper", {})))
+    else:
+        ctrl = SiteController(operator=cell["operator"],
+                              levels=levels_tab, sites=sites,
+                              resolution_by_epoch=res_tab,
+                              reduction=cell["reduction"])
     handles = attach_sites(model, ctrl)
+    # Fixed, deterministic batch for the sensitivity probe: the same examples at
+    # every predictor step, so successive dL/dsigma values are comparable.
+    n_sens = int(cell.get("adaptive_params", {}).get("sens_batch", 256))
+    sens_imgs, sens_lbls = probe_imgs[:n_sens], probe_lbls[:n_sens]
+    ramp_from = int(cell.get("adaptive_params", {}).get("ramp_from", 18))
+    zero_by = int(cell.get("adaptive_params", {}).get("zero_by", 21))
+    predictor_log = []
+    trigger_kind = cell.get("trigger", "grad_norm")
+    adaptive_res = bool(cell.get("adaptive_resolution"))
+    res_stages = [int(v) for v in cell.get("res_stages", [16, 24, 32])]
+    # latest epoch by which transition i must have happened; the trigger may
+    # move earlier OR later than a fixed table, but never past these.
+    res_force_by = [int(v) for v in cell.get("res_force_by", [12, 21])]
+    res_idx, res_log, res_realised = [0], [], []
+    gap_tracker = (TransferGapTracker(GapTriggerConfig(
+        **cell.get("adaptive_params", {}).get("gap", {})))
+        if trigger_kind == "gap" and (adaptive or adaptive_res) else None)
+    gap_log = []
+    log_grad_norm = bool(cell.get("log_grad_norm"))
+    # (update, epoch, ||g||_all, lr, ||g||_conv, ||w||_conv, ||w||_all)
+    grad_trace = []
+    per_layer_trace = []                  # (update, epoch, [||g_l||], [||w_l||])
+    gap_trace = []                        # (update, epoch, cur_ce, tgt_ce, cur/tgt acc)
+    prev_flat_g = prev_gn = prev_theta = None
+    conv_params = [q for q in model.parameters() if q.dim() == 4]
+    conv_names = [n for n, q in model.named_parameters() if q.dim() == 4]
 
-    epochs = PROTOCOL["epochs"]
+    epochs = int(cell.get("epochs", PROTOCOL["epochs"]))
     n, B, mb = int(subset.size), PROTOCOL["effective_batch"], PROTOCOL["microbatch"]
     per_epoch = (n + B - 1) // B
     total_updates = epochs * per_epoch
-    ocfg = OptimConfig(lr=PROTOCOL["lr"], momentum=PROTOCOL["momentum"],
+    ocfg = OptimConfig(lr=float(cell.get("lr", PROTOCOL["lr"])),
+                       momentum=PROTOCOL["momentum"],
                        weight_decay=PROTOCOL["weight_decay"], batch_size=B,
                        total_steps=total_updates, lr_schedule="cosine",
                        warmup_steps=PROTOCOL["warmup"], min_lr=0.0)
     opt = build_optimizer(model, ocfg)
 
-    eval_epochs = sorted(set(list(range(0, epochs + 1, 2)) + [21, epochs]))
-    ckpt_epochs = {6, 12, 21, epochs}
+    ev_every = int(cell.get("eval_every", 2))
+    extra = list(cell.get("eval_extra", [21]))
+    eval_epochs = sorted(set(list(range(0, epochs + 1, ev_every)) + extra + [epochs]))
+    ckpt_epochs = set(cell.get("checkpoint_epochs", [6, 12, 21, epochs]))
     metrics, gstep, start_epoch = [], 0, 0
     eval_seconds = [0.0]
     t_start = time.perf_counter()
@@ -252,8 +339,28 @@ def train_cell(cell, assets: Path, gpu: int, out_dir: Path, job: int, worker: in
 
     if start_epoch == 0:
         snapshot(0)
+    def apply_res(ep):
+        """Override the table-driven resolution with the controller's stage.
+
+        Deadlines are enforced here so a stalled trigger can never prevent the
+        run from reaching the target resolution.
+        """
+        if not adaptive_res:
+            return
+        while (res_idx[0] < len(res_stages) - 1
+               and ep >= res_force_by[res_idx[0]]):
+            res_idx[0] += 1
+            res_log.append({"epoch": ep, "to": res_stages[res_idx[0]],
+                            "trigger": "deadline"})
+        ctrl.resolution = res_stages[res_idx[0]]
+        ctrl.q = ctrl.q_for(ctrl.resolution)
+        while len(res_realised) <= int(ep):
+            res_realised.append(None)
+        res_realised[int(ep)] = res_stages[res_idx[0]]
+
     for e in range(start_epoch, epochs):
         ctrl.set_epoch(e)
+        apply_res(e)
         res_in = ctrl.input_resolution()
         perm = perms[e]
         for s0 in range(0, n, B):
@@ -269,7 +376,121 @@ def train_cell(cell, assets: Path, gpu: int, out_dir: Path, job: int, worker: in
                                        tr_lbls[sl])
                 (loss * (n_m / total)).backward()
             opt.step()
+            if adaptive or log_grad_norm:
+                # Corrector residual at theta_k: .grad still holds the
+                # accumulated training gradient (step does not clear it).
+                gn = torch.sqrt(sum((q.grad.detach() ** 2).sum()
+                                    for q in model.parameters()
+                                    if q.grad is not None)).item()
+            if log_grad_norm:
+                # Instrumentation only -- no controller, no behaviour change.
+                # For a BatchNorm net the loss is scale invariant per layer, so
+                # ||g|| ~ 1/||w|| and the raw norm tracks weight decay rather
+                # than convergence.  The scale-invariant combination is the
+                # PRODUCT ||g||.||w||, so both factors are recorded.  Conv
+                # kernels (4-d weights) are the scale-invariant tensors; BN
+                # affines (1-d) and the classifier (2-d) are not, and are kept
+                # separate rather than pooled in.
+                gc = torch.sqrt(sum((q.grad.detach() ** 2).sum()
+                                    for q in conv_params
+                                    if q.grad is not None)).item()
+                wc = torch.sqrt(sum((q.detach() ** 2).sum()
+                                    for q in conv_params)).item()
+                wa = torch.sqrt(sum((q.detach() ** 2).sum()
+                                    for q in model.parameters())).item()
+                grad_trace.append((gstep, e, round(gn, 8),
+                                   round(lr_at(gstep, ocfg), 10),
+                                   round(gc, 8), round(wc, 8), round(wa, 8)))
+                # --- scale-invariant progress signals -------------------
+                # Gradient cosine and relative update size are invariant to the
+                # weight scale, so neither inherits the ||g|| ~ 1/||w|| drift
+                # that made every magnitude signal useless.
+                fg = torch.cat([q.grad.detach().reshape(-1)
+                                for q in model.parameters() if q.grad is not None])
+                fgn = fg.norm()
+                cos = (float((prev_flat_g @ fg) / (prev_gn * fgn + 1e-30))
+                       if prev_flat_g is not None else float("nan"))
+                prev_flat_g, prev_gn = fg, fgn
+                with torch.no_grad():
+                    th = torch.cat([q.detach().reshape(-1)
+                                    for q in model.parameters()])
+                    rel = (float((th - prev_theta).norm() / (th.norm() + 1e-30))
+                           if prev_theta is not None else float("nan"))
+                    prev_theta = th
+                grad_trace[-1] = grad_trace[-1] + (round(cos, 8), round(rel, 10))
+                # --- transfer gap: is more training HERE still closing the
+                # distance to the TARGET objective?  evaluate() restores mode
+                # and controller state and never updates BN buffers.
+                if gstep % 100 == 0:
+                    lvl = ctrl.levels[e] if ctrl.levels else None
+                    cce, cacc = evaluate(model, ctrl, probe_imgs, probe_lbls,
+                                         pipe, lvl, ctrl.resolution)
+                    tce, tacc = evaluate(model, ctrl, probe_imgs, probe_lbls,
+                                         pipe, 0.0, 32)
+                    gap_trace.append((gstep, e, round(cce, 6), round(tce, 6),
+                                      round(cacc, 6), round(tacc, 6)))
+                if gstep % 50 == 0:
+                    per_layer_trace.append(
+                        (gstep, e,
+                         [round(float(q.grad.detach().norm()), 8)
+                          if q.grad is not None else 0.0 for q in conv_params],
+                         [round(float(q.detach().norm()), 8) for q in conv_params]))
+            if gap_tracker is not None and adaptive_res:
+                # Measure only; the decision is taken at the epoch boundary,
+                # because the resolution itself can only change there.
+                if gstep % gap_tracker.cfg.cadence == 0:
+                    cce, tce = eval_paths(model, ctrl, probe_imgs, probe_lbls, pipe)
+                    gap_log.append((gstep, e, round(cce, 6), round(tce, 6),
+                                    round(tce - cce, 6)))
+                    gap_tracker.observe(gstep, tce - cce)
+            elif gap_tracker is not None:
+                if gstep % gap_tracker.cfg.cadence == 0:
+                    cce, tce = eval_paths(model, ctrl, probe_imgs, probe_lbls, pipe)
+                    gap = tce - cce
+                    gap_log.append((gstep, e, round(cce, 6), round(tce, 6),
+                                    round(gap, 6)))
+                    gap_tracker.observe(gstep, gap)
+                if gap_tracker.should_step(gstep) and not ctrl.all_zero():
+                    grads = ctrl.measure(model, pipe, sens_imgs, sens_lbls)
+                    rec = ctrl.advance(grads)
+                    rec.update({"epoch": e, "update": gstep,
+                                "step_size": max(rec["before"]) - max(rec["after"]),
+                                "gap": gap_log[-1][4] if gap_log else None,
+                                "trigger": gap_tracker.reason})
+                    predictor_log.append(rec)
+                    gap_tracker.reset_stage(gstep)
+            elif adaptive:
+                ctrl.tracker.update(gn)
+                if ctrl.tracker.should_step() and not ctrl.all_zero():
+                    grads = ctrl.measure(model, pipe, sens_imgs, sens_lbls)
+                    rec = ctrl.advance(grads)
+                    rec.update({"epoch": e, "update": gstep, "grad_norm": gn,
+                                "ema": ctrl.tracker.ema, "trigger": "plateau"})
+                    predictor_log.append(rec)
+                    ctrl.tracker.reset_stage()
             gstep += 1
+        if adaptive_res and gap_tracker is not None:
+            if (gap_tracker.should_step(gstep)
+                    and res_idx[0] < len(res_stages) - 1):
+                res_idx[0] += 1
+                res_log.append({"epoch": e + 1, "update": gstep,
+                                "to": res_stages[res_idx[0]],
+                                "gap": gap_log[-1][4] if gap_log else None,
+                                "trigger": gap_tracker.reason})
+                gap_tracker.reset_stage(gstep)
+        if adaptive and (e + 1) >= ramp_from and not ctrl.all_zero():
+            if gap_tracker is not None:
+                gap_tracker.reset_stage(gstep)
+            # Deadline: override the adaptive rule with a linear ramp so every
+            # site is exactly zero by ``zero_by``, leaving the terminal epochs on
+            # the exact target objective.  A run that reaches here is partly a
+            # fixed schedule and records ``deadline_fired``.
+            grads = ctrl.measure(model, pipe, sens_imgs, sens_lbls)
+            rec = ctrl.advance(grads, stages_left=max(1, zero_by - (e + 1)),
+                               force_ramp=True)
+            rec.update({"epoch": e, "update": gstep, "trigger": "deadline_ramp"})
+            predictor_log.append(rec)
+            ctrl.tracker.reset_stage()
         done = e + 1
         if done in eval_epochs:
             snapshot(done)
@@ -283,14 +504,48 @@ def train_cell(cell, assets: Path, gpu: int, out_dir: Path, job: int, worker: in
         if done in ckpt_epochs:
             torch.save(state, run_dir / ("checkpoint_ep%02d.pt" % done))
 
+    if log_grad_norm:
+        (run_dir / "grad_norm_trace.json").write_text(json.dumps(
+            {"columns": ["update", "epoch", "grad_norm", "lr",
+                         "g_conv", "w_conv", "w_all", "grad_cosine",
+                         "rel_update"],
+             "note": ("BN makes the loss scale invariant per layer, so ||g|| ~ "
+                      "1/||w||; the scale-invariant signal is g_conv * w_conv"),
+             "conv_params": conv_names, "n_conv": len(conv_params),
+             "sigma_by_epoch": levels_tab,
+             "n": len(grad_trace), "rows": grad_trace}))
+        (run_dir / "per_layer_trace.json").write_text(json.dumps(
+            {"columns": ["update", "epoch", "grad_norms", "weight_norms"],
+             "conv_params": conv_names, "cadence": 50,
+             "n": len(per_layer_trace), "rows": per_layer_trace}))
+        (run_dir / "transfer_gap_trace.json").write_text(json.dumps(
+            {"columns": ["update", "epoch", "cur_ce", "tgt_ce",
+                         "cur_acc", "tgt_acc"],
+             "note": ("cur = configuration actually trained under; tgt = sigma 0 "
+                      "at 32x32. gap = tgt_ce - cur_ce. The trigger question is "
+                      "d(gap)/dt at fixed sigma, not the gap level."),
+             "cadence": 100, "probe_n": int(probe_imgs.shape[0]),
+             "sigma_by_epoch": levels_tab,
+             "n": len(gap_trace), "rows": gap_trace}))
+        log("wrote grad_norm_trace (%d), per_layer_trace (%d), transfer_gap (%d)"
+            % (len(grad_trace), len(per_layer_trace), len(gap_trace)))
+
     last = metrics[-1]
     wall = time.perf_counter() - t_start
     summary = {**cell, "job": job, "worker": worker, "gpu_index": gpu,
                "gpu": torch.cuda.get_device_name(dev) if dev.type == "cuda" else "cpu",
-               "epochs": epochs, "updates": gstep, "updates_per_epoch": per_epoch,
+               "epochs": epochs, "lr": float(cell.get("lr", PROTOCOL["lr"])),
+               "updates": gstep, "updates_per_epoch": per_epoch,
                "n_train": n, "n_test": int(test_imgs.shape[0]),
                **{k: PROTOCOL[k] for k in ("warmup", "effective_batch", "microbatch")},
                "controller": ctrl.describe(),
+               "adaptive": adaptive, "trigger_kind": trigger_kind,
+               "gap_trigger": None if gap_tracker is None else gap_tracker.describe(),
+               "gap_log": gap_log,
+               "adaptive_resolution": adaptive_res,
+               "res_stages": res_stages, "res_force_by": res_force_by,
+               "res_log": res_log, "res_realised": res_realised,
+               "predictor_log": predictor_log,
                "normalization": {"mean": [float(v) for v in bundle.mean],
                                  "std": [float(v) for v in bundle.std]},
                "final_test_acc": last["test_acc_target"],

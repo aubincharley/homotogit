@@ -1,0 +1,163 @@
+% Gaussian blur: where it commutes with a convolution, and where it stops.
+% Raster tiles and the measured numbers come from
+%   scripts/fig_blur_commutation_tiles.py
+% which writes tiles/*.png and numbers.tex.  Nothing here is hand-typed data.
+% One knob for portability: \bcDir is the directory holding this file.  A paper
+% that \input{...}s body.tex from elsewhere sets it once, e.g.
+%   \providecommand{\bcDir}{figures/blur_commutation/}
+\providecommand{\bcDir}{}
+\providecommand{\bcTiles}{\bcDir tiles/}
+\input{\bcDir numbers}
+
+\definecolor{bcblue}{HTML}{1F77B4}
+\definecolor{bcred}{HTML}{D62728}
+\definecolor{bcgreen}{HTML}{2CA02C}
+\definecolor{bcgrey}{HTML}{7A7A7A}
+
+\begin{tikzpicture}[
+  x=1mm, y=1mm,
+  font=\footnotesize,
+  tile/.style={inner sep=0pt, outer sep=0pt},
+  frame/.style={draw=black!45, line width=0.3pt},
+  keep/.style={draw=bcblue, line width=0.9pt},
+  flow/.style={-{Straight Barb[length=1.5mm,width=1.4mm]}, line width=0.5pt,
+               black!70},
+  ghost/.style={-{Straight Barb[length=1.5mm,width=1.4mm]}, line width=0.5pt,
+                bcgrey, dashed, dash pattern=on 1.1mm off 0.8mm},
+  slide/.style={-{Straight Barb[length=1.7mm,width=1.6mm]}, line width=0.7pt,
+                bcblue, dashed, dash pattern=on 1.2mm off 0.9mm},
+  gate/.style={rounded corners=1pt, draw=black!55, line width=0.5pt,
+               fill=black!4, minimum width=16mm, minimum height=9mm},
+  stop/.style={gate, draw=bcred, fill=bcred!6},
+  lab/.style={font=\scriptsize, text=black!75},
+  expl/.style={font=\scriptsize, text=black!85, anchor=west},
+  panel/.style={font=\bfseries\small},
+]
+
+% =====================================================================
+% =====================================================================
+% helper: \bctile[style]{side mm}{x}{y}{node name}{tile file}
+\newcommand{\bctile}[6][frame]{%
+  \node[tile] (#5) at (#3,#4)
+    {\includegraphics[width=#2mm]{\bcTiles #6.png}};
+  \draw[#1] (#5.south west) rectangle (#5.north east);
+}
+
+% =====================================================================
+% PANEL A -- the identity
+% =====================================================================
+\node[panel, anchor=west] at (0,23) {A};
+\node[anchor=west] at (6,23)
+  {$G_\sigma * (K * H) \;=\; (G_\sigma * K) * H$};
+\node[lab, anchor=east] at (168,23)
+  {residual $\;\|\Delta\|_2/\|\cdot\|_2 = \resIdentity$};
+\node[expl] at (6,18)
+  {Blurring the output equals convolving with a pre-blurred stamp:
+   the blur folds into the weights once.};
+
+% --- row 1: convolve, then blur -------------------------------------
+\bctile{20}{10}{0}{H}{H}
+\node at (24,0) {$*$};
+\bctile{15}{36}{0}{K}{K}
+\node at (48,0) {$=$};
+\bctile{20}{62}{0}{KH}{KH}
+\draw[flow] (73,0) -- (85,0);
+\node[lab, above=0.4mm] at (79,1.4) {$G_\sigma *$};
+\bctile[keep]{20}{96}{0}{KHblur}{KHblur}
+
+\node[lab, above=1.2mm] at (10,10) {$H$};
+\node[lab, above=1.2mm] at (36,7.5) {$K$};
+\node[lab, above=1.2mm] at (62,10) {$K * H$};
+\node[lab, anchor=west, text=bcblue] at (108,0) {$G_\sigma * (K * H)$};
+
+% --- the blur migrating onto the stamp ------------------------------
+\draw[ghost] (79,-3.2) to[out=-90,in=25] (44,-24.5);
+\node[lab, text=bcgrey] at (62,-16) {$G_\sigma *$};
+
+% --- row 2: blur the stamp once, then convolve ----------------------
+\bctile{20}{10}{-32}{Hb}{H}
+\node at (24,-32) {$*$};
+\bctile{15}{36}{-32}{GK}{GK}
+\draw[black!80, line width=0.5pt] (46,-31.2) -- (84,-31.2);
+\draw[black!80, line width=0.5pt] (46,-32.8) -- (84,-32.8);
+\bctile[keep]{20}{96}{-32}{out}{out}
+
+\node[lab, below=1.2mm] at (36,-39.5) {$G_\sigma * K$};
+\node[lab, anchor=west, text=bcblue] at (108,-32) {$(G_\sigma * K) * H$};
+
+% --- the equality between the two outputs ---------------------------
+\node[text=bcblue, font=\large] at (96,-16) {$=$};
+
+% =====================================================================
+% PANEL B -- the ReLU roadblock
+% =====================================================================
+\node[panel, anchor=west] at (0,-56) {B};
+\node[anchor=west] at (6,-56)
+  {$G_\sigma \circ \rho \;\neq\; \rho \circ G_\sigma$};
+\node[expl] at (6,-61)
+  {A blur slides back through a convolution, but not past a ReLU.};
+
+\node[gate] (k1) at (12,-70) {$K_1 *$};
+\node[stop] (rho) at (38,-70) {$\rho$};
+\node[gate] (k2) at (64,-70) {$K_2 *$};
+\node[draw=bcblue, line width=0.6pt, fill=bcblue!7, circle, inner sep=1pt,
+      minimum size=8mm] (gs) at (84,-70) {\color{bcblue}$G_\sigma$};
+
+\draw[flow] (0,-70) -- (k1);
+\draw[flow] (k1) -- (rho);
+\draw[flow] (rho) -- (k2);
+\draw[flow] (k2) -- (gs);
+\node[lab, above=0.6mm] at (2,-69) {$H$};
+
+% the blur sliding backwards: through the convolution, not through rho
+\draw[slide] (84,-80) -- (64,-80);
+\draw[slide] (64,-80) -- (42,-80);
+\draw[bcblue, dotted, line width=0.4pt] (84,-74.2) -- (84,-78.6);
+\draw[bcblue, dotted, line width=0.4pt] (64,-74.8) -- (64,-78.6);
+\draw[bcred,  dotted, line width=0.4pt] (38,-74.8) -- (38,-82.2);
+\node[text=bcgreen] at (64,-84) {\small$\checkmark$};
+\node[lab, text=bcgreen, anchor=east] at (88,-88)
+  {$G_\sigma*(K_2*z) = (G_\sigma*K_2)*z$};
+
+\draw[bcred, line width=1.1pt, line cap=round]
+  (36.2,-81.8) -- (39.8,-84.2)  (36.2,-84.2) -- (39.8,-81.8);
+
+% the two branches that do not agree, and what is left over
+\bctile{15}{8}{-101}{ra}{relu_after}
+\node[text=bcred] at (20,-101) {$\neq$};
+\bctile{15}{32}{-101}{rp}{relu_past}
+\node[text=black!70] at (45,-101) {$\Rightarrow$};
+\bctile{15}{58}{-101}{rd}{relu_diff}
+\node[lab] at (8,-111.5) {$G_\sigma*\rho(v)$};
+\node[lab] at (32,-111.5) {$\rho(G_\sigma*v)$};
+\node[lab, text=bcred] at (58,-111.5) {$\Delta = \resReluBreak\,\%$};
+
+% =====================================================================
+% PANEL C -- the shrinking canvas (constant cell pitch)
+% =====================================================================
+\node[panel, anchor=west] at (92,-56) {C};
+\node[anchor=west] at (98,-56)
+  {$\sigma$ fixed in layer pixels};
+\node[expl] at (98,-61) {The same blur covers a larger share of a};
+\node[expl] at (98,-65.5)
+  {smaller map: $\pi\sigma^2/(HW)$ grows $\times\coverRatio$.};
+
+% bottom-aligned, one cell = 0.875mm at every scale
+\bctile{28}{106}{-88}{c32}{c32}
+\bctile{14}{131}{-95}{c16}{c16}
+\bctile{7}{145.5}{-98.5}{c8}{c8}
+
+\foreach \c/\r in {106/-88, 131/-95, 145.5/-98.5} {
+  \fill[bcred, opacity=0.30] (\c,\r) circle (1.75mm);
+  \draw[bcred, line width=0.6pt] (\c,\r) circle (1.75mm);
+}
+
+\node[lab] at (106,-72) {$32\times 32$};
+\node[lab] at (131,-86) {$16\times 16$};
+\node[lab] at (145.5,-93.5) {$8\times 8$};
+\node[lab, text=bcred] at (106,-105) {$\coverThirtyTwo\,\%$};
+\node[lab, text=bcred] at (131,-105) {$\coverSixteen\,\%$};
+\node[lab, text=bcred] at (145.5,-105) {$\coverEight\,\%$};
+\node[lab, text=bcred, anchor=west] at (152,-98.5) {$\sigma = \blurSigmaC$ px};
+
+\end{tikzpicture}

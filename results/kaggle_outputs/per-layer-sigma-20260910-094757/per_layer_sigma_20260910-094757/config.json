@@ -1,0 +1,197 @@
+{
+  "name": "per_layer_sigma",
+  "arch": "resnet20_bn_cifar",
+  "n_subset": 50000,
+  "num_val": 0,
+  "eval_split": "test",
+  "n_test": 10000,
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "epochs": 30,
+  "warmup": 60,
+  "effective_batch": 128,
+  "microbatch": null,
+  "microbatch_note": "batch applied directly, not as microbatches; gradient accumulation is exact so this changes only BatchNorm batch statistics, and is held fixed across every arm",
+  "lr": 0.005,
+  "device": "cuda",
+  "probe_size": null,
+  "runs": [
+    {
+      "label": "adaptive_seed0",
+      "arm": "adaptive",
+      "seed": 0,
+      "operator": "gaussian",
+      "lr": 0.005,
+      "profile": [
+        "adaptive_predictor_corrector",
+        {}
+      ]
+    },
+    {
+      "label": "plain_seed0",
+      "arm": "plain",
+      "seed": 0,
+      "operator": "none",
+      "lr": 0.005,
+      "profile": null
+    },
+    {
+      "label": "rho0.5_seed0",
+      "arm": "rho0.5",
+      "seed": 0,
+      "operator": "gaussian",
+      "lr": 0.005,
+      "profile": [
+        "per_stage",
+        {
+          "rho": 0.5
+        }
+      ]
+    },
+    {
+      "label": "rho1_seed0",
+      "arm": "rho1",
+      "seed": 0,
+      "operator": "gaussian",
+      "lr": 0.005,
+      "profile": [
+        "per_stage",
+        {
+          "rho": 1.0
+        }
+      ]
+    },
+    {
+      "label": "rho2_seed0",
+      "arm": "rho2",
+      "seed": 0,
+      "operator": "gaussian",
+      "lr": 0.005,
+      "profile": [
+        "per_stage",
+        {
+          "rho": 2.0
+        }
+      ]
+    },
+    {
+      "label": "adaptive_seed1",
+      "arm": "adaptive",
+      "seed": 1,
+      "operator": "gaussian",
+      "lr": 0.005,
+      "profile": [
+        "adaptive_predictor_corrector",
+        {}
+      ]
+    },
+    {
+      "label": "plain_seed1",
+      "arm": "plain",
+      "seed": 1,
+      "operator": "none",
+      "lr": 0.005,
+      "profile": null
+    },
+    {
+      "label": "rho0.5_seed1",
+      "arm": "rho0.5",
+      "seed": 1,
+      "operator": "gaussian",
+      "lr": 0.005,
+      "profile": [
+        "per_stage",
+        {
+          "rho": 0.5
+        }
+      ]
+    },
+    {
+      "label": "rho1_seed1",
+      "arm": "rho1",
+      "seed": 1,
+      "operator": "gaussian",
+      "lr": 0.005,
+      "profile": [
+        "per_stage",
+        {
+          "rho": 1.0
+        }
+      ]
+    },
+    {
+      "label": "rho2_seed1",
+      "arm": "rho2",
+      "seed": 1,
+      "operator": "gaussian",
+      "lr": 0.005,
+      "profile": [
+        "per_stage",
+        {
+          "rho": 2.0
+        }
+      ]
+    },
+    {
+      "label": "adaptive_seed2",
+      "arm": "adaptive",
+      "seed": 2,
+      "operator": "gaussian",
+      "lr": 0.005,
+      "profile": [
+        "adaptive_predictor_corrector",
+        {}
+      ]
+    },
+    {
+      "label": "plain_seed2",
+      "arm": "plain",
+      "seed": 2,
+      "operator": "none",
+      "lr": 0.005,
+      "profile": null
+    },
+    {
+      "label": "rho0.5_seed2",
+      "arm": "rho0.5",
+      "seed": 2,
+      "operator": "gaussian",
+      "lr": 0.005,
+      "profile": [
+        "per_stage",
+        {
+          "rho": 0.5
+        }
+      ]
+    },
+    {
+      "label": "rho1_seed2",
+      "arm": "rho1",
+      "seed": 2,
+      "operator": "gaussian",
+      "lr": 0.005,
+      "profile": [
+        "per_stage",
+        {
+          "rho": 1.0
+        }
+      ]
+    },
+    {
+      "label": "rho2_seed2",
+      "arm": "rho2",
+      "seed": 2,
+      "operator": "gaussian",
+      "lr": 0.005,
+      "profile": [
+        "per_stage",
+        {
+          "rho": 2.0
+        }
+      ]
+    }
+  ]
+}

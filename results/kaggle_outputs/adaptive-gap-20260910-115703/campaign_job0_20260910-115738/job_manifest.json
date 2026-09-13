@@ -1,0 +1,40 @@
+{
+  "job": 0,
+  "n_cells": 1,
+  "cells": [
+    {
+      "id": "ADAPTGAP",
+      "cell_id": "ADAPTGAP__seed0",
+      "group": "ADAPTGAP",
+      "seed": 0,
+      "resolution": "R32",
+      "gaussian": "Gplateau",
+      "reduction": "input_bilinear",
+      "mask": "all19",
+      "operator": "gaussian",
+      "adaptive": true,
+      "trigger": "gap",
+      "adaptive_params": {
+        "sigma_init": 1.0,
+        "sens_batch": 256,
+        "ramp_from": 18,
+        "zero_by": 21,
+        "stepper": {
+          "delta_ref": 0.1,
+          "dmin": 0.02,
+          "dmax": 0.35,
+          "sigma_max": 1.0
+        },
+        "gap": {
+          "cadence": 100,
+          "window": 3,
+          "eps": 0.0,
+          "patience": 2,
+          "blackout": 2,
+          "min_dwell_updates": 391,
+          "max_dwell_updates": 1173
+        }
+      }
+    }
+  ]
+}

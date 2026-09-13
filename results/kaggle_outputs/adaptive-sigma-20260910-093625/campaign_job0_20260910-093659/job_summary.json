@@ -1,0 +1,37 @@
+{
+  "job": 0,
+  "completed": [],
+  "failed_or_incomplete": [
+    {
+      "id": "ADAPT",
+      "cell_id": "ADAPT__seed0",
+      "group": "ADAPT",
+      "seed": 0,
+      "resolution": "R32",
+      "gaussian": "Gplateau",
+      "reduction": "input_bilinear",
+      "mask": "all19",
+      "operator": "gaussian",
+      "adaptive": true,
+      "adaptive_params": {
+        "sigma_init": 1.0,
+        "sens_batch": 256,
+        "ramp_from": 18,
+        "zero_by": 21,
+        "tracker": {
+          "beta": 0.9,
+          "tol": 0.01,
+          "patience": 30,
+          "min_steps": 40
+        },
+        "stepper": {
+          "delta_ref": 0.15,
+          "dmin": 0.02,
+          "dmax": 0.35,
+          "sigma_max": 1.0
+        }
+      }
+    }
+  ],
+  "elapsed_s": 26.69590091499998
+}
