@@ -29,9 +29,8 @@ bitwise (`torch.equal` or exact float equality); no tolerance was needed.
 | 9 | epoch-6 checkpoint stores `used = (16, 0.85)` and `next = (24, 0.70)` separately; transition-window checkpoints at updates 2345 and 2347 | | as specified |
 | 10 | evaluating `used` / `next` / `target` × `running_stats` / `fixed_batch_stats` leaves weights, buffers, torch RNG, controller state, train/eval mode and the checkpoint file unchanged | | unchanged |
 
-Also run against the fixed merged tree of `benchmark-organized`
-(`verification/parity_report_merged_tree.json`). It confirms that the
-constructor-order fix there (docs/AUDIT.md A10) preserved behaviour.
+Also run against the fixed merged tree of `benchmark-organized`: 44 / 44,
+confirming that the merge fixes there (docs/AUDIT.md A10) preserved behaviour.
 
 Unit tests (`tests/`, 32 tests, ~2 min CPU): operator identities, the executed
 schedule tables, the effective-sigma table, hook counts and ordering,
@@ -48,9 +47,12 @@ CPU): assets verified; finite logits and gradients at all 8 distinct states;
 transitions at updates 1173, 2346, 3519, 4692, 5865, 7038, 8211; target bypass
 max |Δ| = 0.
 
-Independence: the branch was cloned into an empty directory and tested with
-no benchmark code on the path (see the handoff commit message for the
-command).
+Merged benchmark tree: the same 44 checks against the fixed
+`benchmark-organized` code also pass (`verification/parity_report_merged_tree.json`).
+
+Independence: a fresh `git clone --branch continuation-core --single-branch`
+into an empty directory ran `verify-assets` (all digests match) and the full
+test suite (32 passed) with no benchmark code on the path.
 
 ## Not verified / limitations
 
