@@ -100,18 +100,19 @@ ABLATION_LABEL = {
     "D0G": ("Shrink block 0, plus blur after every ReLU", "res_gauss"),
     "D1G": ("Shrink block 1, plus blur after every ReLU", "res_gauss"),
     "D2G": ("Shrink block 2, plus blur after every ReLU", "res_gauss"),
-    "P_A1": ("Blur strength scaled by map size, after every ReLU", "profile"),
-    "P_A2": ("Blur strength scaled by sqrt of map size, after every ReLU",
-             "profile"),
-    "P_A3": ("Blur strength rising with depth, after every ReLU (direction control)",
-             "profile"),
-    "P_A4": ("Blur strength scaled by receptive field, after every ReLU", "profile"),
-    "Q_A1": ("Blur strength scaled by map size, after every conv", "profile"),
-    "Q_A2": ("Blur strength scaled by sqrt of map size, after every conv",
-             "profile"),
-    "Q_A3": ("Blur strength rising with depth, after every conv (direction control)",
-             "profile"),
-    "Q_A4": ("Blur strength scaled by receptive field, after every conv", "profile"),
+    "P_A1": ("Shrink block 2, plus blur scaled by map size after every ReLU",
+            "profile"),
+    "P_A2": ("Shrink block 2, plus blur scaled by sqrt of map size after every "
+            "ReLU", "profile"),
+    "P_A3": ("Shrink block 2, plus blur rising with depth after every ReLU "
+            "(direction control)", "profile"),
+    "P_A4": ("Shrink block 2, plus blur scaled by receptive field after every "
+            "ReLU", "profile"),
+    "Q_A1": ("Blur scaled by map size, after every ReLU", "profile"),
+    "Q_A2": ("Blur scaled by sqrt of map size, after every ReLU", "profile"),
+    "Q_A3": ("Blur rising with depth, after every ReLU (direction control)",
+            "profile"),
+    "Q_A4": ("Blur scaled by receptive field, after every ReLU", "profile"),
 }
 
 ADAPTIVE_LABEL = {
