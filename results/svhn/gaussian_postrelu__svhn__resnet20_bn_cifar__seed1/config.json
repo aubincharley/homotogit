@@ -1,0 +1,139 @@
+{
+  "data": {
+    "name": "svhn",
+    "root": "data",
+    "normalization": "fit_on_train",
+    "expected_mean": [
+      0.4376820921897888,
+      0.4437696933746338,
+      0.4728044271469116
+    ],
+    "expected_std": [
+      0.19803012907505035,
+      0.2010156214237213,
+      0.19703614711761475
+    ],
+    "stats_atol": 1e-07
+  },
+  "model": {
+    "arch": "resnet20_bn_cifar",
+    "options": {}
+  },
+  "optimizer": {
+    "name": "sgd",
+    "lr": 0.005,
+    "weight_decay": 0.0005,
+    "momentum": 0.9,
+    "nesterov": false,
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "eps": 1e-08,
+    "schedule": "warmup_cosine",
+    "warmup_updates": 60,
+    "min_lr": 0.0
+  },
+  "method": {
+    "id": "gaussian_postrelu__transfer",
+    "description": "Gaussian at the 10 post-ReLU positions (stem output + 9 block outputs), plateau schedule, no resolution change.",
+    "gaussian": {
+      "placement": "post_relu",
+      "schedule": {
+        "starts": [
+          0,
+          3,
+          6,
+          9,
+          12,
+          15,
+          18,
+          21
+        ],
+        "values": [
+          1.0,
+          0.85,
+          0.7,
+          0.6,
+          0.5,
+          0.4,
+          0.3,
+          0.0
+        ]
+      },
+      "sigma_scale": "none",
+      "sigma_max": 1.0,
+      "truncate": 4.0,
+      "units": "pixels of the feature map at the site; the reference levels unchanged, since SVHN is 32x32 like CIFAR-10"
+    },
+    "resolution": null,
+    "source": {
+      "transferred_from": "gaussian_postrelu",
+      "experiment": "unified_selected",
+      "branch": "benchmark-organized",
+      "config_id": "blur_relu",
+      "label": "Blur after every ReLU, annealed to zero",
+      "cells": [
+        "blur_relu__seed0",
+        "blur_relu__seed1",
+        "blur_relu__seed2"
+      ],
+      "final_test_acc_per_seed": {
+        "0": 0.8006,
+        "1": 0.8006,
+        "2": 0.796
+      },
+      "final_test_acc_mean": 0.799067,
+      "final_test_acc_sd": 0.002656,
+      "final_path": "target (equal to current at epoch 30)",
+      "asset_set": "r20bn-campaign-assets"
+    },
+    "validated_on": []
+  },
+  "budget": {
+    "epochs": 30,
+    "effective_batch": 128,
+    "microbatch": 32
+  },
+  "evaluation": {
+    "every_epochs": 1,
+    "at_epoch_zero": true,
+    "batch_size": 500,
+    "paths": [
+      "current",
+      "target"
+    ],
+    "splits": [
+      "train_probe",
+      "test"
+    ],
+    "bn_policy": "running_stats"
+  },
+  "checkpoint": {
+    "every_epoch": false,
+    "every_updates": null,
+    "transition_offsets": [],
+    "keep_rolling": true
+  },
+  "run": {
+    "seed": 1,
+    "device": "auto",
+    "out_dir": "/kaggle/working/runs",
+    "name": "gaussian_postrelu__svhn__resnet20_bn_cifar__seed1",
+    "cudnn_deterministic": false,
+    "cudnn_benchmark": false
+  },
+  "assets": {
+    "dir": "assets/svhn_resnet20bn",
+    "verify": true
+  },
+  "validation_status": "unvalidated",
+  "notes": [
+    "transfer preset: not trained, not validated",
+    "insertion mapping: input of blocks.2, as in the reference; SVHN is 32x32 so the site runs at 32 and reference_resolution stays 32",
+    "schedules, placements and optimizer identical to the CIFAR-10 reference; SVHN is 32x32 so nothing is rescaled",
+    "train set cut to 50000 images so updates/epoch match CIFAR-10's 391 (SVHN has 73,257)",
+    "normalisation fitted on all 73,257 training images (the pipeline is built before subsetting), while training uses 50000 of them",
+    "normalisation statistics pinned"
+  ]
+}

@@ -56,6 +56,69 @@ py -m continuation_core evaluate --checkpoint runs/resolution_max_b1_gaussian_co
 `dry-run` builds everything, verifies asset digests, runs forward/backward at
 every distinct state and checks the target-state bypass. It trains nothing.
 
+## SVHN
+
+The same four methods with **nothing rescaled**: SVHN is 32x32, so the resolution
+schedule, the Gaussian levels, the placements and the optimizer are the CIFAR-10
+reference values passed through unchanged. The training set is cut to 50,000 of
+73,257 so updates per epoch (391) and total updates (11,730) match the reference
+exactly, which makes the schedules identical in updates and not just in epochs.
+Decisions in `scripts/svhn_configs.py`; 3 seeds, Kaggle T4, records under
+`results/svhn/`.
+
+Data: `scripts/convert_svhn.py` converts the official cropped-digit `.mat` files
+to raw binaries once, recording the source sha256, because reading MATLAB v7
+needs scipy and the package depends on torch and numpy only. It also undoes the
+two conventions that fail silently: `X` is stored `(H, W, C, N)`, and label 10 is
+the digit zero.
+
+| method | SVHN test | paired vs plain | CIFAR-10 test |
+|---|---|---|---|
+| `resolution_max_b1_gaussian_conv` | **94.85 +- 0.20** | **+1.74 +- 0.17** | 81.51 +- 0.22 |
+| `resolution_max_b1` | 94.26 +- 0.07 | +1.16 +- 0.09 | 80.37 +- 0.61 |
+| `gaussian_postrelu` | 94.26 +- 0.14 | +1.16 +- 0.12 | 79.91 +- 0.27 |
+| `plain` | 93.10 +- 0.03 | - | 75.43 +- 0.76 |
+
+**SVHN reproduces the CIFAR-10 ordering**, combined method included, with every
+delta positive in all three seeds.
+
+Normalised by the error the control actually leaves -- the only fair way to
+compare a 75% baseline with a 93% one:
+
+| method | CIFAR-10 | STL-10 | SVHN |
+|---|---|---|---|
+| `resolution_max_b1_gaussian_conv` | +25% | **-3%** | +25% |
+| `resolution_max_b1` | +20% | +6% | +17% |
+| `gaussian_postrelu` | +18% | +3% | +17% |
+
+Two things follow.
+
+*The mechanism is not a prior over natural-image scale structure.* SVHN was
+chosen to test exactly that: centred cropped digits have flat regions, sharp
+strokes and weak scale structure, so a Gaussian anneal should have helped less.
+It helps the same -- 25% error reduction for the combined method against 25% on
+CIFAR-10.
+
+*STL-10 is the outlier, and the update budget is why.* STL-10 gave the combined
+method 720 updates to recover after the Gaussian switches off; CIFAR-10 and SVHN
+both give it 3,519, and on both it wins by 25%. That supports the
+recovery-starved reading of the STL-10 target-path trace with an independent
+dataset rather than one run's curve shape.
+
+It also rules out the competing worry that SVHN's control (93.10%, and 100% on
+the train probe) left no optimization headroom for continuation to exploit. The
+methods help substantially on a control that has memorised its training set,
+which makes "easing optimization" a poor description and points at
+regularization.
+
+Still confounded: STL-10 moved image size, dataset size and update budget at
+once. The clean test is CIFAR-10 cut to 5,000 images on STL-10's 60-epoch
+schedule -- 32x32, so resolution is held fixed while the budget matches STL-10's.
+`make-assets --subset-size` exists for it.
+
+No parity reference exists for any of this.
+
+
 ## STL-10
 
 The same four methods transferred to STL-10 / 96x96: sigma x3, resolution
