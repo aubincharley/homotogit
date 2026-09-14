@@ -1,0 +1,61 @@
+\documentclass[twoside]{article}
+% Official files from the user-provided pack are left unchanged.
+% Preprint avoids falsely claiming that this project is under AISTATS review.
+\usepackage[preprint]{aistats2026}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsthm,graphicx,booktabs,array,tabularx,longtable}
+\usepackage[round,authoryear]{natbib}
+\usepackage{microtype}
+\usepackage[hidelinks]{hyperref}
+\setlength{\pdfpageheight}{11in}
+\setlength{\pdfpagewidth}{8.5in}
+\renewcommand{\bibsection}{\subsubsection*{References}}
+\bibliographystyle{apalike}
+\input{macros}
+% Every number quoted in the text is defined here, generated from the audited
+% records by paper/tools/make_paper_assets.py.
+\input{tables/numbers}
+
+\newif\ifincludeappendix
+\includeappendixtrue
+\newif\ifincludechecklist
+\includechecklistfalse % Fill checklist_template.tex before enabling.
+
+\begin{document}
+\runningtitle{Spatial Continuation for Training CNNs}
+\runningauthor{Charley, Corrard, El khamlichi, Nicaise}
+\twocolumn[
+\aistatstitle{Spatial Continuation for Training Convolutional Neural Networks}
+\aistatsauthor{Aubin Charley \And Alexandre Corrard \And Idriss El khamlichi \And Maxime Nicaise}
+\aistatsaddress{CentraleSup\'elec, Universit\'e Paris-Saclay}
+]
+
+\begin{abstract}
+An idea to train a neural network is to start from a simpler problem and progressively recover the original one. We investigate this idea by changing the spatial information processed by convolutional networks during training. We compare temporary resolution reduction, Gaussian filtering of feature maps, and their combination. In an exploratory CIFAR-10 study with ResNet-20, SGD and 30 epochs without augmentation, the selected combination reaches $\uComb\pm\uCombSD\%$ test accuracy, against $\uPlain\pm\uPlainSD\%$ for the unmodified baseline (mean $\pm$ sample SD over three seeds in the same batch). Resolution reduction alone reaches $\uRes\pm\uResSD\%$. All selected methods finish at the original resolution without an added filter. The same test set was used to select the methods, so these numbers are descriptive. They motivate a more focused study of transfer across training settings, optimization trajectories and implicit regularization. This draft presents the methods and the exploratory evidence; the transfer study and the theoretical and geometric analyses are still in progress.
+\end{abstract}
+
+\input{sections/01_introduction}
+\input{sections/02_related_work}
+\input{sections/03_methods}
+\input{sections/04_experiments}
+\input{sections/05_theory}
+\input{sections/06_visualization}
+\input{sections/07_discussion}
+
+\bibliography{references}
+\ifincludechecklist
+\clearpage
+\input{checklist_template}
+\fi
+\ifincludeappendix
+\clearpage
+\onecolumn
+\appendix
+\input{appendices/a_reference_protocol}
+\input{appendices/b_exploratory_results}
+\input{appendices/c_other_approaches}
+\input{appendices/d_future_details}
+\fi
+\end{document}

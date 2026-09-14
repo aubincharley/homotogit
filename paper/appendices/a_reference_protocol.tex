@@ -1,0 +1,72 @@
+\section{Reference protocol and implementation details}
+\label{app:protocol}
+The values below are read from the frozen presets of the shared \texttt{continuation-core} code, which were recovered from the code that ran the final batch and checked against the states recorded in its 48 runs. On CPU, the shared code reproduces bitwise the controller states, forward and backward passes and parameter updates of that code at sampled updates across every schedule transition. GPU runs of either code are not bitwise reproducible.
+
+\subsection{Training recipe}
+\begin{center}\small
+\begin{tabularx}{\linewidth}{@{}lX@{}}
+\toprule
+Data & CIFAR-10, all 50,000 training and 10,000 test images; no augmentation; per-channel normalization with the mean and standard deviation of the 50,000 unfiltered training images.\\
+Model & ResNet-20 with BatchNorm (momentum $0.1$), widths 16/32/64, option-A shortcuts (subsampling and zero-padding, no convolution), 269,722 parameters. Initial weights and BatchNorm buffers are loaded from the pinned asset set.\\
+Optimizer & SGD, learning rate $\eta=0.005$, momentum $0.9$, no Nesterov, weight decay $5\times10^{-4}$ on all parameters, including BatchNorm parameters and biases.\\
+Learning rate & $\eta\,(u+1)/60$ for $u<60$, then $\tfrac12\eta\,\bigl(1+\cos(\pi(u-60)/11{,}670)\bigr)$, where $u$ is the global update index.\\
+Batches & A pinned permutation per epoch; consecutive batches of 128 images, the last one of 80. Each batch is split into microbatches of 32 (the last one of 16) whose mean losses are weighted by their number of examples before a single update. BatchNorm therefore normalizes over microbatches.\\
+Budget & 30 epochs of 391 updates, 11,730 updates in total.\\
+Evaluation & Before training and after every epoch: a fixed probe of 500 training images and the test set, on the current path (the intervention of the epoch just completed) and on the target path, in eval mode with BatchNorm running statistics, batches of 500. The reported metric is the record after epoch 30, without best-epoch selection.\\
+Hardware & Kaggle T4 GPUs, PyTorch 2.10.0+cu128, cuDNN at its default, non-deterministic settings.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{Insertion sites and the reduction point}
+\label{app:sites}
+Table~\ref{tab:sites} lists the sites in forward order. ``After block 1'' denotes the complete output of the second residual block, after its residual addition and final ReLU. The adaptive max-pooling is applied to this tensor as it enters the third block, so both branches of every later block, including the shortcut, see the reduced grid. The adaptive windows along each axis are $[\lfloor in/r\rfloor,\lceil (i+1)n/r\rceil)$ for an input side $n=32$ and output side $r$.
+
+\begin{table}[htbp]
+\caption{Insertion sites of the ResNet-20 reference model, in forward order. The stem is a convolution, BatchNorm and ReLU; each residual block has two convolutions, and stride-2 convolutions open blocks 3 and 6. Map sides are given for $r=16/24/32$ at the reduction point; the Gaussian-only procedure never reduces, so its maps are those of the $r=32$ column. Post-ReLU sites are the stem ReLU output ($p_0$) and the output of each block ($p_1$--$p_9$).}
+\label{tab:sites}
+\centering\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Stage & Map side, $r=16/24/32$ & Conv outputs (\methodRG) & Post-ReLU (\methodG)\\
+\midrule
+Stem & 32 / 32 / 32 & $c_0$ & $p_0$\\
+Blocks 0--1 & 32 / 32 / 32 & $c_1$--$c_4$ & $p_1,p_2$\\
+\emph{Reduction (input of block 2)} & 16 / 24 / 32 & --- & ---\\
+Block 2 & 16 / 24 / 32 & $c_5,c_6$ & $p_3$\\
+Blocks 3--5 & 8 / 12 / 16 & $c_7$--$c_{12}$ & $p_4$--$p_6$\\
+Blocks 6--8 & 4 / 6 / 8 & $c_{13}$--$c_{18}$ & $p_7$--$p_9$\\
+Pooling and linear head & 1 & --- & ---\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+In the combined procedure each Gaussian sits between a convolution and its BatchNorm: \texttt{conv1}, Gaussian, \texttt{bn1}, ReLU, \texttt{conv2}, Gaussian, \texttt{bn2}, addition of the shortcut, ReLU. In the Gaussian-only procedure the filtered tensor is the block output that the next block, or the pooling layer for $p_9$, receives on both paths. The ReLU inside each block is not a site.
+
+\subsection{Schedules, operators and bypass}
+\label{app:schedules}
+\input{tables/schedules}
+
+\paragraph{Transition indexing.} A state holds for a whole epoch, and a transition at epoch $e$ means that update $391e$ is the first to use the new state. The record written after $k$ completed epochs evaluates the current path under the state of epoch $k-1$ (zero-based), so a change of state first appears in the following record. Checkpoints written by the shared code store the state used by the last update and the next state separately.
+
+\paragraph{Gaussian operator.} For every $\sigma$ the kernel has the same nine taps, $w_d\propto\exp(-d^2/(2\sigma^2))$ for $d=-4,\dots,4$, fixed by a maximal scale $\sigma_{\max}=1$ truncated at $4\sigma_{\max}$. The taps are computed in double precision, normalized to sum one and cast to single precision. The filter is separable and depthwise, applied along the width and then the height, and never mixes channels. Padding reflects the map without repeating its edge sample. PyTorch's reflection padding requires a map side larger than the radius, so on $4\times4$ maps the same reflection is applied by explicit indexing; this happens only at sites $c_{13}$--$c_{18}$ of the combined procedure during epochs 0--5.
+
+\paragraph{Scale units and coupling.} $\sigma$ is measured in pixels of the feature map at the site. The Gaussian-only procedure uses $\sigma=G$ at its ten sites. The combined procedure uses $\sigma=(r/32)\,G$ at all 19 sites, including $c_0$--$c_4$, which remain at $32\times32$ upstream of the reduction. This is the executed rule, and it makes the effective scale non-monotone: it increases from $0.425$ to $0.525$ when $r$ changes from 16 to 24 at epoch 6.
+
+\paragraph{Bypass and target state.} When $G=0$, a Gaussian hook returns its input tensor unchanged, with no kernel and no padding. When $r$ equals the incoming side of 32, the reduction hook returns its input. In the target state $(r=32,G=0)$, every procedure therefore computes exactly the plain ResNet-20, which the shared code tests bitwise in train and eval modes. Neither BatchNorm statistics nor optimizer state are reset at a transition.
+
+\subsection{Pairing, endpoints and reproducibility}
+\label{app:pairing}
+The unified batch (\texttt{unified\_selected}) contains 16 configurations with three seeds each, 48 runs, all numerically valid. Every run verified the pinned asset set \texttt{r20bn-campaign-assets} (Table~\ref{tab:assets}) before training. Identical digests were recorded by \texttt{fulldata\_gaussian}, which produced the set, \texttt{progressive\_resolution\_pilot}, \texttt{campaign\_grid21}, \texttt{resbench\_resolution\_only} and the seed-0 adaptive runs. The manifests of the adaptive runs declare them unpaired with the campaign, while their recorded digests match; we report both facts. The ablation batch uses the same subset, probe and per-epoch order with different initial weights, and the per-layer study is self-paired under another digest scheme.
+
+\input{tables/asset_sets}
+
+Matching assets are not sufficient for comparability. Plain arms on identical assets finished differently in four batches (Table~\ref{tab:plain-arms}), with candidate causes including non-deterministic GPU kernels, differences between driver code and software builds. We therefore compute paired differences only within a batch, and never apply an offset between batches.
+
+\input{tables/plain_arms}
+
+\paragraph{Endpoints.} The selected procedures share a final architecture, not learned weights or BatchNorm buffers. At intermediate records, the target path bypasses the intervention with BatchNorm running statistics accumulated on the current path, so its accuracy can reflect a statistics mismatch as well as the weights. Fixed-resolution and fixed-filter controls report their reduced or filtered path, and BlurPool controls keep BlurPool; they do not share the endpoint of the continuation procedures.
+
+\paragraph{Failures, seeds and duplicates.} Runs with a non-finite loss remain listed as failed numerical experiments, such as the perceptual operator after block 1 in three of three seeds. Rows with one valid seed have no across-seed SD. Reruns under a separate launch are separate rows, whereas byte-identical copies of a summary, 42 of them in the per-layer study, are collapsed.
+
+\paragraph{Code, timing and records.} The code bundle shipped with the unified jobs equals commit \texttt{3829fa3} after line-ending normalization. Wall times run from model construction to the final summary and include evaluation and checkpoint writes, with two runs sharing a two-GPU kernel. Evaluation cadence differs between batches (every epoch in the unified batch, every two epochs in the resolution-only batch), so timings are not compared across batches. All numbers in this report come from the audited experiment index on branch \texttt{benchmark-organized} at commit \texttt{\benchCommit} ($\idxExperiments$ experiments, $\idxConfigurations$ configurations, $\idxRuns$ runs) and from the run records it points to, through \texttt{paper/tools/make\_paper\_assets.py}; the files, configurations and seeds behind each figure and table are listed in \texttt{paper/provenance/generated\_assets.json}.

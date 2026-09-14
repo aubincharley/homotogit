@@ -1,0 +1,19 @@
+\section{Visualizing the continuation}
+\label{sec:visualization}
+We want to distinguish three questions: how an intervention changes the loss at fixed weights; how the optimization trajectory changes, especially at schedule transitions; and how sensitive the final solution is to weight perturbations. These questions require different comparisons.
+
+For the first two, a common two-dimensional plane defines
+\begin{equation}
+ F_s(a,b)=\widehat L_s(\theta_{\mathrm{ref}}+a d_1+b d_2),
+ \label{eq:plane}
+\end{equation}
+where the training subset, reference point and directions are fixed across the displayed intervention states. Joint PCA of the recorded trajectories can define $d_1,d_2$; its explained variance and projection residuals must accompany the plot. A checkpoint generally lies outside this plane, so the loss at its projected position is not necessarily its actual loss. Evaluating the same checkpoint under the states immediately before and after a transition isolates the instantaneous intervention effect.
+
+We separately use filter-normalized perturbations around final checkpoints, following \citet{li2018visualizing}. BatchNorm policy is fixed and reported: historical evaluation uses stored running statistics, whereas maps using fixed minibatch statistics define a different, explicitly labelled loss. No checkpoint buffers are modified during these evaluations. A two-dimensional slice is a diagnostic, not evidence that the full loss is convex or that apparent flatness causes generalization. The corresponding tools are implemented in the shared code (Appendix~\ref{app:visualization}); no analysis is reported in this version.
+
+\begin{figure}[t]
+\centering
+\figureslot{figures/main_landscape.pdf}{1.45cm}{Common loss plane and projected trajectories}
+\caption{Reserved for the principal visualization. The final figure will state the loss, intervention states, BatchNorm policy, data subset, explained variance of the plane and projection residuals. No landscape is reported yet.}
+\label{fig:main-landscape}
+\end{figure}

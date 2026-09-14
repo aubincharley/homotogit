@@ -1,0 +1,79 @@
+\section{Exploratory experiments and method selection}
+\label{app:exploration}
+This appendix contains the exploration used to select the three procedures. Its tables and figures are generated from the audited experiment index and the raw run records (Appendix~\ref{app:pairing}). The exploration used the test set for method selection and is not an independent confirmatory study. In all figures, open circles are individual seeds, filled circles are means over valid seeds, and shaded bars or bands show $\pm1$ sample SD over seeds; none of them is a confidence interval.
+
+\subsection{Final unified comparison}
+\input{tables/unified_reference}
+Table~\ref{tab:unified-reference} reports the selected methods against this batch's own baseline, and Figure~\ref{fig:unified} places them among the 16 configurations of the batch. The $\uGainComb$-point gain of the combination is descriptive; three seeds do not establish a precise ranking of nearby configurations.
+
+Placement interacts with reduction. Without reduction, post-ReLU filtering scores above convolution-output filtering ($\uGauss\%$ versus $\uBlurConv\%$, paired difference $\uGaussMinusBlurConv\pm\uGaussMinusBlurConvSD$ points). With reduction after block 1, convolution-output filtering scores above post-ReLU filtering ($\uComb\%$ versus $\uResRelu\%$, paired difference $\uCombMinusResRelu\pm\uCombMinusResReluSD$ points); both differences are positive in each seed. Per-layer receptive-field profiles did not show a consistent additional benefit over uniform post-ReLU filtering in this batch, and the square-root profile scored lower. These contrasts motivate the selected presets but do not isolate a general anti-aliasing mechanism.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth]{figures/appendix_unified.pdf}
+\caption{Unified batch: all 16 configurations, three seeds each, on the native filter-free path after 30 epochs. (a) Final test accuracy; the vertical line is this batch's plain mean. Blue, orange and purple mark the retained \methodR, \methodG{} and \methodRG{} procedures. Reduction arms use max-pooling unless labelled; ``post-ReLU'' is the ten-site placement of \methodG, and ``profile'' arms rescale its $\sigma$ per site. (b) Difference between each run and the plain run with the same seed, which shares its initial weights and data order, with the mean and sample SD of the three differences. The test set was used to choose among these arms, and several reduction-plus-Gaussian variants overlap.}
+\label{fig:unified}
+\end{figure}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth]{figures/appendix_unified_curves.pdf}
+\caption{Training records of the retained procedures in the unified batch, mean over three seeds with $\pm1$ sample SD bands. The record after $k$ completed epochs uses the state of epoch $k-1$ (zero-based). Grey vertical lines separate the last record before and the first record after the changes $r:16\to24$ and $r:24\to32$ (\methodR, \methodRG) and $G\to0$ (\methodG, \methodRG). (a) Test accuracy on the current path, with the intervention of that epoch still active, so early values are not those of the plain network. (b) Diagnostic: the same weights on the target path, with the intervention bypassed but BatchNorm running statistics accumulated on the current path; low values mix weight and statistics effects. (c) Cross-entropy on the fixed 500-image training probe, current path. (d) Test cross-entropy, current path. From $k=22$ on, current and target paths coincide for every procedure.}
+\label{fig:unified-curves}
+\end{figure}
+
+On the current path, the retained procedures are above plain from the first epochs (Figure~\ref{fig:unified-curves}). On the training probe, their cross-entropy is first below that of plain and ends above it in the last third of training, while their test cross-entropy keeps decreasing where plain's levels off. Table~\ref{tab:final-losses} gives the final values.
+
+\input{tables/final_losses}
+
+\subsection{Alternative resolution operators}
+\input{tables/resolution_operators}
+The preceding pure-resolution batch has its own plain arm, at $\rbPlain\pm\rbPlainSD\%$. It shares pinned assets with the unified batch but is not paired with Table~\ref{tab:unified-reference} (Appendix~\ref{app:pairing}). After block 1, adaptive max-pooling had the highest observed mean ($\rbMaxBOne\%$), but the seed ranges of several operators overlap, and the ordering changed at the input, where the $\dot H^{-1}$ reconstruction had the highest mean (Figure~\ref{fig:resolution}). This argues against a universal ranking of operators. MaxBlur keeps its own binomial blur and bilinear reduction its antialiasing, so neither is a pure resolution change.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth]{figures/appendix_resolution_operators.pdf}
+\caption{Resolution-only batch: seven reduction operators after residual block 1 (a) and at the input image (b), schedule $16\to24\to32$, no Gaussian, three seeds each, native path after 30 epochs. The vertical line is this batch's plain mean. The perceptual operator after block 1 produced a non-finite loss in all three seeds and has no accuracy; it is a failed numerical experiment, not a missing one.}
+\label{fig:resolution}
+\end{figure}
+
+For max-pooling, block 1 had the highest mean of the five tested locations (input image, stem output, and after blocks 0, 1 and 2), ahead of blocks 2 and 0 by less than the seed SD of those arms (Figure~\ref{fig:resolution-location}). The standard $16\to24\to32$ path had the highest mean among the tested schedules for max-pooling and for the $\dot H^{-1}$ reconstruction, but not for MaxBlur, where the reversed order scored marginally higher. Fixed $16\times16$ and $24\times24$ controls ended below the progressive procedure, but with a different inference architecture, so their gap does not isolate the effect of continuation.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth]{figures/appendix_resolution_location_schedule.pdf}
+\caption{Resolution-only batch, three seeds per arm. (a) Location of the max-pooling reduction with the standard schedule. (b) Schedules after block 1 for max-pooling, MaxBlur and the $\dot H^{-1}$ reconstruction: the standard path spends epochs 0--5 at 16 and 6--11 at 24, the late path 0--8 and 9--17, the gentle path starts at 24, and the reversed path visits 24 before 16. (c) Progressive reduction against fixed reductions that are never restored; squares mark these controls, whose final metric is their reduced inference path. The vertical line is the batch's plain mean.}
+\label{fig:resolution-location}
+\end{figure}
+
+At block 1, the valid operators took $\rbWallBOneMin$--$\rbWallBOneMax$\,s per run, against $\rbWallPlain$\,s for the plain arm, including evaluation every two epochs and checkpoint writes. The more expensive reconstruction operators did not bring an accuracy gain at this location. These timings belong to the resolution-only batch, whose evaluation cadence differs from the unified batch; they must not be assigned to the unified Gaussian combinations.
+
+\subsection{Other exploratory families}
+The remaining trained families are grouped by batch in Figures~\ref{fig:campaign}--\ref{fig:perlayer}. Each panel draws the plain mean of its own batch when the batch has a plain arm; no line is carried across batches. The earlier grid (\texttt{campaign\_grid21}) reduced the input image or the stem output and filtered the 19 convolution outputs; it preceded the internal reduction points of the later batches. The ablation batch (\texttt{ablation\_aa}) varied filter placement, site masks, internal reduction points and per-layer $\sigma$ profiles, with many one-seed arms and its own initial weights. The per-layer and adaptive studies varied the per-site $\sigma$ profile, its amplitude and data-triggered schedules; the adaptive arms ran at seed 0 only. Arms that keep a fixed filter, a fixed reduced resolution or BlurPool at inference are controls with a different endpoint and are marked separately. Runs under other conditions (image subsets, validation splits, GroupNorm, 120 epochs) are listed only in Table~\ref{tab:all-exploratory}.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth]{figures/appendix_campaign.pdf}
+\caption{(a) \texttt{campaign\_grid21}, reference recipe, three seeds per configuration: resolution schedule, Gaussian schedule and reduction site (input image or stem output, bilinear or max-pool), with the Gaussian at the 19 convolution outputs unless restricted to the first seven layers. The vertical line is the grid's plain mean. (b) Earlier full-data runs on the same pinned assets: \texttt{fulldata\_gaussian}, three seeds with its own plain arm (vertical line), and the one-seed \texttt{progressive\_resolution\_pilot}, which has no SD.}
+\label{fig:campaign}
+\end{figure}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth]{figures/appendix_ablation.pdf}
+\caption{\texttt{ablation\_aa}, read at the recorded commit of its branch. Reference recipe with its own pinned initial weights and the campaign's data order: its arms are paired with each other, not with other batches. Many arms have one seed, annotated and without SD. Squares mark controls whose final metric keeps a fixed filter or BlurPool at inference. The vertical line is the batch's one-seed plain arm.}
+\label{fig:ablation}
+\end{figure}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth]{figures/appendix_perlayer_adaptive.pdf}
+\caption{(a) \texttt{per\_layer\_sigma}: full-data, 30-epoch arms on self-paired assets; the two launches remain separate rows, and plain arms are in black. The $\sigma_0$ sweep comes from a separate branch. (b) \texttt{adaptive\_continuation}: 30-epoch arms at seed 0, including repeated instrumented reruns of the plateau schedule under separate launches. This experiment has no 30-epoch plain arm, so no plain line is drawn. CPU pilots, 5,000-image smoke runs and 120-epoch runs are listed only in Table~\ref{tab:all-exploratory}.}
+\label{fig:perlayer}
+\end{figure}
+
+\clearpage
+\subsection{Complete exploratory record}
+\label{app:complete}
+Table~\ref{tab:all-exploratory} lists every trained configuration of the index, with the conditions, record locations, assets, counts and timing scope of each experiment.
+\IfFileExists{tables/all_exploratory.tex}{\input{tables/all_exploratory.tex}}{\pending{The complete table is generated by \texttt{paper/tools/make\_paper\_assets.py}.}}

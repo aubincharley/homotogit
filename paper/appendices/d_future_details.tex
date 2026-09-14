@@ -1,0 +1,37 @@
+\section{Theoretical details}
+\label{app:proofs}
+\pending{Reserved for the assumptions, proof and limitations of the result in Section~\ref{sec:theory}. An illustrative regression theorem must be distinguished from a statement about the actual CNN or its cross-entropy.}
+
+\section{Transfer settings and insertion mappings}
+\label{app:transfer-mapping}
+A transferred procedure is defined only once its sites, reduction point, schedule duration and scale units are fixed for the new setting. The shared code has no defaults for these decisions and marks such configurations as unvalidated. Table~\ref{tab:mappings} records the mappings implemented so far; each transfer run will add its own choices.
+
+\begin{table}[htbp]
+\caption{Insertion mappings implemented in the shared code. Only the ResNet-20 mapping has been run with the retained procedures.}
+\label{tab:mappings}
+\centering\small
+\begin{tabularx}{\linewidth}{@{}l*{4}{>{\raggedright\arraybackslash}X}@{}}
+\toprule
+Architecture & Convolution-output sites (\methodRG) & Post-ReLU sites (\methodG) & Reduction point (\methodR, \methodRG) & Status\\
+\midrule
+ResNet-20 (BatchNorm) & 19: stem and both convolutions of each block & 10: stem ReLU output and each block output & input of block 2 (output of block 1) & reference; matches the executed runs\\
+VGG-11 (BatchNorm) & 8 convolution outputs & 8: every ReLU output & none defined & implemented, never run; the resolution procedures stop with an error until a point is named\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+For VGG-11, the eight ReLU outputs include every activation, whereas the ResNet placement filters only block outputs; this choice, and any reduction point, for instance after a given pooling layer, must be reported with the results. STL-10 images are $96\times96$, so the map entering block 2 of ResNet-20 has side 96, and the reference resolution, the reduced sides and the Gaussian scale in pixels must be chosen explicitly rather than copied from the $32\times32$ setting. With AdamW, the learning rate, weight decay and schedule are explicit inputs. None of these settings has been run with the retained procedures yet.
+
+\section{Additional visualizations}
+\label{app:visualization}
+The shared code provides the tools for the three questions of Section~\ref{sec:visualization}. It evaluates one checkpoint under explicit intervention states (the state used before a transition, the next state, and the target state), exports parameter trajectories, fits a joint PCA plane that reports its explained variance and the projection residual of each checkpoint, evaluates loss grids on that plane, and computes filter-normalized perturbation curves. Two BatchNorm policies are available and always labelled: stored running statistics, or per-batch statistics computed on cloned buffers. These evaluations leave weights, buffers, random state and checkpoint files unchanged.
+
+Checkpoints of the exploratory batches are not versioned in the repository, so the analyses need checkpoints saved around the schedule transitions. An earlier set of two-dimensional slices around a checkpoint trained with a Gaussian schedule (\texttt{loss\_landscape\_blur}) predates the retained procedures and is not reported. The completed analysis will record the checkpoints, shared projection basis, explained variance, projection residuals, BatchNorm policy and data subset used for each panel. It will distinguish loss changes at fixed weights from changes due to subsequent optimization, and show robustness across seeds or projection directions where available.
+\IfFileExists{figures/appendix_geometry.pdf}{%
+\begin{figure}[htbp]
+\centering
+\figureslot{figures/appendix_geometry.pdf}{1.1cm}{Transition diagnostics, projection checks and perturbation curves}
+\caption{Reserved for supporting geometric diagnostics. All curves must specify whether they use the current intervention or the final target path.}
+\label{fig:additional-geometry}
+\end{figure}
+}{\pending{Supporting transition and perturbation figures will be inserted here when available.}}

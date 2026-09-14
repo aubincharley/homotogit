@@ -1,0 +1,19 @@
+\section{Other approaches considered}
+\label{app:alternatives}
+\subsection{From Gaussian filtering to information budgets}
+Viewing Gaussian filtering as a way of limiting spatial information led us to ask whether one could preserve an image as well as possible under an explicit complexity budget. One proposed family conserves each RGB channel's mean and bounds total variation:
+\[
+ \mathcal K_t(x)=\left\{z\in[0,1]^{3\times H\times W}:
+ \operatorname{TV}(z)\le t\operatorname{TV}(x),\quad
+ \bar z_c=\bar x_c\ \text{for each }c\right\}.
+\]
+Two variants minimize either $\frac12\norm{z-x}_2^2$ or
+$\frac12\sum_c(z_c-x_c)^\top\mathsf L^\dagger(z_c-x_c)$ over this set. Here $\mathsf L=D_1^\top D_1+D_2^\top D_2$ uses forward differences with zero boundary differences, and $\mathsf L^\dagger$ is its pseudoinverse, zero on constants. TV is channelwise isotropic with a global budget; channel means are preserved separately and variance is not constrained. The homogeneous negative-Sobolev fidelity penalizes errors in low spatial modes more strongly than errors in high modes. These transformations were computed as image previews on ten CIFAR-10 images; no classifier was trained with them (\texttt{tv\_budget\_previews}).
+
+The $L^2$ and $\dot H^{-1}$ reconstruction operators of Table~\ref{tab:operators} are different. They are resolution reductions trained inside the network, with no total-variation budget. For each channel of an incoming map $h$ of side $n$ and a target side $r$, they return the coefficients $z\in\R^{r\times r}$ minimizing $\frac12(U_rz-h)^\top Q\,(U_rz-h)$ subject to $\mathbf 1^\top(U_rz-h)=0$, where $U_r$ is bilinear upsampling from side $r$ to side $n$, and $Q=I$ or $Q=\mathsf L^\dagger$ with the same forward-difference operator. The constraint preserves the mean of the map. Shared fidelity notation does not make them the same experiment.
+
+\subsection{Wavelet shrinkage}
+A db2 wavelet shrinkage was also tried, in a single one-seed pilot on a 10,000-image subset evaluated on a validation split (\texttt{db2\_pilot}). It reached 56.34\% against 55.40\% for the plain run of the same pilot, but took 3,856\,s against 89\,s, and we set it aside.
+
+\subsection{Parallel exploratory directions}
+Initial investigations on other branches also acted on residual-branch amplitudes, activations, anchoring to initialization, or example ordering. They helped narrow the focus but are not controls for the selected methods. Their records are not part of the audited index, and we do not report their results here.
