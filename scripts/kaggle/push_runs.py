@@ -33,7 +33,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 REPO = "https://github.com/aubincharley/homotogit.git"
-BRANCH = "svhn-transfer"
+BRANCH = "cifar10-subset"
 
 #: Per dataset: the Kaggle dataset to attach, the file the kernel globs for to
 #: locate it, the config script, the asset directory, and any extra make-assets
@@ -48,6 +48,28 @@ DATASETS = {
         "marker": "train_X.bin", "link": "data/stl10_binary",
         "configs": "scripts/stl10_configs.py", "assets": "assets/stl10_resnet20bn",
         "epochs": "90", "extra": [],
+    },
+    # CIFAR-10 cut to 5,000 images, two schedule arms.  Same data and assets for
+    # both; only --arm differs, so they isolate the schedule.
+    "cifar10_5k_stl_budget": {
+        "source": "aubincharley/cifar-10-batches-py",
+        "marker": "data_batch_1", "link": "data/cifar-10-batches-py",
+        "configs": "scripts/cifar10_subset_configs.py",
+        "assets": "assets/cifar10_5k_resnet20bn",
+        "dataset_arg": "cifar10", "epochs": "300",
+        "extra": ["--subset-size", "5000"],
+        "config_extra": ["--arm", "stl_budget"],
+        "config_subdir": "stl_budget",
+    },
+    "cifar10_5k_reference_updates": {
+        "source": "aubincharley/cifar-10-batches-py",
+        "marker": "data_batch_1", "link": "data/cifar-10-batches-py",
+        "configs": "scripts/cifar10_subset_configs.py",
+        "assets": "assets/cifar10_5k_resnet20bn",
+        "dataset_arg": "cifar10", "epochs": "300",
+        "extra": ["--subset-size", "5000"],
+        "config_extra": ["--arm", "reference_updates"],
+        "config_subdir": "reference_updates",
     },
     "svhn": {
         "source": "aubincharley/svhn-binary",
@@ -74,6 +96,8 @@ METHOD = "{method}"
 SEED = {seed}
 COMMIT = "{commit}"
 DATASET = "{dataset}"
+DATA_ARG = "{dataset_arg}"
+CONFIG_DIR = "{config_subdir}"
 LINK = "{link}"
 MARKER = "{marker}"
 CONFIGS = "{configs}"
@@ -132,16 +156,16 @@ PY = [sys.executable, "-m", "continuation_core"]
 # budget, and regenerating later would change the .npz digest and void pairing
 # with these runs.  With --init-from no torch RNG is touched, so this is
 # bit-identical to the set any other machine would produce.
-run(*PY, "make-assets", "--dataset", DATASET, "--data-root", "data",
+run(*PY, "make-assets", "--dataset", DATA_ARG, "--data-root", "data",
     "--arch", "resnet20_bn_cifar", "--epochs", "{epochs}", "--seeds", "0,1,2",
     "--init-from", "assets/cifar10_resnet20bn", "--out", ASSETS, {extra})
 
 # -- configs: every transfer decision lives in the dataset's config script ----
 run(sys.executable, CONFIGS, "--data-root", "data",
     "--assets", ASSETS, "--seeds", str(SEED),
-    "--out", "configs/" + DATASET, "--run-out", OUT)
+    "--out", "configs/" + DATASET, "--run-out", OUT, {config_extra})
 
-CONFIG = "configs/%s/%s__seed%d.json" % (DATASET, METHOD, SEED)
+CONFIG = os.path.join("configs", DATASET, CONFIG_DIR, "%s__seed%d.json" % (METHOD, SEED))
 print(open(CONFIG).read(), flush=True)
 
 # -- dry run: aborts the kernel unless the target state is bitwise plain ------
@@ -220,11 +244,14 @@ def write(dataset: str, method: str, seed: int, commit: str, user: str,
     d = out_root / slug
     d.mkdir(parents=True, exist_ok=True)
     extra = ", ".join('"%s"' % a for a in spec["extra"])
+    config_extra = ", ".join('"%s"' % a for a in spec.get("config_extra", []))
     (d / (slug + ".py")).write_text(KERNEL.format(
         dataset=dataset, method=method, seed=seed, commit=commit, repo=REPO,
         branch=BRANCH, link=spec["link"], marker=spec["marker"],
         configs=spec["configs"], assets=spec["assets"], epochs=spec["epochs"],
-        extra=extra))
+        extra=extra, config_extra=config_extra,
+        dataset_arg=spec.get("dataset_arg", dataset),
+        config_subdir=spec.get("config_subdir", "")))
     meta = dict(METADATA, id="%s/%s" % (user, slug),
                 # the title must slugify to the id, or Kaggle warns and the
                 # two can drift apart
