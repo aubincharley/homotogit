@@ -55,6 +55,18 @@ _TERMINAL_BAD = ("error", "cancel", "fail")
 #: consecutive empty status replies tolerated before giving up
 _MAX_BLANK_STATUS = 3
 
+#: Failures of this machine's network, not of the kernel.  Polling must ride
+#: these out: the job keeps running on Kaggle, and giving up here means pulling
+#: no results from a run that already cost the quota.
+_TRANSIENT = ("failed to resolve", "nameresolutionerror", "max retries exceeded",
+              "connection aborted", "connection reset", "connectionerror",
+              "timed out", "temporarily unavailable", "502", "503", "504")
+
+
+def _is_transient(stderr: str) -> bool:
+    low = (stderr or "").lower()
+    return any(t in low for t in _TRANSIENT)
+
 #: Kaggle runs at most this many GPU batch sessions at once; a third push is
 #: refused outright rather than queued.
 MAX_CONCURRENT_GPU_KERNELS = 2
@@ -331,16 +343,23 @@ def push_and_run(script_path: Path, *, gpu: bool = False, internet: bool = False
         res = _run(["kaggle", "kernels", "status", kernel_id])
         status = res.stdout.strip()
         print(status or (res.stderr or "").strip(), flush=True)
-        # A status call that says nothing on stdout means the CLI failed (a 404
-        # for a kernel that was never created, say) and wrote to stderr.  Left
-        # alone this polls silently to the timeout, so give up after a few.
+        # A status call that says nothing on stdout means the CLI failed and
+        # wrote to stderr.  Two very different things look like that, and only
+        # one of them is fatal: a kernel that does not exist will never appear,
+        # while a DNS or connection failure is this machine's problem and the
+        # kernel keeps running on Kaggle regardless.  Counting a network blip
+        # toward the give-up threshold abandons a live job.
         if not status:
+            err = (res.stderr or "").strip()
+            if _is_transient(err):
+                print("  (transient, kernel unaffected -- retrying)", flush=True)
+                time.sleep(poll_seconds)
+                continue
             blank += 1
             if blank >= _MAX_BLANK_STATUS:
                 raise RuntimeError(
                     "kaggle kernels status returned nothing %d times for %s; last "
-                    "stderr: %s" % (blank, kernel_id,
-                                    (res.stderr or "").strip() or "(empty)"))
+                    "stderr: %s" % (blank, kernel_id, err or "(empty)"))
             time.sleep(poll_seconds)
             continue
         blank = 0
