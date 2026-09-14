@@ -56,13 +56,40 @@ py -m continuation_core evaluate --checkpoint runs/resolution_max_b1_gaussian_co
 `dry-run` builds everything, verifies asset digests, runs forward/backward at
 every distinct state and checks the target-state bypass. It trains nothing.
 
-## STL-10 (unvalidated)
+## STL-10
 
-The same four methods transferred to STL-10 / 96x96. Every decision the transfer
-required -- sigma x3, resolution `(48, 72, 96)` with reference 96, 60 epochs with
-every boundary doubled -- lives in `scripts/stl10_configs.py` and is written into
-each config; the reasoning is in [docs/EXTENDING.md](docs/EXTENDING.md). Nothing
-here is trained yet, and there is no parity reference for it.
+The same four methods transferred to STL-10 / 96x96: sigma x3, resolution
+`(48, 72, 96)` with reference 96, 60 epochs with every schedule boundary
+doubled. Every decision lives in `scripts/stl10_configs.py` and is written into
+each config; the reasoning is in [docs/EXTENDING.md](docs/EXTENDING.md).
+3 seeds, Kaggle T4, records under `results/stl10/`.
+
+| method | STL-10 test | paired vs plain | CIFAR-10 test |
+|---|---|---|---|
+| `resolution_max_b1` | **59.93 +- 0.45** | **+2.58 +- 0.13** | 80.37 +- 0.61 |
+| `gaussian_postrelu` | 58.44 +- 1.55 | +1.09 +- 1.07 | 79.91 +- 0.27 |
+| `plain` | 57.35 +- 0.53 | - | 75.43 +- 0.76 |
+| `resolution_max_b1_gaussian_conv` | 56.06 +- 0.44 | **-1.29 +- 0.53** | 81.51 +- 0.22 |
+
+The paired column is the per-seed difference from `plain`; since all four
+methods share an initialization and a data order within a seed, it is far
+tighter than the marginal sd and is the column to read.
+
+**The CIFAR-10 ordering does not transfer.** `resolution_max_b1` helps in every
+seed. `gaussian_postrelu` helps by a margin its own seed spread swallows
+(+2.15, +1.11, +0.01). And `resolution_max_b1_gaussian_conv`, the best method on
+CIFAR-10, is **below the control in every seed**.
+
+Its target-path metric says why: for all 42 epochs of active blur the weights sit
+at chance (0.100-0.111) on the plain network, against 0.28 for `gaussian_postrelu`
+and 0.24 for `resolution_max_b1`. Filtering all 19 convolution outputs *before*
+BatchNorm makes the solution wholly blur-dependent, and the schedule then leaves
+only 18 epochs to recover. That is 720 updates here against 3,519 on CIFAR-10,
+because the boundaries were stretched in **epochs** while an STL-10 epoch is 40
+updates against CIFAR-10's 391. It is still the fastest-improving of the four at
+epoch 60, so this looks recovery-starved rather than beaten -- untested either way.
+
+No parity reference exists for any of this.
 
 ```bash
 py -m continuation_core make-assets --dataset stl10 --data-root data \
