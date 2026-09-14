@@ -33,7 +33,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 REPO = "https://github.com/aubincharley/homotogit.git"
-BRANCH = "cifar10-subset"
+BRANCH = "vgg11-transfer"
 
 #: ``slug`` is the kernel-name prefix, defaulting to the key.  Kaggle rejects a
 #: kernel slug longer than ~50 characters with a bare 400 and no explanation, and
