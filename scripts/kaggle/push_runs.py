@@ -33,7 +33,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 REPO = "https://github.com/aubincharley/homotogit.git"
-BRANCH = "vgg11-transfer"
+BRANCH = "groupnorm-transfer"
 
 #: ``slug`` is the kernel-name prefix, defaulting to the key.  Kaggle rejects a
 #: kernel slug longer than ~50 characters with a bare 400 and no explanation, and
@@ -87,6 +87,20 @@ DATASETS = {
         "dataset_arg": "cifar10", "arch": "vgg11_bn", "epochs": "30",
         # the initial weights must be new (different parameter shapes, so
         # --init-from correctly refuses), but the data order is the reference's
+        "extra": ["--indices-from", "assets/cifar10_resnet20bn"],
+        "no_init_from": True,
+    },
+    # ResNet-20 with GroupNorm: the BatchNorm control. Same recipe, same data in
+    # the reference's own order, same sites; only the normalisation differs.
+    "resnet20gn_cifar10": {
+        "slug": "r20gn",
+        "source": "aubincharley/cifar-10-batches-py",
+        "marker": "data_batch_1", "link": "data/cifar-10-batches-py",
+        "configs": "scripts/resnet20_gn_configs.py",
+        "assets": "assets/resnet20gn_cifar10",
+        "dataset_arg": "cifar10", "arch": "resnet20_gn_cifar", "epochs": "30",
+        # GroupNorm has no running buffers, so a BatchNorm state dict will not
+        # load and --init-from correctly refuses; the data order is the reference's
         "extra": ["--indices-from", "assets/cifar10_resnet20bn"],
         "no_init_from": True,
     },

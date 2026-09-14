@@ -7,11 +7,14 @@ raises ``UnsupportedInsertionError``; nothing is inferred.  See docs/EXTENDING.m
 """
 from __future__ import annotations
 
-from . import resnet20_bn, vgg11_bn
+from . import resnet20_bn, resnet20_gn, vgg11_bn
 
 REGISTRY = {
     "resnet20_bn_cifar": {"module": resnet20_bn, "validated": True,
                           "note": "reference architecture of every recorded result"},
+    "resnet20_gn_cifar": {"module": resnet20_gn, "validated": False,
+                          "note": "ResNet-20 with GroupNorm; the BatchNorm control, "
+                                  "same site map, no running statistics"},
     "vgg11_bn": {"module": vgg11_bn, "validated": False,
                  "note": "non-ResNet adapter; no retained method has been run on it"},
 }
