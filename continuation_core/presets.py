@@ -16,6 +16,7 @@ from .config import (AssetsConfig, BudgetConfig, CheckpointConfig, DataConfig,
                      EvaluationConfig, ExperimentConfig, ModelConfig,
                      OptimizerConfig, RunConfig)
 from .methods import GaussianSpec, MethodSpec, ResolutionSpec, get_method
+from .optim import optimizer_tag
 from .schedules import EpochSchedule
 
 #: normalisation statistics of the 50,000 CIFAR-10 training images, as checked
@@ -24,17 +25,34 @@ CIFAR10_MEAN = [0.4913996756076813, 0.4821584224700928, 0.44653090834617615]
 CIFAR10_STD = [0.24703222513198853, 0.24348512291908264, 0.26158782839775085]
 
 
+def reference_optimizer() -> OptimizerConfig:
+    """The executed SGD setting.  A fresh object each call: callers mutate configs."""
+    return OptimizerConfig(name="sgd", lr=0.005, weight_decay=5e-4, momentum=0.9,
+                           nesterov=False, schedule="warmup_cosine",
+                           warmup_updates=60, min_lr=0.0)
+
+
 def reference(method_id: str, seed: int = 0, *, data_root: str = "data",
               assets_dir: str = "assets/cifar10_resnet20bn", out_dir: str = "runs",
-              device: str = "auto") -> ExperimentConfig:
+              device: str = "auto",
+              optimizer: OptimizerConfig | None = None) -> ExperimentConfig:
+    """The reference recipe, optionally with another optimizer.
+
+    ``optimizer=None`` is the unchanged recipe and keeps
+    ``validation_status="reference"``.  Any other optimizer setting is a
+    variant: the status becomes ``"optimizer-variant"``, because ``"reference"``
+    is reserved for the configuration the recorded results were produced with.
+    Everything else -- data, model, budget, evaluation, assets -- is untouched,
+    so the optimizer is the only thing that differs from the recorded runs.
+    """
     get_method(method_id)
+    opt = optimizer or reference_optimizer()
+    is_reference = opt == reference_optimizer()
     return ExperimentConfig(
         data=DataConfig(name="cifar10", root=data_root, normalization="fit_on_train",
                         expected_mean=CIFAR10_MEAN, expected_std=CIFAR10_STD),
         model=ModelConfig(arch="resnet20_bn_cifar"),
-        optimizer=OptimizerConfig(name="sgd", lr=0.005, weight_decay=5e-4, momentum=0.9,
-                                  nesterov=False, schedule="warmup_cosine",
-                                  warmup_updates=60, min_lr=0.0),
+        optimizer=opt,
         method={"id": method_id},
         budget=BudgetConfig(epochs=30, effective_batch=128, microbatch=32),
         evaluation=EvaluationConfig(every_epochs=1, at_epoch_zero=True, batch_size=500,
@@ -44,10 +62,13 @@ def reference(method_id: str, seed: int = 0, *, data_root: str = "data",
         checkpoint=CheckpointConfig(every_epoch=True, every_updates=None,
                                     transition_offsets=(), keep_rolling=True),
         run=RunConfig(seed=seed, device=device, out_dir=out_dir,
-                      name="%s__seed%d" % (method_id, seed)),
+                      name="%s__%s__seed%d" % (method_id, optimizer_tag(opt), seed)),
         assets=AssetsConfig(dir=assets_dir, verify=True),
-        validation_status="reference",
-        notes=["unified_selected batch recipe; evaluation after every epoch"])
+        validation_status="reference" if is_reference else "optimizer-variant",
+        notes=["unified_selected batch recipe; evaluation after every epoch"]
+              + ([] if is_reference else
+                 ["optimizer replaced: %s; every other section is the reference recipe"
+                  % optimizer_tag(opt)]))
 
 
 def transfer(method_id: str, *, dataset: str, data_root: str, arch: str,

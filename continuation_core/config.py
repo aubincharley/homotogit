@@ -52,8 +52,8 @@ class OptimizerConfig:
     weight_decay: float | None = None
     momentum: float = 0.9               # sgd only
     nesterov: bool = False              # sgd only
-    betas: tuple = (0.9, 0.999)         # adamw only
-    eps: float = 1e-8                   # adamw only
+    betas: tuple = (0.9, 0.999)         # adam / adamw / radam
+    eps: float = 1e-8                   # adam / adamw / radam
     schedule: str = "warmup_cosine"     # warmup_cosine | constant
     warmup_updates: int = 0
     min_lr: float = 0.0

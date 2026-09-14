@@ -3,7 +3,9 @@
 describe           method definition, schedule table, per-site sigma, sites
 dry-run            build everything, verify assets, forward/backward at every
                    distinct state, check the target-state bypass; no training
-train              train a preset (or a JSON config); resumable
+train              train a preset (or a JSON config); resumable.  --optimizer
+                   {sgd,adam,adamw,radam} with --lr swaps the optimizer and
+                   leaves every other section of the recipe untouched
 evaluate           loss/accuracy of a checkpoint under a chosen state and BN policy
 export-trajectory  parameter vectors of all checkpoints of one or more runs
 pca-plane          common PCA plane of exported trajectories
@@ -21,6 +23,8 @@ from pathlib import Path
 
 import torch
 
+from .optim import OPTIMIZERS
+
 
 def _parse_state(text):
     from .controller import InterventionState
@@ -33,6 +37,35 @@ def _parse_state(text):
                              None if s in (None, "none") else float(s), label=text)
 
 
+def _optimizer(args):
+    """Build an OptimizerConfig from the command line, or None for the reference SGD.
+
+    ``--lr`` is required as soon as ``--optimizer`` names anything but the
+    reference: nothing about SGD's 0.005 transfers to an adaptive optimizer, so
+    it is not defaulted.  ``--weight-decay`` does default to the reference
+    5e-4, because keeping it fixed across optimizers is what makes the
+    coupled/decoupled contrast a single-factor one.
+    """
+    from .config import OptimizerConfig
+    from .presets import reference_optimizer
+    name, lr, wd = args.optimizer, args.lr, args.weight_decay
+    if name is None and lr is None and wd is None:
+        return None
+    name = name or "sgd"
+    if lr is None:
+        raise SystemExit("--optimizer %s needs an explicit --lr: no learning rate is "
+                         "carried over from another optimizer" % name)
+    wd = 5e-4 if wd is None else wd
+    if name == "sgd":
+        return OptimizerConfig(name="sgd", lr=lr, weight_decay=wd, momentum=0.9,
+                               nesterov=False, schedule="warmup_cosine",
+                               warmup_updates=60, min_lr=0.0)
+    ref = reference_optimizer()
+    return OptimizerConfig(name=name, lr=lr, weight_decay=wd,
+                           schedule=ref.schedule, warmup_updates=ref.warmup_updates,
+                           min_lr=ref.min_lr)
+
+
 def _config(args):
     from .config import ExperimentConfig
     from .presets import reference
@@ -40,7 +73,8 @@ def _config(args):
         cfg = ExperimentConfig.load(args.config)
     else:
         cfg = reference(args.method, args.seed, data_root=args.data_root,
-                        assets_dir=args.assets, out_dir=args.out, device=args.device)
+                        assets_dir=args.assets, out_dir=args.out, device=args.device,
+                        optimizer=_optimizer(args))
     if getattr(args, "epochs", None) is not None and args.epochs != cfg.budget.epochs:
         cfg.budget.epochs = args.epochs
         cfg.validation_status = "modified"
@@ -237,6 +271,12 @@ def main(argv=None):
         p.add_argument("--epochs", type=int)
         p.add_argument("--transition-offsets", help="e.g. -50,-1,1,50")
         p.add_argument("--every-updates", type=int)
+        p.add_argument("--optimizer", choices=OPTIMIZERS,
+                       help="default: the reference SGD setting. Any other value "
+                            "requires --lr and marks the run 'optimizer-variant'.")
+        p.add_argument("--lr", type=float)
+        p.add_argument("--weight-decay", type=float,
+                       help="default: 5e-4, the reference value, for every optimizer")
 
     def eval_opts(p):
         p.add_argument("--checkpoint", required=True)

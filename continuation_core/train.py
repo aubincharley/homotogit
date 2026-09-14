@@ -37,7 +37,7 @@ from .controller import InterventionController, InterventionState
 from .data import build_pipeline, load_dataset
 from .evaluate import evaluate
 from .models import build_model, is_validated, site_map
-from .optim import build_optimizer, lr_at, set_lr
+from .optim import build_optimizer, lr_at, optimizer_tag, set_lr
 from .seeding import rng_state, set_rng_state
 
 RESULTS_SCHEMA = "continuation_core.results/1"
@@ -306,6 +306,7 @@ class Trainer:
         summary = {
             "schema": RESULTS_SCHEMA,
             "method": self.method.id, "seed": int(self.cfg.run.seed),
+            "optimizer": self.optimizer_record(),
             "validation_status": self.cfg.validation_status,
             "dataset": self.dataset.name, "arch": self.cfg.model.arch,
             "arch_validated": is_validated(self.cfg.model.arch),
@@ -332,6 +333,21 @@ class Trainer:
         return summary
 
     # -- records -----------------------------------------------------------
+
+    def optimizer_record(self) -> dict:
+        """Optimizer identity, in ``summary.json`` so one file per run is enough
+        to aggregate a benchmark that varies the optimizer."""
+        o = self.cfg.optimizer
+        rec = {"tag": optimizer_tag(o), "name": o.name, "lr": o.lr,
+               "weight_decay": o.weight_decay, "schedule": o.schedule,
+               "warmup_updates": o.warmup_updates, "min_lr": o.min_lr}
+        if o.name == "sgd":
+            rec.update(momentum=o.momentum, nesterov=o.nesterov)
+        else:
+            rec.update(betas=list(o.betas), eps=o.eps,
+                       weight_decay_coupling="decoupled" if o.name == "adamw"
+                                             else "coupled_l2")
+        return rec
 
     def provenance(self) -> dict:
         man = self.assets.get("manifest") or {}
