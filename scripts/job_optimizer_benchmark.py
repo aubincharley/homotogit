@@ -49,6 +49,14 @@ SWEEP_LRS = (3e-4, 1e-3, 3e-3, 1e-2)
 REFERENCE_LR = 0.005
 WEIGHT_DECAY = 5e-4
 
+#: Rule fixed with the sweep itself: if an optimizer's best learning rate lands
+#: on an endpoint of SWEEP_LRS, the grid is extended past that endpoint, because
+#: a boundary optimum means the sweep has not found one -- and comparing a
+#: boundary-limited arm against interior-optimum arms would put back exactly the
+#: "lr not tuned for this optimizer" confound the sweep exists to remove.  The
+#: run showed only AdamW at the top endpoint (0.01), so only AdamW is extended.
+SWEEP_LRS_EXTENDED = {"adamw": (2e-2, 3e-2)}
+
 #: Measured on T4 in the unified batch; used only to balance the two GPUs.
 COST_SECONDS = {"plain": 505, "resolution_max_b1": 499,
                 "gaussian_postrelu": 623, "resolution_max_b1_gaussian_conv": 733}
@@ -70,6 +78,10 @@ def build_cells(batch: str) -> list:
         for name in NEW_OPTIMIZERS:
             for lr in SWEEP_LRS:
                 cells.append({"method": "plain", "optimizer": name, "lr": lr, "seed": 0})
+    elif batch == "lr_sweep_ext":
+        for name, lrs in sorted(SWEEP_LRS_EXTENDED.items()):
+            for lr in lrs:
+                cells.append({"method": "plain", "optimizer": name, "lr": lr, "seed": 0})
     elif batch == "sgd_control":
         for seed in SEEDS:
             cells.append({"method": "plain", "optimizer": "sgd",
@@ -87,7 +99,8 @@ def build_cells(batch: str) -> list:
                     cells.append({"method": method, "optimizer": name,
                                   "lr": CHOSEN_LR[name], "seed": seed})
     else:
-        raise SystemExit("unknown batch %r (lr_sweep | sgd_control | grid)" % batch)
+        raise SystemExit("unknown batch %r (lr_sweep | lr_sweep_ext | sgd_control "
+                         "| grid)" % batch)
     cells.sort(key=lambda c: (c["optimizer"], c["method"], c["seed"], c["lr"]))
     for i, c in enumerate(cells):
         c["index"] = i
@@ -156,8 +169,17 @@ def config_for(cell: dict, data_root: str, assets_dir: str, out_dir: str):
         opt = OptimizerConfig(name=cell["optimizer"], lr=cell["lr"],
                               weight_decay=WEIGHT_DECAY, schedule=ref.schedule,
                               warmup_updates=ref.warmup_updates, min_lr=ref.min_lr)
-    return reference(cell["method"], cell["seed"], data_root=data_root,
-                     assets_dir=assets_dir, out_dir=out_dir, optimizer=opt)
+    cfg = reference(cell["method"], cell["seed"], data_root=data_root,
+                    assets_dir=assets_dir, out_dir=out_dir, optimizer=opt)
+    # Per-epoch checkpoints are ~35 MB a run and this campaign reads none of
+    # them: the contrast is built from summary.json and metrics.json.  The first
+    # sweep wrote 607 MB for 12 runs and `kaggle kernels output` truncated the
+    # download at 7 of them, so the numbers had to be recovered from
+    # job_summary.json.  rolling.pt stays -- it is what resumes a cell after the
+    # session limit.  Checkpointing changes nothing about training.
+    cfg.checkpoint.every_epoch = False
+    cfg.checkpoint.keep_rolling = True
+    return cfg
 
 
 def train_cell(cell: dict, *, data_root: str, assets_dir: str, out_dir: str,
