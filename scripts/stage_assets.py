@@ -22,11 +22,12 @@ import shutil
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+REPO_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(REPO_ROOT))                      # continuation_core
+sys.path.insert(0, str(REPO_ROOT / "scripts"))          # kaggle_run
 
 from kaggle_run import _kaggle_username, _run, select_account  # noqa: E402
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
 ASSETS = REPO_ROOT / "assets" / "cifar10_resnet20bn"
 STAGE = REPO_ROOT / "kaggle_jobs" / "_assets"
 SLUG = "continuation-core-r20bn-assets"
