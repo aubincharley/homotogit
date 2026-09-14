@@ -5,6 +5,7 @@
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage{lmodern}
+\usepackage{xcolor}
 \usepackage{amsmath,amssymb,amsthm,graphicx,booktabs,array,tabularx,longtable}
 \usepackage[round,authoryear]{natbib}
 \usepackage{microtype}
@@ -31,9 +32,10 @@
 \aistatsauthor{Aubin Charley \And Alexandre Corrard \And Idriss El khamlichi \And Maxime Nicaise}
 \aistatsaddress{CentraleSup\'elec, Universit\'e Paris-Saclay}
 ]
+% \raggedbottom
 
 \begin{abstract}
-An idea to train a neural network is to start from a simpler problem and progressively recover the original one. We investigate this idea by changing the spatial information processed by convolutional networks during training. We compare temporary resolution reduction, Gaussian filtering of feature maps, and their combination. In an exploratory CIFAR-10 study with ResNet-20, SGD and 30 epochs without augmentation, the selected combination reaches $\uComb\pm\uCombSD\%$ test accuracy, against $\uPlain\pm\uPlainSD\%$ for the unmodified baseline (mean $\pm$ sample SD over three seeds in the same batch). Resolution reduction alone reaches $\uRes\pm\uResSD\%$. All selected methods finish at the original resolution without an added filter. The same test set was used to select the methods, so these numbers are descriptive. They motivate a more focused study of transfer across training settings, optimization trajectories and implicit regularization. This draft presents the methods and the exploratory evidence; the transfer study and the theoretical and geometric analyses are still in progress.
+An idea to train a neural network is to start from a simpler problem and progressively recover the original one. We investigate this idea by changing the spatial information processed by convolutional networks during training. We compare temporary resolution reduction, Gaussian filtering of feature maps, and their combination. In an exploratory CIFAR-10 study with ResNet-20, SGD and 30 epochs without augmentation, the selected combination reaches $\uComb\pm\uCombSD\%$ test accuracy, against $\uPlain\pm\uPlainSD\%$ for the unmodified baseline (mean $\pm$ sample SD over three seeds in the same batch). Resolution reduction alone reaches $\uRes\pm\uResSD\%$. All selected methods finish at the original resolution without an added filter. The same test set was used to select the methods. \textcolor{red}{a completer/refaire quand on aura benchmark sur d'autres archis et d'autres datasets}
 \end{abstract}
 
 \input{sections/01_introduction}
@@ -56,6 +58,5 @@ An idea to train a neural network is to start from a simpler problem and progres
 \input{appendices/a_reference_protocol}
 \input{appendices/b_exploratory_results}
 \input{appendices/c_other_approaches}
-\input{appendices/d_future_details}
 \fi
 \end{document}

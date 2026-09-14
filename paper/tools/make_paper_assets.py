@@ -14,10 +14,14 @@ Run from anywhere inside the repository::
 
     py paper/tools/make_paper_assets.py
 
-Outputs: ``paper/figures/appendix_*.pdf``, ``paper/tables/*.tex`` (generated
-ones start with a ``% GENERATED`` comment) and
-``paper/provenance/generated_assets.json``, which lists for every output the
-experiments, configuration ids, seeds, cell ids and record files it used.
+Outputs used by the paper: ``tables/numbers.tex``, ``tables/unified_reference.tex``,
+``tables/schedules.tex``, ``figures/appendix_resolution.pdf``,
+``figures/appendix_unified.pdf``, ``figures/appendix_unified_curves.pdf``.
+Outputs used by the archive (``paper/archive/exploration_archive.tex``):
+``tables/asset_sets.tex``, ``tables/plain_arms.tex``,
+``tables/resolution_operators.tex``, ``tables/all_exploratory.tex`` and the
+remaining ``figures/archive_*.pdf``.  Per-output provenance:
+``paper/provenance/generated_assets.json``.
 """
 from __future__ import annotations
 
@@ -60,8 +64,6 @@ plt.rcParams.update({
     "ytick.major.width": 0.6, "savefig.bbox": "tight", "savefig.pad_inches": 0.03,
     "figure.facecolor": "white"})
 
-# One palette for the paper: plain black, the three retained procedures in
-# fixed colours, everything else grey.
 COLOR = {"plain": "#000000", "resolution_max_b1": "#0072B2",
          "gaussian_postrelu": "#E69F00", "resolution_max_b1_gaussian_conv": "#7B3294"}
 GREY = "#8c8c8c"
@@ -74,7 +76,7 @@ U = "unified_selected"
 RB = "resbench_resolution_only"
 ARROW = "\u2192"
 PROG = "16%s24%s32" % (ARROW, ARROW)
-WIDTH = 6.75          # AISTATS text width, inches
+WIDTH = 6.75
 
 # --------------------------------------------------------------------------- records
 
@@ -120,6 +122,14 @@ def cfg(exp: str, cid: str) -> dict:
     m = [c for c in cfgs_of(exp) if c["config_id"] == cid]
     if len(m) != 1:
         raise KeyError("%s/%s matches %d configurations" % (exp, cid, len(m)))
+    return m[0]
+
+
+def cfg_same(exp: str, cid: str) -> dict:
+    """A configuration that may appear under several launches with equal results."""
+    m = [c for c in cfgs_of(exp) if c["config_id"] == cid]
+    assert m, (exp, cid)
+    assert len({c["acc_mean"] for c in m}) == 1, (exp, cid, [c["acc_mean"] for c in m])
     return m[0]
 
 
@@ -202,8 +212,94 @@ def write_tex(name: str, body: str, sources: str):
     print("wrote tables/%s" % name)
 
 
+# Numbers of the exploration narrative (Appendix B/C): macro -> (experiment, config, statistic)
+EXPLORATION = {
+    # input-image blur and warm starts (ResNet-20 GroupNorm, 45k/5k validation)
+    "xInSigZero": ("exp0_input_gaussian", "level_0", "mean"),
+    "xInSigHalf": ("exp0_input_gaussian", "level_0p5", "mean"),
+    "xInSigOne": ("exp0_input_gaussian", "level_1", "mean"),
+    "xWarmW": ("exp1_input_warmstart", "arm_W", "mean"),
+    "xWarmP": ("exp1_input_warmstart", "arm_P", "mean"),
+    # feature-map pilots on a 10,000-image subset
+    "xGnPlain": ("gn_lr_audit", "plain", "mean"), "xGnPlainSD": ("gn_lr_audit", "plain", "sd"),
+    "xGnGauss": ("gn_lr_audit", "gaussian", "mean"), "xGnGaussSD": ("gn_lr_audit", "gaussian", "sd"),
+    "xRlePlain": ("resnet18bn_gaussian_pilot", "plain_r18", "mean"),
+    "xRleGauss": ("resnet18bn_gaussian_pilot", "gaussian_r18", "mean"),
+    "xRtwPlain": ("resnet20bn_gaussian_pilot", "plain_r20bn", "mean"),
+    "xRtwGauss": ("resnet20bn_gaussian_pilot", "gaussian_r20bn", "mean"),
+    # full data, reference recipe
+    "xFdPlain": ("fulldata_gaussian", "plain", "mean"), "xFdPlainSD": ("fulldata_gaussian", "plain", "sd"),
+    "xFdPlateau": ("fulldata_gaussian", "plateau", "mean"),
+    "xFdPlateauSD": ("fulldata_gaussian", "plateau", "sd"),
+    "xFdGeo": ("fulldata_gaussian", "geometric", "mean"),
+    "xFdGeoSD": ("fulldata_gaussian", "geometric", "sd"),
+    "xFdPlainSeedZero": ("fulldata_gaussian", "plain", "s0"),
+    "xFdPlateauSeedZero": ("fulldata_gaussian", "plateau", "s0"),
+    "xProg": ("progressive_resolution_pilot", "progres", "mean"),
+    "xProgGauss": ("progressive_resolution_pilot", "progres_gauss", "mean"),
+    # 21-configuration grid
+    "xCgPlain": ("campaign_grid21", "R32__Gnone__input_bilinear__all19", "mean"),
+    "xCgPlainSD": ("campaign_grid21", "R32__Gnone__input_bilinear__all19", "sd"),
+    "xCgGauss": ("campaign_grid21", "R32__Gplateau__input_bilinear__all19", "mean"),
+    "xCgGaussSD": ("campaign_grid21", "R32__Gplateau__input_bilinear__all19", "sd"),
+    "xCgEarly": ("campaign_grid21", "R32__Gplateau__input_bilinear__early7", "mean"),
+    "xCgInBil": ("campaign_grid21", "Rprog__Gnone__input_bilinear__all19", "mean"),
+    "xCgInBilSD": ("campaign_grid21", "Rprog__Gnone__input_bilinear__all19", "sd"),
+    "xCgInMax": ("campaign_grid21", "Rprog__Gnone__input_max__all19", "mean"),
+    "xCgStemBil": ("campaign_grid21", "Rprog__Gnone__stem_bilinear__all19", "mean"),
+    "xCgStemMax": ("campaign_grid21", "Rprog__Gnone__stem_max__all19", "mean"),
+    "xCgInBilGauss": ("campaign_grid21", "Rprog__Gplateau__input_bilinear__all19", "mean"),
+    "xCgInBilGaussSD": ("campaign_grid21", "Rprog__Gplateau__input_bilinear__all19", "sd"),
+    # ablation batch (own initial weights)
+    "xAbPlain": ("ablation_aa", "C_plain", "mean"),
+    "xAbDZero": ("ablation_aa", "D0", "mean"), "xAbDZeroSD": ("ablation_aa", "D0", "sd"),
+    "xAbDOne": ("ablation_aa", "D1", "mean"), "xAbDOneSD": ("ablation_aa", "D1", "sd"),
+    "xAbDTwo": ("ablation_aa", "D2", "mean"), "xAbDTwoSD": ("ablation_aa", "D2", "sd"),
+    "xAbInput": ("ablation_aa", "R1", "mean"), "xAbStem": ("ablation_aa", "R4", "mean"),
+    "xAbPostBlock": ("ablation_aa", "P_postblock", "mean"),
+    "xAbPostBlockSD": ("ablation_aa", "P_postblock", "sd"),
+    "xAbConv": ("ablation_aa", "C_plateau", "mean"),
+    "xAbDTwoG": ("ablation_aa", "D2G", "mean"), "xAbDTwoGSD": ("ablation_aa", "D2G", "sd"),
+    # resolution-only batch
+    "rbLocInput": (RB, "max__input__Rprog", "mean"), "rbLocStem": (RB, "max__stem__Rprog", "mean"),
+    "rbLocDZero": (RB, "max__D0__Rprog", "mean"), "rbLocDZeroSD": (RB, "max__D0__Rprog", "sd"),
+    "rbLocDTwo": (RB, "max__D2__Rprog", "mean"), "rbLocDTwoSD": (RB, "max__D2__Rprog", "sd"),
+    "rbMaxBOneSD": (RB, "max__D1__Rprog", "sd"),
+    "rbInPerceptual": (RB, "perceptual__input__Rprog", "mean"),
+    "rbInHminus": (RB, "hminus1__input__Rprog", "mean"),
+    "rbInMax": (RB, "max__input__Rprog", "mean"),
+    "rbMaxLate": (RB, "max__D1__Rlate", "mean"), "rbMaxGentle": (RB, "max__D1__Rgentle", "mean"),
+    "rbMaxReverse": (RB, "max__D1__Rreverse", "mean"),
+    "rbMaxBlurProg": (RB, "maxblur__D1__Rprog", "mean"),
+    "rbMaxBlurReverse": (RB, "maxblur__D1__Rreverse", "mean"),
+    "rbHmProg": (RB, "hminus1__D1__Rprog", "mean"),
+    "rbFixedSixteen": (RB, "max__D1__fixed16", "mean"),
+    "rbFixedTwentyFour": (RB, "max__D1__fixed24", "mean"),
+    # discarded directions and limitations
+    "xDbPlain": ("db2_pilot", "plain_r20bn", "mean"), "xDbWave": ("db2_pilot", "db2_r20bn", "mean"),
+    "xDbPlainWall": ("db2_pilot", "plain_r20bn", "wall"), "xDbWaveWall": ("db2_pilot", "db2_r20bn", "wall"),
+    "xLongLoPlain": ("adaptive_continuation", "plain_lo", "mean"),
+    "xLongLoPlateau": ("adaptive_continuation", "gplateau_lo", "mean"),
+    "xLongHiPlain": ("adaptive_continuation", "plain_hi", "mean"),
+    "xLongHiPlateau": ("adaptive_continuation", "gplateau_hi", "mean"),
+}
+
+
+def stat_of(exp, cid, stat):
+    c = cfg_same(exp, cid)
+    if stat == "mean":
+        return f2(100 * c["acc_mean"]), c
+    if stat == "sd":
+        return f2(100 * c["acc_sd"]), c
+    if stat == "s0":
+        return f2(100 * c["acc_per_seed"]["0"]), c
+    if stat == "wall":
+        return "%.0f" % c["wall_seconds_mean"], c
+    raise ValueError(stat)
+
+
 def numbers():
-    L = []
+    L, used = [], []
     means, sds = {}, {}
     for mid, uid in UNIFIED_ID.items():
         c = cfg(U, uid)
@@ -231,14 +327,11 @@ def numbers():
         L.append(macro("u%sSD" % name, f2(100 * c["acc_sd"])))
     for mid, uid in UNIFIED_ID.items():
         L.append(macro("uWall%s" % short[mid], "%.0f" % cfg(U, uid)["wall_seconds_mean"]))
-    # final losses (record 30 of every unified run)
     for mid, uid in UNIFIED_ID.items():
-        cells = cells_for(cfg(U, uid))
-        last = [metrics_of(x)[-1] for x in cells]
+        last = [metrics_of(x)[-1] for x in cells_for(cfg(U, uid))]
         for key, field in (("Probe", "train_probe_ce_current"), ("TrainLoss", "train_loss_epoch"),
                            ("TestCE", "test_ce_current")):
             L.append(macro("u%s%s" % (key, short[mid]), f2(st.mean(r[field] for r in last))))
-    # text of Discussion: how many other reduction+Gaussian arms lie within 0.6 pp
     comb = means["resolution_max_b1_gaussian_conv"]
     near = [c for c in cfgs_of(U) if c["config_id"].startswith("shrink_") and "_" in c["config_id"][7:]
             and c["config_id"] != "shrink_b1_conv" and comb - 100 * c["acc_mean"] < 0.6]
@@ -250,7 +343,34 @@ def numbers():
     b1 = [c for c in cfgs_of(RB) if c["config_id"].endswith("__D1__Rprog") and c["n_valid"] > 0]
     L.append(macro("rbWallBOneMin", "%.0f" % min(c["wall_seconds_mean"] for c in b1)))
     L.append(macro("rbWallBOneMax", "%.0f" % max(c["wall_seconds_mean"] for c in b1)))
+    L.append(macro("rbOpBOneMin", f2(min(100 * c["acc_mean"] for c in b1))))
+    L.append(macro("rbOpBOneMax", f2(max(100 * c["acc_mean"] for c in b1))))
     L.append(macro("rbMaxBOne", f2(100 * cfg(RB, "max__D1__Rprog")["acc_mean"])))
+    L.append(macro("rbNConfigs", str(len(cfgs_of(RB)))))
+    L.append(macro("rbNRuns", str(EXPS[RB]["counts"]["cells_with_summary"])))
+    L.append(macro("rbNValid", str(EXPS[RB]["counts"]["cells_numerically_valid"])))
+    used += [rb] + b1 + near
+    # a selection claim in the text: input-level ordering (perceptual first, then H^-1)
+    inputs = sorted([c for c in cfgs_of(RB) if c["config_id"].endswith("__input__Rprog")],
+                    key=lambda c: -c["acc_mean"])
+    assert [c["config_id"].split("__")[0] for c in inputs[:2]] == ["perceptual", "hminus1"]
+    used += inputs
+    for name, (exp, cid, stat) in EXPLORATION.items():
+        v, c = stat_of(exp, cid, stat)
+        L.append(macro(name, v))
+        used.append(c)
+    q = [cfg("ablation_aa", "Q_A%d" % i) for i in (1, 2, 3, 4)]
+    L.append(macro("xAbQMin", f2(min(100 * c["acc_mean"] for c in q))))
+    L.append(macro("xAbQMax", f2(max(100 * c["acc_mean"] for c in q))))
+    full30 = [c for c in cfgs_of("adaptive_continuation") if c["run_conditions"].get("epochs") == 30]
+    adapt = [c for c in full30 if c["family"] == "adaptive"]
+    cal = [c for c in full30 if c["config_id"] == "Gplateau_cal"]
+    assert len(cal) == 3 and len(adapt) == 6
+    L.append(macro("xAdMin", f2(min(100 * c["acc_mean"] for c in adapt))))
+    L.append(macro("xAdMax", f2(max(100 * c["acc_mean"] for c in adapt))))
+    L.append(macro("xCalMin", f2(min(100 * c["acc_mean"] for c in cal))))
+    L.append(macro("xCalMax", f2(max(100 * c["acc_mean"] for c in cal))))
+    used += q + adapt + cal
     obs = {o["id"]: o for o in IX["observations"]}["same-assets-plain-differs"]
     L.append(macro("plainSpreadMax", f2(100 * max(obs["max_minus_min_by_seed"].values()))))
     L.append(macro("idxExperiments", str(len(IX["experiments"]))))
@@ -260,11 +380,13 @@ def numbers():
     write_tex("numbers.tex", "\n".join(L) + "\n",
               "%s@%s:%s; metrics.json of the unified cells" % (BENCH_BRANCH, BENCH_COMMIT[:10],
                                                                 INDEX_PATH))
-    record("tables/numbers.tex", [cfg(U, u) for u in
-                                  ["plain", "shrink_b1", "blur_relu", "shrink_b1_conv",
-                                   "shrink_b1_relu", "blur_conv"]] + near + [rb] + b1,
+    uniq = list({(c["experiment"], c["config_id"], c["label"]): c for c in
+                 [cfg(U, u) for u in ["plain", "shrink_b1", "blur_relu", "shrink_b1_conv",
+                                      "shrink_b1_relu", "blur_conv"]] + used}.values())
+    record("tables/numbers.tex", uniq,
            notes="gains are means of per-seed paired differences (same seed = same pinned "
-                 "initial weights and data order); SD is the sample SD of those differences")
+                 "initial weights and data order); SD is the sample SD of those differences; "
+                 "exploration macros: see EXPLORATION in the generator")
 
 
 # --------------------------------------------------------------------------- tables
@@ -273,63 +395,37 @@ def tables_unified():
     rows = []
     for mid, uid in UNIFIED_ID.items():
         c = cfg(U, uid)
-        seeds = acc_by_seed(uid)
+        last = [metrics_of(x)[-1] for x in cells_for(c)]
+
+        def ms(field):
+            v = [r[field] for r in last]
+            return "$%s\\pm%s$" % (f2(st.mean(v)), f2(st.stdev(v)))
         if mid == "plain":
             gain = "---"
         else:
             m, s, _, _ = paired(uid, "plain")
             gain = "$%+.2f$ ($%.2f$)" % (m, s)
-        rows.append("%s & $%s\\pm%s$ & %s & %s & %.0f\\\\" % (
+        rows.append("%s & $%s\\pm%s$ & %s & %s & %s & %s\\\\" % (
             {"plain": "Plain", "resolution_max_b1": "\\methodR",
              "gaussian_postrelu": "\\methodG",
              "resolution_max_b1_gaussian_conv": "\\methodRG"}[mid],
-            f2(100 * c["acc_mean"]), f2(100 * c["acc_sd"]),
-            " / ".join(f2(seeds[s]) for s in (0, 1, 2)), gain, c["wall_seconds_mean"]))
+            f2(100 * c["acc_mean"]), f2(100 * c["acc_sd"]), gain,
+            ms("test_ce_current"), ms("train_probe_ce_current"), ms("train_loss_epoch")))
     body = r"""\begin{table}[!htbp]
-\caption{Retained procedures in the unified batch (\texttt{unified\_selected}, 48 runs). Final test accuracy after 30 epochs, where every procedure is in its target state (native resolution, no filter), so the current and target evaluations coincide. Mean $\pm$ sample SD over seeds 0--2. Same seed means the same pinned initial weights and data order, so gains are means of per-seed paired differences, with the sample SD of those differences in parentheses; neither is a confidence interval. Wall time is the mean per run, from model construction to the final summary, including per-epoch evaluation and checkpoint writes, two runs sharing a two-GPU Kaggle kernel (one T4 each).}
-\label{tab:unified-reference}
+\caption{Retained methods in the final paired batch, record after epoch 30. Gains are means of per-seed paired differences to plain, with the SD of these differences in parentheses. Test and training-probe cross-entropies (CE) are evaluated with BatchNorm running statistics; the probe contains 500 fixed training images. The last column is the mean loss recorded during the 30th epoch while the weights were still updated. The CE of the final weights on the full training set was not evaluated.}
+\label{tab:unified-reference}\label{tab:final-losses}
 \centering\small
-\begin{tabular}{@{}lcccr@{}}
+\begin{tabular}{@{}lccccc@{}}
 \toprule
-Procedure & Test acc.\ (\%) & Seeds 0 / 1 / 2 & Gain over plain (pp) & Wall (s)\\
+Method & Test acc.\ (\%) & Gain (pp) & Test CE & Probe CE & Last-epoch loss\\
 \midrule
 """ + "\n".join(rows) + r"""
 \bottomrule
 \end{tabular}
 \end{table}
 """
-    write_tex("unified_reference.tex", body, "index configurations/cells of unified_selected")
+    write_tex("unified_reference.tex", body, "index cells and metrics.json record 30 of unified_selected")
     record("tables/unified_reference.tex", [cfg(U, u) for u in UNIFIED_ID.values()])
-
-
-def tables_losses():
-    names = {"plain": "Plain", "resolution_max_b1": "\\methodR",
-             "gaussian_postrelu": "\\methodG", "resolution_max_b1_gaussian_conv": "\\methodRG"}
-    rows = []
-    for mid, uid in UNIFIED_ID.items():
-        last = [metrics_of(x)[-1] for x in cells_for(cfg(U, uid))]
-
-        def ms(field, scale=1.0):
-            v = [scale * r[field] for r in last]
-            return "$%s\\pm%s$" % (f2(st.mean(v)), f2(st.stdev(v)))
-        rows.append("%s & %s & %s & %s & %s\\\\" % (
-            names[mid], ms("test_acc_current", 100), ms("test_ce_current"),
-            ms("train_probe_ce_current"), ms("train_loss_epoch")))
-    body = r"""\begin{table}[!htbp]
-\caption{Final losses of the retained procedures (unified batch, record after epoch 30, mean $\pm$ sample SD over three seeds). Test and training-probe quantities are evaluated in eval mode with the stored BatchNorm running statistics on the final weights. The training probe is a fixed set of 500 training images, not the full training sample. The last column is the example-weighted mean of the microbatch cross-entropies computed during the 30th epoch, in train mode, while the weights were still being updated; the cross-entropy of the final weights on the full training set was not evaluated.}
-\label{tab:final-losses}
-\centering\small
-\begin{tabular}{@{}lcccc@{}}
-\toprule
-Procedure & Test acc.\ (\%) & Test CE & Training-probe CE & Last-epoch training loss\\
-\midrule
-""" + "\n".join(rows) + r"""
-\bottomrule
-\end{tabular}
-\end{table}
-"""
-    write_tex("final_losses.tex", body, "metrics.json record 30 of the unified cells")
-    record("tables/final_losses.tex", [cfg(U, u) for u in UNIFIED_ID.values()])
 
 
 OPS = ["max", "maxblur", "softpool", "bilinear", "l2", "hminus1", "perceptual"]
@@ -359,13 +455,12 @@ def tables_operators():
         rows.append("%s & %s & %s\\\\" % (OP_TEX[op], acc_cell_tex(a), acc_cell_tex(b)))
     base = cfg(RB, "none__none__none")
     used.append(base)
-    cap = (r"\caption{Resolution-only benchmark (\texttt{resbench\_resolution\_only}): reduction "
-           r"operator at two locations, schedule $16\to24\to32$, no Gaussian. Final test accuracy "
-           r"after 30 epochs on the native path, mean $\pm$ sample SD over three seeds. The "
-           r"batch's own plain arm reaches $" + f2(100 * base["acc_mean"]) + r"\pm"
-           + f2(100 * base["acc_sd"]) + r"\%$. A run whose loss became non-finite is a failed "
-           r"numerical experiment: the perceptual operator after block 1 diverged in all three "
-           r"seeds and has no accuracy.}")
+    cap = (r"\caption{Resolution-only batch (no additional Gaussian continuation): reduction "
+           r"operator at two locations, schedule $16\to24\to32$. Final test accuracy after 30 "
+           r"epochs, mean $\pm$ sample SD over three seeds. Plain arm of the batch: $"
+           + f2(100 * base["acc_mean"]) + r"\pm" + f2(100 * base["acc_sd"]) + r"\%$. "
+           r"The perceptual operator after block 1 produced a non-finite loss in all three "
+           r"seeds.}")
     body = r"""\begin{table}[!htbp]
 """ + cap + r"""
 \label{tab:operators}
@@ -388,8 +483,7 @@ def tables_plain_arms():
     rows = []
     for exp, per in obs["plain_final_acc_by_experiment_and_seed"].items():
         v = [100 * per[s] for s in ("0", "1", "2")]
-        rows.append("\\texttt{%s} & %s & %s & %s\\\\" % (
-            tex(exp), f2(v[0]), f2(v[1]), f2(v[2])))
+        rows.append("\\texttt{%s} & %s & %s & %s\\\\" % (tex(exp), f2(v[0]), f2(v[1]), f2(v[2])))
     spread = ["%s" % f2(100 * obs["max_minus_min_by_seed"][s]) for s in ("0", "1", "2")]
     body = r"""\begin{table}[!htbp]
 \caption{Plain ResNet-20 arms that verified identical pinned assets (initial weights, BatchNorm buffers, training probe, per-epoch order) in four batches. Final test accuracy (\%). Evaluations before training are identical; the trajectories differ from the first later record. The cause is not established, so no correction is applied between batches.}
@@ -449,7 +543,7 @@ def tables_schedule():
         for m, c in ctrl.items():
             c.set_epoch(e0)
             vals = c.per_site_sigma()
-            for e in range(e0, e1):          # constant over the whole range
+            for e in range(e0, e1):
                 c.set_epoch(e)
                 assert c.per_site_sigma() == vals
             assert len(set(vals)) <= 1
@@ -464,7 +558,7 @@ def tables_schedule():
     assert len(ctrl["gaussian_postrelu"].per_site_sigma()) == 10
     assert len(ctrl["resolution_max_b1_gaussian_conv"].per_site_sigma()) == 19
     body = r"""\begin{table}[!htbp]
-\caption{Executed schedules, read from the frozen \texttt{continuation-core} presets and evaluated through their controller. Epochs are zero-based and a state holds for a whole epoch of 391 updates, so the first update of epoch $e$ has index $391e$. $r$ is the side of the map entering residual block index 2 in \methodR{} and \methodRG; $G$ is the reference Gaussian level. Effective $\sigma$ is in pixels of the feature map at the filtered site and, within a procedure, is the same at every site. \methodG{} uses $G$ only and never changes resolution.}
+\caption{Executed schedules, evaluated through the controller of the frozen presets. Epochs are zero-based; a state holds for a whole epoch of 391 updates. $r$ is the side of the map entering residual block index 2 (\methodR{} and \methodRG), $G$ the reference Gaussian level. Effective $\sigma$ is in pixels of the feature map at the site and is the same at every site of a method.}
 \label{tab:schedules}
 \centering\small
 \begin{tabular}{@{}rrcccc@{}}
@@ -516,7 +610,7 @@ def short_label(label: str) -> str:
     return re.sub(r"\[launch ([A-Za-z0-9-]+?)-\d{8}-\d{6}\]", r"[launch \1]", label)
 
 
-# --------------------------------------------------------------------------- complete table
+# --------------------------------------------------------------------------- complete table (archive)
 
 ORDER = ["unified_selected", "resbench_resolution_only", "campaign_grid21", "ablation_aa",
          "per_layer_sigma", "adaptive_continuation", "fulldata_gaussian",
@@ -525,6 +619,12 @@ ORDER = ["unified_selected", "resbench_resolution_only", "campaign_grid21", "abl
          "exp0_input_gaussian", "exp1_input_warmstart"]
 NO_TRAINING = ["tv_budget_previews", "wavelet_previews", "loss_landscape_blur",
                "infrastructure_probes"]
+# Index titles that read as a full factorial design are replaced by the executed scope.
+TITLE_OVERRIDE = {
+    RB: "Resolution-only batch: 29 targeted configurations (operator at two locations, "
+        "max-pool at five locations, schedules for three operators, controls), no "
+        "additional Gaussian continuation",
+}
 PAIRING = {
     "r20bn-campaign-assets": "shares initial weights, BatchNorm buffers, probe and per-epoch "
                              "order, seed by seed, with every experiment on this set",
@@ -545,7 +645,7 @@ def complete_table():
     L = [r"""\begingroup\footnotesize
 \setlength{\tabcolsep}{3pt}
 \begin{longtable}{@{}""" + RAG + "p{2.5in}" + RAG + "p{1.38in}rrc" + RAG + r"""p{0.62in}r@{}}
-\caption{Complete audited record of trained configurations, grouped by experiment. One row per configuration and run conditions; reruns under a separate launch are separate rows, while byte-identical copies of the same summary are collapsed. Accuracy: final record of each run, mean over numerically valid seeds, no best-epoch selection. SD: sample SD in points; \emph{n/a} when only one valid seed exists. Seeds: valid / attempted. Endpoint: \emph{target} is the native, filter-free path, which coincides with the current path at the end of every continuation arm; \emph{current (control)} marks arms whose own intervention remains at inference. Wall: mean seconds per run, with the timing scope given in the experiment header. Rows within an experiment are listed alphabetically, not ranked; comparisons across experiments are not paired unless the asset sets match and the run conditions are the same.}\label{tab:all-exploratory}\\
+\caption{Complete record of trained configurations, grouped by experiment. One row per configuration and run conditions; reruns under a separate launch are separate rows, while byte-identical copies of a summary are collapsed. Accuracy: final record of each run, mean over numerically valid seeds, no best-epoch selection. SD: sample SD in points; \emph{n/a} with one valid seed. Seeds: valid / attempted. Endpoint: \emph{target} is the native, filter-free path; \emph{current (control)} marks arms whose intervention remains at inference. Wall: mean seconds per run, timing scope in the experiment header. Rows are alphabetical, not ranked; runs are paired only within matching asset sets and run conditions.}\label{tab:all-exploratory}\\
 \toprule
 Configuration & Config id & Acc.\ (\%) & SD & Seeds & Endpoint & Wall (s)\\
 \midrule
@@ -578,7 +678,8 @@ Configuration & Config id & Acc.\ (\%) & SD & Seeds & Endpoint & Wall (s)\\
                            for a in e["asset_sets"])
         hdr = ("\\multicolumn{7}{@{}" + RAG + "p{\\linewidth}@{}}{\\rule{0pt}{2.6ex}\\textbf{%s} "
                "(\\texttt{%s}; owner %s; %s)}\\\\*\n") % (
-                   tex(e["title"]), tex(eid), tex(e["owner"]), tex(e["kind"].replace("_", " ")))
+                   tex(TITLE_OVERRIDE.get(eid, e["title"])), tex(eid), tex(e["owner"]),
+                   tex(e["kind"].replace("_", " ")))
         info = ("Conditions: %s. Evaluation split: %s. Records: %s; results committed in %s.%s "
                 "Knowledge-base record: %s. Assets: %s. Runs attempted per manifests: %s; with "
                 "summary: %d; numerically valid: %d; diverged: %d; failure markers: %d; "
@@ -628,7 +729,7 @@ Configuration & Config id & Acc.\ (\%) & SD & Seeds & Endpoint & Wall (s)\\
 
 # --------------------------------------------------------------------------- figures
 
-ROW_H = 0.158          # inches per row in dot plots
+ROW_H = 0.158
 TOP_IN, BOTTOM_IN = 0.26, 0.42
 
 
@@ -764,14 +865,14 @@ def fig_unified():
             m, s, _, d = paired(x, "plain")
             r.update(dmean=m, dsd=s, dpts=d)
         rows.append(r)
-    h = ROW_H * len(rows) + TOP_IN + BOTTOM_IN
+    h = 0.132 * len(rows) + TOP_IN + BOTTOM_IN
     fig, (a, b) = plt.subplots(1, 2, figsize=(WIDTH, h), sharey=True,
                                gridspec_kw={"width_ratios": [1.0, 0.8], "wspace": 0.04,
                                             **margins(h, 0.35)})
     base = 100 * cfg(U, "plain")["acc_mean"]
     dot_panel(a, rows, base=base, xlim=(73.8, 82.6))
     a.set_xlabel("final test accuracy after 30 epochs (%)")
-    a.set_title("(a) Final accuracy, native filter-free path", loc="left")
+    a.set_title("(a) Final accuracy", loc="left")
     dot_panel(b, rows, base=0.0, xlim=(2.2, 7.4), show_labels=False, value="diff")
     b.set_xlabel("difference to plain, same seed (pp)")
     b.set_title("(b) Per-seed paired difference", loc="left")
@@ -792,14 +893,13 @@ def seed_curves(uid, field, scale=1.0):
 
 
 def fig_unified_curves():
-    panels = [("test_acc_current", 100, "(a) Test accuracy, current path (intervention active)",
+    panels = [("test_acc_current", 100, "(a) Test accuracy, current path", "test accuracy (%)"),
+              ("test_acc_bypass32", 100, "(b) Target-path diagnostic (not model performance)",
                "test accuracy (%)"),
-              ("test_acc_bypass32", 100, "(b) Test accuracy, target path (diagnostic)",
-               "test accuracy (%)"),
-              ("train_probe_ce_current", 1, "(c) Training-probe CE (500 images), current path",
+              ("train_probe_ce_current", 1, "(c) Training-probe CE (500 images)",
                "cross-entropy (nats)"),
-              ("test_ce_current", 1, "(d) Test CE, current path", "cross-entropy (nats)")]
-    fig, axes = plt.subplots(2, 2, figsize=(WIDTH, 4.5), sharex=True)
+              ("test_ce_current", 1, "(d) Test CE", "cross-entropy (nats)")]
+    fig, axes = plt.subplots(2, 2, figsize=(WIDTH, 3.1), sharex=True)
     for ax, (field, scale, title, ylab) in zip(axes.flat, panels):
         for x0, txt in ((6.5, "r: 16%s24" % ARROW), (12.5, "r: 24%s32" % ARROW),
                         (21.5, "G %s 0" % ARROW)):
@@ -824,17 +924,58 @@ def fig_unified_curves():
     for ax in axes[1]:
         ax.set_xlabel("completed epochs $k$")
     h = [Line2D([], [], color=COLOR[m], lw=1.1, label=PAPER_NAME[m]) for m in RETAINED]
-    h.append(Line2D([], [], color="0.3", lw=5, alpha=0.16, label="$\\pm1$ sample SD (3 seeds)"))
+    h.append(Line2D([], [], color="0.3", lw=5, alpha=0.16, label="$\\pm1$ sample SD"))
     axes[0, 0].legend(handles=h, loc="lower right", frameon=True, edgecolor="0.8")
-    fig.tight_layout(h_pad=0.8, w_pad=1.2)
+    fig.tight_layout(h_pad=0.6, w_pad=1.2)
     extra = sorted({loc_str(x["metrics"]) for u in UNIFIED_ID.values()
                     for x in cells_for(cfg(U, u))})
     save(fig, "appendix_unified_curves.pdf", [cfg(U, u) for u in UNIFIED_ID.values()],
-         "unified_selected, retained procedures, metrics.json records 0-30 of seeds 0-2; "
+         "unified_selected, retained methods, metrics.json records 0-30 of seeds 0-2; "
          "current = state of the epoch just completed; target = bypass32 evaluation", extra)
 
 
-def fig_resolution_operators():
+def fig_resolution():
+    """Paper figure: depth (max-pool) and operator after block 1, resolution-only batch."""
+    base = 100 * cfg(RB, "none__none__none")["acc_mean"]
+
+    def plain():
+        return row(cfg(RB, "none__none__none"), "plain", "#000000")
+    loc_rows = [plain()] + [row(cfg(RB, "max__%s__Rprog" % l), n) for l, n in
+                            (("input", "input image"), ("stem", "stem output"),
+                             ("D0", "after block 0"), ("D1", "after block 1"),
+                             ("D2", "after block 2"))]
+    op_rows = [plain()]
+    used = [r["cfg"] for r in loc_rows]
+    for op in OPS:
+        c = cfg(RB, "%s__D1__Rprog" % op)
+        used.append(c)
+        r = row(c, OP_MPL[op])
+        if c["n_valid"] == 0:
+            r["note"] = "diverged in %d / %d seeds" % (len(c["seeds_diverged"]), r["n_att"])
+        op_rows.append(r)
+    n = max(len(loc_rows), len(op_rows))
+    h = ROW_H * n + TOP_IN + BOTTOM_IN
+    fig = plt.figure(figsize=(WIDTH, h))
+    bot, hgt = BOTTOM_IN / h, 1 - (TOP_IN + BOTTOM_IN) / h
+    a = fig.add_axes([0.155, bot, 0.315, hgt])
+    b = fig.add_axes([0.665, bot, 0.32, hgt])
+    xl = (74.6, 81.4)
+    dot_panel(a, loc_rows, base=base, xlim=xl)
+    a.set_title("(a) Location of the max-pool reduction", loc="left")
+    a.set_xlabel("final test accuracy (%)")
+    dot_panel(b, op_rows, base=base, xlim=xl)
+    b.set_title("(b) Operator after block 1", loc="left")
+    b.set_xlabel("final test accuracy (%)")
+    add_legend(fig)
+    uniq = list({c["config_id"]: c for c in used + [cfg(RB, "none__none__none")]}.values())
+    save(fig, "appendix_resolution.pdf", uniq,
+         "resbench_resolution_only: max-pool at five locations and seven operators after block 1, "
+         "schedule 16-24-32, seeds 0-2")
+
+
+# ---- archive figures (exhaustive views, not in the paper)
+
+def fig_archive_operators():
     base = 100 * cfg(RB, "none__none__none")["acc_mean"]
     h = ROW_H * 8 + TOP_IN + BOTTOM_IN
     fig, axes = plt.subplots(1, 2, figsize=(WIDTH, h), sharey=True,
@@ -855,19 +996,15 @@ def fig_resolution_operators():
         ax.set_title(title, loc="left")
         ax.set_xlabel("final test accuracy (%)")
     add_legend(fig)
-    save(fig, "appendix_resolution_operators.pdf", used,
+    save(fig, "archive_resolution_operators.pdf", used,
          "resbench_resolution_only, operator x location, schedule 16-24-32, seeds 0-2")
 
 
-def fig_resolution_location_schedule():
+def fig_archive_schedule():
     base = 100 * cfg(RB, "none__none__none")["acc_mean"]
 
     def plain():
         return row(cfg(RB, "none__none__none"), "plain (this batch)", "#000000")
-    loc_rows = [plain()] + [row(cfg(RB, "max__%s__Rprog" % l), n) for l, n in
-                            (("input", "input image"), ("stem", "stem output"),
-                             ("D0", "after block 0"), ("D1", "after block 1"),
-                             ("D2", "after block 2"))]
     sched = [("Rprog", "%s, epochs 0-5 / 6-11 / 12-29" % PROG),
              ("Rlate", "%s, epochs 0-8 / 9-17 / 18-29" % PROG),
              ("Rgentle", "24%s32 only" % ARROW),
@@ -879,27 +1016,17 @@ def fig_resolution_location_schedule():
     ctl_rows = [plain(), row(cfg(RB, "max__D1__Rprog"), "%s, restored" % PROG),
                 row(cfg(RB, "max__D1__fixed24"), "fixed 24\u00d724, never restored"),
                 row(cfg(RB, "max__D1__fixed16"), "fixed 16\u00d716, never restored")]
-    sizes = [len(loc_rows), len(s_rows), len(ctl_rows)]
-    h = ROW_H * sum(sizes) + 2 * 0.45 + TOP_IN + BOTTOM_IN
-    fig = plt.figure(figsize=(WIDTH, h))
-    gs = fig.add_gridspec(3, 1, height_ratios=sizes, hspace=0.45 * 3 / (ROW_H * sum(sizes)),
-                          **margins(h, 0.3))
-    axes = [fig.add_subplot(gs[i]) for i in range(3)]
-    for ax in axes[1:]:
-        ax.sharex(axes[0])
-    for ax, rows, title in zip(axes, (loc_rows, s_rows, ctl_rows),
-                               ("(a) Max-pool location, " + PROG,
-                                "(b) Schedule, operator after block 1",
-                                "(c) Restored vs fixed resolution after block 1")):
-        dot_panel(ax, rows, base=base, xlim=(72.4, 81.4))
-        ax.set_title(title, loc="left")
-    axes[2].set_xlabel("final test accuracy after 30 epochs (%)")
+    fig, a, b = stacked(s_rows, ctl_rows, 0.3)
+    dot_panel(a, s_rows, base=base, xlim=(72.4, 81.4))
+    a.set_title("(a) Schedule, operator after block 1", loc="left")
+    dot_panel(b, ctl_rows, base=base, xlim=(72.4, 81.4))
+    b.set_title("(b) Restored vs fixed resolution after block 1", loc="left")
+    b.set_xlabel("final test accuracy after 30 epochs (%)")
     add_legend(fig, control=True)
-    used = [r["cfg"] for r in loc_rows + s_rows + ctl_rows if "cfg" in r]
+    used = [r["cfg"] for r in s_rows + ctl_rows if "cfg" in r]
     uniq = list({(c["experiment"], c["config_id"]): c for c in used}.values())
-    save(fig, "appendix_resolution_location_schedule.pdf", uniq,
-         "resbench_resolution_only: location (max-pool), schedule (max, maxblur, hminus1 at "
-         "D1), fixed-resolution controls whose final metric is the reduced path")
+    save(fig, "archive_resolution_schedule.pdf", uniq,
+         "resbench_resolution_only: schedules (max, maxblur, hminus1 at D1) and fixed controls")
 
 
 def campaign_label(cid: str) -> str:
@@ -930,7 +1057,7 @@ def stacked(rows_a, rows_b, left, gap_in=0.45):
     return fig, a, b
 
 
-def fig_campaign():
+def fig_archive_campaign():
     E = "campaign_grid21"
     groups = [("Control", ["R32__Gnone__input_bilinear__all19"]),
               ("Gaussian at conv outputs, native resolution",
@@ -977,12 +1104,10 @@ def fig_campaign():
     b.set_title("(b) Earlier full-data runs, same assets", loc="left")
     b.set_xlabel("final test accuracy after 30 epochs (%)")
     add_legend(fig)
-    save(fig, "appendix_campaign.pdf", used,
-         "campaign_grid21 (21 configurations x 3 seeds), fulldata_gaussian (3 x 3), "
-         "progressive_resolution_pilot (2 x seed 0); panel (b) baseline line = fulldata plain")
+    save(fig, "archive_campaign.pdf", used,
+         "campaign_grid21, fulldata_gaussian, progressive_resolution_pilot")
 
 
-# Short labels for ablation_aa, written from the audited index labels.
 ABL_LABEL = {
     "C_plain": "plain (no intervention)",
     "P_postbn": "Gaussian after every BatchNorm",
@@ -1015,7 +1140,7 @@ ABL_LABEL = {
 }
 
 
-def fig_ablation():
+def fig_archive_ablation():
     E = "ablation_aa"
     all_c = cfgs_of(E)
     assert set(ABL_LABEL) == {c["config_id"] for c in all_c}
@@ -1025,8 +1150,7 @@ def fig_ablation():
                  ("Resolution + Gaussian", ["res_gauss"]),
                  ("Per-layer \u03c3 profiles", ["profile"]),
                  ("Controls with a different endpoint", ["constant"])]
-    rows, used = [], []
-    placed = set()
+    rows, used, placed = [], [], set()
     for title, fams in fam_order:
         grp = []
         for c in all_c:
@@ -1048,9 +1172,7 @@ def fig_ablation():
     ax.set_xlabel("final test accuracy after 30 epochs (%)")
     ax.set_title("ablation_aa (own initial weights)", loc="left")
     add_legend(fig, control=True)
-    save(fig, "appendix_ablation.pdf", used,
-         "ablation_aa, read at continuation-gaussian-tv_exploration_1@591e125; 1-seed arms "
-         "have no SD; controls keep a fixed filter or BlurPool at inference")
+    save(fig, "archive_ablation.pdf", used, "ablation_aa at 591e125")
 
 
 def perlayer_label(c):
@@ -1077,7 +1199,7 @@ def adaptive_label(c):
     return lab
 
 
-def fig_perlayer_adaptive():
+def fig_archive_perlayer_adaptive():
     P, A = "per_layer_sigma", "adaptive_continuation"
 
     def full(c):
@@ -1094,9 +1216,8 @@ def fig_perlayer_adaptive():
     b.set_title("(b) adaptive_continuation, 30 epochs, seed 0", loc="left")
     b.set_xlabel("final test accuracy after 30 epochs (%)")
     add_legend(fig, base=False)
-    save(fig, "appendix_perlayer_adaptive.pdf", pr + ar,
-         "per_layer_sigma and adaptive_continuation; CPU pilots, smoke runs and 120-epoch runs "
-         "are excluded from the figure and listed in the complete table")
+    save(fig, "archive_perlayer_adaptive.pdf", pr + ar,
+         "per_layer_sigma and adaptive_continuation, 30-epoch full-data arms")
 
 
 # --------------------------------------------------------------------------- main
@@ -1106,19 +1227,19 @@ def main():
     TAB.mkdir(parents=True, exist_ok=True)
     numbers()
     tables_unified()
-    tables_losses()
     tables_operators()
     tables_plain_arms()
     tables_assets()
     tables_schedule()
     complete_table()
+    fig_resolution()
     fig_unified()
     fig_unified_curves()
-    fig_resolution_operators()
-    fig_resolution_location_schedule()
-    fig_campaign()
-    fig_ablation()
-    fig_perlayer_adaptive()
+    fig_archive_operators()
+    fig_archive_schedule()
+    fig_archive_campaign()
+    fig_archive_ablation()
+    fig_archive_perlayer_adaptive()
     head = subprocess.run(["git", "-C", str(ROOT), "rev-parse", "HEAD"], capture_output=True,
                           text=True).stdout.strip()
     dirty = bool(subprocess.run(["git", "-C", str(ROOT), "status", "--porcelain", "--",

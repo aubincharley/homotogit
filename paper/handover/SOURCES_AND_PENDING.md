@@ -1,5 +1,35 @@
 # Evidence, corrections and pending items
 
+## Revision of 14 September 2026 (afternoon): appendix restructured
+
+- The appendix now tells the CIFAR-10 exploration as four decisions (Gaussian
+  filtering → resolution reduction → operators/locations/schedules → final paired
+  selection), followed by discarded directions and limitations. The paper went
+  from 24 to 11 pages.
+- Moved out of the paper into `paper/archive/exploration_archive.tex` (and its PDF):
+  the complete configuration catalogue, asset-set hashes, the plain-arm
+  batch-to-batch table, the resolution-operator table, and the campaign-wide
+  figures (operators, schedules and controls, 21-configuration grid, ablation,
+  per-layer and adaptive studies). No data or failed run was dropped.
+- Removed from the paper because the work is not done: the transfer table and
+  mapping appendix, the theory appendix, the reserved landscape figure. Their plans
+  are in `paper/handover/FUTURE_WORK_NOTES.md`; the paper keeps red notes.
+- Factual corrections:
+  1. At the input, the highest mean belongs to the perceptual operator (79.98 %),
+     then the Ḣ⁻¹ reconstruction (79.76 %); the earlier text named Ḣ⁻¹. The
+     generator now asserts this order.
+  2. The resolution-only batch is 29 targeted configurations (87 runs, 84 valid),
+     not "7 operators × 5 sites × 4 schedules"; the archive table header is
+     overridden accordingly.
+  3. "Resolution-only" is defined as without an additional Gaussian continuation;
+     smoothing built into an operator (antialiased bilinear, MaxBlur) is part of the
+     operator.
+  4. The table of final results and the table of final losses were merged; the
+     operator table was dropped from the paper in favour of the figure.
+- Every number of the exploration narrative is a macro generated from the index
+  (`EXPLORATION` in the generator).
+
+
 Updated 14 September 2026, when the supplied working paper was integrated into the
 repository on branch `manuscript`. The supplied snapshot had been written from the
 conversation and earlier reports. This version records what was checked against the

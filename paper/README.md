@@ -1,90 +1,64 @@
-# Spatial continuation — working paper
+# Continuation methods for training CNNs — working paper
 
-AISTATS-style working paper of the project, on branch `manuscript` (created from
-`continuation-core` at `ef5564c`). It uses the AISTATS 2026 style files with the
-`preprint` option: this is a research-project manuscript, not a submission, and
-no venue notice is printed. Authors and their order follow Max's progress report
-of 10 September 2026.
+AISTATS-style working paper of the project, on branch `manuscript`. It uses the
+AISTATS 2026 style files with the `preprint` option: a research-project manuscript,
+not a submission.
 
-The manuscript is deliberately unfinished: the transfer table, the theoretical
-result and the loss visualizations are reserved for the team's ongoing work.
+The paper presents completed work only: the method definitions and the CIFAR-10
+exploration that led to the three retained methods. Unfinished parts (transfer,
+theory, visualization, discussion) are marked by red notes; their plans are in
+`handover/FUTURE_WORK_NOTES.md`.
 
 ## Build
 
-* Overleaf: upload the ZIP of this directory, select `main.tex`, compiler
-  **pdfLaTeX** (BibTeX runs automatically).
+* Overleaf: upload this directory as a ZIP, select `main.tex`, compiler **pdfLaTeX**.
 * Locally, from `paper/`:
 
   ```bash
   latexmk -pdf main.tex
   ```
 
-The two official `.sty` files are byte-identical to the supplied pack. Do not edit
-them or compress margins, fonts or spacing. Citations are author–year (`natbib`,
-`apalike`). `checklist_template.tex` is the original, unfilled checklist and is not
-included; fill it honestly before setting `\includechecklisttrue`.
+* The exhaustive record of the exploration (complete configuration catalogue,
+  asset hashes, campaign-wide figures) is a separate document, from `paper/archive/`:
 
-## Generated figures and tables
+  ```bash
+  latexmk -pdf exploration_archive.tex
+  ```
 
-Everything numerical in the paper comes from records, never from hand-typed
-values:
+The two official `.sty` files are unchanged. Do not edit them or compress margins,
+fonts or spacing.
+
+## Generated figures, tables and numbers
+
+Every number in the paper and the archive comes from records:
 
 ```bash
 py paper/tools/make_paper_assets.py
 ```
 
-Run it from anywhere in the repository. It reads, without checking anything out:
+It reads `experiments/index.json` and the run records of `benchmark-organized` at
+the pinned commit `8d353f2` (and the ablation at `591e125`) through `git show`, plus
+the frozen presets of `continuation_core`, and asserts that they agree. It needs
+`matplotlib`, `numpy` and `torch`.
 
-* `experiments/index.json` and the run records of `benchmark-organized` at the
-  pinned commit `8d353f2`, and the ablation records on
-  `continuation-gaussian-tv_exploration_1` at `591e125`, through `git show`
-  (run `git fetch origin` first on a fresh clone);
-* the frozen presets of `continuation_core` on this branch, for the schedule table.
-
-It needs `matplotlib`, `numpy` and `torch` (for importing `continuation_core`).
-It first asserts that the index, the raw `metrics.json` files and the preset
-values in `continuation_core/methods.py` agree.
-
-| Output | Content |
+| Output | Used in |
 |---|---|
-| `tables/numbers.tex` | Macros for every number quoted in the text (abstract included) |
-| `tables/unified_reference.tex`, `final_losses.tex` | Retained procedures in the unified batch |
-| `tables/resolution_operators.tex` | Resolution-only operator table |
-| `tables/schedules.tex` | Executed schedules and effective sigma, from `continuation_core` |
-| `tables/asset_sets.tex`, `plain_arms.tex` | Pairing evidence |
-| `tables/all_exploratory.tex` | Complete audited record (longtable) |
-| `figures/appendix_*.pdf` | Seven vector figures, see `figures/README.md` |
-| `provenance/generated_assets.json` | Configurations, seeds, cell ids and record files behind each output |
+| `tables/numbers.tex` (all numbers quoted in the text, exploration included) | paper |
+| `tables/unified_reference.tex`, `tables/schedules.tex` | paper |
+| `figures/appendix_resolution.pdf`, `appendix_unified.pdf`, `appendix_unified_curves.pdf` | paper |
+| `tables/asset_sets.tex`, `plain_arms.tex`, `resolution_operators.tex`, `all_exploratory.tex`, `figures/archive_*.pdf` | archive |
+| `provenance/generated_assets.json` | configurations, seeds, cell ids and files behind each output |
 
 Generated files start with `% GENERATED`; edit the generator, not the output.
-Hand-written tables: `tables/methods.tex`, `tables/transfer.tex`.
 
-## Where to edit
+## Structure
 
-| File | Role | Owner |
-|---|---|---|
-| `sections/01_introduction.tex` | Motivation, scope, principal observation | Max / team |
-| `sections/02_related_work.tex` | Literature organized around the project | Max / team |
-| `sections/03_methods.tex` | Three fixed procedures and their differences | verified against `continuation-core` |
-| `sections/04_experiments.tex`, `tables/transfer.tex` | Protocol and transfer table | Aubin / Alexandre |
-| `sections/05_theory.tex`, `appendices/d_future_details.tex` (§ Theoretical details) | Statistical question; theorem pending | Idriss |
-| `sections/06_visualization.tex`, `appendices/d_future_details.tex` (§ Additional visualizations) | Three geometric questions; analyses pending | Max |
-| `sections/07_discussion.tex` | Provisional interpretation and limits | team |
-| `appendices/a_reference_protocol.tex` | Recipe, sites, schedules, operators, pairing | generated tables + verified text |
-| `appendices/b_exploratory_results.tex` | Exploration figures and complete table | generated |
-| `appendices/c_other_approaches.tex` | TV previews vs reconstruction operators, other directions | team |
-| `handover/SOURCES_AND_PENDING.md` | What was verified, corrections, pending items | — |
-
-## Adding results safely
-
-- Treat each table as a view of run-level data; extend the generator rather than
-  copying numbers.
-- Fill `tables/transfer.tex` only from completed, verified runs. Keep *not yet
-  available*, *failed* and *not applicable* distinct. Never reuse the exploratory,
-  test-selected CIFAR-10 results as transfer confirmation.
-- Record run ids, commits, seeds and the generator command for every new figure or
-  table in `provenance/`.
-- Revisit abstract, introduction and discussion when transfer, theory or
-  visualization results arrive, so completed and planned contributions stay
-  distinguishable.
-- Do not change the method definitions in `continuation_core` to fit the text.
+| File | Content |
+|---|---|
+| `sections/01`–`07` | Main text (Max's wording; red notes for unfinished sections) |
+| `appendices/a_reference_protocol.tex` | Recipe, conventions, sites, schedules, operators |
+| `appendices/b_exploratory_results.tex` | CIFAR-10 exploration in four decisions |
+| `appendices/c_other_approaches.tex` | TV budgets vs reconstruction operators, other directions, limitations |
+| `archive/exploration_archive.tex` | Exhaustive catalogue and campaign figures |
+| `handover/SOURCES_AND_PENDING.md` | Verification, corrections, pending team work |
+| `handover/FUTURE_WORK_NOTES.md` | Plans for transfer, theory, visualization |

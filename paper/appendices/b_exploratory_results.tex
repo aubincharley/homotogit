@@ -1,79 +1,68 @@
-\section{Exploratory experiments and method selection}
+\section{CIFAR-10 exploration}
 \label{app:exploration}
-This appendix contains the exploration used to select the three procedures. Its tables and figures are generated from the audited experiment index and the raw run records (Appendix~\ref{app:pairing}). The exploration used the test set for method selection and is not an independent confirmatory study. In all figures, open circles are individual seeds, filled circles are means over valid seeds, and shaded bars or bands show $\pm1$ sample SD over seeds; none of them is a confidence interval.
+We used CIFAR-10 to explore interventions, to understand the first results and to select three methods for further study. This exploration was not one homogeneous benchmark. Early pilots used image subsets, a validation split, GroupNorm or a ResNet-18, and shorter training, and their numbers are not comparable with those of the reference protocol. The comparisons that support the final selection use the ResNet-20 reference protocol of Appendix~\ref{app:protocol}, and the selection itself rests on one paired batch. Because we used the test set to choose among methods, these results are exploratory evidence, not an independent validation of the selected methods. The conventions of Appendix~\ref{app:conventions} apply throughout.
 
-\subsection{Final unified comparison}
-\input{tables/unified_reference}
-Table~\ref{tab:unified-reference} reports the selected methods against this batch's own baseline, and Figure~\ref{fig:unified} places them among the 16 configurations of the batch. The $\uGainComb$-point gain of the combination is descriptive; three seeds do not establish a precise ranking of nearby configurations.
+We call an arm \emph{resolution-only} when it contains no additional Gaussian continuation. Some resizing operators include their own smoothing, such as antialiased bilinear resizing or MaxBlur; we treat this smoothing as part of the operator.
 
-Placement interacts with reduction. Without reduction, post-ReLU filtering scores above convolution-output filtering ($\uGauss\%$ versus $\uBlurConv\%$, paired difference $\uGaussMinusBlurConv\pm\uGaussMinusBlurConvSD$ points). With reduction after block 1, convolution-output filtering scores above post-ReLU filtering ($\uComb\%$ versus $\uResRelu\%$, paired difference $\uCombMinusResRelu\pm\uCombMinusResReluSD$ points); both differences are positive in each seed. Per-layer receptive-field profiles did not show a consistent additional benefit over uniform post-ReLU filtering in this batch, and the square-root profile scored lower. These contrasts motivate the selected presets but do not isolate a general anti-aliasing mechanism.
+\subsection{Gaussian filtering as the starting point}
+\label{app:explore-gaussian}
+\paragraph{Question.} Can training be made easier, or the final network better, by first removing fine spatial detail and then progressively restoring it?
 
-\begin{figure}[!htbp]
-\centering
-\includegraphics[width=\linewidth]{figures/appendix_unified.pdf}
-\caption{Unified batch: all 16 configurations, three seeds each, on the native filter-free path after 30 epochs. (a) Final test accuracy; the vertical line is this batch's plain mean. Blue, orange and purple mark the retained \methodR, \methodG{} and \methodRG{} procedures. Reduction arms use max-pooling unless labelled; ``post-ReLU'' is the ten-site placement of \methodG, and ``profile'' arms rescale its $\sigma$ per site. (b) Difference between each run and the plain run with the same seed, which shares its initial weights and data order, with the mean and sample SD of the three differences. The test set was used to choose among these arms, and several reduction-plus-Gaussian variants overlap.}
-\label{fig:unified}
-\end{figure}
+\paragraph{Comparisons and observations.} We first filtered the input images, with a ResNet-20 using GroupNorm, 45,000 training and 5,000 validation images, and 14,040 updates. A fixed blur lowered validation accuracy ($\xInSigHalf\%$ for $\sigma=0.5$ and $\xInSigOne\%$ for $\sigma=1$, against $\xInSigZero\%$ without blur, three seeds). Warm starts that blurred the images during the first 1,500 updates and then removed the blur, in one or two steps, did not recover the unfiltered result ($\xWarmW\%$ and $\xWarmP\%$).
 
-\begin{figure}[!htbp]
-\centering
-\includegraphics[width=\linewidth]{figures/appendix_unified_curves.pdf}
-\caption{Training records of the retained procedures in the unified batch, mean over three seeds with $\pm1$ sample SD bands. The record after $k$ completed epochs uses the state of epoch $k-1$ (zero-based). Grey vertical lines separate the last record before and the first record after the changes $r:16\to24$ and $r:24\to32$ (\methodR, \methodRG) and $G\to0$ (\methodG, \methodRG). (a) Test accuracy on the current path, with the intervention of that epoch still active, so early values are not those of the plain network. (b) Diagnostic: the same weights on the target path, with the intervention bypassed but BatchNorm running statistics accumulated on the current path; low values mix weight and statistics effects. (c) Cross-entropy on the fixed 500-image training probe, current path. (d) Test cross-entropy, current path. From $k=22$ on, current and target paths coincide for every procedure.}
-\label{fig:unified-curves}
-\end{figure}
+We then moved the filter to the feature maps, following \citet{sinha2020curriculum}: a Gaussian at the 19 convolution outputs, annealed to zero. On a 10,000-image subset with GroupNorm, this lowered validation accuracy ($\xGnGauss\pm\xGnGaussSD\%$ against $\xGnPlain\pm\xGnPlainSD\%$, three seeds). With BatchNorm, two one-seed pilots on the same subset gave the opposite sign: $\xRleGauss\%$ against $\xRlePlain\%$ for a ResNet-18, and $\xRtwGauss\%$ against $\xRtwPlain\%$ for a ResNet-20. Normalization, architecture and initialization changed together, so these pilots do not isolate the cause of the change. Under the reference protocol, the annealed Gaussian reached $\xFdPlateau\pm\xFdPlateauSD\%$ with plateaus and $\xFdGeo\pm\xFdGeoSD\%$ with a geometric decay, against $\xFdPlain\pm\xFdPlainSD\%$ for plain.
 
-On the current path, the retained procedures are above plain from the first epochs (Figure~\ref{fig:unified-curves}). On the training probe, their cross-entropy is first below that of plain and ends above it in the last third of training, while their test cross-entropy keeps decreasing where plain's levels off. Table~\ref{tab:final-losses} gives the final values.
+\paragraph{Decision.} We continued with feature-map filtering, the ResNet-20 with BatchNorm, the reference protocol and the plateau schedule.
 
-\input{tables/final_losses}
+\subsection{From filtering to resolution reduction}
+\label{app:explore-resolution}
+\paragraph{Question.} If the Gaussian kernel is one way of controlling the information processed early in training, can we obtain a similar effect by temporarily processing smaller representations?
 
-\subsection{Alternative resolution operators}
-\input{tables/resolution_operators}
-The preceding pure-resolution batch has its own plain arm, at $\rbPlain\pm\rbPlainSD\%$. It shares pinned assets with the unified batch but is not paired with Table~\ref{tab:unified-reference} (Appendix~\ref{app:pairing}). After block 1, adaptive max-pooling had the highest observed mean ($\rbMaxBOne\%$), but the seed ranges of several operators overlap, and the ordering changed at the input, where the $\dot H^{-1}$ reconstruction had the highest mean (Figure~\ref{fig:resolution}). This argues against a universal ranking of operators. MaxBlur keeps its own binomial blur and bilinear reduction its antialiasing, so neither is a pure resolution change.
+\paragraph{Comparisons and observations.} In a one-seed pilot under the reference protocol, we resized the input images with antialiased bilinear interpolation to $16\times16$ for epochs 0--5 and $24\times24$ for epochs 6--11, then used the original images. With the same seed, this reached $\xProg\%$, against $\xFdPlainSeedZero\%$ for plain and $\xFdPlateauSeedZero\%$ for the Gaussian plateaus. Adding the Gaussian, with its scale multiplied by $r/32$, gave $\xProgGauss\%$. A grid of 21 configurations with three seeds then varied the reduction (input image or stem output, bilinear or max-pooling, three schedules), alone or with the Gaussian at the convolution outputs. The four arms with the $16\to24\to32$ schedule scored between $\xCgStemBil\%$ and $\xCgStemMax\%$, above the Gaussian alone ($\xCgGauss\pm\xCgGaussSD\%$) and plain ($\xCgPlain\pm\xCgPlainSD\%$). Combining input reduction with the Gaussian reached $\xCgInBilGauss\pm\xCgInBilGaussSD\%$. Restricting the Gaussian to the first seven layers ended close to plain ($\xCgEarly\%$).
+
+\paragraph{Decision.} Resolution reduction alone was competitive with the Gaussian in these runs. We therefore studied where in the network to reduce, and with which operator, without any Gaussian.
+
+\subsection{Operators, locations and schedules}
+\label{app:explore-operators}
+\paragraph{Question.} Where should the reduction be applied, does a more sophisticated operator help, and does the schedule matter?
+
+\paragraph{Comparisons.} A first ablation batch, run with its own initial weights, applied max-pooling with the $16\to24\to32$ schedule after residual blocks 0, 1 and 2 ($\xAbDZero\pm\xAbDZeroSD$, $\xAbDOne\pm\xAbDOneSD$ and $\xAbDTwo\pm\xAbDTwoSD\%$), above its one-seed arms reducing the input image ($\xAbInput\%$) or the stem output ($\xAbStem\%$). We then ran a resolution-only batch of $\rbNConfigs$ targeted configurations with three seeds each, not a full factorial design: seven operators at the input and after block 1; max-pooling at five locations; four schedules for max-pooling, MaxBlur and the $\dot H^{-1}$ reconstruction after block 1; a plain arm and two fixed-resolution controls. Of its $\rbNRuns$ runs, $\rbNValid$ were numerically valid; the perceptual operator after block 1 produced a non-finite loss in all three seeds.
 
 \begin{figure}[!htbp]
 \centering
-\includegraphics[width=\linewidth]{figures/appendix_resolution_operators.pdf}
-\caption{Resolution-only batch: seven reduction operators after residual block 1 (a) and at the input image (b), schedule $16\to24\to32$, no Gaussian, three seeds each, native path after 30 epochs. The vertical line is this batch's plain mean. The perceptual operator after block 1 produced a non-finite loss in all three seeds and has no accuracy; it is a failed numerical experiment, not a missing one.}
+\includegraphics[width=\linewidth]{figures/appendix_resolution.pdf}
+\caption{Resolution-only batch, schedule $16\to24\to32$, three seeds per arm. (a) Location of the max-pooling reduction. (b) Reduction operator after block 1; the perceptual operator diverged in all seeds. The vertical line is the plain mean of this batch.}
 \label{fig:resolution}
 \end{figure}
 
-For max-pooling, block 1 had the highest mean of the five tested locations (input image, stem output, and after blocks 0, 1 and 2), ahead of blocks 2 and 0 by less than the seed SD of those arms (Figure~\ref{fig:resolution-location}). The standard $16\to24\to32$ path had the highest mean among the tested schedules for max-pooling and for the $\dot H^{-1}$ reconstruction, but not for MaxBlur, where the reversed order scored marginally higher. Fixed $16\times16$ and $24\times24$ controls ended below the progressive procedure, but with a different inference architecture, so their gap does not isolate the effect of continuation.
+\paragraph{Observations.} For max-pooling, the reduction after block 1 had the highest mean ($\rbMaxBOne\pm\rbMaxBOneSD\%$), ahead of blocks 2 and 0 ($\rbLocDTwo$ and $\rbLocDZero\%$) by less than their seed SD, and above the stem output and the input image (Figure~\ref{fig:resolution}a). After block 1, the six valid operators finished between $\rbOpBOneMin\%$ and $\rbOpBOneMax\%$ with overlapping seed ranges, and the more elaborate operators did not score above max-pooling (Figure~\ref{fig:resolution}b). At the input the order differed: the perceptual operator had the highest mean ($\rbInPerceptual\%$), followed by the $\dot H^{-1}$ reconstruction ($\rbInHminus\%$), with max-pooling at $\rbInMax\%$; we do not read this order as an established ranking. The effect of the schedule depended on the operator. With max-pooling, spending epochs 0--5 at 16 and 6--11 at 24 scored above the later ($\rbMaxLate\%$), shorter ($\rbMaxGentle\%$) and reversed ($\rbMaxReverse\%$) schedules, and the same held for the $\dot H^{-1}$ reconstruction, whereas for MaxBlur the reversed order scored marginally higher ($\rbMaxBlurReverse\%$ against $\rbMaxBlurProg\%$). Keeping a fixed $24\times24$ or $16\times16$ reduction until the end gave $\rbFixedTwentyFour\%$ and $\rbFixedSixteen\%$, but these controls are evaluated with a reduced network, so they do not isolate the effect of restoring the resolution.
 
-\begin{figure}[!htbp]
+\paragraph{Decision.} We kept adaptive max-pooling after block 1 with the $16\to24\to32$ schedule: the simplest operator, at the location with the highest mean in both batches.
+
+\subsection{Final comparison and selection}
+\label{app:explore-final}
+\paragraph{Question.} Which Gaussian placement should we retain, alone and together with the reduction, when all candidates run under identical conditions?
+
+\paragraph{Comparison.} The ablation batch had suggested that the placement matters: filtering the ten post-ReLU sites gave $\xAbPostBlock\pm\xAbPostBlockSD\%$, against $\xAbConv\%$ at the convolution outputs (one seed), and the reduction after block 2 combined with post-ReLU filtering reached $\xAbDTwoG\pm\xAbDTwoGSD\%$. We then ran one paired batch of 16 configurations with three seeds each, evaluated after every epoch. It contained plain, the two Gaussian placements, the reductions of the previous step, these reductions combined with post-ReLU filtering, with or without per-site scale profiles, and the reduction after block 1 combined with filtering at the convolution outputs.
+
+\begin{figure}[!t]
 \centering
-\includegraphics[width=\linewidth]{figures/appendix_resolution_location_schedule.pdf}
-\caption{Resolution-only batch, three seeds per arm. (a) Location of the max-pooling reduction with the standard schedule. (b) Schedules after block 1 for max-pooling, MaxBlur and the $\dot H^{-1}$ reconstruction: the standard path spends epochs 0--5 at 16 and 6--11 at 24, the late path 0--8 and 9--17, the gentle path starts at 24, and the reversed path visits 24 before 16. (c) Progressive reduction against fixed reductions that are never restored; squares mark these controls, whose final metric is their reduced inference path. The vertical line is the batch's plain mean.}
-\label{fig:resolution-location}
+\includegraphics[width=\linewidth]{figures/appendix_unified.pdf}
+\caption{Final paired batch: all 16 configurations after 30 epochs. (a) Final test accuracy; blue, orange and purple mark the retained \methodR, \methodG{} and \methodRG{} methods. Reduction arms use max-pooling unless labelled; ``profile'' arms rescale the post-ReLU $\sigma$ per site. (b) Difference between each run and the plain run with the same seed.}
+\label{fig:unified}
 \end{figure}
 
-At block 1, the valid operators took $\rbWallBOneMin$--$\rbWallBOneMax$\,s per run, against $\rbWallPlain$\,s for the plain arm, including evaluation every two epochs and checkpoint writes. The more expensive reconstruction operators did not bring an accuracy gain at this location. These timings belong to the resolution-only batch, whose evaluation cadence differs from the unified batch; they must not be assigned to the unified Gaussian combinations.
+\paragraph{Observations.} Resolution reduction after block 1 improved accuracy by $\uGainRes$ points over plain (Table~\ref{tab:unified-reference}). Without reduction, post-ReLU filtering scored above filtering at the convolution outputs ($\uGauss\%$ against $\uBlurConv\%$, paired difference $\uGaussMinusBlurConv\pm\uGaussMinusBlurConvSD$ points). With the reduction after block 1, the order was reversed: convolution-output filtering reached $\uComb\%$ against $\uResRelu\%$ for post-ReLU filtering (paired difference $\uCombMinusResRelu\pm\uCombMinusResReluSD$). Both differences are positive in each seed. Per-site scale profiles did not give a consistent additional benefit, and \uNearCombCount{} other reduction-plus-Gaussian arms finished within 0.6 points of the highest mean (Figure~\ref{fig:unified}).
 
-\subsection{Other exploratory families}
-The remaining trained families are grouped by batch in Figures~\ref{fig:campaign}--\ref{fig:perlayer}. Each panel draws the plain mean of its own batch when the batch has a plain arm; no line is carried across batches. The earlier grid (\texttt{campaign\_grid21}) reduced the input image or the stem output and filtered the 19 convolution outputs; it preceded the internal reduction points of the later batches. The ablation batch (\texttt{ablation\_aa}) varied filter placement, site masks, internal reduction points and per-layer $\sigma$ profiles, with many one-seed arms and its own initial weights. The per-layer and adaptive studies varied the per-site $\sigma$ profile, its amplitude and data-triggered schedules; the adaptive arms ran at seed 0 only. Arms that keep a fixed filter, a fixed reduced resolution or BlurPool at inference are controls with a different endpoint and are marked separately. Runs under other conditions (image subsets, validation splits, GroupNorm, 120 epochs) are listed only in Table~\ref{tab:all-exploratory}.
+\input{tables/unified_reference}
 
-\begin{figure}[!htbp]
+The training records show the observation that motivates Section~\ref{sec:theory} (Figure~\ref{fig:unified-curves}). On the current path, the three methods are above plain from the first epochs. On the training probe, their cross-entropy is first below that of plain and ends above it during the last third of training, while their test cross-entropy keeps decreasing where that of plain levels off. The probe contains 500 fixed training images; it is not the full training set.
+
+\begin{figure}[!t]
 \centering
-\includegraphics[width=\linewidth]{figures/appendix_campaign.pdf}
-\caption{(a) \texttt{campaign\_grid21}, reference recipe, three seeds per configuration: resolution schedule, Gaussian schedule and reduction site (input image or stem output, bilinear or max-pool), with the Gaussian at the 19 convolution outputs unless restricted to the first seven layers. The vertical line is the grid's plain mean. (b) Earlier full-data runs on the same pinned assets: \texttt{fulldata\_gaussian}, three seeds with its own plain arm (vertical line), and the one-seed \texttt{progressive\_resolution\_pilot}, which has no SD.}
-\label{fig:campaign}
+\includegraphics[width=\linewidth]{figures/appendix_unified_curves.pdf}
+\caption{Training records of the retained methods, mean over three seeds. Grey lines separate the last record before and the first record after $r:16\to24$ and $r:24\to32$ (\methodR, \methodRG) and $G\to0$ (\methodG, \methodRG). (a) Test accuracy on the current path. (b) Target-path diagnostic: the same weights with the intervention bypassed, but with BatchNorm statistics accumulated on the current path. It combines both effects and is not the performance of the model being trained. (c) Cross-entropy on the 500-image training probe. (d) Test cross-entropy. From $k=22$ on, both paths coincide.}
+\label{fig:unified-curves}
 \end{figure}
 
-\begin{figure}[!htbp]
-\centering
-\includegraphics[width=\linewidth]{figures/appendix_ablation.pdf}
-\caption{\texttt{ablation\_aa}, read at the recorded commit of its branch. Reference recipe with its own pinned initial weights and the campaign's data order: its arms are paired with each other, not with other batches. Many arms have one seed, annotated and without SD. Squares mark controls whose final metric keeps a fixed filter or BlurPool at inference. The vertical line is the batch's one-seed plain arm.}
-\label{fig:ablation}
-\end{figure}
-
-\begin{figure}[!htbp]
-\centering
-\includegraphics[width=\linewidth]{figures/appendix_perlayer_adaptive.pdf}
-\caption{(a) \texttt{per\_layer\_sigma}: full-data, 30-epoch arms on self-paired assets; the two launches remain separate rows, and plain arms are in black. The $\sigma_0$ sweep comes from a separate branch. (b) \texttt{adaptive\_continuation}: 30-epoch arms at seed 0, including repeated instrumented reruns of the plateau schedule under separate launches. This experiment has no 30-epoch plain arm, so no plain line is drawn. CPU pilots, 5,000-image smoke runs and 120-epoch runs are listed only in Table~\ref{tab:all-exploratory}.}
-\label{fig:perlayer}
-\end{figure}
-
-\clearpage
-\subsection{Complete exploratory record}
-\label{app:complete}
-Table~\ref{tab:all-exploratory} lists every trained configuration of the index, with the conditions, record locations, assets, counts and timing scope of each experiment.
-\IfFileExists{tables/all_exploratory.tex}{\input{tables/all_exploratory.tex}}{\pending{The complete table is generated by \texttt{paper/tools/make\_paper\_assets.py}.}}
+\paragraph{Decision.} We retained one method per family: max-pooling after block 1 as the resolution-only method; the Gaussian at the ten post-ReLU sites, the higher of the two placements without reduction, as the Gaussian-only method; and max-pooling after block 1 with the Gaussian at the 19 convolution outputs, the highest mean of the batch, as the combined method. They are representatives of their families, selected with three seeds on a reused test set, not established optimal settings.
