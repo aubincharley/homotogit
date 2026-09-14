@@ -35,7 +35,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 import stl10_configs as S                                              # noqa: E402
 
 REPO = "https://github.com/aubincharley/homotogit.git"
-BRANCH = "continuation-core"
+BRANCH = "stl10-transfer"
 #: STL-10 labelled binaries, 360 MB.  pratt3000/stl10-binary-files has the
 #: stl10_binary/ folder name already but drags in a 2.7 GB unlabeled_X.bin that
 #: continuation_core.data never reads.
