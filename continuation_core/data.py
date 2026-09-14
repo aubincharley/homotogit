@@ -6,6 +6,10 @@ Registered datasets
              data_batch_1..5 concatenated in order, then test_batch.  This is
              the order torchvision uses, and the order the pinned subset
              indices refer to (checked bitwise in verification/parity.py).
+``svhn``     ``<root>/svhn_binary`` (raw uint8 written by scripts/convert_svhn.py
+             from the official cropped-digit .mat files); train 73,257 and test
+             26,032 at 32x32, labels already 0..9.  The conversion is outside the
+             package because reading MATLAB v7 needs scipy.  No reference result.
 ``stl10``    ``<root>/stl10_binary`` (official binaries); labelled train 5,000
              and test 8,000 images at 96x96.  Stored column-major, so each
              image is transposed to row-major.  Labels 1..10 become 0..9.
@@ -107,7 +111,28 @@ def _stl10(root: Path) -> Dataset:
                    Split(torch.from_numpy(te_x), torch.from_numpy(te_y)), 10, 96, names)
 
 
-DATASETS = {"cifar10": _cifar10, "stl10": _stl10}
+def _svhn(root: Path) -> Dataset:
+    base = root / "svhn_binary"
+    if not base.is_dir():
+        raise FileNotFoundError("SVHN binaries not found under %s (see "
+                                "scripts/convert_svhn.py)" % base)
+
+    def split(name, n):
+        x = np.fromfile(base / ("%s_X.bin" % name), dtype=np.uint8)
+        y = np.fromfile(base / ("%s_y.bin" % name), dtype=np.uint8).astype(np.int64)
+        if x.size != n * 3 * 32 * 32 or y.size != n:
+            raise ValueError("%s: %d image bytes and %d labels, expected %d and %d"
+                             % (name, x.size, y.size, n * 3 * 32 * 32, n))
+        if y.min() < 0 or y.max() > 9:
+            raise ValueError("%s: labels outside 0..9 (convert_svhn.py maps the "
+                             "digit zero from 10)" % name)
+        return Split(torch.from_numpy(x.reshape(n, 3, 32, 32)), torch.from_numpy(y))
+
+    return Dataset("svhn", split("train", 73257), split("test", 26032), 10, 32,
+                   [str(i) for i in range(10)])
+
+
+DATASETS = {"cifar10": _cifar10, "stl10": _stl10, "svhn": _svhn}
 
 
 def load_dataset(cfg: DataConfig) -> Dataset:

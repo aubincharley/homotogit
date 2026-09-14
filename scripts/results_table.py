@@ -1,11 +1,11 @@
-"""Collect STL-10 run summaries into the benchmark table.
+"""Collect a dataset's run summaries into the benchmark table.
 
 Reads every ``summary.json`` under the given roots (a Kaggle kernel output tree
 works as-is) and prints mean +- sd of the final test accuracy per method, in the
 shape of the CIFAR-10 table in the README, alongside the CIFAR-10 reference so
 the two settings can be read side by side.
 
-    py scripts/stl10_table.py runs/ --fetch     # --fetch pulls the kernels first
+    py scripts/results_table.py --dataset svhn runs/ --fetch
 """
 from __future__ import annotations
 
@@ -20,7 +20,6 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from continuation_core.methods import METHODS as REGISTRY                # noqa: E402
-import stl10_configs as S                                               # noqa: E402
 
 LABEL = {"plain": "plain (control)",
          "resolution_max_b1": "resolution_max_b1",
@@ -36,10 +35,10 @@ def mean_sd(values):
     return m, (sum((v - m) ** 2 for v in values) / (n - 1)) ** 0.5
 
 
-def fetch(user: str, out: Path, seeds, methods) -> None:
+def fetch(user: str, out: Path, seeds, methods, dataset: str) -> None:
     for seed in seeds:
         for method in methods:
-            slug = "stl10-%s-seed%d" % (method.replace("_", "-"), seed)
+            slug = "%s-%s-seed%d" % (dataset, method.replace("_", "-"), seed)
             d = out / slug
             if (d / ".fetched").exists():
                 continue
@@ -52,16 +51,17 @@ def fetch(user: str, out: Path, seeds, methods) -> None:
                 print("  no output yet for %s" % slug, file=sys.stderr)
 
 
-def collect(roots) -> dict:
+def collect(roots, dataset: str) -> dict:
     runs = {}
     for root in roots:
         for p in Path(root).rglob("summary.json"):
             s = json.loads(p.read_text())
-            if s.get("dataset") != "stl10":
+            if s.get("dataset") != dataset:
                 continue
             method = s["method"].replace("__transfer", "")
             # a rerun of the same seed replaces the earlier one
             runs.setdefault(method, {})[s["seed"]] = {
+                "epochs": s["epochs"], "updates": s["updates"],
                 "acc": s["final"]["current"]["test"]["acc"],
                 "probe": s["final"]["current"]["train_probe"]["acc"],
                 "minutes": s["timing"]["wall_seconds"] / 60,
@@ -73,30 +73,35 @@ def collect(roots) -> dict:
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    ap.add_argument("--dataset", required=True)
     ap.add_argument("roots", nargs="*", default=["runs"])
     ap.add_argument("--fetch", action="store_true", help="pull kernel outputs first")
     ap.add_argument("--user", default="aubincharley")
-    ap.add_argument("--out", default="runs/stl10", help="where --fetch puts them")
+    ap.add_argument("--out", help="where --fetch puts them (default runs/<dataset>)")
     ap.add_argument("--seeds", default="0,1,2")
     args = ap.parse_args(argv)
 
     seeds = [int(s) for s in args.seeds.split(",")]
+    methods = tuple(LABEL)
+    out = Path(args.out or ("runs/" + args.dataset))
     if args.fetch:
-        fetch(args.user, Path(args.out), seeds, S.METHODS)
-        args.roots = list(args.roots) + [args.out]
+        fetch(args.user, out, seeds, methods, args.dataset)
+        args.roots = list(args.roots) + [str(out)]
 
-    runs = collect(args.roots)
+    runs = collect(args.roots, args.dataset)
     if not runs:
-        raise SystemExit("no STL-10 summary.json under %s" % ", ".join(map(str, args.roots)))
+        raise SystemExit("no %s summary.json under %s"
+                         % (args.dataset, ", ".join(map(str, args.roots))))
 
-    print("STL-10 / ResNet-20-BN, %d epochs = %d updates, seed(s) %s"
-          % (S.EPOCHS, S.EPOCHS * 40, ",".join(map(str, seeds))))
-    print("sigma x3, resolution %s (reference %d), boundaries x%d\n"
-          % (list(S.STL_R.values), S.NATIVE_RESOLUTION, S.BOUNDARY_SCALE))
+    any_run = next(iter(next(iter(runs.values())).values()))
+    print("%s / ResNet-20-BN, %d epochs = %d updates, seed(s) %s\n"
+          % (args.dataset, any_run["epochs"], any_run["updates"],
+             ",".join(map(str, seeds))))
     plain = runs.get("plain", {})
     base = sum(r["acc"] for r in plain.values()) / len(plain) if plain else None
 
-    print("%-33s %-17s %-8s %-17s" % ("method", "STL-10 test", "vs plain", "CIFAR-10 test"))
+    print("%-33s %-17s %-8s %-17s"
+          % ("method", "%s test" % args.dataset, "vs plain", "CIFAR-10 test"))
     print("-" * 78)
     order = sorted(runs, key=lambda k: -mean_sd([r["acc"] for r in runs[k].values()])[0])
     for method in order:
@@ -124,7 +129,7 @@ def main(argv=None):
     print("wall minutes:", ", ".join(
         "%s %.1f" % (mth, sum(r["minutes"] for r in runs[mth].values()) / len(runs[mth]))
         for mth in order))
-    missing = [(mth, s) for mth in S.METHODS for s in seeds
+    missing = [(mth, s) for mth in methods for s in seeds
                if s not in runs.get(mth, {})]
     if missing:
         print("\nstill missing %d run(s): %s" % (len(missing), missing))

@@ -219,6 +219,7 @@ def cmd_make_assets(args):
                       n_train=len(ds.train), epochs=args.epochs,
                       seeds=tuple(int(s) for s in args.seeds.split(",")),
                       probe_size=args.probe_size, init_from=args.init_from,
+                      subset_size=args.subset_size,
                       provenance={"dataset": args.dataset, "arch": args.arch})
     _dump({"written": args.out, "states": man["states"]}, None)
 
@@ -316,6 +317,9 @@ def main(argv=None):
     p.add_argument("--seeds", default="0,1,2")
     p.add_argument("--probe-size", type=int, default=500,
                    help="train-probe size; 500 is 1%% of CIFAR-10 but 10%% of STL-10")
+    p.add_argument("--subset-size", type=int,
+                   help="train on this many images instead of the whole split, to "
+                        "match another dataset's updates per epoch")
     p.add_argument("--init-from",
                    help="asset directory to copy init_seed<k>.pt from instead of "
                         "drawing new weights (checked with a strict load)")
