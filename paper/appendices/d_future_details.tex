@@ -24,9 +24,6 @@ For VGG-11, the eight ReLU outputs include every activation, whereas the ResNet 
 
 \section{Additional visualizations}
 \label{app:visualization}
-The shared code provides the tools for the three questions of Section~\ref{sec:visualization}. It evaluates one checkpoint under explicit intervention states (the state used before a transition, the next state, and the target state), exports parameter trajectories, fits a joint PCA plane that reports its explained variance and the projection residual of each checkpoint, evaluates loss grids on that plane, and computes filter-normalized perturbation curves. Two BatchNorm policies are available and always labelled: stored running statistics, or per-batch statistics computed on cloned buffers. These evaluations leave weights, buffers, random state and checkpoint files unchanged.
-
-Checkpoints of the exploratory batches are not versioned in the repository, so the analyses need checkpoints saved around the schedule transitions. An earlier set of two-dimensional slices around a checkpoint trained with a Gaussian schedule (\texttt{loss\_landscape\_blur}) predates the retained procedures and is not reported. The completed analysis will record the checkpoints, shared projection basis, explained variance, projection residuals, BatchNorm policy and data subset used for each panel. It will distinguish loss changes at fixed weights from changes due to subsequent optimization, and show robustness across seeds or projection directions where available.
 \IfFileExists{figures/appendix_geometry.pdf}{%
 \begin{figure}[htbp]
 \centering
