@@ -91,8 +91,17 @@ the job:
 | launcher | cells | measured estimate |
 |---|---:|---:|
 | `job_optbench_lr_sweep.py` | 12 | ~50 min |
+| `job_optbench_lr_sweep_ext.py` | 2 | ~17 min |
 | `job_optbench_sgd_control.py` | 3 | ~13 min |
 | `job_optbench_grid_0.py` … `_2.py` | 12 each | ~60 min each |
+
+**At most two GPU kernels run at once.** A third push is refused with
+`Maximum batch GPU session count of 2 reached` — and the CLI reports that on
+stdout while still exiting 0, so `kaggle_run.py` now scans the push output for
+it rather than trusting the exit code. It also gives up after three empty
+`kernels status` replies, which is what a kernel that was never created looks
+like: the error goes to stderr and the poll loop would otherwise wait out its
+full timeout in silence.
 
 ```bash
 py scripts/kaggle_run.py scripts/job_optbench_lr_sweep.py --gpu \

@@ -52,6 +52,12 @@ MAX_SOURCE_BYTES = 900_000          # Kaggle rejects very large kernel sources
 
 _TERMINAL_OK = ("complete",)
 _TERMINAL_BAD = ("error", "cancel", "fail")
+#: consecutive empty status replies tolerated before giving up
+_MAX_BLANK_STATUS = 3
+
+#: Kaggle runs at most this many GPU batch sessions at once; a third push is
+#: refused outright rather than queued.
+MAX_CONCURRENT_GPU_KERNELS = 2
 
 
 ACCOUNTS_DIR = Path.home() / ".kaggle-accounts"
@@ -304,17 +310,40 @@ def push_and_run(script_path: Path, *, gpu: bool = False, internet: bool = False
         push_cmd += ["--accelerator", accelerator]
     push = _run(push_cmd)
     print(push.stdout)
-    if push.returncode != 0:
+    # The CLI reports a refused push on stdout and still exits 0 -- notably
+    # "Maximum batch GPU session count of 2 reached", which is easy to hit by
+    # launching slices in parallel.  Returncode alone would let us poll for
+    # hours on a kernel that was never created.
+    refused = [ln for ln in (push.stdout or "").splitlines()
+               if "error" in ln.lower() or "not found" in ln.lower()]
+    if push.returncode != 0 or refused:
         print(push.stderr, file=sys.stderr)
-        raise RuntimeError("kaggle kernels push failed")
+        raise RuntimeError("kaggle kernels push failed: %s"
+                           % (refused[0].strip() if refused
+                              else "exit %d" % push.returncode))
 
     print(f"polling every {poll_seconds}s (timeout {timeout_seconds}s)...", flush=True)
     deadline = time.time() + timeout_seconds
     status = ""
     ok = False
+    blank = 0
     while time.time() < deadline:
-        status = _run(["kaggle", "kernels", "status", kernel_id]).stdout.strip()
-        print(status, flush=True)
+        res = _run(["kaggle", "kernels", "status", kernel_id])
+        status = res.stdout.strip()
+        print(status or (res.stderr or "").strip(), flush=True)
+        # A status call that says nothing on stdout means the CLI failed (a 404
+        # for a kernel that was never created, say) and wrote to stderr.  Left
+        # alone this polls silently to the timeout, so give up after a few.
+        if not status:
+            blank += 1
+            if blank >= _MAX_BLANK_STATUS:
+                raise RuntimeError(
+                    "kaggle kernels status returned nothing %d times for %s; last "
+                    "stderr: %s" % (blank, kernel_id,
+                                    (res.stderr or "").strip() or "(empty)"))
+            time.sleep(poll_seconds)
+            continue
+        blank = 0
         low = status.lower()
         if any(t in low for t in _TERMINAL_OK):
             ok = True
