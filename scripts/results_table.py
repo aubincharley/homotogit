@@ -36,9 +36,14 @@ def mean_sd(values):
 
 
 def fetch(user: str, out: Path, seeds, methods, dataset: str) -> None:
+    # the kernel prefix can be shorter than the dataset key (Kaggle caps slugs
+    # near 50 characters); push_runs.py is the authority on the mapping
+    sys.path.insert(0, str(ROOT / "scripts" / "kaggle"))
+    from push_runs import DATASETS
+    prefix = DATASETS.get(dataset, {}).get("slug", dataset)
     for seed in seeds:
         for method in methods:
-            slug = "%s-%s-seed%d" % (dataset, method.replace("_", "-"), seed)
+            slug = "%s-%s-seed%d" % (prefix, method.replace("_", "-"), seed)
             d = out / slug
             if (d / ".fetched").exists():
                 continue

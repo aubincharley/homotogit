@@ -35,6 +35,10 @@ sys.path.insert(0, str(ROOT / "scripts"))
 REPO = "https://github.com/aubincharley/homotogit.git"
 BRANCH = "cifar10-subset"
 
+#: ``slug`` is the kernel-name prefix, defaulting to the key.  Kaggle rejects a
+#: kernel slug longer than ~50 characters with a bare 400 and no explanation, and
+#: "<key>-resolution-max-b1-gaussian-conv-seed0" is 59 for the arm names below.
+#:
 #: Per dataset: the Kaggle dataset to attach, the file the kernel globs for to
 #: locate it, the config script, the asset directory, and any extra make-assets
 #: arguments.  ``epochs`` sizes the permutation arrays, which must cover the
@@ -52,6 +56,7 @@ DATASETS = {
     # CIFAR-10 cut to 5,000 images, two schedule arms.  Same data and assets for
     # both; only --arm differs, so they isolate the schedule.
     "cifar10_5k_stl_budget": {
+        "slug": "c5k-stl",
         "source": "aubincharley/cifar-10-batches-py",
         "marker": "data_batch_1", "link": "data/cifar-10-batches-py",
         "configs": "scripts/cifar10_subset_configs.py",
@@ -62,6 +67,7 @@ DATASETS = {
         "config_subdir": "stl_budget",
     },
     "cifar10_5k_reference_updates": {
+        "slug": "c5k-ref",
         "source": "aubincharley/cifar-10-batches-py",
         "marker": "data_batch_1", "link": "data/cifar-10-batches-py",
         "configs": "scripts/cifar10_subset_configs.py",
@@ -207,20 +213,28 @@ POLL_SECONDS = 60
 MAX_WAIT_SECONDS = 3 * 60 * 60
 
 
-def push(folder: Path) -> None:
-    """Push, waiting out a full GPU queue rather than dropping the kernel."""
+def push(folder: Path) -> bool:
+    """Push, waiting out a full GPU queue rather than dropping the kernel.
+
+    Returns False on a real failure instead of raising: one bad kernel must not
+    abandon the twenty after it.
+    """
     deadline = time.time() + MAX_WAIT_SECONDS
     while True:
         r = subprocess.run(["kaggle", "kernels", "push", "-p", str(folder)],
                            capture_output=True, text=True)
         out = r.stdout + r.stderr
         if BUSY not in out:
-            if r.returncode != 0:
-                raise SystemExit("push failed for %s:\n%s" % (folder.name, out.strip()))
+            if r.returncode != 0 or "Error" in out:
+                print("  FAILED %s: %s" % (folder.name, " | ".join(
+                    l.strip() for l in out.splitlines() if l.strip())[:300]), flush=True)
+                return False
             print("  pushed", folder.name, flush=True)
-            return
+            return True
         if time.time() > deadline:
-            raise SystemExit("gave up waiting for a GPU slot for %s" % folder.name)
+            print("  FAILED %s: no GPU slot after %d s" % (folder.name, MAX_WAIT_SECONDS),
+                  flush=True)
+            return False
         print("  GPU queue full; retrying %s in %ds" % (folder.name, POLL_SECONDS),
               flush=True)
         time.sleep(POLL_SECONDS)
@@ -240,7 +254,12 @@ def commit_is_on_origin(commit: str) -> bool:
 def write(dataset: str, method: str, seed: int, commit: str, user: str,
           out_root: Path) -> Path:
     spec = DATASETS[dataset]
-    slug = "%s-%s-seed%d" % (dataset, method.replace("_", "-"), seed)
+    slug = "%s-%s-seed%d" % (spec.get("slug", dataset),
+                             method.replace("_", "-"), seed)
+    if len(slug) > 50:
+        raise SystemExit("kernel slug %r is %d characters; Kaggle rejects over 50 "
+                         "with a bare 400. Shorten the dataset's 'slug' field."
+                         % (slug, len(slug)))
     d = out_root / slug
     d.mkdir(parents=True, exist_ok=True)
     extra = ", ".join('"%s"' % a for a in spec["extra"])
@@ -280,16 +299,18 @@ def main(argv=None):
         print("warning: %s is not on any origin branch; the kernel's git clone will "
               "fail until you push it" % commit[:12], file=sys.stderr)
 
-    pushed = []
+    pushed, failed = [], []
     for seed in (int(s) for s in args.seeds.split(",")):
         for method in args.methods.split(","):
             d = write(args.dataset, method, seed, commit, args.user, Path(args.out))
             print("wrote", d)
             if args.dry_run:
                 continue
-            push(d)
-            pushed.append(d.name)
-    return 0
+            (pushed if push(d) else failed).append(d.name)
+    print("\npushed %d kernel(s)" % len(pushed))
+    if failed:
+        print("FAILED %d: %s" % (len(failed), ", ".join(failed)))
+    return 1 if failed else 0
 
 
 if __name__ == "__main__":
