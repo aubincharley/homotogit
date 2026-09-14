@@ -1,4 +1,14 @@
-# continuation-core
+# continuation-core — optimizer benchmark
+
+> **Lire d'abord : [RAPPORT.md](RAPPORT.md).** Cette branche mesure les quatre
+> méthodes gelées sous quatre optimiseurs (SGD, Adam, AdamW, RAdam), et le
+> résultat change la lecture du tableau ci-dessous : à optimiseur correctement
+> réglé, le témoin `plain` atteint 84,4 % — au-dessus de **tous** les bras
+> ci-dessous. Le gain de la réduction de résolution survit à ~1-2 points ; celui
+> du flou gaussien disparaît.
+>
+> Les chiffres du tableau suivant restent exacts **sous SGD lr 0,005**, qui est
+> la seule condition dans laquelle ils ont été mesurés.
 
 Three frozen continuation methods, the plain control, and the shared code to
 train, checkpoint, evaluate and analyse them. The exploratory history
