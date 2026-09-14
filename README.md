@@ -99,11 +99,12 @@ strokes and weak scale structure, so a Gaussian anneal should have helped less.
 It helps the same -- 25% error reduction for the combined method against 25% on
 CIFAR-10.
 
-*STL-10 is the outlier, and the update budget is why.* STL-10 gave the combined
-method 720 updates to recover after the Gaussian switches off; CIFAR-10 and SVHN
-both give it 3,519, and on both it wins by 25%. That supports the
-recovery-starved reading of the STL-10 target-path trace with an independent
-dataset rather than one run's curve shape.
+*STL-10 is the outlier.* ~~The update budget is why: STL-10 gave the combined
+method only 720 updates to recover after the Gaussian switches off, against
+3,519 on CIFAR-10 and SVHN.~~ **Retracted -- see [CIFAR-10 at 5,000
+images](#cifar-10-at-5000-images-the-stl-10-control), which runs that same
+720-update budget at 32x32 and finds the combined method the *best* of the four
+by +10.62 pp. The recovery window is not the cause.**
 
 It also rules out the competing worry that SVHN's control (93.10%, and 100% on
 the train probe) left no optimization headroom for continuation to exploit. The
@@ -117,6 +118,73 @@ schedule -- 32x32, so resolution is held fixed while the budget matches STL-10's
 `make-assets --subset-size` exists for it.
 
 No parity reference exists for any of this.
+
+
+## CIFAR-10 at 5,000 images: the STL-10 control
+
+STL-10 changed image size, training-set size and update budget at once. This
+holds 32x32 and cuts CIFAR-10 to STL-10's 5,000 images, varying only the
+schedule, in two arms that share one asset set. Decisions in
+`scripts/cifar10_subset_configs.py`; 3 seeds, records under `results/cifar10_5k/`.
+
+**Arm A `stl_budget`** -- 60 epochs, STL-10's boundaries: 2,400 updates, 720
+after G -> 0. Differs from STL-10 *only in resolution*.
+
+| method | test | paired vs plain | same method on STL-10 |
+|---|---|---|---|
+| `resolution_max_b1_gaussian_conv` | **59.39 +- 1.34** | **+10.62 +- 0.35** | **-1.29** |
+| `gaussian_postrelu` | 57.40 +- 0.38 | +8.64 +- 1.22 | +1.09 |
+| `resolution_max_b1` | 55.04 +- 0.51 | +6.28 +- 0.78 | +2.58 |
+| `plain` | 48.76 +- 1.05 | - | - |
+
+**Arm B `reference_updates`** -- 293 epochs, boundaries scaled by 391/40 so every
+transition lands on the reference's update count: 11,720 updates, 3,520 after
+G -> 0. Differs from the CIFAR-10 reference *only in how many distinct images
+those updates see*.
+
+| method | test | paired vs plain |
+|---|---|---|
+| `resolution_max_b1_gaussian_conv` | **62.55 +- 0.87** | **+11.78 +- 0.06** |
+| `gaussian_postrelu` | 60.88 +- 0.24 | +10.10 +- 0.87 |
+| `resolution_max_b1` | 55.00 +- 0.79 | +4.23 +- 0.21 |
+| `plain` | 50.77 +- 0.93 | - |
+
+### The recovery-window hypothesis is wrong
+
+It was proposed from STL-10's target-path trace and repeated in the SVHN
+analysis. Arm A runs STL-10's exact budget -- 5,000 images, 2,400 updates, 720
+of them after the Gaussian switches off -- at 32x32, and the combined method goes
+from **worst by 1.29 pp** to **best by 10.62 pp**. Arm B gives it 3,520 recovery
+updates and it gains only another 1.2 pp. **720 updates is ample; the recovery
+window was never the cause.**
+
+What remains is that STL-10's collapse belongs to the 96x96 setting -- and the
+likeliest culprit is the **sigma x3 transfer chosen there**, not the method.
+That choice forced `sigma_max = 3.0`, radius 12 and a 25-tap kernel, putting
+effective sigma up to 1.575 at all 19 pre-BatchNorm convolution outputs on maps
+as small as 12x12, against the reference's sigma <= 0.525 on 4x4. Arm A runs the
+same method at the reference sigma and it is the strongest of the four. The
+pixel-sigma alternative that was rejected for STL-10 is the obvious test, and has
+not been run.
+
+### The two families respond differently to budget
+
+From arm A to arm B is 5x the updates on the same 5,000 images:
+
+| method | arm A | arm B | change |
+|---|---|---|---|
+| `gaussian_postrelu` | +8.64 | +10.10 | **+1.5** |
+| `resolution_max_b1_gaussian_conv` | +10.62 | +11.78 | **+1.2** |
+| `resolution_max_b1` | +6.28 | +4.23 | **-2.1** |
+
+The Gaussian families keep gaining; the resolution reduction loses ground. Its
+schedule reaches native resolution at epoch 117 of 293 and contributes nothing
+for the remaining 60% of training, while the Gaussian anneals until epoch 205.
+
+`plain` gains only 2 pp for 5x the compute (48.76 -> 50.77): at 5,000 images the
+control is bound by data, not optimization. The largest effects in this whole
+benchmark are here, in its most data-starved setting -- consistent with the
+regularization reading that SVHN pointed to.
 
 
 ## STL-10
