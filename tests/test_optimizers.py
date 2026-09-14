@@ -4,12 +4,21 @@ These cover what the optimizer benchmark relies on and nothing else.  The
 methods, schedules, sites and operators are untouched by this axis and keep
 their own tests.
 """
+import sys
+
 import pytest
 import torch
 
+from continuation_core import assets as assets_mod
 from continuation_core.config import ExperimentConfig, OptimizerConfig
+from continuation_core.models import build_model
 from continuation_core.optim import OPTIMIZERS, build_optimizer, lr_at, optimizer_tag
 from continuation_core.presets import reference, reference_optimizer
+from continuation_core.train import Trainer
+
+from conftest import ROOT, synthetic_dataset
+
+sys.path.insert(0, str(ROOT / "scripts"))
 
 EXPECTED = {"sgd": torch.optim.SGD, "adam": torch.optim.Adam,
             "adamw": torch.optim.AdamW, "radam": torch.optim.RAdam}
@@ -129,3 +138,89 @@ def test_config_roundtrip_with_each_optimizer(tmp_path, name):
                                                        weight_decay=5e-4))
     cfg.save(tmp_path / "c.json")
     assert ExperimentConfig.load(tmp_path / "c.json").to_dict() == cfg.to_dict()
+
+
+def test_a_full_run_under_adam_records_the_optimizer(tmp_path):
+    """One short end-to-end run: the aggregation reads summary.json alone, so the
+    optimizer has to be in there and has to be the one that actually ran."""
+    ds = synthetic_dataset()
+    assets_mod.make_assets(tmp_path / "assets",
+                           lambda: build_model("resnet20_bn_cifar", 10),
+                           n_train=len(ds.train), epochs=2, seeds=(0,), probe_size=20)
+    cfg = reference("resolution_max_b1", 0, assets_dir=str(tmp_path / "assets"),
+                    device="cpu", out_dir=str(tmp_path / "runs"),
+                    optimizer=OptimizerConfig(name="adam", lr=1e-3, weight_decay=5e-4,
+                                              schedule="warmup_cosine",
+                                              warmup_updates=60, min_lr=0.0))
+    cfg.data.expected_mean = cfg.data.expected_std = None
+    cfg.budget.epochs, cfg.budget.effective_batch, cfg.budget.microbatch = 2, 32, 16
+    cfg.evaluation.batch_size = 20
+
+    trainer = Trainer(cfg, dataset=ds, device="cpu")
+    assert isinstance(trainer.optimizer, torch.optim.Adam)
+    summary = trainer.run()
+
+    assert summary["optimizer"] == {
+        "tag": "adam_lr0.001", "name": "adam", "lr": 1e-3, "weight_decay": 5e-4,
+        "schedule": "warmup_cosine", "warmup_updates": 60, "min_lr": 0.0,
+        "betas": [0.9, 0.999], "eps": 1e-8, "weight_decay_coupling": "coupled_l2"}
+    assert summary["validation_status"] == "optimizer-variant"
+    assert (tmp_path / "runs" / "resolution_max_b1__adam_lr0.001__seed0"
+            / "summary.json").is_file()
+
+
+def test_the_campaign_manifest_covers_every_cell_exactly_once():
+    """Kernels slice the manifest by index, so a slicing bug either loses a cell
+    or, worse, runs one twice and silently overwrites its result."""
+    import job_optimizer_benchmark as job
+
+    job.CHOSEN_LR = {n: 1e-3 for n in job.NEW_OPTIMIZERS}
+    sizes = {b: len(job.build_cells(b))
+             for b in ("lr_sweep", "sgd_control", "grid")}
+    assert sizes == {"lr_sweep": 12, "sgd_control": 3, "grid": 36}
+
+    grid = job.build_cells("grid")
+    for n_jobs in (1, 2, 3, 4):
+        seen = sorted(c["index"] for j in range(n_jobs)
+                      for c in job.slice_for(grid, j, n_jobs))
+        assert seen == list(range(len(grid)))
+
+    names = {job.config_for(c, "data", "assets", "runs").run.name for c in grid}
+    assert len(names) == len(grid)
+
+
+def test_every_arm_shares_the_reference_lr_schedule():
+    """Only the optimizer may differ between arms.  If the warmup or the cosine
+    moved with it, an optimizer contrast would also be a schedule contrast."""
+    import job_optimizer_benchmark as job
+
+    job.CHOSEN_LR = {n: 1e-3 for n in job.NEW_OPTIMIZERS}
+    ref = reference_optimizer()
+    for batch in ("lr_sweep", "sgd_control", "grid"):
+        for cell in job.build_cells(batch):
+            o = job.config_for(cell, "data", "assets", "runs").optimizer
+            assert (o.schedule, o.warmup_updates, o.min_lr) == \
+                (ref.schedule, ref.warmup_updates, ref.min_lr)
+            assert o.weight_decay == ref.weight_decay
+
+
+def test_the_grid_refuses_to_run_before_the_sweep_is_read_out():
+    import job_optimizer_benchmark as job
+
+    saved, job.CHOSEN_LR = job.CHOSEN_LR, {}
+    try:
+        with pytest.raises(SystemExit, match="lr_sweep"):
+            job.build_cells("grid")
+    finally:
+        job.CHOSEN_LR = saved
+
+
+def test_the_sgd_control_is_the_untouched_reference_recipe():
+    """It is the drift control for the imported SGD numbers, so it must be the
+    same configuration those numbers came from -- not a variant of it."""
+    import job_optimizer_benchmark as job
+
+    for cell in job.build_cells("sgd_control"):
+        cfg = job.config_for(cell, "data", "assets", "runs")
+        assert cfg.validation_status == "reference"
+        assert cfg.optimizer == reference_optimizer()
