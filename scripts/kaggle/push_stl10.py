@@ -64,11 +64,19 @@ def run(*cmd, **kw):
 
 # -- hardware, first, so the log says what this ran on ------------------------
 import torch
-print("torch", torch.__version__, "| cuda", torch.cuda.is_available(),
-      "|", torch.cuda.get_device_name(0) if torch.cuda.is_available() else "CPU ONLY",
-      flush=True)
 if not torch.cuda.is_available():
-    raise SystemExit("no GPU: enable_gpu did not take effect, refusing to run on CPU")
+    raise SystemExit("no GPU: the accelerator request did not take effect, and "
+                     "96x96 on CPU is not worth the session")
+print("torch", torch.__version__, "|", torch.cuda.get_device_name(0),
+      "| capability sm_%d%d" % torch.cuda.get_device_capability(0), flush=True)
+# is_available() is not enough: a Tesla P100 (sm_60) reports True under a torch
+# built for sm_70+, then fails on the first real kernel launch.  Launch one now.
+try:
+    torch.linalg.norm(torch.ones(64, 64, device="cuda") @ torch.ones(64, 64, device="cuda"))
+    torch.cuda.synchronize()
+except RuntimeError as exc:
+    raise SystemExit("GPU present but unusable by this torch build (%s): %s"
+                     % (torch.cuda.get_device_name(0), exc))
 
 
 # -- code: a pinned commit, so summary.json provenance records a real SHA -----
@@ -83,11 +91,10 @@ sys.path.insert(0, REPO_DIR)
 # this dataset keeps the binaries at its root rather than in a stl10_binary/
 # folder.  So find train_X.bin and link whatever directory holds it.
 print("/kaggle/input:", sorted(os.listdir("/kaggle/input")), flush=True)
-found = sorted(glob.glob("/kaggle/input/*/train_X.bin")
-               + glob.glob("/kaggle/input/*/*/train_X.bin"))
+found = sorted(glob.glob("/kaggle/input/**/train_X.bin", recursive=True))
 if not found:
-    raise SystemExit("no train_X.bin under /kaggle/input; found %s"
-                     % sorted(glob.glob("/kaggle/input/*/*")))
+    raise SystemExit("no train_X.bin under /kaggle/input; tree: %s"
+                     % sorted(glob.glob("/kaggle/input/**/*", recursive=True))[:40])
 src = os.path.dirname(found[0])
 os.makedirs("data", exist_ok=True)
 if os.path.islink("data/stl10_binary"):
@@ -130,6 +137,11 @@ METADATA = {
     "kernel_type": "script",
     "is_private": True,
     "enable_gpu": True,
+    # enable_gpu alone gave a Tesla P100 (sm_60), which Kaggle's torch
+    # 2.10.0+cu128 does not support (it needs sm_70+): cuda.is_available() is
+    # True but every kernel launch fails.  The reference CIFAR-10 runs were on
+    # T4s, so ask for the same card by name.
+    "machine_shape": "NvidiaTeslaT4",
     "enable_tpu": False,
     "enable_internet": True,
     "keywords": [],
