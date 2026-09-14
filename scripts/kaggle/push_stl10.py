@@ -153,28 +153,31 @@ METADATA = {
 }
 
 
-#: Kaggle refuses a push with "Maximum batch GPU session count of 2 reached",
-#: so pushes have to wait for a slot rather than fail.
-MAX_CONCURRENT = 2
+#: Kaggle allows two concurrent batch GPU sessions and rejects the next push
+#: outright.  Counting only the sessions *this* process started is not enough --
+#: anything already running, from an earlier invocation or another terminal,
+#: occupies a slot too -- so retry on the error Kaggle actually returns.
+BUSY = "Maximum batch GPU session count"
 POLL_SECONDS = 60
+MAX_WAIT_SECONDS = 3 * 60 * 60
 
 
-def running(user: str, slugs) -> list:
-    """Which of ``slugs`` currently hold a GPU session."""
-    live = []
-    for slug in slugs:
-        r = subprocess.run(["kaggle", "kernels", "status", "%s/%s" % (user, slug)],
+def push(folder: Path) -> None:
+    """Push, waiting out a full GPU queue rather than dropping the kernel."""
+    deadline = time.time() + MAX_WAIT_SECONDS
+    while True:
+        r = subprocess.run(["kaggle", "kernels", "push", "-p", str(folder)],
                            capture_output=True, text=True)
-        if "RUNNING" in r.stdout or "QUEUED" in r.stdout:
-            live.append(slug)
-    return live
-
-
-def wait_for_slot(user: str, pushed: list) -> None:
-    while len(running(user, pushed)) >= MAX_CONCURRENT:
-        live = running(user, pushed)
-        print("  %d/%d sessions busy (%s); waiting"
-              % (len(live), MAX_CONCURRENT, ", ".join(live)), flush=True)
+        out = r.stdout + r.stderr
+        if BUSY not in out:
+            if r.returncode != 0:
+                raise SystemExit("push failed for %s:\n%s" % (folder.name, out.strip()))
+            print("  pushed", folder.name, flush=True)
+            return
+        if time.time() > deadline:
+            raise SystemExit("gave up waiting for a GPU slot for %s" % folder.name)
+        print("  GPU queue full; retrying %s in %ds" % (folder.name, POLL_SECONDS),
+              flush=True)
         time.sleep(POLL_SECONDS)
 
 
@@ -226,8 +229,7 @@ def main(argv=None):
             print("wrote", d)
             if args.dry_run:
                 continue
-            wait_for_slot(args.user, pushed)
-            subprocess.run(["kaggle", "kernels", "push", "-p", str(d)], check=True)
+            push(d)
             pushed.append(d.name)
     return 0
 
