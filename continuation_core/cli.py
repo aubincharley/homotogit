@@ -11,6 +11,7 @@ plane-loss         loss on a 2-D plane under several states / BN policies
 perturb            loss change under filter-normalised weight perturbations
 verify-assets      recompute pinned-asset digests
 make-assets        generate a NEW asset set for another dataset / model
+                   (--init-from reuses an existing set's initial weights)
 """
 from __future__ import annotations
 
@@ -217,6 +218,7 @@ def cmd_make_assets(args):
                                                     int(ds.train.images.shape[1])),
                       n_train=len(ds.train), epochs=args.epochs,
                       seeds=tuple(int(s) for s in args.seeds.split(",")),
+                      probe_size=args.probe_size, init_from=args.init_from,
                       provenance={"dataset": args.dataset, "arch": args.arch})
     _dump({"written": args.out, "states": man["states"]}, None)
 
@@ -312,6 +314,11 @@ def main(argv=None):
     p.add_argument("--arch", required=True)
     p.add_argument("--epochs", type=int, required=True)
     p.add_argument("--seeds", default="0,1,2")
+    p.add_argument("--probe-size", type=int, default=500,
+                   help="train-probe size; 500 is 1%% of CIFAR-10 but 10%% of STL-10")
+    p.add_argument("--init-from",
+                   help="asset directory to copy init_seed<k>.pt from instead of "
+                        "drawing new weights (checked with a strict load)")
     p.add_argument("--out", required=True)
     p.set_defaults(fn=cmd_make_assets)
 

@@ -18,6 +18,9 @@ Semantics (as executed by the benchmark):
 Digests: ``sha256`` of each file, of each array's contiguous bytes, and of each
 state dict (keys sorted, name bytes then tensor bytes).  Initial weights depend
 on the torch build, so they are never regenerated for the reference preset.
+``make_assets(..., init_from=<dir>)`` copies them from an existing set instead of
+drawing new ones, which both removes that dependence and lets two datasets share
+one initialization (ResNet-20's parameters do not depend on the input size).
 """
 from __future__ import annotations
 
@@ -90,15 +93,24 @@ def load(asset_dir, seed: int, verify_first: bool = True) -> dict:
 
 
 def make_assets(out_dir, model_builder, n_train: int, epochs: int, seeds=(0, 1, 2),
-                probe_size: int = 500, provenance: dict | None = None) -> dict:
+                probe_size: int = 500, provenance: dict | None = None,
+                init_from=None) -> dict:
     """Generate a NEW asset set for a dataset/model without a pinned one.
 
     Deterministic given ``(n_train, epochs, seeds, probe_size)`` and the torch
     build.  The result is a new asset identity: it is not paired with the
     CIFAR-10 reference set and must be recorded as such.
+
+    ``init_from`` takes the initial states from an existing asset directory
+    instead of drawing them, after checking that each loads strictly into
+    ``model_builder()``.  Only the index arrays are then new, and since those come
+    from numpy's PCG64 rather than torch, the whole set is bit-identical on any
+    machine.  It is still a new asset identity: ``paired_with_reference`` stays
+    ``False``.
     """
     d = Path(out_dir)
     d.mkdir(parents=True, exist_ok=True)
+    src = None if init_from is None else Path(init_from)
     rng = np.random.default_rng(derive_seed(0, "subset"))
     arrays = {"subset": rng.permutation(n_train).astype(np.int64)}
     arrays["train_probe"] = np.sort(np.random.default_rng(derive_seed(0, "probe"))
@@ -108,13 +120,21 @@ def make_assets(out_dir, model_builder, n_train: int, epochs: int, seeds=(0, 1, 
         g = np.random.default_rng(derive_seed(s, "batch"))
         arrays["perm_seed%d" % s] = np.stack([g.permutation(n_train)
                                               for _ in range(epochs)]).astype(np.int32)
-        torch.manual_seed(derive_seed(s, "init"))
-        sd = model_builder().state_dict()
+        if src is None:
+            torch.manual_seed(derive_seed(s, "init"))
+            sd = model_builder().state_dict()
+        else:
+            sd = torch.load(src / ("init_seed%d.pt" % s), map_location="cpu",
+                            weights_only=True)
+            model_builder().load_state_dict(sd, strict=True)
         torch.save(sd, d / ("init_seed%d.pt" % s))
         states["init_seed%d" % s] = sha_state(sd)
     np.savez(d / "shared_indices.npz", **arrays)
     man = {"generated_by": "continuation_core.assets.make_assets",
-           "torch": torch.__version__, "provenance": provenance or {},
+           "torch": torch.__version__,
+           "provenance": {**(provenance or {}),
+                          "init_from": None if src is None else str(src),
+                          "probe_size": int(probe_size)},
            "paired_with_reference": False,
            "arrays": {k: {"sha256": sha_array(v), "shape": list(v.shape),
                           "dtype": str(v.dtype)} for k, v in arrays.items()},

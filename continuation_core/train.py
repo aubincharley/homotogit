@@ -282,7 +282,9 @@ class Trainer:
                     self.save(reason)
             done = self.epoch + 1
             loss = self.run_loss / max(self.run_n, 1)
-            if done % int(self.cfg.evaluation.every_epochs) == 0 or done == epochs:
+            evaluated = (done % int(self.cfg.evaluation.every_epochs) == 0
+                         or done == epochs)
+            if evaluated:
                 self.snapshot(done, loss)
             self.controller.set_epoch(self.epoch)
             self.epoch, self.batch_index = done, 0
@@ -293,10 +295,17 @@ class Trainer:
                           name="epoch_%03d.pt" % done)
             if self.cfg.checkpoint.keep_rolling:
                 self.save("rolling", name="rolling.pt")
-            self.log("epoch %d/%d  update %d  loss %.4f  test acc current %.4f target %.4f"
-                     % (done, epochs, self.global_update, loss,
-                        self.metrics[-1]["eval"].get("current", {}).get("test", {}).get("acc", float("nan")),
-                        self.metrics[-1]["eval"].get("target", {}).get("test", {}).get("acc", float("nan"))))
+            if evaluated:
+                ev = self.metrics[-1]["eval"]
+                self.log("epoch %d/%d  update %d  loss %.4f  test acc current %.4f "
+                         "target %.4f"
+                         % (done, epochs, self.global_update, loss,
+                            ev.get("current", {}).get("test", {}).get("acc", float("nan")),
+                            ev.get("target", {}).get("test", {}).get("acc", float("nan"))))
+            else:
+                self.log("epoch %d/%d  update %d  loss %.4f  (evaluation every %d epochs)"
+                         % (done, epochs, self.global_update, loss,
+                            int(self.cfg.evaluation.every_epochs)))
         return self.finish()
 
     def finish(self) -> dict:

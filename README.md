@@ -55,6 +55,27 @@ py -m continuation_core evaluate --checkpoint runs/resolution_max_b1_gaussian_co
 
 `dry-run` builds everything, verifies asset digests, runs forward/backward at
 every distinct state and checks the target-state bypass. It trains nothing.
+
+## STL-10 (unvalidated)
+
+The same four methods transferred to STL-10 / 96x96. Every decision the transfer
+required -- sigma x3, resolution `(48, 72, 96)` with reference 96, 60 epochs with
+every boundary doubled -- lives in `scripts/stl10_configs.py` and is written into
+each config; the reasoning is in [docs/EXTENDING.md](docs/EXTENDING.md). Nothing
+here is trained yet, and there is no parity reference for it.
+
+```bash
+py -m continuation_core make-assets --dataset stl10 --data-root data \
+   --arch resnet20_bn_cifar --epochs 90 --init-from assets/cifar10_resnet20bn \
+   --out assets/stl10_resnet20bn
+py scripts/stl10_configs.py --data-root data --seeds 0
+py -m continuation_core dry-run --config configs/stl10/plain__seed0.json
+py -m continuation_core train   --config configs/stl10/plain__seed0.json --out runs
+```
+
+`scripts/kaggle/push_stl10.py` wraps those four steps into one Kaggle kernel per
+method, cloning this repository at a pinned commit so `summary.json` still
+records a git SHA.
 `train` writes the tree described in
 [docs/RESULTS_SCHEMA.md](docs/RESULTS_SCHEMA.md); an example is in
 `docs/examples/synthetic_run/`.
