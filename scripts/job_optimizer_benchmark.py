@@ -61,10 +61,15 @@ SWEEP_LRS_EXTENDED = {"adamw": (2e-2, 3e-2)}
 COST_SECONDS = {"plain": 505, "resolution_max_b1": 499,
                 "gaussian_postrelu": 623, "resolution_max_b1_gaussian_conv": 733}
 
-#: Filled in from docs/LR_SWEEP.md once phase 2 has been read out.  Kept in
-#: code, and committed, so the grid's learning rates are auditable rather than
-#: passed loosely at launch time.
-CHOSEN_LR: dict = {}
+#: Read out from the sweep in docs/LR_SWEEP.md.  Kept in code, and committed, so
+#: the grid's learning rates are auditable rather than passed loosely at launch
+#: time.  Selection rule, fixed before the numbers were seen: highest final test
+#: accuracy on ``plain`` seed 0; ties inside 0.3 pt go to the lower rate.
+#:
+#:   adam   3e-3   83.95   interior maximum
+#:   adamw  2e-2   84.52   interior maximum after the boundary extension
+#:   radam  3e-3   84.58   84.42 at 1e-2 is inside 0.3 pt, so the lower rate wins
+CHOSEN_LR: dict = {"adam": 3e-3, "adamw": 2e-2, "radam": 3e-3}
 
 
 # --------------------------------------------------------------------------

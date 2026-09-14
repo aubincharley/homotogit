@@ -27,9 +27,9 @@ Final test accuracy, target path, epoch 30.
 | 3e-4 | 75.37 | 73.89 | 74.09 |
 | 1e-3 | 81.29 | 79.79 | 80.07 |
 | 3e-3 | **83.95** | 82.98 | **84.58** |
-| 1e-2 | 81.97 | **83.80** | 84.42 |
-| 2e-2 | — | _pending_ | — |
-| 3e-2 | — | _pending_ | — |
+| 1e-2 | 81.97 | 83.80 | 84.42 |
+| 2e-2 | — | **84.52** | — |
+| 3e-2 | — | 83.83 | — |
 
 Reference for scale: `plain` under SGD at lr 0.005 is 75.43 ± 0.76 over three
 seeds, and 74.58 on seed 0 — the same seed and the same pinned assets as every
@@ -42,15 +42,28 @@ which means the grid did not bracket its optimum. Adam and RAdam both peak in
 the interior. Comparing a boundary-limited AdamW against two interior-optimum
 arms would put back exactly the "learning rate not tuned for this optimizer"
 confound the sweep exists to remove, so the rule applied is: **extend past any
-endpoint optimum**. Only AdamW qualifies, and it is extended to 2e-2 and 3e-2
-(`lr_sweep_ext`). The rule is symmetric — it would have been applied to any
-optimizer that hit an endpoint, in either direction.
+endpoint optimum**. Only AdamW qualifies, and it was extended to 2e-2 and 3e-2
+(kernel `job-optbench-lr-sweep-ext-20260914-120927`, 2/2 complete). The rule is
+symmetric — it would have been applied to any optimizer that hit an endpoint, in
+either direction.
+
+The extension brackets the optimum: AdamW rises to 84.52 at 2e-2 and falls back
+to 83.83 at 3e-2. All three optimizers now peak in the interior of their grid,
+so none is boundary-limited going into the campaign.
 
 ## Chosen
 
-_Filled in once the extension lands._ On the original grid alone the rule gives
-adam 3e-3, radam 3e-3 (84.58 against 84.42 at 1e-2 — inside 0.3 pt, so the tie
-rule takes the lower rate), and adamw 1e-2 pending the extension.
+| optimizer | lr | `plain` seed 0 | why |
+|---|---|---:|---|
+| sgd | 5e-3 | 74.58 | the reference recipe, unchanged |
+| adam | 3e-3 | 83.95 | interior maximum |
+| adamw | 2e-2 | 84.52 | interior maximum after the extension |
+| radam | 3e-3 | 84.58 | 84.58 against 84.42 at 1e-2 is inside 0.3 pt, so the tie rule takes the lower rate |
+
+At their chosen rates the three adaptive optimizers land within 0.63 pt of each
+other (83.95 / 84.52 / 84.58). The grid therefore compares optimizers that have
+each been given their best shot, which is the condition under which a Δ
+difference between them means something.
 
 ## What this already says about the benchmark
 
