@@ -26,6 +26,7 @@ import argparse
 import json
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -152,6 +153,31 @@ METADATA = {
 }
 
 
+#: Kaggle refuses a push with "Maximum batch GPU session count of 2 reached",
+#: so pushes have to wait for a slot rather than fail.
+MAX_CONCURRENT = 2
+POLL_SECONDS = 60
+
+
+def running(user: str, slugs) -> list:
+    """Which of ``slugs`` currently hold a GPU session."""
+    live = []
+    for slug in slugs:
+        r = subprocess.run(["kaggle", "kernels", "status", "%s/%s" % (user, slug)],
+                           capture_output=True, text=True)
+        if "RUNNING" in r.stdout or "QUEUED" in r.stdout:
+            live.append(slug)
+    return live
+
+
+def wait_for_slot(user: str, pushed: list) -> None:
+    while len(running(user, pushed)) >= MAX_CONCURRENT:
+        live = running(user, pushed)
+        print("  %d/%d sessions busy (%s); waiting"
+              % (len(live), MAX_CONCURRENT, ", ".join(live)), flush=True)
+        time.sleep(POLL_SECONDS)
+
+
 def head_commit() -> str:
     return subprocess.run(["git", "-C", str(ROOT), "rev-parse", "HEAD"],
                           capture_output=True, text=True, check=True).stdout.strip()
@@ -193,13 +219,16 @@ def main(argv=None):
         print("warning: %s is not on any origin branch; the kernel's git clone will "
               "fail until you push it" % commit[:12], file=sys.stderr)
 
+    pushed = []
     for seed in (int(s) for s in args.seeds.split(",")):
         for method in args.methods.split(","):
             d = write(method, seed, commit, args.user, Path(args.out))
             print("wrote", d)
             if args.dry_run:
                 continue
+            wait_for_slot(args.user, pushed)
             subprocess.run(["kaggle", "kernels", "push", "-p", str(d)], check=True)
+            pushed.append(d.name)
     return 0
 
 
