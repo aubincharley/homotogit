@@ -4,7 +4,7 @@
 of the campaign is its own tiny entry point that sets the variables and then
 runs the job.  Launch it with::
 
-    py scripts/kaggle_run.py scripts/job_optbench_lr_sweep.py --gpu         --accelerator NvidiaTeslaT4         --dataset pankrzysiu/cifar10-python         --dataset <owner>/continuation-core-r20bn-assets         --include continuation_core --include scripts         --timeout-seconds 28800
+    py scripts/kaggle_run.py scripts/job_optbench_lr_sweep.py --gpu         --accelerator NvidiaTeslaT4         --dataset alexandrecorrard/cifar-10-batches-py         --dataset alexandrecorrard/continuation-core-r20bn-assets         --include continuation_core --include scripts         --timeout-seconds 28800
 """
 import os
 import runpy

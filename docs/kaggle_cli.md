@@ -57,7 +57,7 @@ instead of assuming the layout:
 | CIFAR-10 | `/kaggle/input/**/cifar-10-batches-py` | `STUDY_DATA` |
 | pinned assets | `/kaggle/input/**/assets_manifest.json` | `CORE_ASSETS` |
 
-Datasets in use: `pankrzysiu/cifar10-python` for the data, and the asset set
+Datasets in use: `alexandrecorrard/cifar-10-batches-py` for the data, and the asset set
 published by `scripts/stage_assets.py`.
 
 ## What a job owes you
@@ -97,8 +97,8 @@ the job:
 ```bash
 py scripts/kaggle_run.py scripts/job_optbench_lr_sweep.py --gpu \
     --accelerator NvidiaTeslaT4 \
-    --dataset pankrzysiu/cifar10-python \
-    --dataset <owner>/continuation-core-r20bn-assets \
+    --dataset alexandrecorrard/cifar-10-batches-py \
+    --dataset alexandrecorrard/continuation-core-r20bn-assets \
     --include continuation_core --include scripts \
     --timeout-seconds 28800
 ```

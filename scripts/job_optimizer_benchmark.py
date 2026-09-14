@@ -4,8 +4,8 @@ Launch (one kernel per slice; see docs/kaggle_cli.md)::
 
     py scripts/kaggle_run.py scripts/job_optimizer_benchmark.py --gpu \\
         --accelerator NvidiaTeslaT4 \\
-        --dataset pankrzysiu/cifar10-python \\
-        --dataset <owner>/continuation-core-r20bn-assets \\
+        --dataset alexandrecorrard/cifar-10-batches-py \\
+        --dataset alexandrecorrard/continuation-core-r20bn-assets \\
         --include continuation_core --include scripts \\
         --timeout-seconds 28800
 
