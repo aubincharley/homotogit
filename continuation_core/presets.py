@@ -9,6 +9,11 @@ optimizer.  It has **no defaults for the decisions that matter**: resolution
 schedule and its reference size, Gaussian schedule and units, schedule
 duration, insertion mapping, and the optimizer's learning rate and weight decay
 must all be passed.  Nothing is scaled or chosen for you.
+
+``resolution_point`` defaults to the base method's, which is right when the
+architecture keeps that name.  Another architecture will not: ``block1`` is a
+ResNet-20 location, and VGG-11 names its own ``after_pool1``.  Passing a
+different point is a transferred decision like any other, so it is explicit.
 """
 from __future__ import annotations
 
@@ -57,6 +62,7 @@ def transfer(method_id: str, *, dataset: str, data_root: str, arch: str,
              gaussian_schedule: EpochSchedule | None,
              gaussian_units: str | None,
              insertion_mapping_note: str,
+             resolution_point: str | None = None,
              assets_dir: str, seed: int = 0, effective_batch: int = 128,
              microbatch: int = 32, out_dir: str = "runs") -> ExperimentConfig:
     """A config for a new setting.  Every transferred decision is explicit."""
@@ -70,7 +76,7 @@ def transfer(method_id: str, *, dataset: str, data_root: str, arch: str,
                          "gaussian_units explicitly" % method_id)
     method = MethodSpec(
         id=method_id + "__transfer", description=base.description,
-        resolution=(ResolutionSpec(point=base.resolution.point,
+        resolution=(ResolutionSpec(point=resolution_point or base.resolution.point,
                                    schedule=resolution_schedule,
                                    reference_resolution=int(reference_resolution))
                     if base.resolution else None),

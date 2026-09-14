@@ -94,7 +94,8 @@ def load(asset_dir, seed: int, verify_first: bool = True) -> dict:
 
 def make_assets(out_dir, model_builder, n_train: int, epochs: int, seeds=(0, 1, 2),
                 probe_size: int = 500, provenance: dict | None = None,
-                init_from=None, subset_size: int | None = None) -> dict:
+                init_from=None, subset_size: int | None = None,
+                indices_from=None) -> dict:
     """Generate a NEW asset set for a dataset/model without a pinned one.
 
     Deterministic given ``(n_train, epochs, seeds, probe_size)`` and the torch
@@ -104,6 +105,13 @@ def make_assets(out_dir, model_builder, n_train: int, epochs: int, seeds=(0, 1, 
     ``subset_size`` keeps only the first ``subset_size`` entries of the training
     permutation, so a larger dataset can be cut to another one's size and run at
     the same number of updates per epoch.  The default uses every image.
+
+    ``indices_from`` takes ``shared_indices.npz`` from an existing asset
+    directory instead of drawing one, after checking it covers the requested
+    seeds, epochs and training-set size.  It is the mirror of ``init_from``: with
+    it, a second architecture sees the **same images in the same order** as the
+    runs it is being compared against, so the architecture is the only thing that
+    differs.
 
     ``init_from`` takes the initial states from an existing asset directory
     instead of drawing them, after checking that each loads strictly into
@@ -118,16 +126,35 @@ def make_assets(out_dir, model_builder, n_train: int, epochs: int, seeds=(0, 1, 
     kept = int(n_train if subset_size is None else subset_size)
     if not 0 < kept <= n_train:
         raise ValueError("subset_size %d is outside 1..%d" % (kept, n_train))
-    rng = np.random.default_rng(derive_seed(0, "subset"))
-    arrays = {"subset": rng.permutation(n_train)[:kept].astype(np.int64)}
-    # train_probe indexes the subset-ordered tensor, so it is drawn over `kept`
-    arrays["train_probe"] = np.sort(np.random.default_rng(derive_seed(0, "probe"))
-                                    .permutation(kept)[:probe_size]).astype(np.int64)
+    idx_src = None if indices_from is None else Path(indices_from)
+    if idx_src is None:
+        rng = np.random.default_rng(derive_seed(0, "subset"))
+        arrays = {"subset": rng.permutation(n_train)[:kept].astype(np.int64)}
+        # train_probe indexes the subset-ordered tensor, so it is drawn over `kept`
+        arrays["train_probe"] = np.sort(np.random.default_rng(derive_seed(0, "probe"))
+                                        .permutation(kept)[:probe_size]).astype(np.int64)
+    else:
+        z = np.load(idx_src / "shared_indices.npz")
+        arrays = {"subset": z["subset"], "train_probe": z["train_probe"]}
+        if arrays["subset"].shape != (kept,):
+            raise ValueError("%s has a subset of %d, not the requested %d"
+                             % (idx_src, arrays["subset"].shape[0], kept))
     states = {}
     for s in seeds:
-        g = np.random.default_rng(derive_seed(s, "batch"))
-        arrays["perm_seed%d" % s] = np.stack([g.permutation(kept)
-                                              for _ in range(epochs)]).astype(np.int32)
+        key = "perm_seed%d" % s
+        if idx_src is not None:
+            if key not in z.files:
+                raise ValueError("%s has no %s (have %s)"
+                                 % (idx_src, key, sorted(f for f in z.files
+                                                         if f.startswith("perm"))))
+            if z[key].shape[0] < epochs or z[key].shape[1] != kept:
+                raise ValueError("%s %s is %s, too small for %d epochs of %d"
+                                 % (idx_src, key, z[key].shape, epochs, kept))
+            arrays[key] = z[key]
+        else:
+            g = np.random.default_rng(derive_seed(s, "batch"))
+            arrays[key] = np.stack([g.permutation(kept)
+                                    for _ in range(epochs)]).astype(np.int32)
         if src is None:
             torch.manual_seed(derive_seed(s, "init"))
             sd = model_builder().state_dict()
@@ -143,7 +170,8 @@ def make_assets(out_dir, model_builder, n_train: int, epochs: int, seeds=(0, 1, 
            "provenance": {**(provenance or {}),
                           "init_from": None if src is None else str(src),
                           "probe_size": int(probe_size),
-                          "n_train": int(n_train), "subset_size": kept},
+                          "n_train": int(n_train), "subset_size": kept,
+                          "indices_from": None if idx_src is None else str(idx_src)},
            "paired_with_reference": False,
            "arrays": {k: {"sha256": sha_array(v), "shape": list(v.shape),
                           "dtype": str(v.dtype)} for k, v in arrays.items()},

@@ -220,6 +220,7 @@ def cmd_make_assets(args):
                       seeds=tuple(int(s) for s in args.seeds.split(",")),
                       probe_size=args.probe_size, init_from=args.init_from,
                       subset_size=args.subset_size,
+                      indices_from=args.indices_from,
                       provenance={"dataset": args.dataset, "arch": args.arch})
     _dump({"written": args.out, "states": man["states"]}, None)
 
@@ -320,6 +321,9 @@ def main(argv=None):
     p.add_argument("--subset-size", type=int,
                    help="train on this many images instead of the whole split, to "
                         "match another dataset's updates per epoch")
+    p.add_argument("--indices-from",
+                   help="asset directory to copy shared_indices.npz from, so a "
+                        "different model sees the same images in the same order")
     p.add_argument("--init-from",
                    help="asset directory to copy init_seed<k>.pt from instead of "
                         "drawing new weights (checked with a strict load)")

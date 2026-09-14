@@ -11,11 +11,37 @@ Site map
 --------
 * ``conv_out``  -- the 8 convolution outputs (before BN), in forward order;
 * ``post_relu`` -- the 8 ReLU outputs, in forward order;
-* ``reduction`` -- **empty**.  "block1" is a ResNet-20 location; a VGG has no
-  residual blocks, so ``resolution_max_b1`` fails with
-  ``UnsupportedInsertionError`` instead of being mapped to an arbitrary pool.
-  To study a resolution intervention here, add an explicitly named point
-  (e.g. ``"after_pool1": ("input", "features.4")``) and a new method preset.
+* ``reduction`` -- ``"after_pool1"`` only.  "block1" is a ResNet-20 location and
+  is **not** mapped here: ``resolution_max_b1`` still fails with
+  ``UnsupportedInsertionError`` rather than being silently redirected.  A method
+  that wants this point has to name it.
+
+``after_pool1`` is the input of ``features.4``, i.e. the tensor leaving the first
+max pool, and it is the closest structural analogue of ResNet-20's ``block1``:
+one convolution upstream, the other seven downstream, so every later layer
+genuinely sees the smaller grid.  Its **native size is half the input** (16 for a
+32x32 image, where ResNet-20's block1 runs at the full 32), so a schedule here
+must use ``reference_resolution=16`` and values scaled to match -- ``(8, 12, 16)``
+keeps the reference ratios 1/2, 3/4, 1.
+
+**Spatial headroom, and why the pools use ceil_mode.** Five pools on a 32x32
+image leave none: 32 / 2^5 = 1, so the network already ends at 1x1.  Four of
+those pools follow ``after_pool1`` (ResNet-20 has two stride-2 steps after
+``block1``), and under any ``r < 16`` the tail reaches 1x1 with a pool still to
+go -- which with the default floor rounding is 0x0 and raises "Output size is too
+small".  ``ceil_mode=True`` maps 1 -> 1 instead.  It changes nothing about the
+network as published, because every native pool input (32, 16, 8, 4, 2) is even
+and ceil and floor coincide there; it only makes the reduced states expressible:
+
+    r     features.4-6   8-13   15-20   22-27   final pool
+    8         8            4      2       1         1
+    12       12            6      3       2         1
+    16       16            8      4       2         1   (native, exact bypass)
+
+The last convolutions therefore run at 1x1 or 2x2 while the reduction is active,
+where a 3x3 convolution and a Gaussian are both close to degenerate.  That is a
+fact about this architecture on small images, not about the methods, and it
+should be the first suspect if the resolution-bearing methods underperform here.
 """
 from __future__ import annotations
 
@@ -33,7 +59,14 @@ class VGG11BN(nn.Module):
         layers, in_ch = [], in_channels
         for item in PLAN:
             if item == "M":
-                layers.append(nn.MaxPool2d(2, 2))
+                # ceil_mode is a no-op for this network as published: on a 32x32
+                # image the five pools see 32, 16, 8, 4, 2, all even, so ceil and
+                # floor agree and the plain model is bitwise unchanged (asserted
+                # in tests/test_vgg11_transfer.py).  It matters only under a
+                # resolution intervention, where floor sends a 1x1 map to 0x0 and
+                # max_pool2d raises "Output size is too small".  See the reduction
+                # note in the module docstring.
+                layers.append(nn.MaxPool2d(2, 2, ceil_mode=True))
                 continue
             out_ch = max(1, round(item * scale))
             layers += [nn.Conv2d(in_ch, out_ch, 3, padding=1, bias=False),
@@ -61,7 +94,11 @@ def _site_map() -> dict:
         conv.append("features.%d" % i)
         relu.append(("output", "features.%d" % (i + 2)))
         i += 3
-    return {"conv_out": conv, "post_relu": relu, "reduction": {},
+    # the first "M" is at index 3, so features.4 is the convolution that receives
+    # the pooled tensor; reducing its input puts 7 of the 8 convolutions
+    # downstream of the reduction
+    return {"conv_out": conv, "post_relu": relu,
+            "reduction": {"after_pool1": ("input", "features.4")},
             "reference_resolution": None}
 
 

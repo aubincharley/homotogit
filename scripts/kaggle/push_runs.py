@@ -77,6 +77,19 @@ DATASETS = {
         "config_extra": ["--arm", "reference_updates"],
         "config_subdir": "reference_updates",
     },
+    # VGG-11-BN on the unchanged CIFAR-10 reference recipe: a different
+    # architecture, the same data in the same order as the ResNet-20 reference.
+    "vgg11_cifar10": {
+        "slug": "vgg11",
+        "source": "aubincharley/cifar-10-batches-py",
+        "marker": "data_batch_1", "link": "data/cifar-10-batches-py",
+        "configs": "scripts/vgg11_configs.py", "assets": "assets/vgg11_cifar10",
+        "dataset_arg": "cifar10", "arch": "vgg11_bn", "epochs": "30",
+        # the initial weights must be new (different parameter shapes, so
+        # --init-from correctly refuses), but the data order is the reference's
+        "extra": ["--indices-from", "assets/cifar10_resnet20bn"],
+        "no_init_from": True,
+    },
     "svhn": {
         "source": "aubincharley/svhn-binary",
         "marker": "train_X.bin", "link": "data/svhn_binary",
@@ -108,6 +121,7 @@ LINK = "{link}"
 MARKER = "{marker}"
 CONFIGS = "{configs}"
 ASSETS = "{assets}"
+ARCH = "{arch}"
 
 
 def run(*cmd, **kw):
@@ -163,8 +177,8 @@ PY = [sys.executable, "-m", "continuation_core"]
 # with these runs.  With --init-from no torch RNG is touched, so this is
 # bit-identical to the set any other machine would produce.
 run(*PY, "make-assets", "--dataset", DATA_ARG, "--data-root", "data",
-    "--arch", "resnet20_bn_cifar", "--epochs", "{epochs}", "--seeds", "0,1,2",
-    "--init-from", "assets/cifar10_resnet20bn", "--out", ASSETS, {extra})
+    "--arch", ARCH, "--epochs", "{epochs}", "--seeds", "0,1,2",
+    "--out", ASSETS, {init_from}{extra})
 
 # -- configs: every transfer decision lives in the dataset's config script ----
 run(sys.executable, CONFIGS, "--data-root", "data",
@@ -268,6 +282,9 @@ def write(dataset: str, method: str, seed: int, commit: str, user: str,
         dataset=dataset, method=method, seed=seed, commit=commit, repo=REPO,
         branch=BRANCH, link=spec["link"], marker=spec["marker"],
         configs=spec["configs"], assets=spec["assets"], epochs=spec["epochs"],
+        arch=spec.get("arch", "resnet20_bn_cifar"),
+        init_from=("" if spec.get("no_init_from")
+                   else '"--init-from", "assets/cifar10_resnet20bn", '),
         extra=extra, config_extra=config_extra,
         dataset_arg=spec.get("dataset_arg", dataset),
         config_subdir=spec.get("config_subdir", "")))
