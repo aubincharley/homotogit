@@ -297,6 +297,18 @@ def push(folder: Path) -> bool:
         time.sleep(POLL_SECONDS)
 
 
+def already_complete(user: str, slug: str) -> bool:
+    """Has this kernel already run to completion?
+
+    A push re-runs the kernel, so re-pushing a finished one burns GPU quota for a
+    result already in hand.  That matters when a pusher dies part way through a
+    campaign, which is what this guard is for.
+    """
+    r = subprocess.run(["kaggle", "kernels", "status", "%s/%s" % (user, slug)],
+                       capture_output=True, text=True)
+    return "COMPLETE" in r.stdout
+
+
 def head_commit() -> str:
     return subprocess.run(["git", "-C", str(ROOT), "rev-parse", "HEAD"],
                           capture_output=True, text=True, check=True).stdout.strip()
@@ -353,6 +365,9 @@ def main(argv=None):
     ap.add_argument("--commit", help="default: HEAD, which must be pushed to origin")
     ap.add_argument("--out", default=str(Path(__file__).parent / "kernels"))
     ap.add_argument("--dry-run", action="store_true", help="write the kernels, push nothing")
+    ap.add_argument("--skip-complete", action="store_true",
+                    help="do not re-push kernels that already ran to completion; "
+                         "use when resuming a campaign whose pusher died")
     args = ap.parse_args(argv)
 
     commit = args.commit or head_commit()
@@ -360,15 +375,20 @@ def main(argv=None):
         print("warning: %s is not on any origin branch; the kernel's git clone will "
               "fail until you push it" % commit[:12], file=sys.stderr)
 
-    pushed, failed = [], []
+    pushed, failed, skipped = [], [], []
     for seed in (int(s) for s in args.seeds.split(",")):
         for method in args.methods.split(","):
             d = write(args.dataset, method, seed, commit, args.user, Path(args.out))
             print("wrote", d)
             if args.dry_run:
                 continue
+            if args.skip_complete and already_complete(args.user, d.name):
+                print("  already complete, skipping", d.name, flush=True)
+                skipped.append(d.name)
+                continue
             (pushed if push(d) else failed).append(d.name)
-    print("\npushed %d kernel(s)" % len(pushed))
+    print("\npushed %d kernel(s)%s"
+          % (len(pushed), ", skipped %d already complete" % len(skipped) if skipped else ""))
     if failed:
         print("FAILED %d: %s" % (len(failed), ", ".join(failed)))
     return 1 if failed else 0
