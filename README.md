@@ -99,11 +99,18 @@ strokes and weak scale structure, so a Gaussian anneal should have helped less.
 It helps the same -- 25% error reduction for the combined method against 25% on
 CIFAR-10.
 
-*STL-10 is the outlier, and the update budget is why.* STL-10 gave the combined
-method 720 updates to recover after the Gaussian switches off; CIFAR-10 and SVHN
-both give it 3,519, and on both it wins by 25%. That supports the
-recovery-starved reading of the STL-10 target-path trace with an independent
-dataset rather than one run's curve shape.
+*STL-10 is the outlier.* ~~The update budget is why: STL-10 gave the combined
+method only 720 updates to recover after the Gaussian switches off, against
+3,519 on CIFAR-10 and SVHN.~~
+
+> **Retracted, on branch `cifar10-subset`.** CIFAR-10 cut to 5,000 images and run
+> on STL-10's exact schedule -- 2,400 updates, 720 after G -> 0 -- makes the
+> combined method the *best* of the four at +10.62 +- 0.35 pp, not the worst.
+> 720 updates is ample and the recovery window is not the cause. STL-10's
+> collapse belongs to the 96x96 setting, most likely to the sigma x3 transfer
+> chosen there. The agreement between SVHN and CIFAR-10 noted above is real, but
+> it says nothing about the update budget: both were run at the same budget, so
+> the comparison never varied it.
 
 It also rules out the competing worry that SVHN's control (93.10%, and 100% on
 the train probe) left no optimization headroom for continuation to exploit. The
