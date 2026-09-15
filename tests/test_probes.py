@@ -50,6 +50,67 @@ def test_partial_correlation_removes_a_common_driver():
     assert abs(power.partial(x, y, z)) < 0.4   # collapses once z is held fixed
 
 
+def test_group_decomposition_flags_a_simpson_reversal():
+    """A pooled coefficient that vanishes inside the groups is the grouping.
+
+    This is the shape actually observed: control cells had both a large predictor
+    and a large target, giving +0.83 pooled, while inside the curriculum cells the
+    relation was +0.02.  The guard exists because partialling out the training
+    error -- which rescued a quantity elsewhere -- manufactured this one.
+    """
+    torch.manual_seed(0)
+    j = torch.randn(16) * 0.004             # the control must vary or the partial
+    rows = []                               # correlation has a zero denominator
+    for i in range(8):                      # group A: low predictor, low target
+        rows.append({"x": 10 - 0.1 * i, "test_error": 0.18 + 0.001 * i,
+                     "train_error": 0.09 + float(j[i]), "g": "A"})
+    for i in range(8):                      # group B: high predictor, high target
+        rows.append({"x": 30 - 0.1 * i, "test_error": 0.24 + 0.001 * i,
+                     "train_error": 0.09 + float(j[8 + i]), "g": "B"})
+    d = power.group_decomposition(rows, "x", "g")
+    assert d["pooled"]["partial"] > 0.9            # strong, and entirely spurious
+    assert d["within"]["A"]["partial"] < -0.9      # reversed inside each group
+    assert d["within"]["B"]["partial"] < -0.9
+    assert d["grouping_artefact"] is True
+
+
+def test_group_decomposition_accepts_a_relation_that_survives_the_split():
+    torch.manual_seed(0)
+    j = torch.randn(16) * 0.004
+    rows = [{"x": float(i), "test_error": 0.1 + 0.01 * i,
+             "train_error": 0.09 + float(j[i]), "g": "A" if i < 8 else "B"}
+            for i in range(16)]
+    d = power.group_decomposition(rows, "x", "g")
+    assert d["grouping_artefact"] is False
+    assert d["within"]["A"]["partial"] > 0.9
+
+
+def test_a_group_too_small_gets_no_coefficient_rather_than_a_meaningless_one():
+    torch.manual_seed(0)
+    j = torch.randn(12) * 0.004
+    rows = [{"x": float(i), "test_error": 0.1 + 0.002 * i,
+             "train_error": 0.09 + float(j[i]), "g": "big" if i < 10 else "tiny"}
+            for i in range(12)]
+    d = power.group_decomposition(rows, "x", "g", min_n=4)
+    assert d["within"]["tiny"]["partial"] is None
+    assert "fewer than 4" in d["within"]["tiny"]["reason"]
+
+
+def test_a_flagged_artefact_never_counts_as_passing():
+    torch.manual_seed(0)
+    j = torch.randn(16) * 0.004
+    rows = []
+    for i in range(8):
+        rows.append({"x": 10 - 0.1 * i, "test_error": 0.18 + 0.001 * i,
+                     "train_error": 0.09 + float(j[i]), "g": "A"})
+    for i in range(8):
+        rows.append({"x": 30 - 0.1 * i, "test_error": 0.24 + 0.001 * i,
+                     "train_error": 0.09 + float(j[8 + i]), "g": "B"})
+    r = power.correlate(rows, ["x"], n_tested=1, group_key="g")["rows"][0]
+    assert r["p_partial"] < 0.05           # it would have passed on its own
+    assert r["passes_corrected"] is False  # the split overrules it
+
+
 def test_spearman_ignores_a_single_distant_point_that_pearson_follows():
     """One distant point manufactures a Pearson coefficient the ranks deny.
 

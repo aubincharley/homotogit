@@ -25,6 +25,20 @@ that, so they are properties of the recipe rather than of the draw; but
 readable.  The floor has to be measured, not assumed, and every ranking is
 reported against it.
 
+Guard 4 -- between-group versus within-group
+--------------------------------------------
+A correlation computed across a set that contains two natural groups can be
+entirely an artefact of the grouping: if one group has both a high predictor and
+a high target, the pooled coefficient is large while the relation inside each
+group is weak or reversed.  This is Simpson's paradox, and it produced a
+coefficient of +0.83 here that fell to +0.02 once the control cells were
+separated from the curriculum cells.
+
+It is not the same failure as guard 3, and the fix for one can cause the other:
+partialling out the training error rescued a quantity on one dataset and
+*manufactured* a false positive on this one.  Both decompositions have to be
+printed, always, and a pooled coefficient without them is not readable.
+
 Guard 3 -- detection ceiling
 ----------------------------
 A correlation against a noisy target is attenuated.  With the training error
@@ -120,8 +134,59 @@ def detection_ceiling(observed_sd: float, measurement_sd: float) -> dict:
             "true_sd": math.sqrt(true_var), "ceiling": ceiling}
 
 
+def group_decomposition(rows, field, group_key, *, target="test_error",
+                        control="train_error", min_n: int = 4) -> dict:
+    """The pooled partial correlation, and the same within each group.
+
+    A pooled coefficient that vanishes or reverses inside the groups is a
+    grouping artefact, not a relation.  Groups smaller than ``min_n`` are
+    reported with their size and no coefficient rather than a number that cannot
+    mean anything.
+    """
+    def _p(sub):
+        if len(sub) < min_n:
+            return {"n": len(sub), "partial": None, "p": None,
+                    "reason": "fewer than %d conditions" % min_n}
+        x = [r[field] for r in sub]
+        y = [r[target] for r in sub]
+        z = [r[control] for r in sub]
+        pr = partial(x, y, z)
+        return {"n": len(sub), "partial": pr, "p": p_two_sided(pr, len(sub) - 1)}
+
+    groups = {}
+    for r in rows:
+        groups.setdefault(r[group_key], []).append(r)
+    within = {g: _p(sub) for g, sub in sorted(groups.items())}
+    pooled = _p(rows)
+    usable = [v["partial"] for v in within.values() if v["partial"] is not None]
+    r = pooled["partial"]
+    # The within-group coefficient, pooled across groups by Fisher's z weighted
+    # with each group's degrees of freedom.  Taking a maximum instead lets a
+    # small group -- where a coefficient means nothing -- speak louder than a
+    # large one, which is how four quantities first slipped past this guard.
+    zs = [(math.atanh(max(min(v["partial"], 1 - 1e-12), -1 + 1e-12)), v["n"] - 3)
+          for v in within.values()
+          if v["partial"] is not None and v["n"] > 3 and abs(v["partial"]) < 1]
+    wsum = sum(w for _, w in zs)
+    within_pooled = math.tanh(sum(z * w for z, w in zs) / wsum) if wsum > 0 else None
+    # Two ways a pooled coefficient can fail the split, and the second is the
+    # more striking one: it can *vanish* inside the groups, or it can *reverse*.
+    # An earlier version of this guard only caught the first and let a clean sign
+    # reversal through, which is the most flagrant form of the artefact.
+    vanishes = bool(within_pooled is not None and abs(r or 0) >= 0.5
+                    and abs(within_pooled) < 0.5 * abs(r))
+    reverses = bool(usable and abs(r or 0) >= 0.5
+                    and all(v * r < 0 for v in usable))
+    return {"field": field, "pooled": pooled, "within": within,
+            "within_pooled": within_pooled,
+            "within_vanishes": vanishes, "within_reverses": reverses,
+            "grouping_artefact": bool(r is not None and (vanishes or reverses)),
+            "note": ("a pooled coefficient that does not survive the split is the "
+                     "grouping in disguise, not a relation")}
+
+
 def correlate(rows, fields, *, target="test_error", control="train_error",
-              n_tested: int | None = None) -> dict:
+              n_tested: int | None = None, group_key: str | None = None) -> dict:
     """The full protocol, one row per **condition**.
 
     Every field is reported raw, on ranks, partialled on the control, with a
@@ -141,11 +206,21 @@ def correlate(rows, fields, *, target="test_error", control="train_error",
         x = [r[f] for r in rows]
         pr = partial(x, y, z)
         p = p_two_sided(pr, n - 1)
-        out.append({"field": f, "pearson": pearson(x, y), "spearman": spearman(x, y),
-                    "partial": pr, "p_partial": p,
-                    "passes_corrected": bool(p == p and p < alpha),
-                    "corr_with_control": pearson(x, z)})
+        rec = {"field": f, "pearson": pearson(x, y), "spearman": spearman(x, y),
+               "partial": pr, "p_partial": p,
+               "passes_corrected": bool(p == p and p < alpha),
+               "corr_with_control": pearson(x, z)}
+        if group_key:
+            rec["groups"] = group_decomposition(rows, f, group_key, target=target,
+                                                control=control)
+            # a coefficient that does not survive the split must not be read as
+            # one that does, whatever its p-value
+            rec["passes_corrected"] = bool(rec["passes_corrected"]
+                                           and not rec["groups"]["grouping_artefact"])
+        out.append(rec)
     return {"n_conditions": n, "target": target, "control": control,
             "n_quantities_tested": n_tested, "alpha_corrected": alpha,
-            "rows": out,
-            "note": "correlations are per condition; per-checkpoint figures inflate n"}
+            "rows": out, "group_key": group_key,
+            "note": ("correlations are per condition; per-checkpoint figures inflate n. "
+                     "With a group_key, a pooled coefficient flagged as a grouping "
+                     "artefact never counts as passing.")}

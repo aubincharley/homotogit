@@ -11,3 +11,10 @@ __pycache__/
 *.pyc
 .pytest_cache/
 .venv/
+
+# Generated Kaggle job bundles (base64 payload, regenerable by tools/kaggle_run.py)
+/kaggle_jobs/
+# Kaggle downloads: keep the scientific record (configs, metrics, summaries,
+# probe outputs and figures), drop the bulky regenerable parts.
+results/kaggle_outputs/**/_repo/
+results/kaggle_outputs/**/*.log

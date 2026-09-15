@@ -28,18 +28,33 @@ def find(pattern, what):
     return str(Path(hits[0]).parent)
 
 
-def find_checkpoints(runs_dir):
-    """Final checkpoint of every run, keyed by the run directory name."""
+def find_checkpoints(root):
+    """Last checkpoint of every cell, keyed by cell name.
+
+    Accepts either the staged dataset layout (``<cell>/epoch_NNN.pt``) or a live
+    run tree (``<cell>/checkpoints/epoch_NNN.pt``), so the same job runs against
+    a published dataset and against local output.
+    """
     out = {}
-    for d in sorted(Path(runs_dir).iterdir()):
-        cks = sorted((d / "checkpoints").glob("checkpoint_epoch_*.pt")) if d.is_dir() else []
+    for d in sorted(Path(root).iterdir()):
+        if not d.is_dir():
+            continue
+        cks = sorted(d.glob("epoch_*.pt")) or sorted((d / "checkpoints").glob("epoch_*.pt"))
         if cks:
             out[d.name] = str(cks[-1])
     return out
 
 
-def main(runs_dir, data_root, out_dir, shard, device="cuda"):
+def main(runs_dir, data_root, out_dir, shard, device="cuda", assets_dir=None):
+    from continuation_core import assets as assets_mod
     from continuation_core.analysis import CheckpointEvaluator, curvature, sensitivity
+
+    # The checkpoint records the asset directory as it existed on the *training*
+    # worker.  Loading them here explicitly, with digests verified, decouples the
+    # probe from that path and fails loudly on a mismatched asset set rather than
+    # pairing runs against different initial weights.
+    pinned = {s: assets_mod.load(assets_dir, s, verify_first=True) for s in (0, 1, 2)} \
+        if assets_dir else {}
 
     si, sn = (int(v) for v in shard.split("/"))
     cks = find_checkpoints(runs_dir)
@@ -51,7 +66,9 @@ def main(runs_dir, data_root, out_dir, shard, device="cuda"):
     for name in keys:
         path = cks[name]
         # -- exact gap, whole pinned training subset ------------------------
-        tr = CheckpointEvaluator(path, device=device, split="train", batch_size=1000)
+        seed = int(name.rsplit("seed", 1)[-1])
+        tr = CheckpointEvaluator(path, device=device, split="train", batch_size=1000,
+                                 assets=pinned.get(seed))
         te = CheckpointEvaluator(path, device=device, split="test", batch_size=1000)
         r_tr, r_te = tr.loss(state="target"), te.loss(state="target")
         rec = {"cell": name, "checkpoint": path,
@@ -81,7 +98,11 @@ def main(runs_dir, data_root, out_dir, shard, device="cuda"):
 if __name__ == "__main__":
     shard = os.environ.get("PROBE_SHARD", "0/4")
     data_root = find("cifar-10-batches-py", "CIFAR-10")
-    runs = find("grid_plan.json", "trained grid runs")
+    assets = find("assets_manifest.json", "pinned assets")
+    ckpts = find("grid_checkpoints_manifest.json", "staged grid checkpoints")
     out = Path(os.environ.get("STUDY_OUT", "/kaggle/working"))
-    print("data=%s\nruns=%s\nshard=%s" % (data_root, runs, shard), flush=True)
-    main(str(Path(runs) / "runs"), data_root, str(out), shard)
+    print("data=%s\nassets=%s\ncheckpoints=%s\nshard=%s"
+          % (data_root, assets, ckpts, shard), flush=True)
+    # the checkpoint carries the config it was trained with, including the asset
+    # directory as it existed on the training worker; point it at this worker's
+    main(ckpts, data_root, str(out), shard, assets_dir=assets)
