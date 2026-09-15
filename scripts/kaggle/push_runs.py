@@ -297,16 +297,21 @@ def push(folder: Path) -> bool:
         time.sleep(POLL_SECONDS)
 
 
-def already_complete(user: str, slug: str) -> bool:
-    """Has this kernel already run to completion?
+def already_handled(user: str, slug: str) -> str | None:
+    """Is this kernel finished, or on the GPU right now?
 
-    A push re-runs the kernel, so re-pushing a finished one burns GPU quota for a
-    result already in hand.  That matters when a pusher dies part way through a
-    campaign, which is what this guard is for.
+    A push re-runs the kernel, so re-pushing either one burns GPU quota: a
+    finished one discards a result already in hand, and a running one throws away
+    the work in flight and starts it again.  Both matter when a pusher dies part
+    way through a campaign, which is what this guard is for -- and on this machine
+    they die often, to the OOM killer.
     """
     r = subprocess.run(["kaggle", "kernels", "status", "%s/%s" % (user, slug)],
                        capture_output=True, text=True)
-    return "COMPLETE" in r.stdout
+    for state in ("COMPLETE", "RUNNING", "QUEUED"):
+        if state in r.stdout:
+            return state.lower()
+    return None
 
 
 def head_commit() -> str:
@@ -366,8 +371,8 @@ def main(argv=None):
     ap.add_argument("--out", default=str(Path(__file__).parent / "kernels"))
     ap.add_argument("--dry-run", action="store_true", help="write the kernels, push nothing")
     ap.add_argument("--skip-complete", action="store_true",
-                    help="do not re-push kernels that already ran to completion; "
-                         "use when resuming a campaign whose pusher died")
+                    help="do not re-push kernels that already completed or are "
+                         "running; use when resuming a campaign whose pusher died")
     args = ap.parse_args(argv)
 
     commit = args.commit or head_commit()
@@ -382,8 +387,9 @@ def main(argv=None):
             print("wrote", d)
             if args.dry_run:
                 continue
-            if args.skip_complete and already_complete(args.user, d.name):
-                print("  already complete, skipping", d.name, flush=True)
+            state = already_handled(args.user, d.name) if args.skip_complete else None
+            if state:
+                print("  already %s, skipping %s" % (state, d.name), flush=True)
                 skipped.append(d.name)
                 continue
             (pushed if push(d) else failed).append(d.name)
