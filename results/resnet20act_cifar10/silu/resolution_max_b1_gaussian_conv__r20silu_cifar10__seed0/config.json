@@ -1,0 +1,156 @@
+{
+  "data": {
+    "name": "cifar10",
+    "root": "data",
+    "normalization": "fit_on_train",
+    "expected_mean": [
+      0.4913996756076813,
+      0.4821584224700928,
+      0.44653090834617615
+    ],
+    "expected_std": [
+      0.24703222513198853,
+      0.24348512291908264,
+      0.26158782839775085
+    ],
+    "stats_atol": 1e-07
+  },
+  "model": {
+    "arch": "resnet20_act_cifar",
+    "options": {
+      "activation": "silu"
+    }
+  },
+  "optimizer": {
+    "name": "sgd",
+    "lr": 0.005,
+    "weight_decay": 0.0005,
+    "momentum": 0.9,
+    "nesterov": false,
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "eps": 1e-08,
+    "schedule": "warmup_cosine",
+    "warmup_updates": 60,
+    "min_lr": 0.0
+  },
+  "method": {
+    "id": "resolution_max_b1_gaussian_conv__transfer",
+    "description": "Adaptive max pooling after blocks[1] (16 / 24 / 32) plus the Gaussian at all 19 convolution outputs, sigma scaled by r(e)/32 at every site.",
+    "gaussian": {
+      "placement": "conv_out",
+      "schedule": {
+        "starts": [
+          0,
+          3,
+          6,
+          9,
+          12,
+          15,
+          18,
+          21
+        ],
+        "values": [
+          1.0,
+          0.85,
+          0.7,
+          0.6,
+          0.5,
+          0.4,
+          0.3,
+          0.0
+        ]
+      },
+      "sigma_scale": "resolution_ratio_all_sites",
+      "sigma_max": 1.0,
+      "truncate": 4.0,
+      "units": "pixels of the feature map at the site; the reference levels unchanged"
+    },
+    "resolution": {
+      "point": "block1",
+      "schedule": {
+        "starts": [
+          0,
+          6,
+          12
+        ],
+        "values": [
+          16,
+          24,
+          32
+        ]
+      },
+      "reference_resolution": 32,
+      "operator": "adaptive_max"
+    },
+    "source": {
+      "transferred_from": "resolution_max_b1_gaussian_conv",
+      "experiment": "unified_selected",
+      "branch": "benchmark-organized",
+      "config_id": "shrink_b1_conv",
+      "label": "Shrink block 1, plus blur every conv layer",
+      "cells": [
+        "shrink_b1_conv__seed0",
+        "shrink_b1_conv__seed1",
+        "shrink_b1_conv__seed2"
+      ],
+      "final_test_acc_per_seed": {
+        "0": 0.813,
+        "1": 0.815,
+        "2": 0.8173
+      },
+      "final_test_acc_mean": 0.8151,
+      "final_test_acc_sd": 0.002152,
+      "final_path": "target (equal to current at epoch 30)",
+      "asset_set": "r20bn-campaign-assets"
+    },
+    "validated_on": []
+  },
+  "budget": {
+    "epochs": 30,
+    "effective_batch": 128,
+    "microbatch": 32
+  },
+  "evaluation": {
+    "every_epochs": 1,
+    "at_epoch_zero": true,
+    "batch_size": 500,
+    "paths": [
+      "current",
+      "target"
+    ],
+    "splits": [
+      "train_probe",
+      "test"
+    ],
+    "bn_policy": "running_stats"
+  },
+  "checkpoint": {
+    "every_epoch": false,
+    "every_updates": null,
+    "transition_offsets": [],
+    "keep_rolling": true
+  },
+  "run": {
+    "seed": 0,
+    "device": "auto",
+    "out_dir": "/kaggle/working/runs",
+    "name": "resolution_max_b1_gaussian_conv__r20silu_cifar10__seed0",
+    "cudnn_deterministic": false,
+    "cudnn_benchmark": false
+  },
+  "assets": {
+    "dir": "assets/cifar10_resnet20bn",
+    "verify": true
+  },
+  "validation_status": "unvalidated",
+  "notes": [
+    "transfer preset: not trained, not validated",
+    "insertion mapping: input of blocks.2, exactly as in the reference; the site map is activation-agnostic (it names convolutions and block outputs, never an activation), so every method attaches at the same tensors as the ReLU reference",
+    "F.silu replaces F.relu; everything else is the reference recipe",
+    "uses the pinned reference asset set as-is: the same initial weights and the same data order as the ResNet-20-BN campaign, because the state dict is interchangeable",
+    "initialization gain and lr are not retuned for the new activation; that is deliberate, see the module docstring"
+  ]
+}

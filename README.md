@@ -56,6 +56,55 @@ py -m continuation_core evaluate --checkpoint runs/resolution_max_b1_gaussian_co
 `dry-run` builds everything, verifies asset digests, runs forward/backward at
 every distinct state and checks the target-state bypass. It trains nothing.
 
+## ResNet-20 with GELU / SiLU: the rectifier is not the mechanism
+
+The same four methods with `F.relu` replaced by `F.gelu` or `F.silu` and nothing
+else changed. Activations here are functional, so the state dict is identical in
+keys and shapes to `resnet20_bn`'s and these runs load the **pinned reference
+asset set directly** -- the same initial weights and the same data order as the
+original campaign. Between a run here and its reference counterpart exactly one
+thing differs: which function follows each BatchNorm. 3 seeds, records under
+`results/resnet20act_cifar10/`.
+
+| method | ReLU (reference) | GELU | SiLU |
+|---|---|---|---|
+| `resolution_max_b1_gaussian_conv` | 81.51 +- 0.22 | 81.58 +- 0.13 | **81.68 +- 0.14** |
+| `resolution_max_b1` | 80.37 +- 0.61 | 80.79 +- 0.42 | 80.91 +- 0.33 |
+| `gaussian_postrelu` | 79.91 +- 0.27 | 80.27 +- 0.36 | 80.44 +- 0.78 |
+| `plain` | 75.43 +- 0.76 | 74.80 +- 0.59 | 76.55 +- 0.68 |
+
+ReLU is exactly zero on half its domain, so blurring *before* it mixes dead and
+live units and blurring *after* it smooths a non-negative sparse signal. GELU and
+SiLU are smooth and never exactly zero, so both properties go -- and nothing
+happens. Every method is within 0.5 pp of its ReLU counterpart under two
+different smooth activations, with the ordering identical in all three columns.
+The combined method spans 81.51 / 81.58 / 81.68, a range of 0.17 pp.
+`gaussian_postrelu`, whose placement is named for the rectifier, is *above* its
+ReLU value under both.
+
+The paired deltas move in both directions, which is the point:
+
+| method | ReLU | GELU | SiLU |
+|---|---|---|---|
+| `resolution_max_b1_gaussian_conv` | +6.08 +- 0.56 | +6.78 +- 0.48 | +5.13 +- 0.72 |
+| `resolution_max_b1` | +4.94 +- 0.50 | +5.99 +- 0.48 | +4.36 +- 0.96 |
+| `gaussian_postrelu` | +4.48 +- 0.97 | +5.48 +- 0.85 | +3.90 +- 1.18 |
+
+GELU alone looked like a consistent ~1 pp gain across all three methods. SiLU
+went the other way by a similar margin, and what actually varies is the
+**control**: `plain` spans 1.75 pp across the three activations while every
+intervention row spans 0.53 pp or less. The interventions are more stable across
+activations than the baseline they are measured against.
+
+**Hypotheses tested so far**
+
+| hypothesis | status |
+|---|---|
+| the recovery window after G -> 0 | dead -- [CIFAR-10 at 5,000 images](#cifar-10-at-5000-images-the-stl-10-control) |
+| ReLU's exact-zero sparsity | dead -- this section, on two independent activations |
+| the blur / BatchNorm coupling | open -- see the GroupNorm study |
+
+
 ## SVHN
 
 The same four methods with **nothing rescaled**: SVHN is 32x32, so the resolution
