@@ -33,7 +33,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 REPO = "https://github.com/aubincharley/homotogit.git"
-BRANCH = "groupnorm-transfer"
+BRANCH = "activation-transfer"
 
 #: ``slug`` is the kernel-name prefix, defaulting to the key.  Kaggle rejects a
 #: kernel slug longer than ~50 characters with a bare 400 and no explanation, and
@@ -103,6 +103,29 @@ DATASETS = {
         # load and --init-from correctly refuses; the data order is the reference's
         "extra": ["--indices-from", "assets/cifar10_resnet20bn"],
         "no_init_from": True,
+    },
+    # ResNet-20-BN with GELU / SiLU: the ReLU control. No asset set of its own --
+    # the state dict is interchangeable with resnet20_bn, so these load the pinned
+    # reference assets directly, same initial weights and same data order.
+    "r20gelu_cifar10": {
+        "slug": "r20gelu",
+        "source": "aubincharley/cifar-10-batches-py",
+        "marker": "data_batch_1", "link": "data/cifar-10-batches-py",
+        "configs": "scripts/resnet20_act_configs.py",
+        "assets": "assets/cifar10_resnet20bn",
+        "dataset_arg": "cifar10", "arch": "resnet20_act_cifar", "epochs": "30",
+        "extra": [], "skip_assets": True,
+        "config_extra": ["--activation", "gelu"], "config_subdir": "gelu",
+    },
+    "r20silu_cifar10": {
+        "slug": "r20silu",
+        "source": "aubincharley/cifar-10-batches-py",
+        "marker": "data_batch_1", "link": "data/cifar-10-batches-py",
+        "configs": "scripts/resnet20_act_configs.py",
+        "assets": "assets/cifar10_resnet20bn",
+        "dataset_arg": "cifar10", "arch": "resnet20_act_cifar", "epochs": "30",
+        "extra": [], "skip_assets": True,
+        "config_extra": ["--activation", "silu"], "config_subdir": "silu",
     },
     "svhn": {
         "source": "aubincharley/svhn-binary",
@@ -190,9 +213,15 @@ PY = [sys.executable, "-m", "continuation_core"]
 # budget, and regenerating later would change the .npz digest and void pairing
 # with these runs.  With --init-from no torch RNG is touched, so this is
 # bit-identical to the set any other machine would produce.
-run(*PY, "make-assets", "--dataset", DATA_ARG, "--data-root", "data",
-    "--arch", ARCH, "--epochs", "{epochs}", "--seeds", "0,1,2",
-    "--out", ASSETS, {init_from}{extra})
+if {skip_assets}:
+    # this study reuses a committed asset set as-is, so there is nothing to mint;
+    # verify it instead, which is the same check make-assets would have left behind
+    print("reusing committed assets:", ASSETS, flush=True)
+    run(*PY, "verify-assets", "--assets", ASSETS)
+else:
+    run(*PY, "make-assets", "--dataset", DATA_ARG, "--data-root", "data",
+        "--arch", ARCH, "--epochs", "{epochs}", "--seeds", "0,1,2",
+        "--out", ASSETS, {init_from}{extra})
 
 # -- configs: every transfer decision lives in the dataset's config script ----
 run(sys.executable, CONFIGS, "--data-root", "data",
@@ -297,6 +326,7 @@ def write(dataset: str, method: str, seed: int, commit: str, user: str,
         branch=BRANCH, link=spec["link"], marker=spec["marker"],
         configs=spec["configs"], assets=spec["assets"], epochs=spec["epochs"],
         arch=spec.get("arch", "resnet20_bn_cifar"),
+        skip_assets=bool(spec.get("skip_assets")),
         init_from=("" if spec.get("no_init_from")
                    else '"--init-from", "assets/cifar10_resnet20bn", '),
         extra=extra, config_extra=config_extra,
