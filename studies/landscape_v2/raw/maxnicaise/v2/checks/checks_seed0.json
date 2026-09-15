@@ -1,0 +1,146 @@
+{
+  "seed": 0,
+  "inventory": {
+    "plain": {
+      "n_present": 31,
+      "n_expected": 31,
+      "missing": [],
+      "invalid": [],
+      "summary_json": true,
+      "rolling_pt": true
+    },
+    "resolution_max_b1": {
+      "n_present": 43,
+      "n_expected": 43,
+      "missing": [],
+      "invalid": [],
+      "summary_json": true,
+      "rolling_pt": true
+    },
+    "gaussian_postrelu": {
+      "n_present": 73,
+      "n_expected": 73,
+      "missing": [],
+      "invalid": [],
+      "summary_json": true,
+      "rolling_pt": true
+    },
+    "resolution_max_b1_gaussian_conv": {
+      "n_present": 73,
+      "n_expected": 73,
+      "missing": [],
+      "invalid": [],
+      "summary_json": true,
+      "rolling_pt": true
+    }
+  },
+  "pairing": {
+    "init_sha_by_method": {
+      "plain": "6e652c49e5139e785887b9cb6b08ce5b0dee734bde6384550be6a8a3641e2c1b",
+      "resolution_max_b1": "6e652c49e5139e785887b9cb6b08ce5b0dee734bde6384550be6a8a3641e2c1b",
+      "gaussian_postrelu": "6e652c49e5139e785887b9cb6b08ce5b0dee734bde6384550be6a8a3641e2c1b",
+      "resolution_max_b1_gaussian_conv": "6e652c49e5139e785887b9cb6b08ce5b0dee734bde6384550be6a8a3641e2c1b"
+    },
+    "asset_init_sha": "6e652c49e5139e785887b9cb6b08ce5b0dee734bde6384550be6a8a3641e2c1b",
+    "all_equal_asset": true,
+    "configs_identical_except_method_and_run": true
+  },
+  "reproduction": {
+    "plain": {
+      "train_probe_ce_abs_diff": 0.0,
+      "test_ce_abs_diff": 0.0,
+      "test_acc_abs_diff": 0.0,
+      "recorded_test_acc": 0.7453
+    },
+    "resolution_max_b1": {
+      "train_probe_ce_abs_diff": 0.0,
+      "test_ce_abs_diff": 0.0,
+      "test_acc_abs_diff": 0.0,
+      "recorded_test_acc": 0.8031
+    },
+    "gaussian_postrelu": {
+      "train_probe_ce_abs_diff": 0.0,
+      "test_ce_abs_diff": 0.0,
+      "test_acc_abs_diff": 0.0,
+      "recorded_test_acc": 0.7983
+    },
+    "resolution_max_b1_gaussian_conv": {
+      "train_probe_ce_abs_diff": 0.0,
+      "test_ce_abs_diff": 0.0,
+      "test_acc_abs_diff": 0.0,
+      "recorded_test_acc": 0.8134
+    }
+  },
+  "bypass": {
+    "resolution_max_b1": {
+      "eval": true,
+      "train": true,
+      "active_state_differs": true
+    },
+    "gaussian_postrelu": {
+      "eval": true,
+      "train": true,
+      "active_state_differs": true
+    },
+    "resolution_max_b1_gaussian_conv": {
+      "eval": true,
+      "train": true,
+      "active_state_differs": true
+    }
+  },
+  "directions": {
+    "plain": {
+      "max_abs_relative_norm_error": 8.881784197001252e-16,
+      "zero_norm_blocks": 0
+    },
+    "resolution_max_b1": {
+      "max_abs_relative_norm_error": 6.661338147750939e-16,
+      "zero_norm_blocks": 0
+    },
+    "gaussian_postrelu": {
+      "max_abs_relative_norm_error": 6.661338147750939e-16,
+      "zero_norm_blocks": 0
+    },
+    "resolution_max_b1_gaussian_conv": {
+      "max_abs_relative_norm_error": 6.661338147750939e-16,
+      "zero_norm_blocks": 0
+    }
+  },
+  "reconstruction_bitwise": {
+    "plain": true,
+    "resolution_max_b1": true,
+    "gaussian_postrelu": true,
+    "resolution_max_b1_gaussian_conv": true
+  },
+  "interpolation_endpoints_bitwise": {
+    "plain|resolution_max_b1": true,
+    "plain|gaussian_postrelu": true,
+    "plain|resolution_max_b1_gaussian_conv": true,
+    "resolution_max_b1|resolution_max_b1_gaussian_conv": true
+  },
+  "repeatability": {
+    "saved": {
+      "repeat_identical": true,
+      "order_independent": true
+    },
+    "recalibrated": {
+      "repeat_identical": true,
+      "order_independent": true
+    }
+  },
+  "non_mutation": {
+    "files_unchanged": true,
+    "tensors_unchanged": true
+  },
+  "summary": {
+    "inventory_ok": true,
+    "pairing_ok": true,
+    "reproduction_max_test_ce_abs_diff": 0.0,
+    "bypass_ok": true,
+    "directions_max_rel_error": 8.881784197001252e-16,
+    "reconstruction_ok": true,
+    "endpoints_ok": true,
+    "repeatability_ok": true,
+    "non_mutation_ok": true
+  }
+}

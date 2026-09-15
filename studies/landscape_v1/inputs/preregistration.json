@@ -1,0 +1,189 @@
+{
+  "study": "landscape_v1",
+  "scope": {
+    "methods_with_checkpoints": [
+      "plain",
+      "resolution_max_b1"
+    ],
+    "source_batch": "resbench (checkpoint_ep06/12/18/30); different runs of the same configurations as the unified reference batch",
+    "missing": [
+      {
+        "method": "plain",
+        "batch": "unified_selected",
+        "cells": [
+          "plain__seed0",
+          "plain__seed1",
+          "plain__seed2"
+        ],
+        "reason": "unified_driver.py keeps only rolling.pt and deletes it at the end of each cell; no epoch checkpoint was ever written"
+      },
+      {
+        "method": "resolution_max_b1",
+        "batch": "unified_selected",
+        "cells": [
+          "shrink_b1__seed0",
+          "shrink_b1__seed1",
+          "shrink_b1__seed2"
+        ],
+        "reason": "unified_driver.py keeps only rolling.pt and deletes it at the end of each cell; no epoch checkpoint was ever written"
+      },
+      {
+        "method": "gaussian_postrelu",
+        "batch": "unified_selected",
+        "cells": [
+          "blur_relu__seed0",
+          "blur_relu__seed1",
+          "blur_relu__seed2"
+        ],
+        "reason": "unified_driver.py keeps only rolling.pt and deletes it at the end of each cell; no epoch checkpoint was ever written"
+      },
+      {
+        "method": "resolution_max_b1_gaussian_conv",
+        "batch": "unified_selected",
+        "cells": [
+          "shrink_b1_conv__seed0",
+          "shrink_b1_conv__seed1",
+          "shrink_b1_conv__seed2"
+        ],
+        "reason": "unified_driver.py keeps only rolling.pt and deletes it at the end of each cell; no epoch checkpoint was ever written"
+      },
+      {
+        "method": "gaussian_postrelu",
+        "batch": "any",
+        "cells": [],
+        "reason": "no batch with saved checkpoints ran this configuration (campaign filtered conv outputs with input/stem reductions only; resbench has no Gaussian)"
+      },
+      {
+        "method": "resolution_max_b1_gaussian_conv",
+        "batch": "any",
+        "cells": [],
+        "reason": "no batch with saved checkpoints ran this configuration (campaign filtered conv outputs with input/stem reductions only; resbench has no Gaussian)"
+      }
+    ]
+  },
+  "loss": "mean cross-entropy without weight decay; accuracy also recorded",
+  "bn_convention": {
+    "main": "recalibrated: reset running stats, cumulative average (momentum None) over the fixed calibration subset in fixed order, batches of 500, training mode under no_grad and under the evaluated intervention state; then inference mode on the probes",
+    "reproduction": "saved_stats: checkpoint running statistics, inference mode"
+  },
+  "subsets": {
+    "seed": 20260914,
+    "train_probe_per_class": 100,
+    "test_probe_per_class": 100,
+    "calibration_per_class": 200,
+    "calibration_disjoint_from_train_probe": true,
+    "calibration_split": "official training split only"
+  },
+  "directions": {
+    "construction": "Li et al. 2018 filter-wise normalisation; mask = conv weights (4-D) and fc.weight rows; biases and BN affine fixed; zero-norm blocks get zero; no orthogonalisation",
+    "draw_seeds": {
+      "0": [
+        1000,
+        1001
+      ],
+      "1": [
+        1002,
+        1003
+      ],
+      "2": [
+        1004,
+        1005
+      ],
+      "3": [
+        1006,
+        1007
+      ],
+      "4": [
+        1008,
+        1009
+      ]
+    },
+    "prespecified_2d_pair": 0,
+    "robustness_pairs": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  "analysis_A": {
+    "centers": "epoch-30 checkpoints, seed 0 (prespecified)",
+    "state": "target (full resolution, no filter)",
+    "grid": {
+      "lo": -0.25,
+      "hi": 0.25,
+      "n": 21
+    },
+    "robustness": "1-D slices along D of pairs 0-4 and E of pair 0, seeds 0/1/2, same range, 21 points",
+    "range_rule": "keep [-0.25, 0.25] unless the local offset check at +-{0.05,0.1,0.25,0.5} along D (seed 0) gives a non-finite loss or a test-probe CE increase above 5 nats at +-0.25, or below 0.01 nats at +-0.25, for either method; any change applies to all methods and is documented"
+  },
+  "analysis_B": {
+    "family": "resolution_max_b1 (only family with checkpoints)",
+    "checkpoint": "seed 0, epoch 6 = last update at r=16 (epochs 0-5); chosen from the schedule as the first saved checkpoint produced entirely under an active reduction",
+    "states": [
+      16,
+      24,
+      32
+    ],
+    "grid": "same as A, pair 0 scaled at this checkpoint",
+    "secondary": "1-D along D: seed 0 epoch 12 (last update at r=24) under 16/24/32; control: plain seed 0 epoch 6 with the reduction hook under 16/24/32",
+    "gaussian_and_combined": "not evaluable: no checkpoints"
+  },
+  "analysis_C": {
+    "runs": "plain and resolution_max_b1, seed 0",
+    "points": "initialisation (update 0) and epochs 6/12/18/30 (updates 0/2346/4692/7038/11730), identical steps for both runs",
+    "vector": "all learned parameters incl. BN affine; running statistics excluded (the random-direction mask additionally excludes BN affine and biases)",
+    "basis": "top-2 principal directions of the 10 pooled points centred at their mean; not filter-normalised",
+    "contour": "target objective, recalibrated BN, 25x25 grid over the projected range with 20% margin"
+  },
+  "analysis_D": {
+    "pairs": "plain vs resolution_max_b1, epoch 30, seeds 0/1/2",
+    "alphas": 51,
+    "interpolated": "all learned parameters incl. BN affine; running statistics recalibrated",
+    "state": "target",
+    "barrier": "max_alpha L - max(L(0), L(1)) on the 51-point grid"
+  },
+  "not_done": [
+    "optimised connecting curves",
+    "Hessian analysis",
+    "training of any kind"
+  ],
+  "written_utc": "2026-09-14T18:12:55.247996+00:00",
+  "weights": [
+    "plain__seed0__ep00.pt",
+    "plain__seed0__ep06.pt",
+    "plain__seed0__ep12.pt",
+    "plain__seed0__ep18.pt",
+    "plain__seed0__ep30.pt",
+    "plain__seed1__ep00.pt",
+    "plain__seed1__ep06.pt",
+    "plain__seed1__ep12.pt",
+    "plain__seed1__ep18.pt",
+    "plain__seed1__ep30.pt",
+    "plain__seed2__ep00.pt",
+    "plain__seed2__ep06.pt",
+    "plain__seed2__ep12.pt",
+    "plain__seed2__ep18.pt",
+    "plain__seed2__ep30.pt",
+    "resolution_max_b1__seed0__ep00.pt",
+    "resolution_max_b1__seed0__ep06.pt",
+    "resolution_max_b1__seed0__ep12.pt",
+    "resolution_max_b1__seed0__ep18.pt",
+    "resolution_max_b1__seed0__ep30.pt",
+    "resolution_max_b1__seed1__ep00.pt",
+    "resolution_max_b1__seed1__ep06.pt",
+    "resolution_max_b1__seed1__ep12.pt",
+    "resolution_max_b1__seed1__ep18.pt",
+    "resolution_max_b1__seed1__ep30.pt",
+    "resolution_max_b1__seed2__ep00.pt",
+    "resolution_max_b1__seed2__ep06.pt",
+    "resolution_max_b1__seed2__ep12.pt",
+    "resolution_max_b1__seed2__ep18.pt",
+    "resolution_max_b1__seed2__ep30.pt"
+  ],
+  "pca_grid_shape": [
+    25,
+    25
+  ]
+}

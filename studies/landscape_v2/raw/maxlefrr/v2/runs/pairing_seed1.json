@@ -1,0 +1,16 @@
+{
+  "seed": 1,
+  "init_state_sha256": "f6fb22087956ae3e39398efa42ab92580bbd66d86a8886a468e13bb4fc28ef5e",
+  "data_order_sha256": "b3c1460f166f3e3afb821c9b5cebc30a1915ce47b3a2502b85921041e8b58cb0",
+  "subset_sha256": "33236cc6bd19fa6b89e06d441d3fcd8eb37dc8540f6a4f2b627b20af10894a41",
+  "train_probe_sha256": "a33645e0e4f024d8c47c0c5bdd7fbc7ea59a976090a815c58ba029908f2c86bc",
+  "configs_identical_except_method_and_run_name": true,
+  "config_sha256": {
+    "plain": "ecadd83a80aaccbce77f02351339380b2d7ff298905631cdfa94066840083937",
+    "resolution_max_b1": "65ec78d70c58c2026edbacf5991ac867ccede4776dd23535292252c4c12017b4",
+    "gaussian_postrelu": "2c7505f58ca4ca50370ed709153a3daa52eaa7ff6e59cf160893ee4e537fb9b8",
+    "resolution_max_b1_gaussian_conv": "8cf53478d2aba596ca4ad489306d428401c5e745f7e48c58b1fd01c241afc313"
+  },
+  "stochastic_inputs": "data order and initial state only; no augmentation, no dropout; Gaussian and pooling operators are deterministic and draw no random numbers, so no random stream depends on the intervention",
+  "gpu_nondeterminism": "cuDNN defaults (deterministic=False) as in the reference recipe; runs are not bitwise reproducible across processes"
+}

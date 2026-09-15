@@ -1,0 +1,1109 @@
+{
+ "maximemonstrenikez": {
+  "seeds": [
+   3
+  ],
+  "timing_seconds": {
+   "start": 1789427792.0329185,
+   "train_seconds": 1250.6624908447266,
+   "directions_pca_seconds": 4.067403316497803,
+   "checks_seconds": 9.079412937164307,
+   "eval_seconds": 695.9884026050568,
+   "total_seconds": 1961.9262435436249
+  },
+  "download_verification": {
+   "account": "maximemonstrenikez",
+   "runs_manifest.json": {
+    "listed": 246,
+    "missing": [],
+    "hash_mismatch": []
+   },
+   "eval_manifest.json": {
+    "listed": 75,
+    "missing": [],
+    "hash_mismatch": []
+   }
+  },
+  "checks": {
+   "checks_seed3": {
+    "inventory_ok": true,
+    "pairing_ok": true,
+    "reproduction_max_test_ce_abs_diff": 0.0,
+    "bypass_ok": true,
+    "directions_max_rel_error": 8.881784197001252e-16,
+    "reconstruction_ok": true,
+    "endpoints_ok": true,
+    "repeatability_ok": true,
+    "non_mutation_ok": true
+   }
+  },
+  "pairing": {
+   "pairing_seed3": {
+    "seed": 3,
+    "init_state_sha256": "df2b4ba808ef3aa85ed7a7cd90f8d40d5881f26ece4174e04a650a58359f1efa",
+    "data_order_sha256": "306810c03d2f6f4c41488ef9ff0faa444ca8b0223158be785c0ca9c09458a6bc",
+    "subset_sha256": "33236cc6bd19fa6b89e06d441d3fcd8eb37dc8540f6a4f2b627b20af10894a41",
+    "train_probe_sha256": "a33645e0e4f024d8c47c0c5bdd7fbc7ea59a976090a815c58ba029908f2c86bc",
+    "configs_identical_except_method_and_run_name": true,
+    "config_sha256": {
+     "plain": "d85189f67f369df1fe111a0ea28c1ba1c41a8f92cf46a675e508fc767da99a36",
+     "resolution_max_b1": "fdcb9565cca49e876838ce3ad4c7a401df5a8dd277087b0f2d9a14bfd5a8cf9e",
+     "gaussian_postrelu": "fbdfa672f3b0700f1f1a85c462110a94a586ad68b075d2a93d213701c7cd8cff",
+     "resolution_max_b1_gaussian_conv": "c0b95fae32257914f98c0660c13be5b2527c58ddfbc1d8439e4606055e5bc310"
+    },
+    "stochastic_inputs": "data order and initial state only; no augmentation, no dropout; Gaussian and pooling operators are deterministic and draw no random numbers, so no random stream depends on the intervention",
+    "gpu_nondeterminism": "cuDNN defaults (deterministic=False) as in the reference recipe; runs are not bitwise reproducible across processes"
+   }
+  },
+  "task_status": {
+   "fixed1d__combined__seed3__u001173": "complete",
+   "fixed1d__combined__seed3__u008211": "complete",
+   "fixed1d__gaussian__seed3__u001173": "complete",
+   "fixed1d__gaussian__seed3__u008211": "complete",
+   "fixed1d__resolution__seed3__u002346": "complete",
+   "fixed1d__resolution__seed3__u004692": "complete",
+   "interp__plain_combined__seed3": "complete",
+   "interp__plain_gaussian__seed3": "complete",
+   "interp__plain_resolution__seed3": "complete",
+   "interp__resolution_combined__seed3": "complete",
+   "sens1d__combined__seed3": "complete",
+   "sens1d__gaussian__seed3": "complete",
+   "sens1d__plain__seed3": "complete",
+   "sens1d__resolution__seed3": "complete",
+   "surface__combined__seed3__g21": "complete",
+   "surface__gaussian__seed3__g21": "complete",
+   "surface__plain__seed3__g21": "complete",
+   "surface__resolution__seed3__g21": "complete",
+   "traj__combined__seed3": "complete",
+   "traj__gaussian__seed3": "complete",
+   "traj__plain__seed3": "complete",
+   "traj__resolution__seed3": "complete",
+   "validation__combined__seed3": "complete",
+   "validation__gaussian__seed3": "complete",
+   "validation__plain__seed3": "complete",
+   "validation__resolution__seed3": "complete"
+  },
+  "runs": {
+   "gaussian_postrelu__seed3": {
+    "final": {
+     "current": {
+      "train_probe": {
+       "ce": 0.2840516357421875,
+       "acc": 0.918,
+       "n": 500
+      },
+      "test": {
+       "ce": 0.5513179992675781,
+       "acc": 0.8098,
+       "n": 10000
+      }
+     },
+     "target": {
+      "train_probe": {
+       "ce": 0.2840516357421875,
+       "acc": 0.918,
+       "n": 500
+      },
+      "test": {
+       "ce": 0.5513179992675781,
+       "acc": 0.8098,
+       "n": 10000
+      }
+     }
+    },
+    "timing": {
+     "wall_seconds": 622.5181880959999,
+     "eval_seconds": 41.29940281700027,
+     "train_seconds": 581.2187852789996,
+     "scope": "from the start of run() (after data and model construction) to the last evaluation, including checkpoint writes; resumed runs add the wall time stored in the checkpoint"
+    }
+   },
+   "plain__seed3": {
+    "final": {
+     "current": {
+      "train_probe": {
+       "ce": 0.19598406982421876,
+       "acc": 0.938,
+       "n": 500
+      },
+      "test": {
+       "ce": 0.7673122619628906,
+       "acc": 0.7535,
+       "n": 10000
+      }
+     },
+     "target": {
+      "train_probe": {
+       "ce": 0.19598406982421876,
+       "acc": 0.938,
+       "n": 500
+      },
+      "test": {
+       "ce": 0.7673122619628906,
+       "acc": 0.7535,
+       "n": 10000
+      }
+     }
+    },
+    "timing": {
+     "wall_seconds": 488.13176418600005,
+     "eval_seconds": 30.145751013000336,
+     "train_seconds": 457.9860131729997,
+     "scope": "from the start of run() (after data and model construction) to the last evaluation, including checkpoint writes; resumed runs add the wall time stored in the checkpoint"
+    }
+   },
+   "resolution_max_b1__seed3": {
+    "final": {
+     "current": {
+      "train_probe": {
+       "ce": 0.2944188232421875,
+       "acc": 0.914,
+       "n": 500
+      },
+      "test": {
+       "ce": 0.5919819396972656,
+       "acc": 0.8,
+       "n": 10000
+      }
+     },
+     "target": {
+      "train_probe": {
+       "ce": 0.2944188232421875,
+       "acc": 0.914,
+       "n": 500
+      },
+      "test": {
+       "ce": 0.5919819396972656,
+       "acc": 0.8,
+       "n": 10000
+      }
+     }
+    },
+    "timing": {
+     "wall_seconds": 483.06553246500005,
+     "eval_seconds": 28.134939479999957,
+     "train_seconds": 454.9305929850001,
+     "scope": "from the start of run() (after data and model construction) to the last evaluation, including checkpoint writes; resumed runs add the wall time stored in the checkpoint"
+    }
+   },
+   "resolution_max_b1_gaussian_conv__seed3": {
+    "final": {
+     "current": {
+      "train_probe": {
+       "ce": 0.3329942626953125,
+       "acc": 0.904,
+       "n": 500
+      },
+      "test": {
+       "ce": 0.5436371322631836,
+       "acc": 0.8153,
+       "n": 10000
+      }
+     },
+     "target": {
+      "train_probe": {
+       "ce": 0.3329942626953125,
+       "acc": 0.904,
+       "n": 500
+      },
+      "test": {
+       "ce": 0.5436371322631836,
+       "acc": 0.8153,
+       "n": 10000
+      }
+     }
+    },
+    "timing": {
+     "wall_seconds": 745.523786355,
+     "eval_seconds": 44.38308748000037,
+     "train_seconds": 701.1406988749995,
+     "scope": "from the start of run() (after data and model construction) to the last evaluation, including checkpoint writes; resumed runs add the wall time stored in the checkpoint"
+    }
+   }
+  }
+ },
+ "maxlefrr": {
+  "seeds": [
+   1,
+   4
+  ],
+  "timing_seconds": {
+   "start": 1789427827.0046532,
+   "train_seconds": 2387.3808131217957,
+   "directions_pca_seconds": 7.909224987030029,
+   "checks_seconds": 15.783585548400879,
+   "eval_seconds": 1367.6095497608185,
+   "total_seconds": 3781.436896085739
+  },
+  "download_verification": {
+   "account": "maxlefrr",
+   "runs_manifest.json": {
+    "listed": 491,
+    "missing": [],
+    "hash_mismatch": []
+   },
+   "eval_manifest.json": {
+    "listed": 149,
+    "missing": [],
+    "hash_mismatch": []
+   }
+  },
+  "checks": {
+   "checks_seed1": {
+    "inventory_ok": true,
+    "pairing_ok": true,
+    "reproduction_max_test_ce_abs_diff": 0.0,
+    "bypass_ok": true,
+    "directions_max_rel_error": 6.661338147750939e-16,
+    "reconstruction_ok": true,
+    "endpoints_ok": true,
+    "repeatability_ok": true,
+    "non_mutation_ok": true
+   },
+   "checks_seed4": {
+    "inventory_ok": true,
+    "pairing_ok": true,
+    "reproduction_max_test_ce_abs_diff": 0.0,
+    "bypass_ok": true,
+    "directions_max_rel_error": 8.881784197001252e-16,
+    "reconstruction_ok": true,
+    "endpoints_ok": true,
+    "repeatability_ok": true,
+    "non_mutation_ok": true
+   }
+  },
+  "pairing": {
+   "pairing_seed1": {
+    "seed": 1,
+    "init_state_sha256": "f6fb22087956ae3e39398efa42ab92580bbd66d86a8886a468e13bb4fc28ef5e",
+    "data_order_sha256": "b3c1460f166f3e3afb821c9b5cebc30a1915ce47b3a2502b85921041e8b58cb0",
+    "subset_sha256": "33236cc6bd19fa6b89e06d441d3fcd8eb37dc8540f6a4f2b627b20af10894a41",
+    "train_probe_sha256": "a33645e0e4f024d8c47c0c5bdd7fbc7ea59a976090a815c58ba029908f2c86bc",
+    "configs_identical_except_method_and_run_name": true,
+    "config_sha256": {
+     "plain": "ecadd83a80aaccbce77f02351339380b2d7ff298905631cdfa94066840083937",
+     "resolution_max_b1": "65ec78d70c58c2026edbacf5991ac867ccede4776dd23535292252c4c12017b4",
+     "gaussian_postrelu": "2c7505f58ca4ca50370ed709153a3daa52eaa7ff6e59cf160893ee4e537fb9b8",
+     "resolution_max_b1_gaussian_conv": "8cf53478d2aba596ca4ad489306d428401c5e745f7e48c58b1fd01c241afc313"
+    },
+    "stochastic_inputs": "data order and initial state only; no augmentation, no dropout; Gaussian and pooling operators are deterministic and draw no random numbers, so no random stream depends on the intervention",
+    "gpu_nondeterminism": "cuDNN defaults (deterministic=False) as in the reference recipe; runs are not bitwise reproducible across processes"
+   },
+   "pairing_seed4": {
+    "seed": 4,
+    "init_state_sha256": "96a3191370ac295f1864be344f037c3e2cc3faf8c5a9afdb8bffa08c4e127338",
+    "data_order_sha256": "6c53fc045a10605ee070dde06295c9d337a75ae2d9c750f3e37247542d235feb",
+    "subset_sha256": "33236cc6bd19fa6b89e06d441d3fcd8eb37dc8540f6a4f2b627b20af10894a41",
+    "train_probe_sha256": "a33645e0e4f024d8c47c0c5bdd7fbc7ea59a976090a815c58ba029908f2c86bc",
+    "configs_identical_except_method_and_run_name": true,
+    "config_sha256": {
+     "plain": "c5c64c032b82798036536038f12127130c29705fb6a212b9b8cd5cb9e2adef52",
+     "resolution_max_b1": "a96e54dee6d046261c2df28f26b8dd3792c4cf71b3501452e90b02067722eb19",
+     "gaussian_postrelu": "77871433823c13d1466c6f10d4d96297a682f82f1d48534e1692cd8b309cc285",
+     "resolution_max_b1_gaussian_conv": "ef9158a8ceeee2d5adcaf5287c40b2afa51896d2993dbc2f2f53567934e25b88"
+    },
+    "stochastic_inputs": "data order and initial state only; no augmentation, no dropout; Gaussian and pooling operators are deterministic and draw no random numbers, so no random stream depends on the intervention",
+    "gpu_nondeterminism": "cuDNN defaults (deterministic=False) as in the reference recipe; runs are not bitwise reproducible across processes"
+   }
+  },
+  "task_status": {
+   "fixed1d__combined__seed1__u001173": "complete",
+   "fixed1d__combined__seed1__u008211": "complete",
+   "fixed1d__combined__seed4__u001173": "complete",
+   "fixed1d__combined__seed4__u008211": "complete",
+   "fixed1d__gaussian__seed1__u001173": "complete",
+   "fixed1d__gaussian__seed1__u008211": "complete",
+   "fixed1d__gaussian__seed4__u001173": "complete",
+   "fixed1d__gaussian__seed4__u008211": "complete",
+   "fixed1d__resolution__seed1__u002346": "complete",
+   "fixed1d__resolution__seed1__u004692": "complete",
+   "fixed1d__resolution__seed4__u002346": "complete",
+   "fixed1d__resolution__seed4__u004692": "complete",
+   "interp__plain_combined__seed1": "complete",
+   "interp__plain_combined__seed4": "complete",
+   "interp__plain_gaussian__seed1": "complete",
+   "interp__plain_gaussian__seed4": "complete",
+   "interp__plain_resolution__seed1": "complete",
+   "interp__plain_resolution__seed4": "complete",
+   "interp__resolution_combined__seed1": "complete",
+   "interp__resolution_combined__seed4": "complete",
+   "sens1d__combined__seed1": "complete",
+   "sens1d__combined__seed4": "complete",
+   "sens1d__gaussian__seed1": "complete",
+   "sens1d__gaussian__seed4": "complete",
+   "sens1d__plain__seed1": "complete",
+   "sens1d__plain__seed4": "complete",
+   "sens1d__resolution__seed1": "complete",
+   "sens1d__resolution__seed4": "complete",
+   "surface__combined__seed1__g21": "complete",
+   "surface__combined__seed4__g21": "complete",
+   "surface__gaussian__seed1__g21": "complete",
+   "surface__gaussian__seed4__g21": "complete",
+   "surface__plain__seed1__g21": "complete",
+   "surface__plain__seed4__g21": "complete",
+   "surface__resolution__seed1__g21": "complete",
+   "surface__resolution__seed4__g21": "complete",
+   "traj__combined__seed1": "complete",
+   "traj__combined__seed4": "complete",
+   "traj__gaussian__seed1": "complete",
+   "traj__gaussian__seed4": "complete",
+   "traj__plain__seed1": "complete",
+   "traj__plain__seed4": "complete",
+   "traj__resolution__seed1": "complete",
+   "traj__resolution__seed4": "complete",
+   "validation__combined__seed1": "complete",
+   "validation__combined__seed4": "complete",
+   "validation__gaussian__seed1": "complete",
+   "validation__gaussian__seed4": "complete",
+   "validation__plain__seed1": "complete",
+   "validation__plain__seed4": "complete",
+   "validation__resolution__seed1": "complete",
+   "validation__resolution__seed4": "complete"
+  },
+  "runs": {
+   "gaussian_postrelu__seed1": {
+    "final": {
+     "current": {
+      "train_probe": {
+       "ce": 0.3004356079101563,
+       "acc": 0.902,
+       "n": 500
+      },
+      "test": {
+       "ce": 0.5938298919677735,
+       "acc": 0.8008,
+       "n": 10000
+      }
+     },
+     "target": {
+      "train_probe": {
+       "ce": 0.3004356079101563,
+       "acc": 0.902,
+       "n": 500
+      },
+      "test": {
+       "ce": 0.5938298919677735,
+       "acc": 0.8008,
+       "n": 10000
+      }
+     }
+    },
+    "timing": {
+     "wall_seconds": 620.689122756,
+     "eval_seconds": 41.84960686200026,
+     "train_seconds": 578.8395158939998,
+     "scope": "from the start of run() (after data and model construction) to the last evaluation, including checkpoint writes; resumed runs add the wall time stored in the checkpoint"
+    }
+   },
+   "gaussian_postrelu__seed4": {
+    "final": {
+     "current": {
+      "train_probe": {
+       "ce": 0.2895192565917969,
+       "acc": 0.908,
+       "n": 500
+      },
+      "test": {
+       "ce": 0.6086985260009765,
+       "acc": 0.7984,
+       "n": 10000
+      }
+     },
+     "target": {
+      "train_probe": {
+       "ce": 0.2895192565917969,
+       "acc": 0.908,
+       "n": 500
+      },
+      "test": {
+       "ce": 0.6086985260009765,
+       "acc": 0.7984,
+       "n": 10000
+      }
+     }
+    },
+    "timing": {
+     "wall_seconds": 627.3203671479998,
+     "eval_seconds": 39.33302483199964,
+     "train_seconds": 587.9873423160002,
+     "scope": "from the start of run() (after data and model construction) to the last evaluation, including checkpoint writes; resumed runs add the wall time stored in the checkpoint"
+    }
+   },
+   "plain__seed1": {
+    "final": {
+     "current": {
+      "train_probe": {
+       "ce": 0.19957815551757813,
+       "acc": 0.95,
+       "n": 500
+      },
+      "test": {
+       "ce": 0.7512493560791016,
+       "acc": 0.7565,
+       "n": 10000
+      }
+     },
+     "target": {
+      "train_probe": {
+       "ce": 0.19957815551757813,
+       "acc": 0.95,
+       "n": 500
+      },
+      "test": {
+       "ce": 0.7512493560791016,
+       "acc": 0.7565,
+       "n": 10000
+      }
+     }
+    },
+    "timing": {
+     "wall_seconds": 500.14887245299997,
+     "eval_seconds": 29.658628446999728,
+     "train_seconds": 470.49024400600024,
+     "scope": "from the start of run() (after data and model construction) to the last evaluation, including checkpoint writes; resumed runs add the wall time stored in the checkpoint"
+    }
+   },
+   "plain__seed4": {
+    "final": {
+     "current": {
+      "train_probe": {
+       "ce": 0.17491058349609376,
+       "acc": 0.96,
+       "n": 500
+      },
+      "test": {
+       "ce": 0.753387744140625,
+       "acc": 0.765,
+       "n": 10000
+      }
+     },
+     "target": {
+      "train_probe": {
+       "ce": 0.17491058349609376,
+       "acc": 0.96,
+       "n": 500
+      },
+      "test": {
+       "ce": 0.753387744140625,
+       "acc": 0.765,
+       "n": 10000
+      }
+     }
+    },
+    "timing": {
+     "wall_seconds": 491.57033390299966,
+     "eval_seconds": 29.620725727000263,
+     "train_seconds": 461.9496081759994,
+     "scope": "from the start of run() (after data and model construction) to the last evaluation, including checkpoint writes; resumed runs add the wall time stored in the checkpoint"
+    }
+   },
+   "resolution_max_b1__seed1": {
+    "final": {
+     "current": {
+      "train_probe": {
+       "ce": 0.33311138916015626,
+       "acc": 0.884,
+       "n": 500
+      },
+      "test": {
+       "ce": 0.5798480804443359,
+       "acc": 0.8002,
+       "n": 10000
+      }
+     },
+     "target": {
+      "train_probe": {
+       "ce": 0.33311138916015626,
+       "acc": 0.884,
+       "n": 500
+      },
+      "test": {
+       "ce": 0.5798480804443359,
+       "acc": 0.8002,
+       "n": 10000
+      }
+     }
+    },
+    "timing": {
+     "wall_seconds": 476.3251591139999,
+     "eval_seconds": 28.332358225001144,
+     "train_seconds": 447.9928008889988,
+     "scope": "from the start of run() (after data and model construction) to the last evaluation, including checkpoint writes; resumed runs add the wall time stored in the checkpoint"
+    }
+   },
+   "resolution_max_b1__seed4": {
+    "final": {
+     "current": {
+      "train_probe": {
+       "ce": 0.3087147216796875,
+       "acc": 0.9,
+       "n": 500
+      },
+      "test": {
+       "ce": 0.5932301376342773,
+       "acc": 0.7993,
+       "n": 10000
+      }
+     },
+     "target": {
+      "train_probe": {
+       "ce": 0.3087147216796875,
+       "acc": 0.9,
+       "n": 500
+      },
+      "test": {
+       "ce": 0.5932301376342773,
+       "acc": 0.7993,
+       "n": 10000
+      }
+     }
+    },
+    "timing": {
+     "wall_seconds": 481.0672632300002,
+     "eval_seconds": 28.29590724999798,
+     "train_seconds": 452.7713559800022,
+     "scope": "from the start of run() (after data and model construction) to the last evaluation, including checkpoint writes; resumed runs add the wall time stored in the checkpoint"
+    }
+   },
+   "resolution_max_b1_gaussian_conv__seed1": {
+    "final": {
+     "current": {
+      "train_probe": {
+       "ce": 0.30453857421875,
+       "acc": 0.9,
+       "n": 500
+      },
+      "test": {
+       "ce": 0.5493452041625977,
+       "acc": 0.8124,
+       "n": 10000
+      }
+     },
+     "target": {
+      "train_probe": {
+       "ce": 0.30453857421875,
+       "acc": 0.9,
+       "n": 500
+      },
+      "test": {
+       "ce": 0.5493452041625977,
+       "acc": 0.8124,
+       "n": 10000
+      }
+     }
+    },
+    "timing": {
+     "wall_seconds": 745.0839569300001,
+     "eval_seconds": 44.18073777300026,
+     "train_seconds": 700.9032191569999,
+     "scope": "from the start of run() (after data and model construction) to the last evaluation, including checkpoint writes; resumed runs add the wall time stored in the checkpoint"
+    }
+   },
+   "resolution_max_b1_gaussian_conv__seed4": {
+    "final": {
+     "current": {
+      "train_probe": {
+       "ce": 0.33139190673828123,
+       "acc": 0.886,
+       "n": 500
+      },
+      "test": {
+       "ce": 0.5350250259399414,
+       "acc": 0.819,
+       "n": 10000
+      }
+     },
+     "target": {
+      "train_probe": {
+       "ce": 0.33139190673828123,
+       "acc": 0.886,
+       "n": 500
+      },
+      "test": {
+       "ce": 0.5350250259399414,
+       "acc": 0.819,
+       "n": 10000
+      }
+     }
+    },
+    "timing": {
+     "wall_seconds": 721.4319319270003,
+     "eval_seconds": 43.60861406000163,
+     "train_seconds": 677.8233178669987,
+     "scope": "from the start of run() (after data and model construction) to the last evaluation, including checkpoint writes; resumed runs add the wall time stored in the checkpoint"
+    }
+   }
+  }
+ },
+ "maxnicaise": {
+  "seeds": [
+   0
+  ],
+  "timing_seconds": {
+   "start": 1789427790.1567755,
+   "train_seconds": 1283.8360040187836,
+   "directions_pca_seconds": 4.431416749954224,
+   "checks_seconds": 10.061206579208374,
+   "eval_seconds": 2637.788498878479,
+   "total_seconds": 3938.2664268016815
+  },
+  "download_verification": {
+   "account": "maxnicaise",
+   "runs_manifest.json": {
+    "listed": 246,
+    "missing": [],
+    "hash_mismatch": []
+   },
+   "eval_manifest.json": {
+    "listed": 125,
+    "missing": [],
+    "hash_mismatch": []
+   }
+  },
+  "checks": {
+   "checks_seed0": {
+    "inventory_ok": true,
+    "pairing_ok": true,
+    "reproduction_max_test_ce_abs_diff": 0.0,
+    "bypass_ok": true,
+    "directions_max_rel_error": 8.881784197001252e-16,
+    "reconstruction_ok": true,
+    "endpoints_ok": true,
+    "repeatability_ok": true,
+    "non_mutation_ok": true
+   }
+  },
+  "pairing": {
+   "pairing_seed0": {
+    "seed": 0,
+    "init_state_sha256": "6e652c49e5139e785887b9cb6b08ce5b0dee734bde6384550be6a8a3641e2c1b",
+    "data_order_sha256": "5df32d0d922962e72fb4dd718a5eaad13f3209f75b8363aff64e57b89b4bb22f",
+    "subset_sha256": "33236cc6bd19fa6b89e06d441d3fcd8eb37dc8540f6a4f2b627b20af10894a41",
+    "train_probe_sha256": "a33645e0e4f024d8c47c0c5bdd7fbc7ea59a976090a815c58ba029908f2c86bc",
+    "configs_identical_except_method_and_run_name": true,
+    "config_sha256": {
+     "plain": "09d80058a4007d27ece6dbda881b679a2de675815fcb50f80d50efe5a3eebe49",
+     "resolution_max_b1": "44f2f3a55b4941200594c3e0bb153d604308dc882ed383ff9ac44c2b38a5fce9",
+     "gaussian_postrelu": "636606c343386de32dd12311f9067cbc10c84bf4f47656ab015f02332dd1dcdf",
+     "resolution_max_b1_gaussian_conv": "de80b59294da1a22e6cdc4ef71192f545b6fe7a3f9519d34965dabaf4198130a"
+    },
+    "stochastic_inputs": "data order and initial state only; no augmentation, no dropout; Gaussian and pooling operators are deterministic and draw no random numbers, so no random stream depends on the intervention",
+    "gpu_nondeterminism": "cuDNN defaults (deterministic=False) as in the reference recipe; runs are not bitwise reproducible across processes"
+   }
+  },
+  "task_status": {
+   "calibsens__combined__seed0": "complete",
+   "calibsens__gaussian__seed0": "complete",
+   "calibsens__plain__seed0": "complete",
+   "calibsens__resolution__seed0": "complete",
+   "fixed1d__combined__seed0__u001173": "complete",
+   "fixed1d__combined__seed0__u008211": "complete",
+   "fixed1d__gaussian__seed0__u001173": "complete",
+   "fixed1d__gaussian__seed0__u008211": "complete",
+   "fixed1d__resolution__seed0__u002346": "complete",
+   "fixed1d__resolution__seed0__u004692": "complete",
+   "fixedsurf__combined__seed0__u001173__after": "complete",
+   "fixedsurf__combined__seed0__u001173__before": "complete",
+   "fixedsurf__combined__seed0__u001173__final": "complete",
+   "fixedsurf__combined__seed0__u008211__after": "complete",
+   "fixedsurf__combined__seed0__u008211__before": "complete",
+   "fixedsurf__gaussian__seed0__u001173__after": "complete",
+   "fixedsurf__gaussian__seed0__u001173__before": "complete",
+   "fixedsurf__gaussian__seed0__u001173__final": "complete",
+   "fixedsurf__gaussian__seed0__u008211__after": "complete",
+   "fixedsurf__gaussian__seed0__u008211__before": "complete",
+   "fixedsurf__resolution__seed0__u002346__after": "complete",
+   "fixedsurf__resolution__seed0__u002346__before": "complete",
+   "fixedsurf__resolution__seed0__u002346__r32": "complete",
+   "fixedsurf__resolution__seed0__u004692__after": "complete",
+   "fixedsurf__resolution__seed0__u004692__before": "complete",
+   "fixedsurf__resolution__seed0__u004692__r16": "complete",
+   "interp__plain_combined__seed0": "complete",
+   "interp__plain_gaussian__seed0": "complete",
+   "interp__plain_resolution__seed0": "complete",
+   "interp__resolution_combined__seed0": "complete",
+   "pcaplane__seed0": "complete",
+   "sens1d__combined__seed0": "complete",
+   "sens1d__gaussian__seed0": "complete",
+   "sens1d__plain__seed0": "complete",
+   "sens1d__resolution__seed0": "complete",
+   "surface__combined__seed0__g21": "complete",
+   "surface__combined__seed0__g41": "complete",
+   "surface__gaussian__seed0__g21": "complete",
+   "surface__gaussian__seed0__g41": "complete",
+   "surface__plain__seed0__g21": "complete",
+   "surface__plain__seed0__g41": "complete",
+   "surface__resolution__seed0__g21": "complete",
+   "surface__resolution__seed0__g41": "complete",
+   "traj__combined__seed0": "complete",
+   "traj__gaussian__seed0": "complete",
+   "traj__plain__seed0": "complete",
+   "traj__resolution__seed0": "complete",
+   "validation__combined__seed0": "complete",
+   "validation__gaussian__seed0": "complete",
+   "validation__plain__seed0": "complete",
+   "validation__resolution__seed0": "complete"
+  },
+  "runs": {
+   "gaussian_postrelu__seed0": {
+    "final": {
+     "current": {
+      "train_probe": {
+       "ce": 0.3056756591796875,
+       "acc": 0.898,
+       "n": 500
+      },
+      "test": {
+       "ce": 0.5883055130004883,
+       "acc": 0.7983,
+       "n": 10000
+      }
+     },
+     "target": {
+      "train_probe": {
+       "ce": 0.3056756591796875,
+       "acc": 0.898,
+       "n": 500
+      },
+      "test": {
+       "ce": 0.5883055130004883,
+       "acc": 0.7983,
+       "n": 10000
+      }
+     }
+    },
+    "timing": {
+     "wall_seconds": 628.822424724,
+     "eval_seconds": 41.24092271300049,
+     "train_seconds": 587.5815020109995,
+     "scope": "from the start of run() (after data and model construction) to the last evaluation, including checkpoint writes; resumed runs add the wall time stored in the checkpoint"
+    }
+   },
+   "plain__seed0": {
+    "final": {
+     "current": {
+      "train_probe": {
+       "ce": 0.2337054443359375,
+       "acc": 0.944,
+       "n": 500
+      },
+      "test": {
+       "ce": 0.7731327758789063,
+       "acc": 0.7453,
+       "n": 10000
+      }
+     },
+     "target": {
+      "train_probe": {
+       "ce": 0.2337054443359375,
+       "acc": 0.944,
+       "n": 500
+      },
+      "test": {
+       "ce": 0.7731327758789063,
+       "acc": 0.7453,
+       "n": 10000
+      }
+     }
+    },
+    "timing": {
+     "wall_seconds": 506.91532473100006,
+     "eval_seconds": 35.36535995099962,
+     "train_seconds": 471.54996478000044,
+     "scope": "from the start of run() (after data and model construction) to the last evaluation, including checkpoint writes; resumed runs add the wall time stored in the checkpoint"
+    }
+   },
+   "resolution_max_b1__seed0": {
+    "final": {
+     "current": {
+      "train_probe": {
+       "ce": 0.32161190795898437,
+       "acc": 0.906,
+       "n": 500
+      },
+      "test": {
+       "ce": 0.5855790832519531,
+       "acc": 0.8031,
+       "n": 10000
+      }
+     },
+     "target": {
+      "train_probe": {
+       "ce": 0.32161190795898437,
+       "acc": 0.906,
+       "n": 500
+      },
+      "test": {
+       "ce": 0.5855790832519531,
+       "acc": 0.8031,
+       "n": 10000
+      }
+     }
+    },
+    "timing": {
+     "wall_seconds": 490.4998488939998,
+     "eval_seconds": 28.6354673980004,
+     "train_seconds": 461.8643814959994,
+     "scope": "from the start of run() (after data and model construction) to the last evaluation, including checkpoint writes; resumed runs add the wall time stored in the checkpoint"
+    }
+   },
+   "resolution_max_b1_gaussian_conv__seed0": {
+    "final": {
+     "current": {
+      "train_probe": {
+       "ce": 0.33555853271484376,
+       "acc": 0.91,
+       "n": 500
+      },
+      "test": {
+       "ce": 0.5434872039794922,
+       "acc": 0.8134,
+       "n": 10000
+      }
+     },
+     "target": {
+      "train_probe": {
+       "ce": 0.33555853271484376,
+       "acc": 0.91,
+       "n": 500
+      },
+      "test": {
+       "ce": 0.5434872039794922,
+       "acc": 0.8134,
+       "n": 10000
+      }
+     }
+    },
+    "timing": {
+     "wall_seconds": 760.093912689,
+     "eval_seconds": 49.4520648700003,
+     "train_seconds": 710.6418478189997,
+     "scope": "from the start of run() (after data and model construction) to the last evaluation, including checkpoint writes; resumed runs add the wall time stored in the checkpoint"
+    }
+   }
+  }
+ },
+ "maxnikezz": {
+  "seeds": [
+   2
+  ],
+  "timing_seconds": {
+   "start": 1789427789.4764955,
+   "train_seconds": 1289.0088903903961,
+   "directions_pca_seconds": 4.425829648971558,
+   "checks_seconds": 10.062855005264282,
+   "eval_seconds": 777.6410579681396,
+   "total_seconds": 2083.3334653377533
+  },
+  "download_verification": {
+   "account": "maxnikezz",
+   "runs_manifest.json": {
+    "listed": 246,
+    "missing": [],
+    "hash_mismatch": []
+   },
+   "eval_manifest.json": {
+    "listed": 75,
+    "missing": [],
+    "hash_mismatch": []
+   }
+  },
+  "checks": {
+   "checks_seed2": {
+    "inventory_ok": true,
+    "pairing_ok": true,
+    "reproduction_max_test_ce_abs_diff": 0.0,
+    "bypass_ok": true,
+    "directions_max_rel_error": 6.661338147750939e-16,
+    "reconstruction_ok": true,
+    "endpoints_ok": true,
+    "repeatability_ok": true,
+    "non_mutation_ok": true
+   }
+  },
+  "pairing": {
+   "pairing_seed2": {
+    "seed": 2,
+    "init_state_sha256": "fb19c69f3b02419133c852d831622cba0adc539775e578f826fdb0944ab815db",
+    "data_order_sha256": "995dcd74c2f86f26d89d170041b8996b37e7dc881ebe9db103ddf2fc76f3e5bb",
+    "subset_sha256": "33236cc6bd19fa6b89e06d441d3fcd8eb37dc8540f6a4f2b627b20af10894a41",
+    "train_probe_sha256": "a33645e0e4f024d8c47c0c5bdd7fbc7ea59a976090a815c58ba029908f2c86bc",
+    "configs_identical_except_method_and_run_name": true,
+    "config_sha256": {
+     "plain": "73943aef4b5e9ed37aa0eb8fecb515619f5c274e1f1a83cbd5514497ca49335d",
+     "resolution_max_b1": "9a434e95b3d398e46309bec5d6821d8c251a87c554b81dfd6017d8a3cf4c280f",
+     "gaussian_postrelu": "df87e075a8dbe7e66de9c170df222d7a9e9e0e12322ef97238a48669b820496f",
+     "resolution_max_b1_gaussian_conv": "6b192eb775a1c858080fbc4be2080d6b46b6a94e7395e846545c60d51d86ffdd"
+    },
+    "stochastic_inputs": "data order and initial state only; no augmentation, no dropout; Gaussian and pooling operators are deterministic and draw no random numbers, so no random stream depends on the intervention",
+    "gpu_nondeterminism": "cuDNN defaults (deterministic=False) as in the reference recipe; runs are not bitwise reproducible across processes"
+   }
+  },
+  "task_status": {
+   "fixed1d__combined__seed2__u001173": "complete",
+   "fixed1d__combined__seed2__u008211": "complete",
+   "fixed1d__gaussian__seed2__u001173": "complete",
+   "fixed1d__gaussian__seed2__u008211": "complete",
+   "fixed1d__resolution__seed2__u002346": "complete",
+   "fixed1d__resolution__seed2__u004692": "complete",
+   "interp__plain_combined__seed2": "complete",
+   "interp__plain_gaussian__seed2": "complete",
+   "interp__plain_resolution__seed2": "complete",
+   "interp__resolution_combined__seed2": "complete",
+   "sens1d__combined__seed2": "complete",
+   "sens1d__gaussian__seed2": "complete",
+   "sens1d__plain__seed2": "complete",
+   "sens1d__resolution__seed2": "complete",
+   "surface__combined__seed2__g21": "complete",
+   "surface__gaussian__seed2__g21": "complete",
+   "surface__plain__seed2__g21": "complete",
+   "surface__resolution__seed2__g21": "complete",
+   "traj__combined__seed2": "complete",
+   "traj__gaussian__seed2": "complete",
+   "traj__plain__seed2": "complete",
+   "traj__resolution__seed2": "complete",
+   "validation__combined__seed2": "complete",
+   "validation__gaussian__seed2": "complete",
+   "validation__plain__seed2": "complete",
+   "validation__resolution__seed2": "complete"
+  },
+  "runs": {
+   "gaussian_postrelu__seed2": {
+    "final": {
+     "current": {
+      "train_probe": {
+       "ce": 0.28320669555664063,
+       "acc": 0.918,
+       "n": 500
+      },
+      "test": {
+       "ce": 0.5934026245117188,
+       "acc": 0.7987,
+       "n": 10000
+      }
+     },
+     "target": {
+      "train_probe": {
+       "ce": 0.28320669555664063,
+       "acc": 0.918,
+       "n": 500
+      },
+      "test": {
+       "ce": 0.5934026245117188,
+       "acc": 0.7987,
+       "n": 10000
+      }
+     }
+    },
+    "timing": {
+     "wall_seconds": 655.8380917259999,
+     "eval_seconds": 46.498485037999615,
+     "train_seconds": 609.3396066880002,
+     "scope": "from the start of run() (after data and model construction) to the last evaluation, including checkpoint writes; resumed runs add the wall time stored in the checkpoint"
+    }
+   },
+   "plain__seed2": {
+    "final": {
+     "current": {
+      "train_probe": {
+       "ce": 0.2044488067626953,
+       "acc": 0.94,
+       "n": 500
+      },
+      "test": {
+       "ce": 0.751594076538086,
+       "acc": 0.7624,
+       "n": 10000
+      }
+     },
+     "target": {
+      "train_probe": {
+       "ce": 0.2044488067626953,
+       "acc": 0.94,
+       "n": 500
+      },
+      "test": {
+       "ce": 0.751594076538086,
+       "acc": 0.7624,
+       "n": 10000
+      }
+     }
+    },
+    "timing": {
+     "wall_seconds": 503.9403368609999,
+     "eval_seconds": 33.98657496599958,
+     "train_seconds": 469.9537618950003,
+     "scope": "from the start of run() (after data and model construction) to the last evaluation, including checkpoint writes; resumed runs add the wall time stored in the checkpoint"
+    }
+   },
+   "resolution_max_b1__seed2": {
+    "final": {
+     "current": {
+      "train_probe": {
+       "ce": 0.3239676513671875,
+       "acc": 0.902,
+       "n": 500
+      },
+      "test": {
+       "ce": 0.5689506484985352,
+       "acc": 0.8081,
+       "n": 10000
+      }
+     },
+     "target": {
+      "train_probe": {
+       "ce": 0.3239676513671875,
+       "acc": 0.902,
+       "n": 500
+      },
+      "test": {
+       "ce": 0.5689506484985352,
+       "acc": 0.8081,
+       "n": 10000
+      }
+     }
+    },
+    "timing": {
+     "wall_seconds": 501.8602713480002,
+     "eval_seconds": 33.325701136999896,
+     "train_seconds": 468.5345702110003,
+     "scope": "from the start of run() (after data and model construction) to the last evaluation, including checkpoint writes; resumed runs add the wall time stored in the checkpoint"
+    }
+   },
+   "resolution_max_b1_gaussian_conv__seed2": {
+    "final": {
+     "current": {
+      "train_probe": {
+       "ce": 0.312778564453125,
+       "acc": 0.9,
+       "n": 500
+      },
+      "test": {
+       "ce": 0.5403551956176758,
+       "acc": 0.8187,
+       "n": 10000
+      }
+     },
+     "target": {
+      "train_probe": {
+       "ce": 0.312778564453125,
+       "acc": 0.9,
+       "n": 500
+      },
+      "test": {
+       "ce": 0.5403551956176758,
+       "acc": 0.8187,
+       "n": 10000
+      }
+     }
+    },
+    "timing": {
+     "wall_seconds": 768.175565085,
+     "eval_seconds": 47.88672175999932,
+     "train_seconds": 720.2888433250007,
+     "scope": "from the start of run() (after data and model construction) to the last evaluation, including checkpoint writes; resumed runs add the wall time stored in the checkpoint"
+    }
+   }
+  }
+ }
+}

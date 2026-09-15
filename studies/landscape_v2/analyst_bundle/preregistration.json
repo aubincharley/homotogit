@@ -1,0 +1,641 @@
+{
+  "study": "landscape_v2",
+  "written_utc": "2026-09-14T23:02:44.351652+00:00",
+  "methods": [
+    "plain",
+    "resolution_max_b1",
+    "gaussian_postrelu",
+    "resolution_max_b1_gaussian_conv"
+  ],
+  "training_seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "recipe": "continuation_core.presets.reference unchanged (SGD lr 0.005 momentum 0.9 wd 5e-4, warm-up 60 then cosine, batch 128 in microbatches of 32, 30 epochs, no augmentation, pinned/generated init and data order); only extra checkpoint writes",
+  "assets": "studies/landscape_v2/inputs/assets (seeds 0-2 pinned copies, 3-4 generated)",
+  "checkpoints": {
+    "epochs": "0..30 (0 = initialization)",
+    "transition_offsets": [
+      -50,
+      -10,
+      -1,
+      1,
+      10,
+      50
+    ],
+    "transitions": {
+      "plain": [],
+      "resolution_max_b1": [
+        {
+          "update": 2346,
+          "epoch": 6,
+          "before": {
+            "resolution": 16,
+            "sigma": null
+          },
+          "after": {
+            "resolution": 24,
+            "sigma": null
+          }
+        },
+        {
+          "update": 4692,
+          "epoch": 12,
+          "before": {
+            "resolution": 24,
+            "sigma": null
+          },
+          "after": {
+            "resolution": 32,
+            "sigma": null
+          }
+        }
+      ],
+      "gaussian_postrelu": [
+        {
+          "update": 1173,
+          "epoch": 3,
+          "before": {
+            "resolution": null,
+            "sigma": 1.0
+          },
+          "after": {
+            "resolution": null,
+            "sigma": 0.85
+          }
+        },
+        {
+          "update": 2346,
+          "epoch": 6,
+          "before": {
+            "resolution": null,
+            "sigma": 0.85
+          },
+          "after": {
+            "resolution": null,
+            "sigma": 0.7
+          }
+        },
+        {
+          "update": 3519,
+          "epoch": 9,
+          "before": {
+            "resolution": null,
+            "sigma": 0.7
+          },
+          "after": {
+            "resolution": null,
+            "sigma": 0.6
+          }
+        },
+        {
+          "update": 4692,
+          "epoch": 12,
+          "before": {
+            "resolution": null,
+            "sigma": 0.6
+          },
+          "after": {
+            "resolution": null,
+            "sigma": 0.5
+          }
+        },
+        {
+          "update": 5865,
+          "epoch": 15,
+          "before": {
+            "resolution": null,
+            "sigma": 0.5
+          },
+          "after": {
+            "resolution": null,
+            "sigma": 0.4
+          }
+        },
+        {
+          "update": 7038,
+          "epoch": 18,
+          "before": {
+            "resolution": null,
+            "sigma": 0.4
+          },
+          "after": {
+            "resolution": null,
+            "sigma": 0.3
+          }
+        },
+        {
+          "update": 8211,
+          "epoch": 21,
+          "before": {
+            "resolution": null,
+            "sigma": 0.3
+          },
+          "after": {
+            "resolution": null,
+            "sigma": 0.0
+          }
+        }
+      ],
+      "resolution_max_b1_gaussian_conv": [
+        {
+          "update": 1173,
+          "epoch": 3,
+          "before": {
+            "resolution": 16,
+            "sigma": 1.0
+          },
+          "after": {
+            "resolution": 16,
+            "sigma": 0.85
+          }
+        },
+        {
+          "update": 2346,
+          "epoch": 6,
+          "before": {
+            "resolution": 16,
+            "sigma": 0.85
+          },
+          "after": {
+            "resolution": 24,
+            "sigma": 0.7
+          }
+        },
+        {
+          "update": 3519,
+          "epoch": 9,
+          "before": {
+            "resolution": 24,
+            "sigma": 0.7
+          },
+          "after": {
+            "resolution": 24,
+            "sigma": 0.6
+          }
+        },
+        {
+          "update": 4692,
+          "epoch": 12,
+          "before": {
+            "resolution": 24,
+            "sigma": 0.6
+          },
+          "after": {
+            "resolution": 32,
+            "sigma": 0.5
+          }
+        },
+        {
+          "update": 5865,
+          "epoch": 15,
+          "before": {
+            "resolution": 32,
+            "sigma": 0.5
+          },
+          "after": {
+            "resolution": 32,
+            "sigma": 0.4
+          }
+        },
+        {
+          "update": 7038,
+          "epoch": 18,
+          "before": {
+            "resolution": 32,
+            "sigma": 0.4
+          },
+          "after": {
+            "resolution": 32,
+            "sigma": 0.3
+          }
+        },
+        {
+          "update": 8211,
+          "epoch": 21,
+          "before": {
+            "resolution": 32,
+            "sigma": 0.3
+          },
+          "after": {
+            "resolution": 32,
+            "sigma": 0.0
+          }
+        }
+      ]
+    }
+  },
+  "account_seeds": {
+    "maxnicaise": [
+      0
+    ],
+    "maxlefrr": [
+      1,
+      4
+    ],
+    "maxnikezz": [
+      2
+    ],
+    "maximemonstrenikez": [
+      3
+    ]
+  },
+  "loss": "mean cross-entropy without weight decay; accuracy separate",
+  "subsets": {
+    "train_probe_idx": "v1, 1,000 train (100/class)",
+    "test_probe_idx": "v1, 1,000 test (100/class)",
+    "calibration_train_idx": "v1, 2,000 train (200/class), disjoint from train probe",
+    "calibration_large_train_idx": "10,000 train (1,000/class) superset of the 2k calibration, disjoint from train probe",
+    "train_large_idx": "10,000 train (1,000/class) superset of the train probe, disjoint from both calibration sets",
+    "full": "train_full = 50,000 train, test_full = 10,000 test"
+  },
+  "bn_policies": {
+    "saved": "checkpoint running statistics, reloaded before each evaluation",
+    "recalibrated": "reset; cumulative average over calib2k, fixed order, batches of 500, training mode, no_grad, under the evaluated state; inference-mode evaluation"
+  },
+  "directions": {
+    "construction": "Li et al. filter-wise: conv output-channel blocks and fc rows; biases and BN affine fixed; zero-norm blocks -> zero; normalised once at the reference checkpoint; no orthogonalisation",
+    "count": 20,
+    "seed_rule": "derive_seed(training_seed, 'landscape_v2::direction::k'), torch CPU generator, float32 underlying draws shared by the four methods of a seed"
+  },
+  "primary_sensitivity": {
+    "center": "epoch_030",
+    "state": "final target (full resolution, no filter)",
+    "amplitudes": [
+      0.025,
+      0.05,
+      0.1,
+      0.2,
+      0.25
+    ],
+    "signs": [
+      1,
+      -1
+    ],
+    "policies": [
+      "saved",
+      "recalibrated"
+    ],
+    "splits": [
+      "train_probe",
+      "test_probe"
+    ],
+    "statistic": "S = (L(+e) + L(-e))/2 - L(0), averaged over 20 directions within each seed, then paired vs plain per seed"
+  },
+  "validation": {
+    "directions": [
+      0,
+      1
+    ],
+    "amplitudes": [
+      0.1,
+      0.25
+    ],
+    "signs": [
+      1,
+      -1
+    ],
+    "splits": [
+      "train_large",
+      "test_full"
+    ],
+    "policies": [
+      "saved",
+      "recalibrated"
+    ],
+    "centers": [
+      "train_full",
+      "test_full"
+    ]
+  },
+  "calibration_sensitivity": {
+    "seeds": [
+      0
+    ],
+    "directions": [
+      0,
+      1
+    ],
+    "amplitudes": [
+      0.1,
+      0.25
+    ],
+    "signs": [
+      1,
+      -1
+    ],
+    "calibration": "calib10k",
+    "splits": [
+      "train_probe",
+      "test_probe"
+    ]
+  },
+  "surfaces": {
+    "directions": [
+      0,
+      1
+    ],
+    "range": [
+      -0.25,
+      0.25
+    ],
+    "grid_all_seeds": 21,
+    "grid_primary_seed": 41,
+    "primary_display": {
+      "seed": 0,
+      "pair": [
+        0,
+        1
+      ]
+    },
+    "policy": "recalibrated",
+    "state": "final target"
+  },
+  "fixed_weight": {
+    "rule": "first and last transition of each schedule; checkpoint taken at the transition update (weights after the last update of the old state)",
+    "selected": {
+      "resolution_max_b1": [
+        {
+          "transition": {
+            "update": 2346,
+            "epoch": 6,
+            "before": {
+              "resolution": 16,
+              "sigma": null
+            },
+            "after": {
+              "resolution": 24,
+              "sigma": null
+            }
+          },
+          "states": [
+            [
+              "before",
+              {
+                "resolution": 16,
+                "sigma": null
+              }
+            ],
+            [
+              "after",
+              {
+                "resolution": 24,
+                "sigma": null
+              }
+            ],
+            [
+              "r=32",
+              {
+                "resolution": 32,
+                "sigma": null
+              }
+            ]
+          ]
+        },
+        {
+          "transition": {
+            "update": 4692,
+            "epoch": 12,
+            "before": {
+              "resolution": 24,
+              "sigma": null
+            },
+            "after": {
+              "resolution": 32,
+              "sigma": null
+            }
+          },
+          "states": [
+            [
+              "before",
+              {
+                "resolution": 24,
+                "sigma": null
+              }
+            ],
+            [
+              "after",
+              {
+                "resolution": 32,
+                "sigma": null
+              }
+            ],
+            [
+              "r=16",
+              {
+                "resolution": 16,
+                "sigma": null
+              }
+            ]
+          ]
+        }
+      ],
+      "gaussian_postrelu": [
+        {
+          "transition": {
+            "update": 1173,
+            "epoch": 3,
+            "before": {
+              "resolution": null,
+              "sigma": 1.0
+            },
+            "after": {
+              "resolution": null,
+              "sigma": 0.85
+            }
+          },
+          "states": [
+            [
+              "before",
+              {
+                "resolution": null,
+                "sigma": 1.0
+              }
+            ],
+            [
+              "after",
+              {
+                "resolution": null,
+                "sigma": 0.85
+              }
+            ],
+            [
+              "final",
+              {
+                "resolution": null,
+                "sigma": 0.0
+              }
+            ]
+          ]
+        },
+        {
+          "transition": {
+            "update": 8211,
+            "epoch": 21,
+            "before": {
+              "resolution": null,
+              "sigma": 0.3
+            },
+            "after": {
+              "resolution": null,
+              "sigma": 0.0
+            }
+          },
+          "states": [
+            [
+              "before",
+              {
+                "resolution": null,
+                "sigma": 0.3
+              }
+            ],
+            [
+              "after",
+              {
+                "resolution": null,
+                "sigma": 0.0
+              }
+            ]
+          ]
+        }
+      ],
+      "resolution_max_b1_gaussian_conv": [
+        {
+          "transition": {
+            "update": 1173,
+            "epoch": 3,
+            "before": {
+              "resolution": 16,
+              "sigma": 1.0
+            },
+            "after": {
+              "resolution": 16,
+              "sigma": 0.85
+            }
+          },
+          "states": [
+            [
+              "before",
+              {
+                "resolution": 16,
+                "sigma": 1.0
+              }
+            ],
+            [
+              "after",
+              {
+                "resolution": 16,
+                "sigma": 0.85
+              }
+            ],
+            [
+              "final",
+              {
+                "resolution": 32,
+                "sigma": 0.0
+              }
+            ]
+          ]
+        },
+        {
+          "transition": {
+            "update": 8211,
+            "epoch": 21,
+            "before": {
+              "resolution": 32,
+              "sigma": 0.3
+            },
+            "after": {
+              "resolution": 32,
+              "sigma": 0.0
+            }
+          },
+          "states": [
+            [
+              "before",
+              {
+                "resolution": 32,
+                "sigma": 0.3
+              }
+            ],
+            [
+              "after",
+              {
+                "resolution": 32,
+                "sigma": 0.0
+              }
+            ]
+          ]
+        }
+      ]
+    },
+    "directions_1d": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "amplitudes": [
+      0.025,
+      0.05,
+      0.1,
+      0.2,
+      0.25
+    ],
+    "policy": "recalibrated per state (saved-statistics centre losses also recorded)",
+    "surfaces": "primary seed, 21x21, directions 0/1"
+  },
+  "pca": {
+    "vector": "all learned parameters incl. BN affine; running statistics excluded",
+    "fit_points": "epoch checkpoints 0..30 of the four methods (matched, evenly spaced)",
+    "projected_afterwards": "transition-window checkpoints",
+    "components_saved": 10,
+    "normalisation": "none (no filter-wise normalisation)",
+    "background": "primary seed, 31x31 over projected range +20%, target state, recalibrated"
+  },
+  "interpolation": {
+    "segments": [
+      [
+        "plain",
+        "resolution_max_b1"
+      ],
+      [
+        "plain",
+        "gaussian_postrelu"
+      ],
+      [
+        "plain",
+        "resolution_max_b1_gaussian_conv"
+      ],
+      [
+        "resolution_max_b1",
+        "resolution_max_b1_gaussian_conv"
+      ]
+    ],
+    "points": 51,
+    "state": "final target",
+    "policy": "recalibrated",
+    "barrier": "max_alpha L - max(L(0), L(1)) on the grid"
+  },
+  "priorities": [
+    "training + preservation",
+    "primary 1-D both policies",
+    "validation + interpolation",
+    "fixed-weight 1-D + trajectory diagnostics",
+    "surfaces"
+  ],
+  "not_done": [
+    "optimised connecting paths",
+    "Hessian analysis",
+    "method tuning"
+  ]
+}

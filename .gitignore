@@ -7,6 +7,16 @@
 # ...except the pinned reference assets, which are versioned with their hashes
 !/assets/**/*.pt
 !/assets/**/*.npz
+# landscape-study binaries stay local (checkpoints, direction draws, PCA bases,
+# Hessian vectors, input copies: ~1.5 GB); each is listed with its sha256 in the
+# committed manifests (runs_manifest.json, eval_manifest.json, inputs manifests).
+# Only the small evaluation-subset index files are versioned.
+!/studies/*/inputs/subsets.npz
+/studies/*/inputs/weights/
+/studies/*/kaggle_stage/
+/studies/*/kernel_job*/
+/studies/*/kernel_*/
+/studies/*/raw/*/_repo/
 __pycache__/
 *.pyc
 .pytest_cache/
