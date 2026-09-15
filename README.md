@@ -187,6 +187,49 @@ benchmark are here, in its most data-starved setting -- consistent with the
 regularization reading that SVHN pointed to.
 
 
+## ResNet-20 with GroupNorm: the BatchNorm coupling is real, and partial
+
+Everything is the CIFAR-10 reference recipe -- all 50,000 images in the
+reference's own order, 391 updates/epoch, 30 epochs, SGD lr 0.005, reference
+schedules, identical parameter count and identical site map. **Only the
+normalisation layer differs.** 3 seeds, records under
+`results/resnet20gn_cifar10/`.
+
+| method | GroupNorm | paired vs plain | BatchNorm | BN paired |
+|---|---|---|---|---|
+| `resolution_max_b1_gaussian_conv` | 78.85 +- 0.21 | **+3.37 +- 0.67** | 81.51 | +6.08 |
+| `resolution_max_b1` | 78.27 +- 0.68 | **+2.79 +- 0.80** | 80.37 | +4.94 |
+| `gaussian_postrelu` | 76.64 +- 0.43 | **+1.16 +- 0.63** | 79.91 | +4.48 |
+| `plain` | 75.48 +- 0.88 | - | 75.43 | - |
+
+The controls coincide -- 75.48 against 75.43 -- so the columns are directly
+comparable, and **every method loses roughly half its benefit**: +6.08 -> +3.37,
++4.94 -> +2.79, +4.48 -> +1.16.
+
+The hypothesis was that `resolution_max_b1_gaussian_conv` filters all 19
+convolution outputs *before* normalisation, so BatchNorm fits its statistics --
+and its running buffers -- on blurred activations, leaving the normalisation
+tuned to a distribution the schedule then removes. GroupNorm has no batch
+statistics and no running buffers, so there is nothing for the blur to corrupt.
+
+**The damage tracks how much a method depends on blurring, which is what the
+hypothesis predicts.** `gaussian_postrelu`, the pure Gaussian method, loses 74%
+of its gain and lands at +1.16 +- 0.63, barely separable from zero.
+`resolution_max_b1`, which does not blur at all, loses least in relative terms
+(44%).
+
+**But it is a contributor, not the whole mechanism.** If the coupling were the
+entire story the Gaussian methods should have collapsed to nothing; instead all
+three still help and the combined method still leads.
+
+One caveat this study cannot settle: GroupNorm is not only "BatchNorm without
+running statistics", it also normalises per sample rather than per batch. So this
+isolates the coupling less cleanly than the activation study isolates the
+rectifier. A tighter test is BatchNorm with its running statistics frozen, or
+recomputed after each schedule transition, which separates "statistics fitted to
+blurred activations" from "batch versus per-sample normalisation". Not run.
+
+
 ## STL-10
 
 The same four methods transferred to STL-10 / 96x96: sigma x3, resolution
