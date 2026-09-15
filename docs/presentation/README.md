@@ -9,6 +9,11 @@ browser; it needs no server and no build step.
 It is also published as an artifact:
 <https://claude.ai/artifact/Grg5d6D2tgsjMk4oghzbYn>
 
+[`SPEAKER_NOTES.md`](SPEAKER_NOTES.md) is the companion: what to say on each
+plate, the question each one attracts, and the eight theoretical axes these
+measurements call for — also published, at
+<https://claude.ai/artifact/KHdmwx12uiCBqmtkF6czXC>
+
 ## Where its numbers come from
 
 `data.json` is generated, never edited by hand:
