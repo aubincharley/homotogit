@@ -178,20 +178,25 @@ activations than the baseline they are measured against.
 
 **Hypotheses tested**
 
-| hypothesis | verdict | killed or confirmed by |
-|---|---|---|
-| the recovery window after G -> 0 explains STL-10 | **dead** | CIFAR-10 5k arm A: +10.62 pp on STL-10's exact 720-update budget |
-| ReLU's exact-zero sparsity is required | **dead** | GELU and SiLU both reproduce ReLU within 0.5 pp |
-| residual connections are required | **dead** | VGG-11: all three methods positive |
-| a prior over natural-image scale structure | **dead** | SVHN: 25% error reduction, same as CIFAR-10 |
-| the blur / BatchNorm coupling | **partly confirmed** | GroupNorm: about half the effect, and the loss tracks how much each method blurs |
+Each row states what the evidence licenses, not more. All of it rests on 3 seeds
+against a 0.5-1 pp run-to-run spread, which rules out effects the size of the
+ones measured (4-6 pp), not small ones.
 
-Nothing found so far removes the effect. Four structural explanations have been
-tested and four have failed to account for it; the normalisation coupling
-accounts for roughly half. What survives across every dataset and architecture is
-the reading SVHN and the CIFAR-10 subsets point at: these behave as regularisers
-whose benefit scales with how much the model is overfitting, largely indifferent
-to image statistics, activation function and residual structure.
+| hypothesis | verdict | evidence, and its limit |
+|---|---|---|
+| ReLU's exact-zero sparsity is required | **not required** | GELU and SiLU each reproduce ReLU within 0.5 pp from the *identical* pinned initial weights and data order. The prediction was directional and specific -- gaps shrink, most for `gaussian_postrelu` -- and that method came out *above* its ReLU value under both. One dataset, one architecture. |
+| residual connections are required | **not required** | VGG-11, all three methods positive. But not *irrelevant*: the ordering changes and the combined method loses 2.2 pp, plausibly to the 1x1 tail. Necessity was tested; relevance was not. |
+| the effect is a prior over natural-image scale structure | **not sensitive to this contrast** | SVHN removes 25% of the control's error, the same as CIFAR-10. But SVHN is still natural photography -- cropped house numbers. One contrast between two photographic datasets cannot carry the broader claim. |
+| the recovery window after G -> 0 explains STL-10 | **not sufficient; untested at 96x96** | CIFAR-10 5k arm A runs STL-10's exact 720-update budget at 32x32 and makes the combined method the *best* of the four, so the window alone does not explain it. It does not exclude an interaction where 96x96 needs longer -- bigger maps, 25-tap kernels, sigma up to 1.575 at 19 pre-norm sites. |
+| the blur / BatchNorm coupling | **partly confirmed** | GroupNorm removes about half the effect and the loss tracks how much each method blurs. Confounded: GroupNorm also normalises per sample rather than per batch. |
+
+Nothing tested so far removes the effect. Four structural explanations have
+failed to account for it and the normalisation coupling accounts for roughly
+half. What survives across every dataset and architecture is the reading SVHN and
+the CIFAR-10 subsets point at: these behave as regularisers whose benefit scales
+with how much the model is overfitting, and which are insensitive to the
+activation function, to residual structure, and to the image-statistics contrast
+tested here.
 
 
 ## SVHN
