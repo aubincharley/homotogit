@@ -1,0 +1,1070 @@
+<!doctype html>
+<html lang="fr"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;font:14px system-ui,-apple-system,sans-serif;background:#faf9f7}
+img{max-width:100%}[hidden]{display:none!important}
+</style>
+</head><body>
+<!-- Standalone copy of the published presentation.  The doctype/head above and
+     the closing tags below are what the artifact host supplies automatically;
+     everything between them is the page itself.  Rebuild the data it reads with
+     tools/build_presentation_data.py. -->
+<title>Trois dissociations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  color-scheme: light;
+  --bg:#edeff1; --panel:#f7f8f8; --surface:#fcfcfb;
+  --ink:#12161a; --ink2:#4b525a; --ink3:#7d848d;
+  --rule:#d3d8dd; --rule2:#e6e9ec;
+  --accent:#2a78d6; --warm:#eb6834;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#4a3aa7;
+  --grid:#e2e6ea; --axis:#aeb5bc;
+  --shadow:0 1px 2px rgba(16,22,28,.05), 0 8px 24px -12px rgba(16,22,28,.18);
+  --display:'Archivo',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --body:'Source Serif 4',Georgia,'Times New Roman',serif;
+  --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme: dark;
+    --bg:#101211; --panel:#161817; --surface:#1a1a19;
+    --ink:#f2f3f1; --ink2:#b6bbbe; --ink3:#868b90;
+    --rule:#2d3130; --rule2:#232625;
+    --accent:#3987e5; --warm:#d95926;
+    --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#9085e9;
+    --grid:#26292a; --axis:#4d5254;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px -14px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --bg:#101211; --panel:#161817; --surface:#1a1a19;
+  --ink:#f2f3f1; --ink2:#b6bbbe; --ink3:#868b90;
+  --rule:#2d3130; --rule2:#232625;
+  --accent:#3987e5; --warm:#d95926;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#9085e9;
+  --grid:#26292a; --axis:#4d5254;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px -14px rgba(0,0,0,.7);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:var(--body);font-size:16.5px;line-height:1.62;
+  -webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+.wrap{max-width:1120px;margin:0 auto;padding-inline:20px;padding-block:0}
+h1,h2,h3,.eyebrow,.num,th,.tag,figcaption b{font-family:var(--display)}
+h1{font-size:clamp(2.4rem,6.4vw,4.1rem);line-height:1.02;font-weight:700;
+  letter-spacing:-.025em;margin:0;text-wrap:balance}
+h2{font-size:clamp(1.5rem,3.2vw,2.15rem);line-height:1.12;font-weight:600;
+  letter-spacing:-.018em;margin:.1rem 0 0;text-wrap:balance;max-width:24ch}
+h3{font-size:1.02rem;font-weight:600;letter-spacing:.005em;margin:0 0 .35rem}
+p{margin:0 0 .85em;max-width:66ch}
+a{color:var(--accent)}
+code,.mono{font-family:var(--mono);font-size:.88em;letter-spacing:-.01em}
+.eyebrow{font-size:.7rem;font-weight:600;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink3)}
+
+/* ---- cover ---- */
+header.cover{border-bottom:1px solid var(--rule);background:var(--panel)}
+.cover .wrap{padding-block:clamp(3rem,9vw,6.5rem) clamp(2.2rem,5vw,3.4rem)}
+.cover .kicker{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;margin-bottom:1.5rem}
+.tag{font-size:.68rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+  border:1px solid var(--rule);border-radius:2px;padding:.28rem .5rem;color:var(--ink2);
+  background:var(--surface)}
+.cover .lede{font-size:clamp(1.05rem,2.1vw,1.28rem);color:var(--ink2);margin-top:1.4rem;max-width:62ch}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;
+  background:var(--rule);border:1px solid var(--rule);margin-top:2.6rem}
+.fact{background:var(--panel);padding:.85rem 1rem}
+.fact b{display:block;font-family:var(--mono);font-size:1.5rem;font-weight:500;letter-spacing:-.02em}
+.fact span{display:block;font-size:.76rem;color:var(--ink3);margin-top:.15rem;line-height:1.35}
+
+/* ---- plates ---- */
+section.plate{border-bottom:1px solid var(--rule2);padding-block:clamp(2.6rem,6vw,4.4rem)}
+section.plate:nth-of-type(even){background:var(--panel)}
+.plate-head{display:grid;grid-template-columns:auto 1fr;gap:1.1rem;align-items:start;
+  margin-bottom:1.6rem}
+.num{font-family:var(--mono);font-size:.78rem;font-weight:500;color:var(--ink3);
+  border:1px solid var(--rule);border-radius:50%;width:2.15rem;height:2.15rem;
+  display:grid;place-items:center;flex:none;margin-top:.1rem}
+.claim{font-size:clamp(1.02rem,2vw,1.15rem);color:var(--ink2);margin-top:.7rem;max-width:64ch}
+.claim strong{color:var(--ink);font-weight:600}
+
+/* ---- figure card ---- */
+figure{margin:0 0 1.5rem;background:var(--surface);border:1px solid var(--rule);
+  border-radius:3px;box-shadow:var(--shadow);overflow:hidden}
+.fig-top{padding:1rem 1.15rem .3rem;display:flex;flex-wrap:wrap;gap:.6rem 1.4rem;
+  align-items:baseline;justify-content:space-between}
+.fig-top h3{margin:0}
+.fig-top .unit{font-family:var(--mono);font-size:.74rem;color:var(--ink3)}
+.legend{display:flex;flex-wrap:wrap;gap:.35rem .95rem;padding:.35rem 1.15rem .2rem}
+.legend span{display:inline-flex;align-items:center;gap:.38rem;font-size:.8rem;color:var(--ink2)}
+.legend i{width:.72rem;height:.72rem;border-radius:2px;display:block;flex:none}
+.legend i.line{height:.2rem;width:1rem;border-radius:1px}
+.plot{padding:.2rem .5rem .5rem}
+.plot svg{display:block;width:100%;height:auto;overflow:visible}
+figcaption{padding:.5rem 1.15rem 1.05rem;font-size:.88rem;color:var(--ink2);
+  border-top:1px solid var(--rule2);margin-top:.35rem;padding-top:.8rem}
+figcaption b{color:var(--ink);font-weight:600}
+details.data{border-top:1px solid var(--rule2)}
+details.data summary{padding:.55rem 1.15rem;font-family:var(--display);font-size:.75rem;
+  font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);cursor:pointer}
+details.data summary:hover{color:var(--ink)}
+details.data .scroll{overflow-x:auto;padding:0 1.15rem 1rem}
+
+/* ---- tables ---- */
+table{border-collapse:collapse;font-size:.85rem;width:100%;min-width:min(100%,520px)}
+th,td{text-align:right;padding:.36rem .6rem;border-bottom:1px solid var(--rule2);
+  white-space:nowrap}
+th{font-size:.7rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--ink3);border-bottom:1px solid var(--rule)}
+th:first-child,td:first-child{text-align:left}
+td.mono,td:not(:first-child){font-family:var(--mono);font-variant-numeric:tabular-nums}
+tr.hi td{background:color-mix(in srgb,var(--accent) 7%,transparent)}
+.neg{color:var(--s1)} .pos{color:var(--s2)}
+
+/* ---- notes ---- */
+.notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.1rem;
+  margin-top:1.5rem}
+.note{border-left:2px solid var(--rule);padding-left:.95rem}
+.note.read{border-left-color:var(--accent)}
+.note.limit{border-left-color:var(--warm)}
+.note h3{font-size:.72rem;letter-spacing:.13em;text-transform:uppercase;color:var(--ink3);
+  margin-bottom:.4rem}
+.note p{font-size:.93rem;margin:0 0 .6em}
+.note p:last-child{margin-bottom:0}
+
+ul.clean{margin:.2rem 0 0;padding-left:1.05rem;max-width:66ch}
+ul.clean li{margin-bottom:.5rem}
+ul.clean li::marker{color:var(--ink3)}
+
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5rem}
+
+/* ---- tooltip ---- */
+#tip{position:fixed;z-index:50;pointer-events:none;background:var(--ink);color:var(--bg);
+  font-family:var(--mono);font-size:.74rem;line-height:1.45;padding:.4rem .55rem;
+  border-radius:3px;max-width:15rem;box-shadow:0 6px 20px -8px rgba(0,0,0,.5)}
+[data-tip]{cursor:crosshair}
+footer{padding-block:2.6rem 3.4rem;color:var(--ink3);font-size:.85rem}
+footer .wrap{display:flex;flex-wrap:wrap;gap:1rem 2rem;justify-content:space-between}
+@media (prefers-reduced-motion:no-preference){
+  .plot svg .mark{transition:opacity .12s ease}
+}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+</style>
+
+<div id="tip" hidden></div>
+
+<header class="cover">
+  <div class="wrap">
+    <div class="kicker">
+      <span class="tag">CIFAR-10 · ResNet-20BN</span>
+      <span class="tag">28 cellules · 20 conditions</span>
+      <span class="tag">deux études indépendantes</span>
+    </div>
+    <h1>Trois dissociations</h1>
+    <p class="lede">Le flou gaussien et la réduction de résolution font gagner le
+      même nombre de points. Ce jeu de mesures montre qu’ils ne le font pas de la
+      même façon — et qu’aucune des quantités mesurées ne se comporte comme le
+      bouton de réglage qu’on espérait.</p>
+    <div class="facts">
+      <div class="fact"><b>0,25 pp</b><span>accord entre trois exécutions indépendantes</span></div>
+      <div class="fact"><b>36 / 36</b><span>mesures de courbure qui gardent le signe</span></div>
+      <div class="fact"><b>−8,8 % / +4,6 %</b><span>décalage fréquentiel : flou / résolution</span></div>
+      <div class="fact"><b>+0,08</b><span>meilleure corrélation intra-groupe (contre +0,83 poolée)</span></div>
+      <div class="fact"><b>1,00</b><span>plafond de détection — le test pouvait répondre</span></div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<!-- 1 -->
+<section class="plate"><div class="wrap">
+  <div class="plate-head"><div class="num">01</div><div>
+    <div class="eyebrow">Le dispositif</div>
+    <h2>Un opérateur qui s’éteint avant la fin de l’entraînement</h2>
+    <p class="claim">Les quatre méthodes partagent l’architecture, les données et
+      l’optimiseur. Elles ne diffèrent que par un opérateur <code>T<sub>η</sub></code>
+      inséré dans le réseau et par le calendrier <code>η(k)</code> qui l’éteint.
+      <strong>À l’époque 21 les deux familles sont à l’identité exacte</strong> : les
+      neuf dernières époques entraînent le même réseau nu. Ce qu’on mesure ensuite
+      est donc une <em>trace</em> laissée par le curriculum, pas l’opérateur lui-même.</p>
+  </div></div>
+
+  <figure>
+    <div class="fig-top"><h3>Calendriers effectifs, époques 0–29</h3>
+      <span class="unit">σ en pixels de la carte d’activation · r en pixels au block1</span></div>
+    <div class="legend" id="lg-sched"></div>
+    <div class="plot" id="fig-sched"></div>
+    <figcaption><b>Le σ effectif de la méthode combinée n’est pas monotone.</b>
+      Le facteur <code>r(e)/32</code> s’applique aux 19 sites, y compris ceux qui tournent
+      en 32×32 en amont de la réduction : σ remonte de 0,425 à 0,525 au passage
+      16→24. C’est ce que le contrôleur exécutait ; c’est conservé tel quel plutôt
+      que « corrigé ».</figcaption>
+    <details class="data"><summary>Données</summary><div class="scroll" id="tb-sched"></div></details>
+  </figure>
+
+  <div class="notes">
+    <div class="note read"><h3>Pourquoi ces quatre-là</h3>
+      <p><code>resolution_max_b1_gaussian_conv</code> n’est <em>pas</em> la somme des
+      deux autres : 19 sites avant BatchNorm contre 10 après ReLU, et un σ mis à
+      l’échelle. Les écarts entre lignes confondent placement, nombre de sites et
+      échelle de σ.</p></div>
+    <div class="note limit"><h3>Ce que la grille ajoute</h3>
+      <p>Quatre méthodes font quatre points : trop peu pour lire une corrélation.
+      D’où 20 conditions — trois graines plus quatre variantes d’optimiseur par
+      méthode — qui étalent l’exactitude sur <strong>12,5 points</strong> au lieu de 5,4.</p></div>
+  </div>
+</div></section>
+
+<!-- 2 -->
+<section class="plate"><div class="wrap">
+  <div class="plate-head"><div class="num">02</div><div>
+    <div class="eyebrow">Point de départ</div>
+    <h2>Le gain se reproduit, et il ne vient pas d’un meilleur ajustement</h2>
+    <p class="claim">Trois exécutions indépendantes — dont deux par des personnes
+      différentes — donnent les mêmes moyennes <strong>à 0,25 pp près</strong>. Et les
+      trois curricula atteignent ce gain en <strong>ajustant moins bien le jeu
+      d’entraînement</strong> que le contrôle.</p>
+  </div></div>
+
+  <figure>
+    <div class="fig-top"><h3>Exactitude test à l’époque 30</h3>
+      <span class="unit">moyenne sur les graines · %</span></div>
+    <div class="legend" id="lg-acc"></div>
+    <div class="plot" id="fig-acc"></div>
+    <figcaption>Les trois sources : les sondes de point final (n = 3), l’étude de
+      paysage de perte du collègue (n = 5), et l’enregistrement de
+      <code>METHODS.md</code> (n = 3). <b>Les moyennes coïncident ; les dispersions
+      de graines, non</b> — voir la limite ci-dessous.</figcaption>
+    <details class="data"><summary>Données</summary><div class="scroll" id="tb-acc"></div></details>
+  </figure>
+
+  <div class="notes">
+    <div class="note read"><h3>Ce qu’on en retient</h3>
+      <p>Erreur d’entraînement : 0,057 pour le contrôle contre 0,084–0,101 pour les
+      curricula ; entropie croisée d’entraînement 0,20 contre 0,27–0,31 dans l’étude
+      de paysage. <strong>Le gain n’est pas une optimisation plus efficace.</strong></p></div>
+    <div class="note limit"><h3>Une rétractation</h3>
+      <p>Les écarts-types inter-graines de cette exécution (0,006–0,09 pour les
+      curricula) sont un ordre de grandeur plus serrés que les deux autres sources
+      (0,22–0,61). Deux jeux de données indépendants les contredisent :
+      <strong>aucune affirmation sur une réduction de la variance inter-graines ne
+      tient</strong>, et la cause reste inexpliquée.</p></div>
+  </div>
+</div></section>
+
+<!-- 3 -->
+<section class="plate"><div class="wrap">
+  <div class="plate-head"><div class="num">03</div><div>
+    <div class="eyebrow">Espace des poids</div>
+    <h2>Les solutions sont plus plates, et la jauge ne l’explique pas</h2>
+    <p class="claim">La trace de la hessienne de la perte tombe de
+      <strong>29,7 %, 31,4 % et 40,5 %</strong> sous le contrôle. La symétrie de
+      re-paramétrisation de BatchNorm — l’objection standard à toute mesure de
+      platitude — en explique <strong>au plus 2 %</strong>.</p>
+  </div></div>
+
+  <div class="two">
+  <figure>
+    <div class="fig-top"><h3>Trace de la hessienne</h3><span class="unit">tr H · Hutchinson déflaté, 64 tirages</span></div>
+    <div class="plot" id="fig-trh"></div>
+    <figcaption>Barres d’erreur = SEM de l’estimateur. La dispersion inter-graines
+      est de 258, soit <b>1,7 %</b> — bien en deçà des écarts mesurés.</figcaption>
+    <details class="data"><summary>Données</summary><div class="scroll" id="tb-trh"></div></details>
+  </figure>
+  <figure>
+    <div class="fig-top"><h3>Où vit la courbure</h3><span class="unit">tr H par bloc · échelle log</span></div>
+    <div class="legend" id="lg-blocks"></div>
+    <div class="plot" id="fig-blocks"></div>
+    <figcaption>Le contrôle passe de 248 au stem à 3 154 au block7–8. <b>Les bras
+      curriculum abaissent partout</b>, davantage en valeur absolue dans les blocs
+      profonds.</figcaption>
+    <details class="data"><summary>Données</summary><div class="scroll" id="tb-blocks"></div></details>
+  </figure>
+  </div>
+
+  <figure>
+    <div class="fig-top"><h3>La même mesure sous les deux politiques BatchNorm et les deux splits</h3>
+      <span class="unit">écart de tr H au contrôle · %</span></div>
+    <div class="legend" id="lg-bn"></div>
+    <div class="plot" id="fig-bn"></div>
+    <figcaption><b>36 mesures sur 36 gardent le signe.</b> L’étude de paysage ayant
+      montré que la politique BatchNorm renverse le classement du flou en sensibilité
+      à amplitude finie, les deux choix porteurs — statistiques stockées, split
+      d’évaluation — ont été testés plutôt que supposés : 4 méthodes × 3 graines ×
+      2 politiques × 2 splits. La courbure ne se renverse pas, et l’effet est
+      <b>plus grand sur les images de test</b> que sur celles d’entraînement.</figcaption>
+    <details class="data"><summary>Données</summary><div class="scroll" id="tb-bn"></div></details>
+  </figure>
+
+  <div class="notes">
+    <div class="note read"><h3>La jauge, explicitement</h3>
+      <p>Pour un couple conv→BN, <code>W→αW</code>, <code>mean→α·mean</code>,
+      <code>var→α²·var</code> laisse la sortie en mode évaluation strictement
+      inchangée. La distance minimale sur l’orbite vaut
+      <code>Σ‖W₀‖²sin²θ</code> ; elle représente <strong>3 % de 13,6</strong>, et au plus
+      2 % de l’écart de tr H. L’objection de Dinh et al. ne s’applique pas ici.</p></div>
+    <div class="note limit"><h3>Ce que la politique change</h3>
+      <p>Elle change <em>l’ampleur</em> d’un facteur 4,1 à 7,9 — ce qui reproduit le
+      facteur 3–7 rapporté par l’étude de paysage sur <code>S(ε)</code>. Une bonne
+      part de ce que mesurent des statistiques gelées est un <strong>désaccord de
+      statistiques, pas de la géométrie</strong>. L’effet curriculum survit à cette
+      déflation mais rétrécit : −30,3 % devient −19,2 % pour le flou.</p></div>
+  </div>
+</div></section>
+
+<!-- 4 -->
+<section class="plate"><div class="wrap">
+  <div class="plate-head"><div class="num">04</div><div>
+    <div class="eyebrow">Le résultat central</div>
+    <h2>Le flou déplace le spectre ; la réduction de résolution ne le déplace pas</h2>
+    <p class="claim">Le profil radial du jacobien d’entrée donne la répartition de
+      la sensibilité de la fonction à travers les fréquences spatiales — exactement,
+      par Parseval, sans échantillonner de directions.
+      <strong>Le flou abaisse le rayon moyen de 8,8 % ; la réduction de résolution le
+      remonte de 4,6 %. Les deux améliorent l’erreur test de ~17 %.</strong></p>
+  </div></div>
+
+  <figure>
+    <div class="fig-top"><h3>Profil fréquentiel de la sensibilité</h3>
+      <span class="unit">énergie par mode, anneau de rayon k · traits verticaux : rayon moyen</span></div>
+    <div class="legend" id="lg-freq"></div>
+    <div class="plot" id="fig-freq"></div>
+    <figcaption>Somme des ‖Je‖² sur une famille orthonormée d’anneaux : c’est
+      l’énergie DFT de l’anneau, donc le profil est <b>exact</b> et non estimé.
+      <b>La courbe du flou est décalée vers la gauche ; celle de la résolution est
+      décalée vers la droite.</b></figcaption>
+    <details class="data"><summary>Données</summary><div class="scroll" id="tb-freq"></div></details>
+  </figure>
+
+  <figure>
+    <div class="fig-top"><h3>Décalage spectral contre gain de généralisation</h3>
+      <span class="unit">écart au contrôle · %</span></div>
+    <div class="legend" id="lg-diss"></div>
+    <div class="plot" id="fig-diss"></div>
+    <figcaption><b>Même gain, signes opposés sur le spectre.</b> Un biais basse
+      fréquence ne peut donc pas être le mécanisme commun. Il est réel, et il est
+      <b>spécifique au flou</b>.</figcaption>
+    <details class="data"><summary>Données</summary><div class="scroll" id="tb-diss"></div></details>
+  </figure>
+
+  <div class="notes">
+    <div class="note read"><h3>Ce que les deux partagent quand même</h3>
+      <p>Pas la répartition de la sensibilité — sa <strong>taille</strong>.
+      ‖J‖<sub>F</sub> tombe de 47,8 % et 30,2 %, et la réponse à échelle finie
+      <code>S(3)</code> de 12,9 % et 16,5 %. C’est un contraste partagé, pas un
+      mécanisme commun.</p></div>
+    <div class="note limit"><h3>Une deuxième dissociation, ailleurs</h3>
+      <p>L’étude de paysage trouve la même asymétrie dans un espace sans machinerie
+      commune : la sensibilité aux perturbations de poids <em>recalibrée</em> monte de
+      <strong>+43 % à +108 %</strong> pour le flou (5 graines sur 5) et descend de
+      <strong>32 %</strong> pour la résolution. <strong>Deux espaces de mesure, et c’est
+      le bras « flou » qui est singulier dans les deux.</strong></p></div>
+  </div>
+</div></section>
+
+<!-- 5 -->
+<section class="plate"><div class="wrap">
+  <div class="plate-head"><div class="num">05</div><div>
+    <div class="eyebrow">Une contrainte structurelle</div>
+    <h2>Il n’y a aucun régime linéaire accessible</h2>
+    <p class="claim">Le rapport <code>S(ε) / (ε·σ<sub>max</sub>)</code> vaudrait 1 si une
+      description au premier ordre tenait. <strong>Il vaut déjà 0,32–0,47 à la plus
+      petite amplitude mesurable et 0,05–0,09 à ε = 3.</strong> Les quantités du premier
+      ordre décrivent une limite que cette fonction n’occupe jamais.</p>
+  </div></div>
+
+  <div class="two">
+  <figure>
+    <div class="fig-top"><h3>Rapport de linéarité</h3><span class="unit">S(ε)/(ε·σ<sub>max</sub>) · ε en échelle log</span></div>
+    <div class="legend" id="lg-lin"></div>
+    <div class="plot" id="fig-lin"></div>
+    <figcaption>La ligne à 1 est ce que prédirait le jacobien. <b>Aucune courbe ne
+      s’en approche</b>, à aucune échelle.</figcaption>
+    <details class="data"><summary>Données</summary><div class="scroll" id="tb-lin"></div></details>
+  </figure>
+  <figure>
+    <div class="fig-top"><h3>Réponse à amplitude finie</h3><span class="unit">S(ε) = déplacement des logits · ε en échelle log</span></div>
+    <div class="legend" id="lg-amp"></div>
+    <div class="plot" id="fig-amp"></div>
+    <figcaption>Recherche de la pire direction sous contrainte de boule. La réponse
+      <b>sature</b> puis remonte : le régime utile est étroit.</figcaption>
+    <details class="data"><summary>Données</summary><div class="scroll" id="tb-amp"></div></details>
+  </figure>
+  </div>
+
+  <figure>
+    <div class="fig-top"><h3>Le renversement : dérivée contre distance finie</h3>
+      <span class="unit">écart au contrôle · %</span></div>
+    <div class="legend" id="lg-rev"></div>
+    <div class="plot" id="fig-rev"></div>
+    <figcaption><b>Le flou mène sur la dérivée et suit à amplitude finie ; la
+      résolution fait l’inverse.</b> Le même renversement apparaît dans l’espace des
+      poids entre <code>tr H</code> (infinitésimal, plus bas pour le flou) et le
+      <code>S(ε)</code> recalibré de l’étude de paysage (ε = 0,025–0,25, plus haut pour
+      le flou). <b>Deux espaces indépendants, un seul motif.</b></figcaption>
+    <details class="data"><summary>Données</summary><div class="scroll" id="tb-rev"></div></details>
+  </figure>
+
+  <div class="notes">
+    <div class="note read"><h3>La conciliation</h3>
+      <p>Les deux études ne se contredisaient pas : elles mesuraient à deux échelles.
+      <strong>La courbure de la solution « flou » au point est plus basse ; sa réponse
+      à distance finie est plus haute.</strong> Les deux sont vraies du même réseau, et
+      c’est la troisième dissociation.</p></div>
+    <div class="note limit"><h3>Conséquence méthodologique</h3>
+      <p>C’est la raison <em>structurelle</em> pour laquelle σ<sub>max</sub> et
+      ‖J‖<sub>F</sub> échouent comme prédicteurs, et pas seulement une question de
+      finesse : <strong>ici, une mesure infinitésimale ne prédit pas une mesure
+      finie</strong>.</p></div>
+  </div>
+</div></section>
+
+<!-- 6 -->
+<section class="plate"><div class="wrap">
+  <div class="plate-head"><div class="num">06</div><div>
+    <div class="eyebrow">Le résultat négatif</div>
+    <h2>Aucune quantité ne se comporte comme un cadran</h2>
+    <p class="claim">20 conditions, écart exact, corrélations partielles contrôlant
+      l’erreur d’entraînement, Pearson <em>et</em> Spearman, Bonferroni sur les 25
+      quantités essayées, et la décomposition inter/intra-groupe.
+      <strong>Chaque coefficient poolé fort est un artefact de regroupement.</strong></p>
+  </div></div>
+
+  <figure>
+    <div class="fig-top"><h3>Coefficient poolé contre coefficient intra-groupe</h3>
+      <span class="unit">corrélation partielle avec l’erreur test, à erreur d’entraînement égale</span></div>
+    <div class="legend" id="lg-dial"></div>
+    <div class="plot" id="fig-dial"></div>
+    <figcaption>Les cellules de contrôle ont à la fois un grand prédicteur et une
+      grande cible : le chiffre poolé mesure <b>« est-ce un bras curriculum ? »</b>,
+      pas une relation. À l’intérieur des groupes il ne reste rien — les coefficients
+      intra-groupe poolés s’étalent de −0,41 à +0,24, aucun significatif.</figcaption>
+    <details class="data"><summary>Données</summary><div class="scroll" id="tb-dial"></div></details>
+  </figure>
+
+  <figure>
+    <div class="fig-top"><h3>Les deux nuages, vus directement</h3>
+      <span class="unit">S(0,05) contre erreur test · 20 conditions</span></div>
+    <div class="legend" id="lg-scat"></div>
+    <div class="plot" id="fig-scat"></div>
+    <figcaption>C’est la figure que le coefficient poolé de +0,83 décrit : <b>deux
+      groupes séparés, et à l’intérieur de chacun, rien</b>.</figcaption>
+    <details class="data"><summary>Données</summary><div class="scroll" id="tb-scat"></div></details>
+  </figure>
+
+  <div class="notes">
+    <div class="note read"><h3>Ce n’est pas un manque de puissance</h3>
+      <p>Le plafond de détection vaut <strong>1,00</strong> et l’étendue d’exactitude
+      12,5 points : la corrélation maximale que le bruit de mesure laisse observer est
+      essentiellement 1. <strong>Le test pouvait répondre, et la réponse est non.</strong></p></div>
+    <div class="note limit"><h3>Ce que cela rétracte</h3>
+      <p>Une étude exploratoire antérieure donnait la réponse à échelle finie dans la
+      pire direction comme prédicteur de l’erreur test à <strong>+0,72</strong>. Sur cette
+      grille, la même quantité donne <strong>+0,178</strong> à l’intérieur de la famille
+      curriculum. Elle reste une <em>signature partagée</em> — elle tombe de 12,9 %,
+      16,5 % et 18,6 % — mais c’est un contraste, pas un cadran.</p></div>
+  </div>
+</div></section>
+
+<!-- 7 -->
+<section class="plate"><div class="wrap">
+  <div class="plate-head"><div class="num">07</div><div>
+    <div class="eyebrow">La borne</div>
+    <h2>Toutes les routes PAC-Bayes essayées sont fermées</h2>
+    <p class="claim">La borne centrée sur l’initialisation était déjà vide d’un
+      facteur ~400 ; la platitude en rachète 1,65 et la jauge BatchNorm 1,06. Restait
+      à déplacer l’a priori sur une frontière de phase du calendrier. Il faudrait y
+      diviser ‖W* − W<sub>prior</sub>‖ par 20 à 40. <strong>Mesuré : à la frontière, le
+      réseau est plus loin de son point d’arrivée que toute la trajectoire n’est
+      longue.</strong></p>
+  </div></div>
+
+  <figure>
+    <div class="fig-top"><h3>Distance restant à parcourir depuis une frontière de phase</h3>
+      <span class="unit">‖W* − W(e)‖ · la ligne marque le déplacement total depuis l’initialisation</span></div>
+    <div class="legend" id="lg-pac"></div>
+    <div class="plot" id="fig-pac"></div>
+    <figcaption>Les frontières de <code>Rprog</code> sont aux époques 6 et 12. Contre un
+      déplacement total d’environ <b>13,6</b>, placer l’a priori là <b>aggrave</b> la
+      borne au lieu de l’améliorer. Cela ferme le dernier levier, et cela n’a coûté
+      aucun temps GPU : les points de contrôle par époque existaient déjà.</figcaption>
+    <details class="data"><summary>Données</summary><div class="scroll" id="tb-pac"></div></details>
+  </figure>
+
+  <div class="notes">
+    <div class="note read"><h3>Une observation mécanistique au passage</h3>
+      <p>Dès l’époque 1, les bras « flou » sont à 28,2 et 30,2 de leur point
+      d’arrivée, contre 45,1 et 47,7 pour le contrôle et le bras résolution.
+      <strong>Le flou coupe de 40 % le déplacement initial ; la réduction de résolution
+      l’augmente.</strong> La dissociation est visible dans l’espace des poids dès la
+      première époque.</p></div>
+    <div class="note limit"><h3>Portée</h3>
+      <p>« Fermée » veut dire : parmi les routes essayées — a priori à
+      l’initialisation, quotient de jauge, a priori déplacé sur une frontière de
+      phase, avec borne kl de Maurer inversée numériquement et union sur la grille de
+      τ. Ce n’est pas une impossibilité générale.</p></div>
+  </div>
+</div></section>
+
+<!-- 8 -->
+<section class="plate"><div class="wrap">
+  <div class="plate-head"><div class="num">08</div><div>
+    <div class="eyebrow">Synthèse croisée</div>
+    <h2>Ce que les deux études établissent ensemble</h2>
+    <p class="claim">Elles partagent les méthodes, l’architecture, les données et les
+      actifs figés. Elles ne partagent presque rien d’autre : ni l’espace mesuré, ni
+      les outils, ni le protocole statistique. C’est ce qui donne du poids aux
+      endroits où elles se rejoignent.</p>
+  </div></div>
+
+  <figure>
+    <div class="fig-top"><h3>Les trois dissociations</h3><span class="unit">flou contre réduction de résolution</span></div>
+    <div class="scroll" style="padding:.4rem 1.15rem 1rem" id="tb-three"></div>
+    <figcaption>Trois espaces de mesure sans machinerie commune, et dans chacun les
+      deux interventions se séparent. <b>Elles atteignent le même gain par des
+      chemins différents.</b></figcaption>
+  </figure>
+
+  <div class="two">
+    <div>
+      <h3 style="margin-bottom:.6rem">Ce que chaque étude corrige dans l’autre</h3>
+      <ul class="clean">
+        <li><b>Le paysage corrige les sondes</b> sur la dispersion inter-graines, et
+          a montré que la politique BatchNorm et le split devaient être testés plutôt
+          que supposés — ce qui a produit le 2×2 de la planche 03.</li>
+        <li><b>Les sondes corrigent le paysage</b> sur deux points : son <code>S(ε)</code>
+          est normalisé par filtre et donc protégé de la symétrie BatchNorm, mais ses
+          surfaces et ses barrières d’interpolation ne le sont pas ; et lire une
+          co-occurrence sur quatre méthodes, c’est lire une corrélation sur quatre
+          points.</li>
+      </ul>
+    </div>
+    <div>
+      <h3 style="margin-bottom:.6rem">Contributions respectives</h3>
+      <ul class="clean">
+        <li><b>Étude de paysage</b> — espace des poids : surfaces 2-D, barrières
+          d’interpolation, ACP de trajectoire, états à poids figés ; 5 graines
+          appariées ; choix d’analyse préenregistrés.</li>
+        <li><b>Sondes de point final</b> — espace des entrées plus courbure des poids :
+          spectre du jacobien d’entrée, profil radial, courbe d’amplitude, trace de
+          hessienne et traces par bloc, jauge BatchNorm ; 20 conditions ; quatre
+          garde-fous, dont la décomposition inter/intra-groupe.</li>
+      </ul>
+    </div>
+  </div>
+</div></section>
+
+<!-- 9 -->
+<section class="plate"><div class="wrap">
+  <div class="plate-head"><div class="num">09</div><div>
+    <div class="eyebrow">Bilan</div>
+    <h2>Ce qui est établi, et ce qui ne l’est pas</h2>
+  </div></div>
+
+  <div class="two">
+    <div>
+      <h3 style="margin-bottom:.6rem">Établi</h3>
+      <ul class="clean">
+        <li>Le gain se reproduit à 0,25 pp sur trois exécutions indépendantes, et les
+          curricula l’atteignent <b>en ajustant moins</b> le jeu d’entraînement.</li>
+        <li><b>Les deux interventions ne font pas la même chose</b> : trois
+          dissociations, dans trois espaces de mesure.</li>
+        <li>Les solutions curriculum sont plus plates de 19 à 55 % dans l’espace des
+          poids, <b>36 mesures sur 36</b>, sous les deux politiques BatchNorm et les
+          deux splits ; la jauge en explique au plus 2 %.</li>
+        <li><b>Aucune quantité mesurée n’explique le gain</b>, par deux protocoles
+          différents, et ce n’est pas un manque de puissance.</li>
+        <li>Toutes les routes PAC-Bayes essayées sont fermées, y compris l’a priori
+          déplacé.</li>
+      </ul>
+    </div>
+    <div>
+      <h3 style="margin-bottom:.6rem">Non établi</h3>
+      <ul class="clean">
+        <li><b>Toute affirmation causale.</b> L’essentiel est mesuré au point final.</li>
+        <li><b>Toute affirmation sur la variance inter-graines</b> — deux sources
+          contredisent la nôtre.</li>
+        <li>Toute généralisation au-delà de CIFAR-10, ResNet-20BN et ce protocole.</li>
+        <li>L’ordre d’apparition des signatures au fil des époques : les 120 points de
+          contrôle par époque existent, la sonde est écrite et testée, elle n’a pas été
+          lancée.</li>
+      </ul>
+    </div>
+  </div>
+</div></section>
+
+</main>
+
+<footer><div class="wrap">
+  <span>Branche <code>continuation-core-experiments</code> · <code>docs/RESULTS_GRID.md</code>,
+    <code>docs/CROSS_STUDY.md</code>, <code>docs/PROBES.md</code></span>
+  <span>Sondes : 28 cellules, 20 conditions, 3 graines · Paysage : 5 graines appariées</span>
+</div></footer>
+
+<script>const DATA={"methods":[{"id":"plain","label":"plain","full":"plain","test_err":0.2407,"train_err":0.0572,"test_ce":0.7547,"train_ce":0.2088,"trH":14730.5,"trH_sem":189.4,"top_share":0.566,"radius":12.075,"jf":143.2,"js":78.7,"ring":[0.00027508,0.00026752,0.00036017,0.00049356,0.00065705,0.00082584,0.00093583,0.00102812,0.00108879,0.00109971,0.00113079,0.00114971,0.00118526,0.00117035,0.00119054,0.00123917,0.00104607,0.00072343,0.00053311,0.00044505,0.00037013,0.00034024,0.0003719,0.00052391],"sv":[78.69550741,65.43787967,56.39466477,49.00837647,41.19136043,33.8217152,28.23050085,21.54874234,15.91926895,0.23219369],"S":[3.35762286,5.78963729,9.95095197,12.5648214,13.54163313,13.15021253,12.78660766,13.25129255,18.65282281],"acc":[0.86200004,0.73400004,0.55900002,0.46433335,0.42300002,0.38766668,0.35366668,0.25466668,0.15033334],"lin":[0.85342333,0.73586639,0.50603122,0.31953901,0.17221611,0.08360932,0.05418951,0.02807115,0.01974736],"blocks":[247.6,687.0,850.6,782.1,1213.6,2139.1,2031.4,3126.3,3153.7,407.2,2.9]},{"id":"gaussian_postrelu","label":"flou","full":"gaussian_postrelu","test_err":0.2005,"train_err":0.0836,"test_ce":0.5948,"train_ce":0.2697,"trH":10360.8,"trH_sem":155.8,"top_share":0.477,"radius":11.007,"jf":74.8,"js":39.5,"ring":[0.00058201,0.00054707,0.00071263,0.00091748,0.00115167,0.00135671,0.00147438,0.00150889,0.00149552,0.00137371,0.00125236,0.00115469,0.00104097,0.00093701,0.00086409,0.00082627,0.00073237,0.00061917,0.00049966,0.00043967,0.00038436,0.00037554,0.00042491,0.00059803],"sv":[39.45891271,32.97770456,28.73893177,25.05312161,21.76930661,19.19724617,16.82372959,14.54039394,11.37241256,0.15155118],"S":[1.79018324,3.26373067,6.37494206,9.1582257,11.21578153,11.57777278,11.13556401,10.80626472,12.59272957],"acc":[0.89133337,0.82800004,0.63666669,0.51366669,0.44900002,0.41800002,0.39833335,0.33000002,0.22266667],"lin":[0.90753951,0.82740908,0.64669655,0.46470109,0.28465499,0.14694116,0.0941936,0.04570973,0.02664655],"blocks":[403.9,573.5,560.5,444.6,938.8,1396.6,1129.2,1929.0,2356.4,392.8,25.9]},{"id":"resolution_max_b1","label":"résolution","full":"resolution_max_b1","test_err":0.1978,"train_err":0.0959,"test_ce":0.5773,"train_ce":0.3,"trH":10108.2,"trH_sem":178.0,"top_share":0.508,"radius":12.633,"jf":100.0,"js":53.6,"ring":[0.00036054,0.00031898,0.00037973,0.00045849,0.00053696,0.0006255,0.00069101,0.00075737,0.00081962,0.0008686,0.00095829,0.00106573,0.00118443,0.00129081,0.00136069,0.00136494,0.00121374,0.00094247,0.00069949,0.00051992,0.00036792,0.00029997,0.00028615,0.00037651],"sv":[53.5841172,45.00325906,38.45001523,33.40918219,29.24287889,25.40495101,21.74384036,17.55328878,13.34274335,0.18766292],"S":[2.34050381,4.11227606,7.33124475,9.51689911,10.552941,10.67794251,10.67088445,11.29919998,15.61884252],"acc":[0.86366671,0.77733337,0.6026667,0.50433336,0.43466669,0.37566668,0.34233335,0.28233335,0.17266667],"lin":[0.87335301,0.76707969,0.5467685,0.35480255,0.1967402,0.09961414,0.06641292,0.03518732,0.02429412],"blocks":[205.4,617.0,787.9,625.7,816.3,1445.1,1244.9,1564.1,1980.1,378.0,9.4]},{"id":"resolution_max_b1_gaussian_conv","label":"combiné","full":"resolution_max_b1_gaussian_conv","test_err":0.1865,"train_err":0.101,"test_ce":0.5519,"train_ce":0.3112,"trH":8760.8,"trH_sem":146.0,"top_share":0.507,"radius":11.457,"jf":78.1,"js":41.6,"ring":[0.00051907,0.00046362,0.00054243,0.00066054,0.00078965,0.00093641,0.00105105,0.00115658,0.00124601,0.00129626,0.00133128,0.00137099,0.00129546,0.00119439,0.00106451,0.00097488,0.00079838,0.00056772,0.00038979,0.00031071,0.00025081,0.00023978,0.00029569,0.00045375],"sv":[41.58810908,34.92880354,29.85094545,26.0044567,22.77580501,19.88330135,17.26035562,14.75073993,11.54178517,0.16695449],"S":[1.8735019,3.38948592,6.46230928,8.95770359,10.48266975,10.60072796,10.41218487,11.12499611,15.3861924],"acc":[0.87800004,0.82066672,0.6586667,0.55200002,0.47600003,0.43166669,0.40300002,0.30000002,0.20866667],"lin":[0.90103737,0.81511051,0.62171015,0.43096272,0.25219102,0.12751099,0.08348726,0.04458471,0.03079136],"blocks":[174.9,485.3,624.6,576.0,761.8,1224.5,1374.4,1375.3,1798.7,391.3,14.6]}],"eps":[0.05,0.1,0.25,0.5,1.0,2.0,3.0,6.0,12.0],"blockNames":["stem","block0","block1","block2","block3","block4","block5","block6","block7","block8","fc"],"acc3":[{"m":"plain","probes":[75.93,1.04],"land":[75.65,0.78],"methods":[75.43,0.76]},{"m":"résolution","probes":[80.22,0.01],"land":[80.21,0.36],"methods":[80.37,0.61]},{"m":"flou","probes":[79.95,0.04],"land":[80.12,0.49],"methods":[79.91,0.27]},{"m":"combiné","probes":[81.35,0.09],"land":[81.58,0.3],"methods":[81.51,0.22]}],"bnCols":["stats gelées / train","stats gelées / test","recalibré / train","recalibré / test"],"bn":[{"m":"flou","v":[-30.3,-42.6,-19.2,-21.1]},{"m":"résolution","v":[-32.0,-46.0,-28.1,-30.5]},{"m":"combiné","v":[-41.0,-54.9,-36.9,-41.6]}],"pac":[{"m":"plain","e1":45.1,"e6":31.92,"e12":16.63},{"m":"résolution","e1":47.7,"e6":35.92,"e12":26.07},{"m":"flou","e1":28.2,"e6":19.37,"e12":14.23},{"m":"combiné","e1":30.2,"e6":22.71,"e12":13.61}],"pacTotal":13.6,"dial":[{"f":"S@0.25","pooled":0.834,"ctrl":0.459,"curr":0.021,"wpool":0.088,"art":true},{"f":"S@0.1","pooled":0.83,"ctrl":0.472,"curr":0.002,"wpool":0.074,"art":true},{"f":"S@0.05","pooled":0.826,"ctrl":0.444,"curr":0.009,"wpool":0.076,"art":true},{"f":"jac_spectral","pooled":0.822,"ctrl":0.395,"curr":0.022,"wpool":0.079,"art":true},{"f":"S@0.5","pooled":0.807,"ctrl":0.392,"curr":0.103,"wpool":0.147,"art":true},{"f":"jac_frobenius","pooled":0.778,"ctrl":0.277,"curr":0.027,"wpool":0.063,"art":true},{"f":"lin@6","pooled":-0.731,"ctrl":-0.377,"curr":-0.009,"wpool":-0.065,"art":true},{"f":"S@1","pooled":0.687,"ctrl":0.319,"curr":0.196,"wpool":0.214,"art":true}],"conditions":[{"c":"gaussian_postrelu__lr_high","g":"curriculum","m":"gaussian_postrelu","v":"lr_high","te":0.1807,"tr":0.029,"s005":1.8886,"jf":81.6,"trH":7245.0,"rad":11.391},{"c":"gaussian_postrelu__lr_low","g":"curriculum","m":"gaussian_postrelu","v":"lr_low","te":0.2448,"tr":0.1717,"s005":1.5066,"jf":59.96,"trH":11540.8,"rad":11.427},{"c":"gaussian_postrelu__reference","g":"curriculum","m":"gaussian_postrelu","v":"reference","te":0.2005,"tr":0.0836,"s005":1.7902,"jf":74.76,"trH":10360.8,"rad":11.007},{"c":"gaussian_postrelu__wd_high","g":"curriculum","m":"gaussian_postrelu","v":"wd_high","te":0.1809,"tr":0.0519,"s005":1.5602,"jf":63.22,"trH":16493.0,"rad":11.096},{"c":"gaussian_postrelu__wd_low","g":"curriculum","m":"gaussian_postrelu","v":"wd_low","te":0.2046,"tr":0.0987,"s005":1.7649,"jf":73.55,"trH":9243.1,"rad":11.299},{"c":"plain__lr_high","g":"control","m":"plain","v":"lr_high","te":0.2179,"tr":0.0009,"s005":4.0458,"jf":189.29,"trH":4744.2,"rad":12.217},{"c":"plain__lr_low","g":"control","m":"plain","v":"lr_low","te":0.2867,"tr":0.2095,"s005":2.2171,"jf":83.74,"trH":12308.1,"rad":12.576},{"c":"plain__reference","g":"control","m":"plain","v":"reference","te":0.2407,"tr":0.0572,"s005":3.3576,"jf":143.23,"trH":14730.5,"rad":12.075},{"c":"plain__wd_high","g":"control","m":"plain","v":"wd_high","te":0.2277,"tr":0.0303,"s005":3.1181,"jf":132.23,"trH":22647.9,"rad":12.586},{"c":"plain__wd_low","g":"control","m":"plain","v":"wd_low","te":0.2642,"tr":0.0756,"s005":3.4526,"jf":147.59,"trH":12535.7,"rad":12.511},{"c":"resolution_max_b1__lr_high","g":"curriculum","m":"resolution_max_b1","v":"lr_high","te":0.1705,"tr":0.0167,"s005":2.8865,"jf":135.57,"trH":7355.8,"rad":12.804},{"c":"resolution_max_b1__lr_low","g":"curriculum","m":"resolution_max_b1","v":"lr_low","te":0.2592,"tr":0.2108,"s005":1.831,"jf":69.88,"trH":9863.4,"rad":12.628},{"c":"resolution_max_b1__reference","g":"curriculum","m":"resolution_max_b1","v":"reference","te":0.1978,"tr":0.0959,"s005":2.3405,"jf":99.97,"trH":10108.2,"rad":12.633},{"c":"resolution_max_b1__wd_high","g":"curriculum","m":"resolution_max_b1","v":"wd_high","te":0.1806,"tr":0.0587,"s005":2.1341,"jf":91.2,"trH":17583.6,"rad":12.614},{"c":"resolution_max_b1__wd_low","g":"curriculum","m":"resolution_max_b1","v":"wd_low","te":0.1997,"tr":0.1079,"s005":2.3667,"jf":102.62,"trH":8701.0,"rad":12.748},{"c":"resolution_max_b1_gaussian_conv__lr_high","g":"curriculum","m":"resolution_max_b1_gaussian_conv","v":"lr_high","te":0.1612,"tr":0.0435,"s005":2.2367,"jf":100.11,"trH":6525.2,"rad":12.045},{"c":"resolution_max_b1_gaussian_conv__lr_low","g":"curriculum","m":"resolution_max_b1_gaussian_conv","v":"lr_low","te":0.2324,"tr":0.1822,"s005":1.6156,"jf":63.83,"trH":9472.7,"rad":11.71},{"c":"resolution_max_b1_gaussian_conv__reference","g":"curriculum","m":"resolution_max_b1_gaussian_conv","v":"reference","te":0.1865,"tr":0.101,"s005":1.8735,"jf":78.15,"trH":8760.8,"rad":11.457},{"c":"resolution_max_b1_gaussian_conv__wd_high","g":"curriculum","m":"resolution_max_b1_gaussian_conv","v":"wd_high","te":0.1682,"tr":0.0668,"s005":1.7419,"jf":71.99,"trH":14604.2,"rad":11.607},{"c":"resolution_max_b1_gaussian_conv__wd_low","g":"curriculum","m":"resolution_max_b1_gaussian_conv","v":"wd_low","te":0.1928,"tr":0.1127,"s005":1.9113,"jf":79.28,"trH":7534.5,"rad":11.589}],"ceiling":0.998};</script>
+
+<script>
+const NS='http://www.w3.org/2000/svg';
+const COL=['var(--s1)','var(--s2)','var(--s3)','var(--s4)'];
+const AXTX='font-family:var(--mono);font-size:11px;fill:var(--ink3)';
+const LBTX='font-family:var(--display);font-size:11.5px;font-weight:600';
+function E(t,a,p){const e=document.createElementNS(NS,t);
+  for(const k in a){if(a[k]!=null)e.setAttribute(k,a[k]);}
+  if(p)p.appendChild(e);return e;}
+function T(p,x,y,s,st,anchor){const t=E('text',{x:x,y:y,'text-anchor':anchor||'middle',
+  style:st||AXTX},p);t.textContent=s;return t;}
+function fr(host,w,h,m){const svg=E('svg',{viewBox:'0 0 '+w+' '+h,
+  preserveAspectRatio:'xMidYMid meet',role:'img'},host);
+  return {svg:svg,w:w,h:h,ml:m[3],mr:m[1],mt:m[0],mb:m[2],
+    iw:w-m[3]-m[1],ih:h-m[0]-m[2]};}
+function fmt(v,d){return v.toLocaleString('fr-FR',{minimumFractionDigits:d===undefined?0:d,
+  maximumFractionDigits:d===undefined?0:d});}
+function pct(v){return (v>0?'+':'')+fmt(v,1)+' %';}
+function gridY(F,sy,ticks,f){ticks.forEach(function(t){
+  E('line',{x1:F.ml,x2:F.ml+F.iw,y1:sy(t),y2:sy(t),
+    style:'stroke:var(--grid);stroke-width:1'},F.svg);
+  T(F.svg,F.ml-8,sy(t)+4,f(t),AXTX,'end');});}
+function axisLabel(F,text,vertical){
+  if(vertical){const t=T(F.svg,0,0,text,AXTX,'middle');
+    t.setAttribute('transform','translate('+(12)+','+(F.mt+F.ih/2)+') rotate(-90)');}
+  else T(F.svg,F.ml+F.iw/2,F.h-6,text,AXTX,'middle');}
+function baseline(F,sy,v){E('line',{x1:F.ml,x2:F.ml+F.iw,y1:sy(v),y2:sy(v),
+  style:'stroke:var(--axis);stroke-width:1.2'},F.svg);}
+function legend(id,items){const h=document.getElementById(id);if(!h)return;
+  items.forEach(function(it){const s=document.createElement('span');
+    const i=document.createElement('i');
+    i.className=it.line?'line':'';
+    i.style.background=it.color;
+    if(it.hatch)i.style.backgroundImage='repeating-linear-gradient(45deg,transparent 0 2px,var(--surface) 2px 3.4px)';
+    s.appendChild(i);s.appendChild(document.createTextNode(it.label));h.appendChild(s);});}
+function table(id,cols,rows){const h=document.getElementById(id);if(!h)return;
+  var s='<table><thead><tr>';
+  cols.forEach(function(c){s+='<th>'+c+'</th>';});
+  s+='</tr></thead><tbody>';
+  rows.forEach(function(r){s+='<tr>';r.forEach(function(c){s+='<td>'+c+'</td>';});s+='</tr>';});
+  h.innerHTML=s+'</tbody></table>';}
+/* tooltip */
+(function(){var tip=document.getElementById('tip');
+ function show(e){var t=e.target.closest&&e.target.closest('[data-tip]');
+   if(!t){tip.hidden=true;return;}
+   tip.hidden=false;tip.innerHTML=t.getAttribute('data-tip').split('|').join('<br>');
+   var r=tip.getBoundingClientRect();
+   var x=e.clientX+14, y=e.clientY-r.height-10;
+   if(x+r.width>window.innerWidth-8)x=e.clientX-r.width-14;
+   if(y<8)y=e.clientY+16;
+   tip.style.left=x+'px';tip.style.top=y+'px';}
+ document.addEventListener('pointermove',show,{passive:true});
+ document.addEventListener('pointerleave',function(){tip.hidden=true;});
+ document.addEventListener('scroll',function(){tip.hidden=true;},{passive:true});})();
+</script>
+
+<script>
+const M=DATA.methods, LBL=M.map(function(m){return m.label;});
+const ORD=['plain','flou','résolution','combiné'];
+const CM={plain:COL[0],'flou':COL[1],'résolution':COL[2],'combiné':COL[3]};
+
+/* ---------- 01 schedules ---------- */
+(function(){
+  var G=[],SG=[],SC=[],R=[];
+  var PL=[1.00,0.85,0.70,0.60,0.50,0.40,0.30];
+  for(var e=0;e<30;e++){
+    var g=e<21?PL[Math.min(Math.floor(e/3),6)]:0;
+    var r=e<6?16:(e<12?24:32);
+    G.push(g);R.push(r);SG.push(g);SC.push(+(r/32*g).toFixed(4));}
+  var F=fr(document.getElementById('fig-sched'),900,300,[16,22,70,54]);
+  var x0=0,x1=30,y0=0,y1=1.08;
+  var sx=function(v){return F.ml+(v-x0)/(x1-x0)*F.iw;};
+  var sy=function(v){return F.mt+F.ih-(v-y0)/(y1-y0)*F.ih;};
+  gridY(F,sy,[0,0.25,0.5,0.75,1.0],function(t){return fmt(t,2);});
+  [0,6,12,21,30].forEach(function(e){
+    E('line',{x1:sx(e),x2:sx(e),y1:F.mt,y2:F.mt+F.ih,
+      style:'stroke:var(--grid);stroke-width:1'},F.svg);
+    T(F.svg,sx(e),F.mt+F.ih+16,e,AXTX,'middle');});
+  function step(arr,color,name){
+    var d='';
+    for(var e=0;e<30;e++){
+      d+=(e===0?'M':'L')+sx(e)+' '+sy(arr[e])+'L'+sx(e+1)+' '+sy(arr[e]);}
+    E('path',{d:d,style:'fill:none;stroke:'+color+';stroke-width:2.2;stroke-linejoin:round'},F.svg);
+    for(var e2=0;e2<30;e2++){
+      E('rect',{x:sx(e2),y:F.mt,width:sx(e2+1)-sx(e2),height:F.ih,
+        style:'fill:transparent',
+        'data-tip':name+'|époque '+e2+'|σ = '+fmt(arr[e2],3)},F.svg);}}
+  step(SC,CM['combiné'],'combiné (19 sites, avant BN)');
+  step(SG,CM['flou'],'flou (10 sites, après ReLU)');
+  T(F.svg,sx(1.2),sy(1.0)-9,'σ = 1,00',LBTX+';fill:'+CM['flou'],'start');
+  T(F.svg,sx(6.3),sy(0.525)-9,'0,525',LBTX+';fill:'+CM['combiné'],'start');
+  T(F.svg,sx(21.4),sy(0.03)-9,'identité exacte à partir de l’époque 21',
+    'font-family:var(--display);font-size:11.5px;font-weight:600;fill:var(--ink2)','start');
+  /* resolution strip */
+  var sy0=F.mt+F.ih+26, sh=16;
+  [[0,6,'16 × 16'],[6,12,'24 × 24'],[12,30,'32 × 32 (l’opérateur rend son entrée)']].forEach(function(b,i){
+    E('rect',{x:sx(b[0])+1,y:sy0,width:sx(b[1])-sx(b[0])-2,height:sh,rx:2,
+      style:'fill:'+COL[0]+';opacity:'+(0.18+0.16*i),
+      'data-tip':'résolution au block1|époques '+b[0]+'–'+(b[1]-1)+'|'+b[2]},F.svg);
+    T(F.svg,(sx(b[0])+sx(b[1]))/2,sy0+12,b[2],
+      'font-family:var(--mono);font-size:10px;fill:var(--ink2)','middle');});
+  T(F.svg,F.ml-8,sy0+12,'r(e)',AXTX,'end');
+  T(F.svg,F.ml+F.iw/2,F.h-6,'époque',AXTX,'middle');
+  axisLabel(F,'σ effectif',true);
+  legend('lg-sched',[{color:CM['flou'],label:'flou — σ = G(e), 10 sites après ReLU',line:1},
+    {color:CM['combiné'],label:'combiné — σ = (r(e)/32)·G(e), 19 sites avant BatchNorm',line:1},
+    {color:COL[0],label:'réduction de résolution au block1'}]);
+  var rows=[];
+  [[0,2],[3,5],[6,8],[9,11],[12,14],[15,17],[18,20],[21,29]].forEach(function(b){
+    rows.push([b[0]+'–'+b[1],fmt(G[b[0]],2),R[b[0]],fmt(SG[b[0]],3),fmt(SC[b[0]],3)]);});
+  table('tb-sched',['époques','G(e)','r(e)','σ flou','σ combiné'],rows);
+})();
+
+/* ---------- 02 accuracy ---------- */
+(function(){
+  var SRC=[['probes','sondes de point final (n = 3)'],['land','paysage de perte (n = 5)'],
+           ['methods','METHODS.md (n = 3)']];
+  var rows=ORD.map(function(l){return DATA.acc3.filter(function(r){return r.m===l;})[0];});
+  var F=fr(document.getElementById('fig-acc'),900,300,[22,110,44,96]);
+  var x0=74,x1=82.6;
+  var sx=function(v){return F.ml+(v-x0)/(x1-x0)*F.iw;};
+  var rh=F.ih/rows.length;
+  [74,76,78,80,82].forEach(function(t){
+    E('line',{x1:sx(t),x2:sx(t),y1:F.mt,y2:F.mt+F.ih,
+      style:'stroke:var(--grid);stroke-width:1'},F.svg);
+    T(F.svg,sx(t),F.mt+F.ih+18,fmt(t,0)+' %',AXTX,'middle');});
+  rows.forEach(function(r,i){
+    var y=F.mt+rh*i+rh/2;
+    T(F.svg,F.ml-12,y+4,r.m,'font-family:var(--display);font-size:12.5px;font-weight:600;fill:var(--ink)','end');
+    E('line',{x1:F.ml,x2:F.ml+F.iw,y1:y,y2:y,style:'stroke:var(--rule2);stroke-width:1'},F.svg);
+    SRC.forEach(function(s,j){
+      var v=r[s[0]][0], sd=r[s[0]][1], yy=y+(j-1)*9;
+      E('line',{x1:sx(v-sd),x2:sx(v+sd),y1:yy,y2:yy,
+        style:'stroke:'+COL[j]+';stroke-width:1.6;opacity:.45'},F.svg);
+      E('circle',{cx:sx(v),cy:yy,r:5,class:'mark',
+        style:'fill:'+COL[j]+';stroke:var(--surface);stroke-width:2',
+        'data-tip':r.m+' · '+s[1]+'|'+fmt(v,2)+' % ± '+fmt(sd,2)},F.svg);});
+    T(F.svg,F.ml+F.iw+10,y+4,fmt(r.probes[0],2)+' %',
+      'font-family:var(--mono);font-size:12px;fill:var(--ink2)','start');});
+  T(F.svg,F.ml+F.iw/2,F.h-6,'exactitude test',AXTX,'middle');
+  legend('lg-acc',SRC.map(function(s,j){return {color:COL[j],label:s[1]};}));
+  table('tb-acc',['méthode','sondes','paysage','METHODS.md'],rows.map(function(r){
+    return [r.m,fmt(r.probes[0],2)+' ± '+fmt(r.probes[1],2),
+      fmt(r.land[0],2)+' ± '+fmt(r.land[1],2),
+      fmt(r.methods[0],2)+' ± '+fmt(r.methods[1],2)];}));
+})();
+
+/* ---------- 03a trace H ---------- */
+(function(){
+  var F=fr(document.getElementById('fig-trh'),520,320,[26,16,52,58]);
+  var y1=16500;
+  var sy=function(v){return F.mt+F.ih-v/y1*F.ih;};
+  gridY(F,sy,[0,4000,8000,12000,16000],function(t){return fmt(t);});
+  var bw=F.iw/M.length, p=M[0].trH;
+  M.forEach(function(m,i){
+    var x=F.ml+bw*i+bw*0.22, w=bw*0.56;
+    E('rect',{x:x,y:sy(m.trH),width:w,height:F.mt+F.ih-sy(m.trH),rx:3,class:'mark',
+      style:'fill:'+CM[m.label],
+      'data-tip':m.label+'|tr H = '+fmt(m.trH)+' ± '+fmt(m.trH_sem)+
+        '|écart au contrôle : '+(i?pct(100*(m.trH/p-1)):'—')},F.svg);
+    E('line',{x1:x+w/2,x2:x+w/2,y1:sy(m.trH-m.trH_sem*2),y2:sy(m.trH+m.trH_sem*2),
+      style:'stroke:var(--ink2);stroke-width:1.4'},F.svg);
+    T(F.svg,x+w/2,sy(m.trH)-10,fmt(m.trH),'font-family:var(--mono);font-size:11.5px;fill:var(--ink)','middle');
+    T(F.svg,x+w/2,F.mt+F.ih+17,m.label,LBTX+';fill:var(--ink2)','middle');
+    if(i)T(F.svg,x+w/2,F.mt+F.ih+31,pct(100*(m.trH/p-1)),
+      'font-family:var(--mono);font-size:11px;fill:'+CM[m.label],'middle');});
+  baseline(F,sy,0);
+  table('tb-trh',['méthode','tr H','SEM','écart','part du top-5'],M.map(function(m,i){
+    return [m.label,fmt(m.trH),fmt(m.trH_sem),i?pct(100*(m.trH/p-1)):'—',fmt(100*m.top_share,1)+' %'];}));
+})();
+
+/* ---------- 03b per-block ---------- */
+(function(){
+  var F=fr(document.getElementById('fig-blocks'),520,320,[18,18,58,50]);
+  var lo=Math.log(2), hi=Math.log(5000);
+  var sy=function(v){return F.mt+F.ih-(Math.log(Math.max(v,2))-lo)/(hi-lo)*F.ih;};
+  var n=DATA.blockNames.length;
+  var sx=function(i){return F.ml+(i+0.5)/n*F.iw;};
+  [10,100,1000].forEach(function(t){
+    E('line',{x1:F.ml,x2:F.ml+F.iw,y1:sy(t),y2:sy(t),style:'stroke:var(--grid);stroke-width:1'},F.svg);
+    T(F.svg,F.ml-8,sy(t)+4,fmt(t),AXTX,'end');});
+  DATA.blockNames.forEach(function(b,i){
+    T(F.svg,sx(i),F.mt+F.ih+16,b.replace('block','b'),
+      'font-family:var(--mono);font-size:9.5px;fill:var(--ink3)','middle');});
+  M.forEach(function(m){
+    var d=m.blocks.map(function(v,i){return (i?'L':'M')+sx(i)+' '+sy(v);}).join('');
+    E('path',{d:d,style:'fill:none;stroke:'+CM[m.label]+';stroke-width:2;stroke-linejoin:round'},F.svg);
+    m.blocks.forEach(function(v,i){
+      E('circle',{cx:sx(i),cy:sy(v),r:4,class:'mark',
+        style:'fill:'+CM[m.label]+';stroke:var(--surface);stroke-width:1.6',
+        'data-tip':m.label+' · '+DATA.blockNames[i]+'|tr H = '+fmt(v,1)},F.svg);});});
+  axisLabel(F,'tr H du bloc',true);
+  legend('lg-blocks',M.map(function(m){return {color:CM[m.label],label:m.label,line:1};}));
+  table('tb-blocks',['bloc'].concat(LBL),DATA.blockNames.map(function(b,i){
+    return [b].concat(M.map(function(m){return fmt(m.blocks[i],1);}));}));
+})();
+</script>
+
+<script>
+/* ---------- 03c BatchNorm 2x2 ---------- */
+(function(){
+  var F=fr(document.getElementById('fig-bn'),900,340,[18,18,56,56]);
+  var y0=-60,y1=4;
+  var sy=function(v){return F.mt+F.ih-(v-y0)/(y1-y0)*F.ih;};
+  gridY(F,sy,[0,-15,-30,-45,-60],function(t){return fmt(t)+' %';});
+  var defs=E('defs',{},F.svg);
+  function hatch(id,color){
+    var p=E('pattern',{id:id,width:6,height:6,patternUnits:'userSpaceOnUse',
+      patternTransform:'rotate(45)'},defs);
+    E('rect',{width:6,height:6,style:'fill:'+color},p);
+    E('rect',{width:2.4,height:6,style:'fill:var(--surface)'},p);}
+  hatch('hz','var(--s1)');hatch('hr','var(--s2)');
+  var fills=[COL[0],'url(#hz)',COL[1],'url(#hr)'];
+  var gw=F.iw/DATA.bn.length;
+  DATA.bn.forEach(function(g,i){
+    var bw=gw*0.78/4;
+    g.v.forEach(function(v,j){
+      var x=F.ml+gw*i+gw*0.11+bw*j;
+      E('rect',{x:x+1,y:sy(0),width:bw-2,height:sy(v)-sy(0),rx:2,class:'mark',
+        style:'fill:'+fills[j],
+        'data-tip':g.m+'|'+DATA.bnCols[j]+'|tr H : '+pct(v)+' vs contrôle'},F.svg);
+      T(F.svg,x+bw/2,sy(v)-6,fmt(v,1),
+        'font-family:var(--mono);font-size:10px;fill:var(--surface)','middle');});
+    T(F.svg,F.ml+gw*i+gw/2,F.mt+F.ih+20,g.m,LBTX+';fill:var(--ink2)','middle');});
+  baseline(F,sy,0);
+  axisLabel(F,'écart de tr H au contrôle',true);
+  legend('lg-bn',[{color:COL[0],label:'stats gelées · train'},
+    {color:COL[0],hatch:1,label:'stats gelées · test'},
+    {color:COL[1],label:'recalibré · train'},
+    {color:COL[1],hatch:1,label:'recalibré · test'}]);
+  table('tb-bn',['méthode'].concat(DATA.bnCols),DATA.bn.map(function(g){
+    return [g.m].concat(g.v.map(function(v){return pct(v);}));}));
+})();
+
+/* ---------- 04a frequency profile ---------- */
+(function(){
+  var F=fr(document.getElementById('fig-freq'),900,380,[20,20,56,66]);
+  var n=M[0].ring.length, y1=0.0016;
+  var sx=function(i){return F.ml+i/(n-1)*F.iw;};
+  var sy=function(v){return F.mt+F.ih-v/y1*F.ih;};
+  gridY(F,sy,[0,0.0004,0.0008,0.0012,0.0016],function(t){return fmt(t*1e4,0);});
+  [0,4,8,12,16,20,23].forEach(function(k){
+    E('line',{x1:sx(k),x2:sx(k),y1:F.mt,y2:F.mt+F.ih,style:'stroke:var(--grid);stroke-width:1'},F.svg);
+    T(F.svg,sx(k),F.mt+F.ih+17,k,AXTX,'middle');});
+  M.forEach(function(m){
+    var d=m.ring.map(function(v,i){return (i?'L':'M')+sx(i)+' '+sy(v);}).join('');
+    E('path',{d:d,style:'fill:none;stroke:'+CM[m.label]+';stroke-width:2.2;stroke-linejoin:round'},F.svg);
+    E('line',{x1:sx(m.radius),x2:sx(m.radius),y1:F.mt+F.ih,y2:F.mt+F.ih-14,
+      style:'stroke:'+CM[m.label]+';stroke-width:2.4'},F.svg);
+    m.ring.forEach(function(v,i){
+      E('circle',{cx:sx(i),cy:sy(v),r:5,class:'mark',style:'fill:transparent',
+        'data-tip':m.label+'|anneau k = '+i+'|énergie/mode = '+v.toExponential(2)},F.svg);});});
+  M.forEach(function(m){
+    T(F.svg,sx(4)+7,sy(m.ring[4])+4,m.label,LBTX+';fill:'+CM[m.label],'start');});
+  T(F.svg,F.ml+F.iw/2,F.h-6,'rayon k de l’anneau spatial  (basse fréquence → haute fréquence)',AXTX,'middle');
+  axisLabel(F,'énergie par mode  (× 10⁻⁴)',true);
+  legend('lg-freq',M.map(function(m){return {color:CM[m.label],
+    label:m.label+' — rayon moyen '+fmt(m.radius,2),line:1};}));
+  table('tb-freq',['k'].concat(LBL),M[0].ring.map(function(_,i){
+    return [i].concat(M.map(function(m){return m.ring[i].toExponential(2);}));})
+    .concat([['rayon moyen'].concat(M.map(function(m){return fmt(m.radius,3);}))]));
+})();
+
+/* ---------- 04b dissociation ---------- */
+(function(){
+  var p=M[0];
+  var rows=M.slice(1).map(function(m){return {m:m.label,
+    rad:100*(m.radius/p.radius-1), err:100*(m.test_err/p.test_err-1)};});
+  var F=fr(document.getElementById('fig-diss'),900,300,[20,18,48,66]);
+  var y0=-26,y1=8;
+  var sy=function(v){return F.mt+F.ih-(v-y0)/(y1-y0)*F.ih;};
+  gridY(F,sy,[5,0,-5,-10,-15,-20,-25],function(t){return fmt(t)+' %';});
+  var gw=F.iw/rows.length;
+  rows.forEach(function(r,i){
+    [['rayon fréquentiel moyen',r.rad,COL[0]],['erreur test',r.err,COL[1]]].forEach(function(b,j){
+      var bw=gw*0.5/2, x=F.ml+gw*i+gw*0.25+bw*j;
+      E('rect',{x:x+2,y:sy(Math.max(b[1],0)),width:bw-4,height:Math.abs(sy(b[1])-sy(0)),rx:2,class:'mark',
+        style:'fill:'+b[2],'data-tip':r.m+'|'+b[0]+'|'+pct(b[1])+' vs contrôle'},F.svg);
+      T(F.svg,x+bw/2,b[1]>0?sy(b[1])-7:sy(b[1])+14,pct(b[1]),
+        'font-family:var(--mono);font-size:11px;fill:var(--ink)','middle');});
+    T(F.svg,F.ml+gw*i+gw/2,F.mt+F.ih+20,r.m,LBTX+';fill:var(--ink2)','middle');});
+  baseline(F,sy,0);
+  axisLabel(F,'écart au contrôle',true);
+  legend('lg-diss',[{color:COL[0],label:'rayon fréquentiel moyen'},
+    {color:COL[1],label:'erreur test'}]);
+  table('tb-diss',['méthode','rayon moyen','écart de rayon','erreur test','écart d’erreur'],
+    rows.map(function(r,i){var m=M[i+1];
+      return [r.m,fmt(m.radius,3),pct(r.rad),fmt(m.test_err,4),pct(r.err)];}));
+})();
+</script>
+
+<script>
+/* ---------- 05a linearity ratio / 05b amplitude ---------- */
+function epsChart(hostId,legId,tabId,key,y1,yt,ylab,ref){
+  var F=fr(document.getElementById(hostId),520,320,[20,22,50,52]);
+  var e=DATA.eps, lo=Math.log(e[0]), hi=Math.log(e[e.length-1]);
+  var sx=function(v){return F.ml+(Math.log(v)-lo)/(hi-lo)*F.iw;};
+  var sy=function(v){return F.mt+F.ih-v/y1*F.ih;};
+  gridY(F,sy,yt,function(t){return fmt(t,y1<=1.2?2:0);});
+  [0.05,0.1,0.25,0.5,1,2,3,6,12].forEach(function(t,i){
+    if(i%2===0||t===12){T(F.svg,sx(t),F.mt+F.ih+16,fmt(t,t<1?2:0),AXTX,'middle');}
+    E('line',{x1:sx(t),x2:sx(t),y1:F.mt+F.ih,y2:F.mt+F.ih+4,style:'stroke:var(--axis);stroke-width:1'},F.svg);});
+  if(ref!=null){
+    E('line',{x1:F.ml,x2:F.ml+F.iw,y1:sy(ref),y2:sy(ref),
+      style:'stroke:var(--ink3);stroke-width:1.4;stroke-dasharray:5 4'},F.svg);
+    T(F.svg,F.ml+F.iw-4,sy(ref)-7,'prédiction au premier ordre = 1',
+      'font-family:var(--display);font-size:11px;font-weight:600;fill:var(--ink3)','end');}
+  M.forEach(function(m){
+    var d=m[key].map(function(v,i){return (i?'L':'M')+sx(e[i])+' '+sy(v);}).join('');
+    E('path',{d:d,style:'fill:none;stroke:'+CM[m.label]+';stroke-width:2;stroke-linejoin:round'},F.svg);
+    m[key].forEach(function(v,i){
+      E('circle',{cx:sx(e[i]),cy:sy(v),r:4.2,class:'mark',
+        style:'fill:'+CM[m.label]+';stroke:var(--surface);stroke-width:1.6',
+        'data-tip':m.label+'|ε = '+fmt(e[i],2)+'|'+ylab+' = '+fmt(v,3)},F.svg);});});
+  T(F.svg,F.ml+F.iw/2,F.h-6,'ε  (échelle log)',AXTX,'middle');
+  legend(legId,M.map(function(m){return {color:CM[m.label],label:m.label,line:1};}));
+  table(tabId,['ε'].concat(LBL),e.map(function(v,i){
+    return [fmt(v,2)].concat(M.map(function(m){return fmt(m[key][i],3);}));}));
+}
+epsChart('fig-lin','lg-lin','tb-lin','lin',1.12,[0,0.25,0.5,0.75,1.0],'rapport',1);
+epsChart('fig-amp','lg-amp','tb-amp','S',20,[0,5,10,15,20],'S(ε)',null);
+
+/* ---------- 05c reversal ---------- */
+(function(){
+  var p=M[0], i3=DATA.eps.indexOf(3);
+  var rows=M.slice(1).map(function(m){return {m:m.label,
+    jf:100*(m.jf/p.jf-1), s3:100*(m.S[i3]/p.S[i3]-1)};});
+  var F=fr(document.getElementById('fig-rev'),900,290,[20,18,48,66]);
+  var y0=-54,y1=2;
+  var sy=function(v){return F.mt+F.ih-(v-y0)/(y1-y0)*F.ih;};
+  gridY(F,sy,[0,-10,-20,-30,-40,-50],function(t){return fmt(t)+' %';});
+  var gw=F.iw/rows.length;
+  rows.forEach(function(r,i){
+    [['‖J‖F — dérivée',r.jf,COL[0]],['S(3) — amplitude finie',r.s3,COL[1]]].forEach(function(b,j){
+      var bw=gw*0.5/2, x=F.ml+gw*i+gw*0.25+bw*j;
+      E('rect',{x:x+2,y:sy(0),width:bw-4,height:sy(b[1])-sy(0),rx:2,class:'mark',
+        style:'fill:'+b[2],'data-tip':r.m+'|'+b[0]+'|'+pct(b[1])+' vs contrôle'},F.svg);
+      T(F.svg,x+bw/2,sy(b[1])+14,pct(b[1]),
+        'font-family:var(--mono);font-size:11px;fill:var(--ink)','middle');});
+    T(F.svg,F.ml+gw*i+gw/2,F.mt+F.ih+20,r.m,LBTX+';fill:var(--ink2)','middle');});
+  baseline(F,sy,0);
+  axisLabel(F,'écart au contrôle',true);
+  legend('lg-rev',[{color:COL[0],label:'‖J‖F — mesure infinitésimale'},
+    {color:COL[1],label:'S(3) — mesure à amplitude finie'}]);
+  table('tb-rev',['méthode','‖J‖F','écart','S(3)','écart'],rows.map(function(r,i){
+    var m=M[i+1];return [r.m,fmt(m.jf,1),pct(r.jf),fmt(m.S[i3],2),pct(r.s3)];}));
+})();
+
+/* ---------- 06a dial test ---------- */
+(function(){
+  var rows=DATA.dial;
+  var F=fr(document.getElementById('fig-dial'),900,340,[18,28,46,110]);
+  var x0=-0.5,x1=0.95;
+  var sx=function(v){return F.ml+(v-x0)/(x1-x0)*F.iw;};
+  [-0.5,-0.25,0,0.25,0.5,0.75].forEach(function(t){
+    E('line',{x1:sx(t),x2:sx(t),y1:F.mt,y2:F.mt+F.ih,
+      style:'stroke:'+(t===0?'var(--axis)':'var(--grid)')+';stroke-width:'+(t===0?1.4:1)},F.svg);
+    T(F.svg,sx(t),F.mt+F.ih+17,fmt(t,2),AXTX,'middle');});
+  var rh=F.ih/rows.length;
+  rows.forEach(function(r,i){
+    var y=F.mt+rh*i+rh/2;
+    T(F.svg,F.ml-12,y+4,r.f,'font-family:var(--mono);font-size:11.5px;fill:var(--ink)','end');
+    E('line',{x1:sx(r.wpool),x2:sx(r.pooled),y1:y,y2:y,
+      style:'stroke:var(--rule);stroke-width:2'},F.svg);
+    E('circle',{cx:sx(r.pooled),cy:y,r:5.5,class:'mark',
+      style:'fill:'+COL[0]+';stroke:var(--surface);stroke-width:2',
+      'data-tip':r.f+'|poolé (n = 20) : '+fmt(r.pooled,3)+
+        '|contrôle (n = 5) : '+fmt(r.ctrl,3)+'|curriculum (n = 15) : '+fmt(r.curr,3)+
+        '|intra-groupe poolé : '+fmt(r.wpool,3)+
+        (r.art?'|→ artefact de regroupement':'')},F.svg);
+    E('circle',{cx:sx(r.wpool),cy:y,r:5.5,class:'mark',
+      style:'fill:'+COL[1]+';stroke:var(--surface);stroke-width:2',
+      'data-tip':r.f+'|intra-groupe poolé : '+fmt(r.wpool,3)},F.svg);
+    if(r.art)T(F.svg,F.ml+F.iw+6,y+4,'⚑',
+      'font-family:var(--mono);font-size:12px;fill:var(--s2)','start');});
+  T(F.svg,F.ml+F.iw/2,F.h-6,'corrélation partielle avec l’erreur test  (⚑ = artefact de regroupement)',AXTX,'middle');
+  legend('lg-dial',[{color:COL[0],label:'poolé sur les 20 conditions'},
+    {color:COL[1],label:'poolé à l’intérieur des groupes (Fisher-z, pondéré)'}]);
+  table('tb-dial',['quantité','poolé (20)','contrôle (5)','curriculum (15)','intra-groupe','artefact'],
+    rows.map(function(r){return [r.f,fmt(r.pooled,3),fmt(r.ctrl,3),fmt(r.curr,3),
+      fmt(r.wpool,3),r.art?'oui':'non'];}));
+})();
+
+/* ---------- 06b scatter ---------- */
+(function(){
+  var C=DATA.conditions;
+  var F=fr(document.getElementById('fig-scat'),900,340,[20,22,52,60]);
+  var xs=C.map(function(c){return c.s005;}), ys=C.map(function(c){return c.te;});
+  var x0=1.4,x1=4.2,y0=0.15,y1=0.30;
+  var sx=function(v){return F.ml+(v-x0)/(x1-x0)*F.iw;};
+  var sy=function(v){return F.mt+F.ih-(v-y0)/(y1-y0)*F.ih;};
+  gridY(F,sy,[0.16,0.20,0.24,0.28],function(t){return fmt(100*t,0)+' %';});
+  [1.5,2,2.5,3,3.5,4].forEach(function(t){
+    E('line',{x1:sx(t),x2:sx(t),y1:F.mt,y2:F.mt+F.ih,style:'stroke:var(--grid);stroke-width:1'},F.svg);
+    T(F.svg,sx(t),F.mt+F.ih+17,fmt(t,1),AXTX,'middle');});
+  C.forEach(function(c){
+    var ctrl=c.g==='control';
+    E('circle',{cx:sx(c.s005),cy:sy(c.te),r:6,class:'mark',
+      style:'fill:'+(ctrl?COL[0]:COL[1])+';stroke:var(--surface);stroke-width:2;opacity:.9',
+      'data-tip':c.c+'|S(0,05) = '+fmt(c.s005,3)+'|erreur test = '+fmt(100*c.te,2)+' %'+
+        '|erreur train = '+fmt(100*c.tr,2)+' %'},F.svg);});
+  T(F.svg,sx(3.55),sy(0.285),'contrôle — 5 conditions',LBTX+';fill:'+COL[0],'middle');
+  T(F.svg,sx(2.15),sy(0.172),'curriculum — 15 conditions',LBTX+';fill:'+COL[1],'middle');
+  T(F.svg,F.ml+F.iw/2,F.h-6,'S(0,05) — réponse dans la pire direction à ε = 0,05',AXTX,'middle');
+  axisLabel(F,'erreur test',true);
+  legend('lg-scat',[{color:COL[0],label:'contrôle (plain)'},
+    {color:COL[1],label:'curriculum (3 méthodes)'}]);
+  table('tb-scat',['condition','groupe','S(0,05)','erreur train','erreur test'],
+    C.slice().sort(function(a,b){return a.te-b.te;}).map(function(c){
+      return [c.c,c.g==='control'?'contrôle':'curriculum',fmt(c.s005,3),
+        fmt(100*c.tr,2)+' %',fmt(100*c.te,2)+' %'];}));
+})();
+
+/* ---------- 07 PAC-Bayes ---------- */
+(function(){
+  var P=ORD.map(function(l){return DATA.pac.filter(function(r){return r.m===l;})[0];});
+  var F=fr(document.getElementById('fig-pac'),900,320,[22,150,50,56]);
+  var y1=50;
+  var sy=function(v){return F.mt+F.ih-v/y1*F.ih;};
+  gridY(F,sy,[0,10,20,30,40,50],function(t){return fmt(t);});
+  var gw=F.iw/P.length;
+  P.forEach(function(r,i){
+    [['époque 6 (16→24)',r.e6,COL[0]],['époque 12 (24→32)',r.e12,COL[1]]].forEach(function(b,j){
+      var bw=gw*0.5/2, x=F.ml+gw*i+gw*0.25+bw*j;
+      E('rect',{x:x+2,y:sy(b[1]),width:bw-4,height:F.mt+F.ih-sy(b[1]),rx:2,class:'mark',
+        style:'fill:'+b[2],'data-tip':r.m+'|'+b[0]+'|‖W* − W(e)‖ = '+fmt(b[1],2)+
+          '|déplacement total ≈ '+fmt(DATA.pacTotal,1)},F.svg);
+      T(F.svg,x+bw/2,sy(b[1])-7,fmt(b[1],1),
+        'font-family:var(--mono);font-size:11px;fill:var(--ink)','middle');});
+    T(F.svg,F.ml+gw*i+gw/2,F.mt+F.ih+20,r.m,LBTX+';fill:var(--ink2)','middle');});
+  E('line',{x1:F.ml,x2:F.ml+F.iw,y1:sy(DATA.pacTotal),y2:sy(DATA.pacTotal),
+    style:'stroke:var(--ink);stroke-width:1.6;stroke-dasharray:6 4'},F.svg);
+  T(F.svg,F.ml+F.iw+8,sy(DATA.pacTotal)+4,'déplacement total ≈ 13,6',
+    'font-family:var(--display);font-size:11.5px;font-weight:600;fill:var(--ink)','start');
+  baseline(F,sy,0);
+  axisLabel(F,'distance restante',true);
+  legend('lg-pac',[{color:COL[0],label:'depuis l’époque 6'},
+    {color:COL[1],label:'depuis l’époque 12'}]);
+  table('tb-pac',['méthode','époque 1','époque 6','époque 12','total depuis init.'],
+    P.map(function(r){return [r.m,fmt(r.e1,1),fmt(r.e6,2),fmt(r.e12,2),fmt(DATA.pacTotal,1)];}));
+})();
+
+/* ---------- 08 three dissociations ---------- */
+table('tb-three',['espace de mesure','quantité','flou','réduction de résolution','source'],[
+  ['entrées — répartition','rayon fréquentiel moyen','<span class="neg">−8,8 %</span>',
+    '<span class="pos">+4,6 %</span>','sondes'],
+  ['poids — amplitude finie','S(ε) recalibré','<span class="pos">+43 à +108 %</span>',
+    '<span class="neg">−32 %</span>','paysage'],
+  ['échelle de mesure','tr H (infinitésimal) vs S(ε) (fini)',
+    '<span class="neg">−19 %</span> / <span class="pos">+43 %</span>',
+    '<span class="neg">−28 %</span> / <span class="neg">−32 %</span>','les deux'],
+  ['entrées — même renversement','‖J‖F vs S(3)',
+    '<span class="neg">−47,8 %</span> / <span class="neg">−12,9 %</span>',
+    '<span class="neg">−30,2 %</span> / <span class="neg">−16,5 %</span>','sondes'],
+  ['gain obtenu','erreur test','<span class="neg">−16,7 %</span>',
+    '<span class="neg">−17,8 %</span>','les trois']]);
+</script>
+
+</body></html>
