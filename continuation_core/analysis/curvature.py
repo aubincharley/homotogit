@@ -68,7 +68,10 @@ def _batches(ev, n_images: int, batch_size: int):
 
 
 def hessian_vector_product(ev, names, batches, v):
-    """``H v`` for the mean cross-entropy over ``batches``."""
+    """``H v`` for the mean cross-entropy over ``batches``.
+
+    The caller sets the BatchNorm mode; see :func:`bn_mode`.
+    """
     params = _params(ev.model, names)
     out = [torch.zeros_like(p) for p in params]
     total = 0
@@ -130,6 +133,35 @@ def top_eigenvalues(ev, names, batch_fn, k: int, iters: int, gen, tol: float = 1
     return [out[i] for i in rank], [found[i] for i in rank]
 
 
+class bn_mode:
+    """Context manager selecting the BatchNorm policy, restoring buffers after.
+
+    ``running_stats`` evaluates with the stored statistics (``eval`` mode).
+    ``fixed_batch_stats`` normalises each batch with its own statistics
+    (``train`` mode), which is what "the network after its normalisation has
+    adapted" means -- and which would otherwise overwrite the checkpoint's
+    running buffers on every forward pass, so they are saved and put back.
+    """
+
+    def __init__(self, model, policy: str):
+        if policy not in ("running_stats", "fixed_batch_stats"):
+            raise ValueError("unknown bn_policy %r" % (policy,))
+        self.model, self.policy = model, policy
+
+    def __enter__(self):
+        self.was = self.model.training
+        self.buffers = {n: b.detach().clone() for n, b in self.model.named_buffers()}
+        self.model.train(self.policy == "fixed_batch_stats")
+        return self.model
+
+    def __exit__(self, *exc):
+        with torch.no_grad():
+            for n, b in self.model.named_buffers():
+                b.copy_(self.buffers[n])
+        self.model.train(self.was)
+        return False
+
+
 def block_of(name: str) -> str:
     if name.startswith("blocks."):
         return "block%s" % name.split(".")[1]
@@ -138,18 +170,19 @@ def block_of(name: str) -> str:
 
 def probe(ev, *, n_images: int = 5000, batch_size: int = 500, draws: int = 64,
           top_k: int = 5, power_iters: int = 40, seed: int = 0,
-          state="target") -> dict:
+          state="target", bn_policy: str = "running_stats") -> dict:
     """Trace, per-block traces and top spectrum for one checkpoint.
 
-    Evaluated in ``eval()`` mode: with BatchNorm in train mode the loss depends on
-    the composition of each batch and is not a fixed function of the weights, so
-    its Hessian is not the object the bounds refer to.
+    ``bn_policy`` selects which function is differentiated; see the module
+    docstring.  Under ``fixed_batch_stats`` the loss depends on how the images
+    are batched, so the result is tied to ``batch_size`` -- it is reported with
+    the result rather than left implicit.
     """
     st = ev.state(state) if isinstance(state, str) else state
     previous = ev.controller.state
     ev.controller.set_state(st)
-    was = ev.model.training
-    ev.model.eval()
+    ctx = bn_mode(ev.model, bn_policy)
+    ctx.__enter__()
     for p in ev.model.parameters():
         p.requires_grad_(True)
     try:
@@ -185,6 +218,7 @@ def probe(ev, *, n_images: int = 5000, batch_size: int = 500, draws: int = 64,
         n_param = sum(int(p.numel()) for p in params)
         top_share = sum(lams) / trace["mean"] if trace["mean"] else None
         return {"checkpoint": ev.path, "split": ev.split,
+                "bn_policy": bn_policy, "batch_size": batch_size,
                 "n_images": min(n_images, int(ev.images.shape[0])),
                 "n_parameters": n_param, "draws": draws,
                 "trace": trace, "trace_raw": raw_tr,
@@ -196,6 +230,6 @@ def probe(ev, *, n_images: int = 5000, batch_size: int = 500, draws: int = 64,
                          "use top_share_of_trace, not lambda_max, for fine "
                          "comparisons")}
     finally:
-        ev.model.train(was)
+        ctx.__exit__(None, None, None)
         if previous is not None:
             ev.controller.set_state(previous)

@@ -53,6 +53,20 @@ estimator's own precision, but **8.2 % on `lambda_max`**.  Fine comparisons on
 the top eigenvalue alone sit below that floor; `top_share_of_trace` is stable at
 2.2 % and is the statistic to use instead.
 
+**The BatchNorm policy is part of the measurement.**  `running_stats` freezes the
+stored statistics, so the loss is a fixed function of the weights and its Hessian
+is the object the bounds refer to.  `fixed_batch_stats` recomputes them from each
+evaluation batch, which is a *different function* — not a truer version of the
+same one — and ties the result to the batch size, so both are recorded with it.
+Buffers are snapshotted and restored, since the batch-statistics path would
+otherwise overwrite the checkpoint's statistics on every forward pass.
+
+The distinction is not academic: a companion study finds finite-amplitude
+sensitivity 3–7× larger under frozen statistics and the ranking of one method
+*reversed* between the policies.  Curvature turns out not to reverse — 36
+measurements out of 36 keep their sign — but that had to be measured, not
+assumed.  See [`CROSS_STUDY.md`](CROSS_STUDY.md) §3.
+
 ## 2. BatchNorm gauge — `analysis/gauge.py`
 
 Every main-path convolution is followed by a BatchNorm, which divides out any

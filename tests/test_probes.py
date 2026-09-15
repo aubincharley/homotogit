@@ -235,3 +235,35 @@ def test_hessian_vector_product_is_exact_on_a_quadratic():
     for _ in range(3):
         v = torch.randn(3)
         assert torch.allclose(hvp(v), H @ v, atol=1e-5)
+
+
+def test_bn_mode_restores_the_buffers_it_perturbs():
+    """The batch-statistics path would otherwise overwrite the checkpoint.
+
+    A forward pass in training mode updates BatchNorm's running statistics in
+    place, so a curvature measurement under that policy would silently leave a
+    different checkpoint behind than the one it was asked about.
+    """
+    m = torch.nn.Sequential(torch.nn.Conv2d(3, 4, 3, padding=1),
+                            torch.nn.BatchNorm2d(4))
+    m.eval()
+    before = {n: b.detach().clone() for n, b in m.named_buffers()}
+    with curvature.bn_mode(m, "fixed_batch_stats"):
+        assert m.training is True
+        m(torch.randn(8, 3, 5, 5))          # would update running stats
+    assert m.training is False
+    for n, b in m.named_buffers():
+        assert torch.equal(b, before[n]), n
+
+
+def test_bn_mode_leaves_eval_mode_alone_under_the_frozen_policy():
+    m = torch.nn.BatchNorm2d(4)
+    m.eval()
+    with curvature.bn_mode(m, "running_stats"):
+        assert m.training is False
+    assert m.training is False
+
+
+def test_an_unknown_bn_policy_is_refused_rather_than_guessed():
+    with pytest.raises(ValueError):
+        curvature.bn_mode(torch.nn.BatchNorm2d(4), "true_loss")

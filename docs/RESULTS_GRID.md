@@ -11,7 +11,8 @@ The variants also span 12.5 points of test accuracy instead of 5.4, which is wha
 gives the analysis power.
 
 Probes: [`PROBES.md`](PROBES.md).  Figures: `results/grid_figures.png`.
-Report: `results/grid_report.json`.
+Report: `results/grid_report.json`.  Comparison with the companion
+loss-landscape study: [`CROSS_STUDY.md`](CROSS_STUDY.md).
 
 ---
 
@@ -49,6 +50,23 @@ draw against a record that says otherwise.
 Against the control: **−29.7 %, −31.4 %, −40.5 %** on the Hessian trace, with a
 seed spread of 258.  The BatchNorm gauge accounts for at most 2 % of that, so the
 reparametrisation objection does not apply.
+
+**Measured across both BatchNorm policies and both splits** after a companion
+loss-landscape study showed that the policy reverses the ranking of the Gaussian
+method on *finite-amplitude* sensitivity ([`CROSS_STUDY.md`](CROSS_STUDY.md)):
+
+| tr H vs control | frozen / train | frozen / test | recalibrated / train | recalibrated / test |
+|---|---|---|---|---|
+| `gaussian_postrelu` | −30.3 % | −42.6 % | −19.2 % | −21.1 % |
+| `resolution_max_b1` | −32.0 % | −46.0 % | −28.1 % | −30.5 % |
+| `resolution_max_b1_gaussian_conv` | −41.0 % | −54.9 % | −36.9 % | −41.6 % |
+
+**36 measurements out of 36 keep the sign.**  Curvature does not reverse with the
+policy, and the effect is *larger* on test images than on training ones, so it is
+not a property of the split either.  The policy does change the amount by a
+factor of 4.1 to 7.9 — much of what frozen statistics measure is a statistics
+mismatch rather than geometry — and the curriculum effect survives that
+deflation while shrinking.
 
 The curvature is not uniformly distributed: for the control it runs 248 at the
 stem, 687–851 through blocks 0–2, and 2031–3154 in blocks 4–7.  The curriculum
@@ -93,6 +111,18 @@ Already far from 1 at the smallest amplitude that can be measured, and an order
 of magnitude away by `eps = 3`.  **The first-order quantities describe a limit
 this function never occupies**, which is the structural reason `sigma_max` and
 `||J||_F` fail as predictors rather than merely being coarse.
+
+This has a consequence that shows up as a ranking reversal.  The Gaussian method
+leads on the derivative and trails at finite amplitude:
+
+| | ‖J‖_F (derivative) | S(3) (finite) |
+|---|---|---|
+| `gaussian_postrelu` | **−47.8 %** | −12.9 % |
+| `resolution_max_b1` | −30.2 % | **−16.5 %** |
+
+The same reversal appears in weight space between `tr H` and the companion
+study's `S(ε)` ([`CROSS_STUDY.md`](CROSS_STUDY.md) §3).  Two independent spaces,
+one pattern: an infinitesimal measurement does not predict a finite one here.
 
 ---
 
