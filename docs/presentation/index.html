@@ -373,11 +373,14 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:1rem 2rem;justify-content:space-bet
 <section class="plate"><div class="wrap">
   <div class="plate-head"><div class="num">05</div><div>
     <div class="eyebrow">Une contrainte structurelle</div>
-    <h2>Il n’y a aucun régime linéaire accessible</h2>
+    <h2>Le régime linéaire est plus petit que la quantification de l’image</h2>
     <p class="claim">Le rapport <code>S(ε) / (ε·σ<sub>max</sub>)</code> vaudrait 1 si une
-      description au premier ordre tenait. <strong>Il vaut déjà 0,32–0,47 à la plus
-      petite amplitude mesurable et 0,05–0,09 à ε = 3.</strong> Les quantités du premier
-      ordre décrivent une limite que cette fonction n’occupe jamais.</p>
+      description au premier ordre tenait. À ε = 0,05 il vaut <strong>0,85 à 0,91</strong> :
+      le premier ordre tient. Mais une perturbation de norme 0,05 répartie sur 3072
+      pixels fait <code>0,05/√3072 = 9,0·10⁻⁴</code> par pixel, soit <strong>0,23 pas de
+      quantification 8 bits</strong>. <strong>Le régime linéaire existe et il est confiné
+      sous la quantification des données.</strong> À ε = 0,5 — deux niveaux 8 bits — il en
+      reste un tiers ; à ε = 3, un vingtième.</p>
   </div></div>
 
   <div class="two">
@@ -385,16 +388,19 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:1rem 2rem;justify-content:space-bet
     <div class="fig-top"><h3>Rapport de linéarité</h3><span class="unit">S(ε)/(ε·σ<sub>max</sub>) · ε en échelle log</span></div>
     <div class="legend" id="lg-lin"></div>
     <div class="plot" id="fig-lin"></div>
-    <figcaption>La ligne à 1 est ce que prédirait le jacobien. <b>Aucune courbe ne
-      s’en approche</b>, à aucune échelle.</figcaption>
+    <figcaption>La ligne à 1 est ce que prédirait le jacobien. Les courbes en
+      partent près (0,85–0,91 au premier point) et <b>décrochent en moins d’un pas de
+      quantification</b> : la moitié est perdue vers ε ≈ 0,25.</figcaption>
     <details class="data"><summary>Données</summary><div class="scroll" id="tb-lin"></div></details>
   </figure>
   <figure>
     <div class="fig-top"><h3>Réponse à amplitude finie</h3><span class="unit">S(ε) = déplacement des logits · ε en échelle log</span></div>
     <div class="legend" id="lg-amp"></div>
     <div class="plot" id="fig-amp"></div>
-    <figcaption>Recherche de la pire direction sous contrainte de boule. La réponse
-      <b>sature</b> puis remonte : le régime utile est étroit.</figcaption>
+    <figcaption>Direction <code>v₁(x)</code> — le vecteur singulier dominant du
+      jacobien, recalculé par image puis <b>fixé</b> et dilaté. <b>Ce n’est pas un pire
+      cas</b> : le vrai module <code>ω(ε)</code> ne peut qu’être plus grand. La réponse
+      sature puis remonte.</figcaption>
     <details class="data"><summary>Données</summary><div class="scroll" id="tb-amp"></div></details>
   </figure>
   </div>
@@ -420,9 +426,9 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:1rem 2rem;justify-content:space-bet
       c’est la troisième dissociation.</p></div>
     <div class="note limit"><h3>Conséquence méthodologique</h3>
       <p>C’est la raison <em>structurelle</em> pour laquelle σ<sub>max</sub> et
-      ‖J‖<sub>F</sub> échouent comme prédicteurs, et pas seulement une question de
-      finesse : <strong>ici, une mesure infinitésimale ne prédit pas une mesure
-      finie</strong>.</p></div>
+      ‖J‖<sub>F</sub> échouent comme prédicteurs. Toute théorie qui raisonne sur des
+      voisinages de points de données a besoin d’un rayon comparable à l’écart entre
+      ces points — et <strong>à cette échelle il ne reste rien du premier ordre</strong>.</p></div>
   </div>
 </div></section>
 
@@ -466,9 +472,9 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:1rem 2rem;justify-content:space-bet
       essentiellement 1. <strong>Le test pouvait répondre, et la réponse est non.</strong></p></div>
     <div class="note limit"><h3>Ce que cela rétracte</h3>
       <p>Une étude exploratoire antérieure donnait la réponse à échelle finie dans la
-      pire direction comme prédicteur de l’erreur test à <strong>+0,72</strong>. Sur cette
-      grille, la même quantité donne <strong>+0,178</strong> à l’intérieur de la famille
-      curriculum. Elle reste une <em>signature partagée</em> — elle tombe de 12,9 %,
+      même réponse à échelle finie — <code>resp_top</code>, mesurée de la même façon —
+      comme prédicteur de l’erreur test à <strong>+0,72</strong>. Sur cette grille elle
+      donne <strong>+0,178</strong> à l’intérieur de la famille curriculum. Elle reste une <em>signature partagée</em> — elle tombe de 12,9 %,
       16,5 % et 18,6 % — mais c’est un contraste, pas un cadran.</p></div>
   </div>
 </div></section>
@@ -1012,7 +1018,7 @@ epsChart('fig-amp','lg-amp','tb-amp','S',20,[0,5,10,15,20],'S(ε)',null);
         '|erreur train = '+fmt(100*c.tr,2)+' %'},F.svg);});
   T(F.svg,sx(3.55),sy(0.285),'contrôle — 5 conditions',LBTX+';fill:'+COL[0],'middle');
   T(F.svg,sx(2.15),sy(0.172),'curriculum — 15 conditions',LBTX+';fill:'+COL[1],'middle');
-  T(F.svg,F.ml+F.iw/2,F.h-6,'S(0,05) — réponse dans la pire direction à ε = 0,05',AXTX,'middle');
+  T(F.svg,F.ml+F.iw/2,F.h-6,'S(0,05) — réponse le long de v₁(x) à ε = 0,05',AXTX,'middle');
   axisLabel(F,'erreur test',true);
   legend('lg-scat',[{color:COL[0],label:'contrôle (plain)'},
     {color:COL[1],label:'curriculum (3 méthodes)'}]);

@@ -114,9 +114,11 @@ finite distance* is higher. Both are true of the same network.
 That is the same reversal the endpoint probes already found on the input side —
 the Gaussian method leads on the derivative (‖J‖_F −47.8 %) and trails at finite
 amplitude (S(3) −12.9 %, against −16.5 % for the resolution method). **Two
-independent spaces, the same reversal**, and it matches the measured fact that
-the linearity ratio never approaches 1: there is no scale at which an
-infinitesimal measurement predicts a finite one.
+independent spaces, the same reversal**, and it matches the measured fact about the
+linearity ratio: it is 0.85-0.91 at `eps = 0.05` -- a perturbation smaller than
+one 8-bit quantisation step of the image -- and 0.05-0.09 by `eps = 3`.  A
+first-order description holds, but only below the scale at which any
+neighbourhood argument operates.
 
 ---
 

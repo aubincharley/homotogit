@@ -129,9 +129,18 @@ gaussien, et les deux bras gagnent autant.
 ### 05 — Pas de régime linéaire
 
 **À dire.** « Si une description au premier ordre tenait, le rapport
-S(ε)/(ε·σ_max) vaudrait 1. Il vaut 0,32 à 0,47 à la plus petite amplitude qu'on
-sache mesurer, et 0,05 à ε = 3. **Il n'y a aucune échelle où le jacobien décrit
-la fonction.** »
+S(ε)/(ε·σ_max) vaudrait 1. À ε = 0,05 il vaut 0,85 à 0,91 — donc le premier ordre
+tient. Sauf qu'une perturbation de norme 0,05 répartie sur 3072 pixels fait
+0,23 pas de quantification 8 bits par pixel. **Le régime linéaire existe, et il
+est plus petit que la quantification de l'image.** À ε = 0,5, soit deux niveaux
+8 bits, il ne reste qu'un tiers ; à ε = 3, un vingtième. »
+
+**Pourquoi cette formulation et pas l'autre.** Dire « il n'y a pas de régime
+linéaire » est faux, et se fait corriger en trois secondes par quiconque regarde
+la première colonne. Dire « le régime linéaire est sous la quantification » est
+exact, vérifiable, et **plus fort** : toute théorie qui raisonne sur des
+voisinages de points de données a besoin d'un rayon comparable à l'écart entre
+ces points, et à cette échelle il n'en reste rien.
 
 **Pourquoi ça compte.** C'est la raison *structurelle* pour laquelle
 σ_max et ‖J‖_F échouent comme prédicteurs, et pas seulement une question de
@@ -159,9 +168,9 @@ un bras curriculum", pas une relation. »
 **Le chiffre à ne pas rater.** Plafond de détection = 1,00, étendue d'exactitude
 12,5 points. **Le test pouvait répondre.**
 
-**La rétractation.** Une étude exploratoire antérieure donnait la réponse dans
-la pire direction comme prédicteur à +0,72. Ici : +0,178 dans la famille
-curriculum. Elle reste une signature partagée (−12,9 / −16,5 / −18,6 %) — un
+**La rétractation.** Une étude exploratoire antérieure donnait cette même réponse
+à échelle finie — `resp_top`, mesurée de la même façon — comme prédicteur à
++0,72. Ici : +0,178 dans la famille curriculum. Elle reste une signature partagée (−12,9 / −16,5 / −18,6 %) — un
 contraste, pas un cadran.
 
 **La question.** *« Vous n'avez juste pas assez de points. »*
@@ -303,24 +312,306 @@ distinction symbole/géométrie tient ; si l'`avg_pool` se comporte comme le
 
 ### Axe 3 — Une théorie à distance finie, pas infinitésimale
 
-**Mesuré.** S(ε)/(ε·σ_max) ne dépasse jamais 0,47, et vaut 0,05 à ε = 3.
+C'est l'axe où nos mesures ont le plus de valeur théorique, parce que c'est le
+seul cadre dont la quantité centrale est **exactement ce qu'on sait mesurer**.
+Il mérite donc d'être déroulé en entier : ce qu'on mesure, ce que ça condamne,
+le cadre qui survit, où il casse, et le calcul qui montre ce qu'il faudrait
+changer pour qu'il ne casse plus.
 
-**Ce que ça condamne.** Toute borne dont la quantité centrale est une dérivée
-ou un modèle quadratique local : normes spectrales par couche, marges
-normalisées à la Bartlett, platitude lue comme courbure. Elles décrivent une
-limite que cette fonction n'occupe à aucune échelle mesurable.
+#### 3.1 Ce qu'on mesure exactement — et ce que ce n'est pas
 
-**La direction.** Le cadre qui vit nativement à échelle finie est la
-**robustesse algorithmique** (Xu & Mannor 2012) : partitionner l'espace
-d'entrée en K régions et borner l'écart de perte à l'intérieur d'une région.
-La borne s'écrit en (K, ε) et non en dérivées. Notre courbe S(ε) *est*
-essentiellement une estimation empirique de cette constante.
+Soit $f : \mathcal{X} \to \mathbb{R}^{10}$ les logits, $\mathcal{X}\subset[0,1]^{3072}$
+(la normalisation par canal est *à l'intérieur* de $f$), et
 
-**L'énoncé à établir.** Écrire une borne de type robustesse dont la constante
-est celle qu'on mesure, et regarder de combien le curriculum la déplace. Le
-verrou connu est que K croît exponentiellement en dimension ; la question de
-recherche est de savoir si l'on peut prendre K sur la variété des données
-plutôt que sur le cube — ce qui rejoint l'axe 2 par la dimension intrinsèque.
+$$J(x) \;=\; \frac{\partial f}{\partial x}(x) \;\in\; \mathbb{R}^{10\times 3072},
+\qquad \operatorname{rang} J \le 10 .$$
+
+On note $\sigma_{\max}(x) = \|J(x)\|_2$ et $v_1(x)$ le vecteur singulier droit
+dominant. La courbe d'amplitude mesurée est
+
+$$S(\varepsilon) \;=\; \mathbb{E}_x\,\big\|f\big(x + \varepsilon\,v_1(x)\big) - f(x)\big\|_2 .$$
+
+**La direction est fixée puis dilatée.** `v_1(x)` est recalculé par image, mais
+il n'est **pas** ré-optimisé quand $\varepsilon$ grandit. Ce n'est donc pas un
+pire cas : c'est la réponse dans **la direction que la dérivée désigne**. Le
+module de continuité qu'une théorie à échelle finie demande est
+
+$$\omega(\varepsilon) \;=\; \mathbb{E}_x \sup_{\|\delta\|_2\le\varepsilon}
+\big\|f(x+\delta) - f(x)\big\|_2 ,
+\qquad\text{et l'on a seulement}\quad S(\varepsilon)\;\le\;\omega(\varepsilon).$$
+
+**À dire explicitement en présentation** : notre $S$ est une borne *inférieure*
+de $\omega$, donc toute borne de généralisation qu'on en tirerait serait
+**optimiste**. La mesure du vrai $\omega$ existe — `pgd_displacement`, 8 pas de
+montée projetée, initialisée en $r\,v_1(x)$ donc garantie $\ge S$ — sur la
+branche d'exploration, et elle n'a jamais été portée. C'est le premier ingrédient
+manquant, et il coûte une sonde.
+
+#### 3.2 Ce que le rapport de linéarité dit, précisément
+
+Par définition de $v_1$,
+
+$$\big\|f(x+\varepsilon v_1) - f(x)\big\|_2 \;=\; \varepsilon\,\sigma_{\max}(x)
+\;+\; O(\varepsilon^2),$$
+
+donc le rapport mesuré
+
+$$R(\varepsilon) \;=\; \frac{S(\varepsilon)}{\varepsilon\,\mathbb{E}_x\sigma_{\max}(x)}
+\qquad \text{devrait tendre vers } 1 \text{ quand } \varepsilon\to 0 .$$
+
+Mesuré sur les quatre méthodes de référence :
+
+| $\varepsilon$ | 0,05 | 0,25 | 0,5 | 1 | 3 | 12 |
+|---|---|---|---|---|---|---|
+| $R(\varepsilon)$ | **0,85–0,91** | 0,51–0,65 | 0,32–0,47 | 0,17–0,29 | 0,054–0,094 | 0,020–0,031 |
+| RMS par pixel, en pas de quantification 8 bits | **0,23** | 1,15 | 2,3 | 4,6 | 13,8 | 55 |
+
+**La limite est saine, et c'est la fenêtre qui est le problème.** À
+$\varepsilon=0{,}05$ le rapport vaut 0,85 à 0,91 : le premier ordre décrit
+correctement la fonction, à 10–15 % près. Il faut donc dire les choses ainsi, et
+pas autrement : *un régime linéaire existe*. Seulement, une perturbation de norme
+$\varepsilon$ répartie sur $d=3072$ pixels a une amplitude RMS de
+$\varepsilon/\sqrt{d} = \varepsilon/55{,}4$ par pixel, soit à
+$\varepsilon=0{,}05$ un changement de $9{,}0\times10^{-4}$ — **0,23 pas de
+quantification** de l'image d'origine.
+
+> **Le régime linéaire est confiné aux perturbations plus petites qu'un pas de
+> quantification de l'image.**
+
+Dès $\varepsilon=0{,}5$, soit deux à trois niveaux 8 bits, il ne reste qu'un tiers
+à la moitié de la prédiction ; à $\varepsilon=3$, un vingtième. C'est la forme
+correcte de l'argument, et elle est plus forte que « il n'y a pas de régime
+linéaire » : le régime existe, il est simplement **hors de l'échelle où vit toute
+théorie qui parle de voisinages de points de données**.
+
+Le signe compte aussi et il faut le commenter. $R < 1$ signifie que la fonction bouge
+**moins** que la dérivée ne l'annonce, et ce dès la plus petite amplitude
+mesurable. Ce n'est donc pas « la direction cesse d'être la bonne » — cet effet-là
+ferait bouger *plus*. C'est une **saturation le long de la direction la plus
+réactive**. Autrement dit :
+
+$$\underbrace{S(\varepsilon)}_{\text{mesuré}} \;\ll\;
+\underbrace{\varepsilon\,\sigma_{\max}}_{\text{prédiction au 1}^{\text{er}}\text{ ordre}}
+\qquad\text{et}\qquad
+\underbrace{\omega(\varepsilon)}_{\text{jamais mesuré ici}} \;\ge\; S(\varepsilon).$$
+
+Les deux écarts vont dans des sens opposés, et **on n'a mesuré que le premier**.
+C'est la phrase honnête à dire si on nous demande si le réseau est « robuste ».
+
+#### 3.3 Ce que ça condamne
+
+Une borne de marge de type Bartlett–Foster–Telgarsky (2017) a la forme
+
+$$L_{0\text{-}1}(f) \;\le\; \hat{L}_\gamma(f) \;+\;
+\tilde{O}\!\left(\frac{R_{\mathcal{A}}}{\gamma\sqrt{n}}\right),
+\qquad
+R_{\mathcal{A}} = \Big(\prod_{i=1}^{L}\|W_i\|_2\Big)
+\left(\sum_{i=1}^{L}\frac{\|W_i^{\top}\|_{2,1}^{2/3}}{\|W_i\|_2^{2/3}}\right)^{3/2}.$$
+
+Le facteur $\prod_i\|W_i\|_2$ est un **substitut de constante de Lipschitz
+globale** : il certifie $\|f(x+\delta)-f(x)\|\le R\|\delta\|$ pour *tout* $\delta$
+et *tout* $x$. Or nos mesures disent deux choses qui se composent :
+
+$$\sigma_{\max}(x) \;\lll\; \prod_i \|W_i\|_2
+\qquad\text{(local contre global)},$$
+$$S(\varepsilon) \;\approx\; (0{,}3\ \text{à}\ 0{,}05)\times \varepsilon\,\sigma_{\max}
+\quad\text{dès }\varepsilon\ge 0{,}5
+\qquad\text{(réponse contre linéarisation locale)}.$$
+
+La constante certifiée est donc lâche d'au moins le produit de ces deux facteurs.
+**C'est une raison mesurée, pas rhétorique**, pour laquelle ces bornes sont vides
+ici. Et le même verdict frappe la platitude : $\operatorname{tr}H$ est une quantité
+du **second** ordre, elle décrit un modèle quadratique local que la courbe
+d'amplitude déclare inapplicable à toute échelle mesurable. Cela réconcilie nos
+deux résultats sur la platitude — robuste à 36/36, et sans aucun pouvoir
+prédictif : elle mesure correctement un objet qui ne gouverne pas la fonction là
+où la fonction vit.
+
+#### 3.4 Le cadre qui survit : robustesse algorithmique
+
+**Définition** (Xu & Mannor 2012). Un algorithme $\mathcal{A}$ est
+$(K,\epsilon(\cdot))$-**robuste** si $\mathcal{Z}=\mathcal{X}\times\mathcal{Y}$
+admet une partition $\mathcal{Z}=\bigsqcup_{i=1}^{K}C_i$ telle que, pour tout
+échantillon $s$, tout $z\in s$ et tout $z'\in\mathcal{Z}$,
+
+$$z,z'\in C_i \;\Longrightarrow\;
+\big|\ell(\mathcal{A}_s,z)-\ell(\mathcal{A}_s,z')\big|\;\le\;\epsilon(s).$$
+
+**Théorème** (ibid., Th. 3). Si $\mathcal{A}$ est $(K,\epsilon)$-robuste et
+$0\le\ell\le M$, alors avec probabilité $\ge 1-\delta$ sur $s\sim\mathcal{D}^{n}$,
+
+$$\boxed{\;\big|L(\mathcal{A}_s)-\hat{L}(\mathcal{A}_s)\big|
+\;\le\; \epsilon(s) \;+\; M\sqrt{\frac{2K\ln 2 + 2\ln(1/\delta)}{n}}\;}$$
+
+**Aucune dérivée nulle part.** Seulement $(K,\epsilon)$ — un nombre de cellules
+et une variation à l'intérieur d'une cellule. C'est exactement la forme
+qu'autorise ce qu'on a mesuré, et c'est la seule raison de préférer ce cadre.
+
+#### 3.5 L'instancier avec nos quantités
+
+Partitionnons la région des données en cellules de diamètre $\le\gamma$. Pour
+$z,z'$ dans la même cellule, $\|x-x'\|_2\le\gamma$, donc
+
+$$\epsilon(s) \;\le\; \sup_{x\in s}\ \sup_{\|\delta\|_2\le\gamma}
+\big|\ell(f(x+\delta),y)-\ell(f(x),y)\big| \;=:\;\omega_\ell(\gamma).$$
+
+Pour passer du déplacement des logits à la perte 0-1, on utilise la marge
+
+$$\rho(x) \;=\; f_y(x) \;-\; \max_{y'\ne y} f_{y'}(x).$$
+
+Une perturbation ne peut pas changer la prédiction tant que
+$\|f(x+\delta)-f(x)\|_\infty < \rho(x)/2$, et comme
+$\|\cdot\|_\infty\le\|\cdot\|_2$, une condition suffisante **directement en
+fonction de ce qu'on mesure** est
+
+$$\omega(\gamma) \;<\; \rho(x)/2 .$$
+
+Si elle vaut pour tous les points d'entraînement, la perte 0-1 est constante sur
+chaque cellule, $\epsilon(s)=0$, et il reste
+
+$$L_{0\text{-}1}(f)\;\le\;\hat{L}_{0\text{-}1}(f)
++\sqrt{\frac{2K\ln 2+2\ln(1/\delta)}{n}} .$$
+
+Tout le contenu s'est déplacé dans $K$.
+
+#### 3.6 Où ça casse, chiffré
+
+La borne est **linéaire en $K$**, donc il faut $K\lesssim n$.
+
+* **Dans l'ambiant.** $K=(D/\gamma)^{d}$ avec $d=3072$. Sans espoir : à
+  $D/\gamma=100$, $K=10^{6144}$.
+* **Sur la variété.** Si les données vivent près d'une variété de dimension
+  intrinsèque $d_\star$, alors $K\approx(D/\gamma)^{d_\star}$. Avec l'estimation
+  de Pope et al. 2021 pour CIFAR-10, $d_\star\approx 26$, et $n=5\times10^{4}$ :
+
+$$K\le n \iff \frac{D}{\gamma}\;\le\; n^{1/d_\star}
+= (5\times10^{4})^{1/26} \approx \mathbf{1{,}52}.$$
+
+**Environ une cellule et demie par axe.** Le diamètre d'une cellule vaut alors
+les deux tiers du diamètre des données, et à cette échelle $\omega_\ell(\gamma)$
+est l'étendue entière de la perte : la borne ne dit rien.
+
+Le point important, et c'est lui qu'il faut dire : **l'obstruction n'est pas
+notre réseau, c'est l'étape de concentration linéaire en $K$** (une inégalité
+multinomiale de type Bretagnolle–Huber–Carol). Le réseau n'y est pour rien.
+
+Et c'est là que le §3.2 revient : une partition utile a des cellules de l'ordre
+de l'écart entre points de données, donc $D/\gamma$ de l'ordre de $10^2$ — très
+au-dessus de l'échelle du pas de quantification où le premier ordre tenait
+encore. **À l'échelle dont la théorie a besoin, $R(\gamma)\approx 0{,}05$.** Le
+premier ordre et la théorie à échelle finie ne se recouvrent nulle part.
+
+#### 3.7 Le potentiel théorique : ce que changerait un $\ln K$
+
+Remplacer la concentration multinomiale par un argument de chaînage sur l'échelle
+de la partition ferait entrer $K$ **par son logarithme**. La borne prendrait la
+forme
+
+$$L \;\le\; \hat{L} \;+\; \omega_\ell(\gamma) \;+\;
+C\sqrt{\frac{d_\star\,\ln(D/\gamma)+\ln(1/\delta)}{n}} .$$
+
+Le même calcul, avec $d_\star=26$, $D/\gamma=100$, $n=5\times10^{4}$,
+$\delta=0{,}05$ :
+
+$$d_\star\ln(D/\gamma)=26\times4{,}61=120,\qquad
+\sqrt{\frac{2\times120\times\ln 2+2\ln 20}{5\times10^{4}}}\;\approx\;\mathbf{0{,}059}.$$
+
+**Six pour cent de terme de complexité**, pour une partition à cent cellules par
+axe — et la dépendance en $\ln$ est clémente : à mille cellules par axe on est
+encore à 7 %. À comparer au $5\times10^{23}$ de la version linéaire en $K$ au même
+$\gamma$.
+
+C'est ça, le potentiel théorique de cette partie : **il existe une borne non vide
+à portée, et tout ce qui l'empêche est une étape de preuve, pas une propriété de
+nos réseaux.** Une fois ce pas franchi, tout le contenu est dans
+$\omega_\ell(\gamma)$ — c'est-à-dire dans une quantité que nos sondes produisent.
+
+#### 3.8 La forme opérationnelle, et la prédiction falsifiable
+
+En pratique, tous les points ne seront pas certifiés. Xu & Mannor donnent la
+variante **pseudo-robuste** (Th. 6) : si $\hat{n}$ des $n$ points satisfont la
+condition,
+
+$$\big|L-\hat{L}\big| \;\le\; \frac{\hat n}{n}\,\epsilon(s)
+\;+\; M\left(\frac{n-\hat n}{n}
++\sqrt{\frac{2K\ln 2+2\ln(1/\delta)}{n}}\right).$$
+
+En notant $q(\gamma)=\hat n/n$ la **fraction certifiée** — la proportion de points
+d'entraînement tels que $\rho(x) > 2\,\omega(\gamma)$ — et avec la version
+chaînée du terme de complexité, on obtient la forme où chaque terme est mesurable :
+
+$$L_{0\text{-}1} \;\le\; \underbrace{\hat{L}_{0\text{-}1}}_{\text{mesuré}}
+\;+\; \underbrace{\big(1-q(\gamma)\big)}_{\text{à mesurer : }\rho\text{ et }\omega}
+\;+\; \underbrace{C\sqrt{\frac{d_\star\ln(D/\gamma)+\ln(1/\delta)}{n}}}_{\text{via }d_\star}.$$
+
+Et là, pour la première fois dans cette étude, **une théorie fait une prédiction
+numérique qu'on peut vérifier**. Le curriculum déplace les trois termes :
+
+| terme | ce que le curriculum en fait | valeur |
+|---|---|---|
+| $\hat{L}_{0\text{-}1}$ | **le dégrade** — les curricula ajustent moins | $0{,}057 \to 0{,}084$–$0{,}101$, soit **+2,7 à +4,4 points contre** |
+| $1-q(\gamma)$ | devrait **l'améliorer** — $S(3)$ baisse de 12,9 / 16,5 / 18,6 % | **non mesuré** : il faut $\rho(x)$ et $\omega$ par PGD |
+| terme de complexité | ne bouge **que si** $d_\star$ bouge | c'est la conjecture de l'axe 2 |
+
+D'où l'inégalité qui décide :
+
+$$\underbrace{\Delta\hat{L}_{0\text{-}1}}_{+0{,}027\ \text{à}\ +0{,}044}
+\;<\;
+\underbrace{-\,\Delta\big(1-q(\gamma)\big)}_{\text{à mesurer}}
+\;+\;
+\underbrace{-\,\Delta\!\left(\text{terme de complexité}\right)}_{\text{via }d_\star}.$$
+
+**Le curriculum n'est expliqué par la robustesse que si le gain en fraction
+certifiée dépasse 3 à 4 points.** C'est net, c'est chiffré, et c'est réfutable —
+ce qu'aucune de nos mesures de point final n'a produit jusqu'ici.
+
+#### 3.9 Ce qu'il faut mesurer, et ça tient en une sonde
+
+Trois quantités, toutes déjà écrites quelque part dans le dépôt :
+
+1. **La distribution des marges** $\rho(x)$ par méthode (`margin`, branche
+   d'exploration). Non mesurée sur la branche papier.
+2. **Le vrai module** $\omega_\infty(\gamma)$ par montée projetée
+   (`pgd_displacement`, 8 pas, initialisée en $\gamma\,v_1$). Elle donne aussi,
+   gratuitement, de combien $S$ sous-estime $\omega$ — donc à quel point notre
+   §3.2 était optimiste.
+3. **La fraction certifiée** $q(\gamma)=\Pr_x[\rho(x)>2\,\omega_\infty(\gamma)]$,
+   sur une grille de $\gamma$.
+
+Bonus de conception : $\rho(x)$ est **exactement** l'ingrédient qui manque aussi
+à la borne de marge du §3.3. Une seule mesure alimente les deux cadres, et permet
+de les opposer sur les mêmes réseaux.
+
+#### 3.10 Confrontation avec le reste de l'étude
+
+**Avec le résultat « aucun cadran » (planche 06).** Aucune contradiction, et il
+faut savoir le dire : *une borne n'est pas un prédicteur*. La planche 06 dit
+qu'aucune quantité ne **corrèle** avec l'erreur test à erreur d'entraînement
+égale, à travers 20 conditions. Une borne dit $L\le\hat L+B$ pour **un** réseau
+donné. Pour que $B$ prédise, il faudrait qu'elle soit serrée *et* monotone en
+$L$ — ce qu'aucune borne connue n'est ici. Les deux énoncés vivent à des niveaux
+différents.
+
+**Avec PAC-Bayes (planche 07).** PAC-Bayes a besoin d'un objet de l'espace des
+poids — une distance $\|W^*-W_0\|$, un a priori, un $\tau$. Toutes ces routes sont
+fermées, et elles héritent en plus du problème de jauge. La robustesse n'a besoin
+d'**aucun** objet de l'espace des poids : elle est entièrement du côté fonction,
+donc automatiquement invariante de jauge. **C'est structurellement pourquoi elle
+survit à nos résultats négatifs** — et elle paie ce privilège en $K$.
+
+**Avec la platitude (planche 03).** Voir §3.3 : $\operatorname{tr}H$ est du second
+ordre. Le fait qu'elle soit très robuste (36/36) et sans pouvoir prédictif n'est
+pas une anomalie, c'est ce que prédit un régime où aucun développement local ne
+gouverne la fonction.
+
+**Avec la dissociation (planche 04).** La borne de robustesse ne contient que la
+*taille* de la réponse, $\omega(\gamma)$ — pas sa répartition en fréquence. C'est
+cohérent avec ce qu'on observe : les deux interventions partagent la taille
+(‖J‖_F, $S(3)$) et pas le spectre. **Le cadre à échelle finie est donc celui qui
+prédit que les deux méthodes devraient gagner autant** — ce qu'elles font — sans
+avoir besoin qu'elles se ressemblent spectralement. C'est la meilleure
+concordance qualitative de tout le document, et elle mérite d'être dite comme
+telle.
 
 ---
 

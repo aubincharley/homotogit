@@ -95,22 +95,31 @@ and 16.5 %.  Not the distribution of sensitivity across frequencies — its size
 
 ---
 
-## 3. There is no accessible linear regime
+## 3. The linear regime is smaller than the data's quantisation
 
 The ratio `S(eps) / (eps sigma_max)`, which would be 1 if a first-order
 description held:
 
-| eps | 0.5 | 1 | 3 |
-|---|---|---|---|
-| `plain` | 0.320 | 0.172 | 0.054 |
-| `gaussian_postrelu` | 0.465 | 0.285 | 0.094 |
-| `resolution_max_b1` | 0.355 | 0.197 | 0.066 |
-| `resolution_max_b1_gaussian_conv` | 0.431 | 0.252 | 0.083 |
+| eps | 0.05 | 0.25 | 0.5 | 1 | 3 |
+|---|---|---|---|---|---|
+| `plain` | 0.853 | 0.506 | 0.320 | 0.172 | 0.054 |
+| `gaussian_postrelu` | 0.908 | 0.647 | 0.465 | 0.285 | 0.094 |
+| `resolution_max_b1` | 0.873 | 0.547 | 0.355 | 0.197 | 0.066 |
+| `resolution_max_b1_gaussian_conv` | 0.901 | 0.622 | 0.431 | 0.252 | 0.083 |
 
-Already far from 1 at the smallest amplitude that can be measured, and an order
-of magnitude away by `eps = 3`.  **The first-order quantities describe a limit
-this function never occupies**, which is the structural reason `sigma_max` and
-`||J||_F` fail as predictors rather than merely being coarse.
+**The limit is sound; the window is the problem.**  At `eps = 0.05` the ratio is
+0.85-0.91, so a first-order description does hold there, to 10-15 %.  But an
+`eps`-norm perturbation spread over `d = 3072` pixels has a per-pixel RMS of
+`eps / sqrt(d) = eps / 55.4`, which at `eps = 0.05` is 9.0e-4 -- **0.23 of one
+8-bit quantisation step of the image itself**.  The linear regime is confined to
+perturbations smaller than the data's own quantisation.  By `eps = 0.5` (two to
+three 8-bit levels) a third to a half of the prediction survives, and by
+`eps = 3`, a twentieth.
+
+That is the structural reason `sigma_max` and `||J||_F` fail as predictors rather
+than merely being coarse: any theory that reasons about neighbourhoods of data
+points needs a radius comparable to the spacing between them, and at that scale
+the first-order description is already gone.
 
 This has a consequence that shows up as a ranking reversal.  The Gaussian method
 leads on the derivative and trails at finite amplitude:
@@ -150,8 +159,9 @@ a power failure.  **The test could answer, and the answer is no.**
 
 ### What this retracts
 
-An earlier exploratory study on another branch reported the finite-scale
-worst-direction response as a predictor of test error at +0.72.  On this grid,
+An earlier exploratory study on another branch reported the same finite-scale
+response -- `resp_top`, measured the same way -- as a predictor of test error at
++0.72.  On this grid,
 with more conditions and a wider range, the same quantity gives **+0.178** inside
 the curriculum family.  It does not replicate as a predictor.
 
@@ -198,7 +208,8 @@ space as well as in frequency, visible from the first epoch.
 3. **Blur and resolution reduction reach the same gain by different functional
    mechanisms.**  The frequency shift is specific to the blur.  What they share
    is the magnitude of input sensitivity, not its spectral distribution.
-4. No first-order description of the function holds at any measurable scale.
+4. A first-order description of the function holds only below `eps = 0.05`, a
+   perturbation smaller than one 8-bit quantisation step of the image.
 5. No measured quantity predicts test error at equal training error within the
    curriculum family.  Every apparent predictor is a grouping artefact.
 6. Every PAC-Bayes route tried is closed, including the displaced prior.
