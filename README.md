@@ -89,6 +89,17 @@ because the boundaries were stretched in **epochs** while an STL-10 epoch is 40
 updates against CIFAR-10's 391. It is still the fastest-improving of the four at
 epoch 60, so this looks recovery-starved rather than beaten -- untested either way.
 
+> **Later finding, on branch `cifar10-subset`: the recovery-window reading above
+> is wrong.** CIFAR-10 cut to 5,000 images and run on this exact schedule --
+> 2,400 updates, 720 of them after the Gaussian switches off -- makes
+> `resolution_max_b1_gaussian_conv` the *best* of the four at +10.62 +- 0.35 pp,
+> not the worst. 720 updates is ample. STL-10's collapse belongs to the 96x96
+> setting, and most likely to the sigma x3 transfer chosen here rather than to
+> the method: it forces `sigma_max = 3.0`, radius 12 and a 25-tap kernel, putting
+> effective sigma up to 1.575 at all 19 pre-BatchNorm convolution outputs on maps
+> as small as 12x12, against the reference's sigma <= 0.525 on 4x4. The
+> pixel-sigma alternative rejected here is the obvious test and has not been run.
+
 No parity reference exists for any of this.
 
 ```bash
