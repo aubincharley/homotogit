@@ -9,6 +9,9 @@ export-trajectory  parameter vectors of all checkpoints of one or more runs
 pca-plane          common PCA plane of exported trajectories
 plane-loss         loss on a 2-D plane under several states / BN policies
 perturb            loss change under filter-normalised weight perturbations
+sensitivity        input-Jacobian spectrum, frequency profile, amplitude curve
+curvature          Hessian trace, per-block traces, top spectrum
+gauge              BatchNorm gauge-minimal distance, with an equivalence check
 verify-assets      recompute pinned-asset digests
 make-assets        generate a NEW asset set for another dataset / model
 """
@@ -202,6 +205,45 @@ def cmd_perturb(args):
                                    bn_policies=args.bn_policies.split(",")), args.out)
 
 
+def cmd_sensitivity(args):
+    from .analysis import CheckpointEvaluator, sensitivity
+    ev = CheckpointEvaluator(args.checkpoint, device=args.device, split=args.split,
+                             n_images=args.n_images, batch_size=args.batch_size)
+    _dump(sensitivity.probe(ev, n_images=args.n_images or 10 ** 9,
+                            batch_size=args.probe_batch,
+                            epsilons=[float(e) for e in args.epsilons.split(",")],
+                            state=_parse_state(args.state)), args.out)
+
+
+def cmd_curvature(args):
+    from .analysis import CheckpointEvaluator, curvature
+    ev = CheckpointEvaluator(args.checkpoint, device=args.device, split=args.split,
+                             n_images=args.n_images, batch_size=args.batch_size)
+    _dump(curvature.probe(ev, n_images=args.n_images or 10 ** 9,
+                          batch_size=args.batch_size, draws=args.draws,
+                          top_k=args.top_k, power_iters=args.power_iters,
+                          seed=args.seed_directions, state=_parse_state(args.state)),
+          args.out)
+
+
+def cmd_gauge(args):
+    import torch
+    from . import assets as assets_mod
+    from .analysis import CheckpointEvaluator, gauge
+    ev = CheckpointEvaluator(args.checkpoint, device="cpu", split="train_probe",
+                             n_images=64, batch_size=64)
+    a = assets_mod.load(ev.cfg.assets.dir, ev.cfg.run.seed, verify_first=True)
+    init = {k: v for k, v in a["init_state"].items()}
+    final = {k: v.detach().cpu().clone() for k, v in ev.ckpt["model_state"].items()}
+    out = gauge.distance_breakdown(final, init, ev.names)
+    regauged, _ = gauge.align_to(final, init)
+    torch.manual_seed(0)
+    x = torch.randn(64, *ev.images.shape[1:], dtype=torch.float32)
+    out["equivalence"] = gauge.verify_equivalence(
+        ev.model.cpu(), final, regauged, ev.pipeline((x * 0 + 128).to(torch.uint8)))
+    _dump(out, args.out)
+
+
 def cmd_verify_assets(args):
     from .assets import verify
     _dump(verify(args.assets), args.out)
@@ -300,6 +342,27 @@ def main(argv=None):
     p.add_argument("--states", default="target")
     p.add_argument("--bn-policies", default="running_stats")
     p.set_defaults(fn=cmd_perturb)
+
+    p = sub.add_parser("sensitivity")
+    eval_opts(p)
+    p.add_argument("--epsilons", default="0.05,0.1,0.25,0.5,1,2,3,6,12")
+    p.add_argument("--probe-batch", type=int, default=250)
+    p.add_argument("--state", default="target")
+    p.set_defaults(fn=cmd_sensitivity)
+
+    p = sub.add_parser("curvature")
+    eval_opts(p)
+    p.add_argument("--draws", type=int, default=64)
+    p.add_argument("--top-k", type=int, default=5)
+    p.add_argument("--power-iters", type=int, default=40)
+    p.add_argument("--seed-directions", type=int, default=0)
+    p.add_argument("--state", default="target")
+    p.set_defaults(fn=cmd_curvature)
+
+    p = sub.add_parser("gauge")
+    p.add_argument("checkpoint")
+    p.add_argument("--out")
+    p.set_defaults(fn=cmd_gauge)
 
     p = sub.add_parser("verify-assets")
     p.add_argument("--assets", default="assets/cifar10_resnet20bn")
