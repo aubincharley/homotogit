@@ -1,0 +1,146 @@
+{
+  "schema": "continuation_core.results/1",
+  "method": "gaussian_postrelu__transfer",
+  "seed": 2,
+  "validation_status": "unvalidated",
+  "dataset": "cifar10",
+  "arch": "vgg11_bn",
+  "arch_validated": false,
+  "epochs": 30,
+  "updates": 11730,
+  "updates_per_epoch": 391,
+  "n_train": 50000,
+  "n_test": 10000,
+  "final": {
+    "current": {
+      "train_probe": {
+        "ce": 0.0007438306808471679,
+        "acc": 1.0,
+        "n": 500
+      },
+      "test": {
+        "ce": 0.6542327621459961,
+        "acc": 0.8441,
+        "n": 10000
+      }
+    },
+    "target": {
+      "train_probe": {
+        "ce": 0.0007438306808471679,
+        "acc": 1.0,
+        "n": 500
+      },
+      "test": {
+        "ce": 0.6542327621459961,
+        "acc": 0.8441,
+        "n": 10000
+      }
+    }
+  },
+  "final_state_used": {
+    "state": {
+      "resolution": null,
+      "sigma": 0.0,
+      "label": "epoch 29"
+    },
+    "per_site_sigma": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "final_state_is_target": true,
+  "transition_updates": [
+    1173,
+    2346,
+    3519,
+    4692,
+    5865,
+    7038,
+    8211
+  ],
+  "timing": {
+    "wall_seconds": 830.972072041,
+    "eval_seconds": 71.3605126990002,
+    "train_seconds": 759.6115593419999,
+    "scope": "from the start of run() (after data and model construction) to the last evaluation, including checkpoint writes; resumed runs add the wall time stored in the checkpoint"
+  },
+  "method_definition": {
+    "id": "gaussian_postrelu__transfer",
+    "description": "Gaussian at the 10 post-ReLU positions (stem output + 9 block outputs), plateau schedule, no resolution change.",
+    "gaussian": {
+      "placement": "post_relu",
+      "schedule": {
+        "starts": [
+          0,
+          3,
+          6,
+          9,
+          12,
+          15,
+          18,
+          21
+        ],
+        "values": [
+          1.0,
+          0.85,
+          0.7,
+          0.6,
+          0.5,
+          0.4,
+          0.3,
+          0.0
+        ]
+      },
+      "sigma_scale": "none",
+      "sigma_max": 1.0,
+      "truncate": 4.0,
+      "units": "pixels of the feature map at the site; the reference levels unchanged, since VGG-11 here is 32x32 like the reference"
+    },
+    "resolution": null,
+    "source": {
+      "transferred_from": "gaussian_postrelu",
+      "experiment": "unified_selected",
+      "branch": "benchmark-organized",
+      "config_id": "blur_relu",
+      "label": "Blur after every ReLU, annealed to zero",
+      "cells": [
+        "blur_relu__seed0",
+        "blur_relu__seed1",
+        "blur_relu__seed2"
+      ],
+      "final_test_acc_per_seed": {
+        "0": 0.8006,
+        "1": 0.8006,
+        "2": 0.796
+      },
+      "final_test_acc_mean": 0.799067,
+      "final_test_acc_sd": 0.002656,
+      "final_path": "target (equal to current at epoch 30)",
+      "asset_set": "r20bn-campaign-assets"
+    },
+    "validated_on": []
+  },
+  "provenance": {
+    "assets_dir": "assets/vgg11_cifar10",
+    "asset_states": {
+      "init_seed0": "129523884bacad35efbb277df7b122f4006edf51fcfb7cacbf291e80086836b7",
+      "init_seed1": "8a5c06539d4e3df38f14801ec0c171c4e881b56dac7547ae1f95f902f012c9a2",
+      "init_seed2": "ee63175f9a5e7ac67d0041dd5c81378d074d3d33279c06aa9fb6823618f00ed5"
+    },
+    "asset_arrays": {
+      "subset": "33236cc6bd19fa6b89e06d441d3fcd8eb37dc8540f6a4f2b627b20af10894a41",
+      "train_probe": "a33645e0e4f024d8c47c0c5bdd7fbc7ea59a976090a815c58ba029908f2c86bc",
+      "perm_seed0": "5df32d0d922962e72fb4dd718a5eaad13f3209f75b8363aff64e57b89b4bb22f",
+      "perm_seed1": "b3c1460f166f3e3afb821c9b5cebc30a1915ce47b3a2502b85921041e8b58cb0",
+      "perm_seed2": "995dcd74c2f86f26d89d170041b8996b37e7dc881ebe9db103ddf2fc76f3e5bb"
+    },
+    "torch": "2.10.0+cu128",
+    "code": "d059e78ab3207277af592da9395a68b859cfaf4a"
+  }
+}

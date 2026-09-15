@@ -56,6 +56,86 @@ py -m continuation_core evaluate --checkpoint runs/resolution_max_b1_gaussian_co
 `dry-run` builds everything, verifies asset digests, runs forward/backward at
 every distinct state and checks the target-state bypass. It trains nothing.
 
+## VGG-11-BN: residual connections are not required
+
+The same four methods on a non-residual network, with the CIFAR-10 reference
+recipe untouched -- all 50,000 images in the reference's own order (via
+`make-assets --indices-from`), 391 updates/epoch, 30 epochs, SGD lr 0.005,
+reference schedules. Only the architecture differs. 3 seeds, records under
+`results/vgg11_cifar10/`.
+
+| method | VGG-11-BN | paired vs plain | ResNet-20-BN paired |
+|---|---|---|---|
+| `gaussian_postrelu` | **84.66 +- 0.25** | +3.99 +- 0.63 | +4.48 |
+| `resolution_max_b1_gaussian_conv` | 84.54 +- 0.45 | +3.88 +- 0.58 | +6.08 |
+| `resolution_max_b1` | 83.77 +- 0.41 | +3.10 +- 0.37 | +4.94 |
+| `plain` | 80.67 +- 0.61 | - | - |
+
+**All three methods help on a network with no residual connections.** Normalised
+by the error the control leaves -- VGG-11 starts from 80.67, not 75.43 -- the
+gaps are +20.7%, +20.1% and +16.0%, against ResNet-20's +25%, +20% and +18%.
+
+**The ordering changes, for the first time in any study where the method was not
+outright broken.** `gaussian_postrelu` leads and the combined method drops to
+second, losing 2.2 pp where the Gaussian-only method loses 0.5.
+
+That is the direction the caveat recorded *before* these runs predicts. VGG-11
+has five max pools and no spatial headroom on a 32x32 image, so while the
+reduction is active the last convolutions sit at 1x1-2x2 (see
+`scripts/vgg11_configs.py`). The combined method is the one that blurs at
+**convolution outputs**, and a Gaussian on a 1x1 map is an identity -- so it
+loses much of its intervention exactly where ResNet-20 keeps 4x4 and 8x8.
+`gaussian_postrelu` has no reduction and never goes below 2x2, and is barely
+affected.
+
+Consistent with the caveat, not proven by it: separating "VGG breaks the combined
+method" from "the 1x1 tail does" needs an arm whose schedule never drops below
+native resolution, which has not been run.
+
+
+## ResNet-20 with GroupNorm: the BatchNorm coupling is real, and partial
+
+Everything is the CIFAR-10 reference recipe -- all 50,000 images in the
+reference's own order, 391 updates/epoch, 30 epochs, SGD lr 0.005, reference
+schedules, identical parameter count and identical site map. **Only the
+normalisation layer differs.** 3 seeds, records under
+`results/resnet20gn_cifar10/`.
+
+| method | GroupNorm | paired vs plain | BatchNorm | BN paired |
+|---|---|---|---|---|
+| `resolution_max_b1_gaussian_conv` | 78.85 +- 0.21 | **+3.37 +- 0.67** | 81.51 | +6.08 |
+| `resolution_max_b1` | 78.27 +- 0.68 | **+2.79 +- 0.80** | 80.37 | +4.94 |
+| `gaussian_postrelu` | 76.64 +- 0.43 | **+1.16 +- 0.63** | 79.91 | +4.48 |
+| `plain` | 75.48 +- 0.88 | - | 75.43 | - |
+
+The controls coincide -- 75.48 against 75.43 -- so the columns are directly
+comparable, and **every method loses roughly half its benefit**: +6.08 -> +3.37,
++4.94 -> +2.79, +4.48 -> +1.16.
+
+The hypothesis was that `resolution_max_b1_gaussian_conv` filters all 19
+convolution outputs *before* normalisation, so BatchNorm fits its statistics --
+and its running buffers -- on blurred activations, leaving the normalisation
+tuned to a distribution the schedule then removes. GroupNorm has no batch
+statistics and no running buffers, so there is nothing for the blur to corrupt.
+
+**The damage tracks how much a method depends on blurring, which is what the
+hypothesis predicts.** `gaussian_postrelu`, the pure Gaussian method, loses 74%
+of its gain and lands at +1.16 +- 0.63, barely separable from zero.
+`resolution_max_b1`, which does not blur at all, loses least in relative terms
+(44%).
+
+**But it is a contributor, not the whole mechanism.** If the coupling were the
+entire story the Gaussian methods should have collapsed to nothing; instead all
+three still help and the combined method still leads.
+
+One caveat this study cannot settle: GroupNorm is not only "BatchNorm without
+running statistics", it also normalises per sample rather than per batch. So this
+isolates the coupling less cleanly than the activation study isolates the
+rectifier. A tighter test is BatchNorm with its running statistics frozen, or
+recomputed after each schedule transition, which separates "statistics fitted to
+blurred activations" from "batch versus per-sample normalisation". Not run.
+
+
 ## ResNet-20 with GELU / SiLU: the rectifier is not the mechanism
 
 The same four methods with `F.relu` replaced by `F.gelu` or `F.silu` and nothing
@@ -96,13 +176,22 @@ went the other way by a similar margin, and what actually varies is the
 intervention row spans 0.53 pp or less. The interventions are more stable across
 activations than the baseline they are measured against.
 
-**Hypotheses tested so far**
+**Hypotheses tested**
 
-| hypothesis | status |
-|---|---|
-| the recovery window after G -> 0 | dead -- [CIFAR-10 at 5,000 images](#cifar-10-at-5000-images-the-stl-10-control) |
-| ReLU's exact-zero sparsity | dead -- this section, on two independent activations |
-| the blur / BatchNorm coupling | open -- see the GroupNorm study |
+| hypothesis | verdict | killed or confirmed by |
+|---|---|---|
+| the recovery window after G -> 0 explains STL-10 | **dead** | CIFAR-10 5k arm A: +10.62 pp on STL-10's exact 720-update budget |
+| ReLU's exact-zero sparsity is required | **dead** | GELU and SiLU both reproduce ReLU within 0.5 pp |
+| residual connections are required | **dead** | VGG-11: all three methods positive |
+| a prior over natural-image scale structure | **dead** | SVHN: 25% error reduction, same as CIFAR-10 |
+| the blur / BatchNorm coupling | **partly confirmed** | GroupNorm: about half the effect, and the loss tracks how much each method blurs |
+
+Nothing found so far removes the effect. Four structural explanations have been
+tested and four have failed to account for it; the normalisation coupling
+accounts for roughly half. What survives across every dataset and architecture is
+the reading SVHN and the CIFAR-10 subsets point at: these behave as regularisers
+whose benefit scales with how much the model is overfitting, largely indifferent
+to image statistics, activation function and residual structure.
 
 
 ## SVHN
