@@ -187,6 +187,43 @@ benchmark are here, in its most data-starved setting -- consistent with the
 regularization reading that SVHN pointed to.
 
 
+## VGG-11-BN: residual connections are not required
+
+The same four methods on a non-residual network, with the CIFAR-10 reference
+recipe untouched -- all 50,000 images in the reference's own order (via
+`make-assets --indices-from`), 391 updates/epoch, 30 epochs, SGD lr 0.005,
+reference schedules. Only the architecture differs. 3 seeds, records under
+`results/vgg11_cifar10/`.
+
+| method | VGG-11-BN | paired vs plain | ResNet-20-BN paired |
+|---|---|---|---|
+| `gaussian_postrelu` | **84.66 +- 0.25** | +3.99 +- 0.63 | +4.48 |
+| `resolution_max_b1_gaussian_conv` | 84.54 +- 0.45 | +3.88 +- 0.58 | +6.08 |
+| `resolution_max_b1` | 83.77 +- 0.41 | +3.10 +- 0.37 | +4.94 |
+| `plain` | 80.67 +- 0.61 | - | - |
+
+**All three methods help on a network with no residual connections.** Normalised
+by the error the control leaves -- VGG-11 starts from 80.67, not 75.43 -- the
+gaps are +20.7%, +20.1% and +16.0%, against ResNet-20's +25%, +20% and +18%.
+
+**The ordering changes, for the first time in any study where the method was not
+outright broken.** `gaussian_postrelu` leads and the combined method drops to
+second, losing 2.2 pp where the Gaussian-only method loses 0.5.
+
+That is the direction the caveat recorded *before* these runs predicts. VGG-11
+has five max pools and no spatial headroom on a 32x32 image, so while the
+reduction is active the last convolutions sit at 1x1-2x2 (see
+`scripts/vgg11_configs.py`). The combined method is the one that blurs at
+**convolution outputs**, and a Gaussian on a 1x1 map is an identity -- so it
+loses much of its intervention exactly where ResNet-20 keeps 4x4 and 8x8.
+`gaussian_postrelu` has no reduction and never goes below 2x2, and is barely
+affected.
+
+Consistent with the caveat, not proven by it: separating "VGG breaks the combined
+method" from "the 1x1 tail does" needs an arm whose schedule never drops below
+native resolution, which has not been run.
+
+
 ## STL-10
 
 The same four methods transferred to STL-10 / 96x96: sigma x3, resolution
