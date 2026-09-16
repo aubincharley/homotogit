@@ -17,8 +17,18 @@ The Gaussian gives a less uniform result. With Adam and AdamW \citep{kingma2015a
 
 The combined method does not perform best on every dataset. On STL-10, R and G improve the mean, but RG loses $\tRGStlGain$ points, with a negative difference in every seed. With 5,000 CIFAR-10 examples, RG instead gains $\tRGSubShortGain$ points at 2,400 updates and $\tRGSubLongGain$ at 11,720 updates. The longer budget does not remove this benefit. The opposing STL-10 and CIFAR-10-subset results show that sample count alone does not determine whether the combination helps; input resolution, scale adaptation and data distribution also differ.
 
-\subsection{Training loss, test loss and cost}
-The initial observation was a higher final training CE together with better test CE and accuracy. A separate five-seed reference study confirms it on the \emph{full} training set: mean train/test CE is $\tLandPlainTrainCE/\tLandPlainTestCE$ for plain, $\tLandRTrainCE/\tLandRTestCE$ for R, $\tLandGTrainCE/\tLandGTestCE$ for G and $\tLandRGTrainCE/\tLandRGTestCE$ for RG (Table~\ref{tab:landscape-endpoints}). These are different runs from the three-seed selection batch (Appendix~\ref{app:landscape}). This pattern is not universal. With GroupNorm, R lowers the 500-image training-probe CE from $\tGnPlainTrainCE$ to $\tGnRTrainCE$ and test CE from $\tGnPlainTestCE$ to $\tGnRTestCE$. On STL-10 it lowers them from $\tStlPlainTrainCE$ to $\tStlRTrainCE$ and from $\tStlPlainTestCE$ to $\tStlRTestCE$. Thus improved generalization need not come with a worse fit to the training probe.
-
+\subsection{Computational cost}
+We compare the time needed to obtain these accuracy gains. In the selection experiment, R takes around as long as Plain despite processing smaller feature maps, while G and RG increase total running time by approximately 23\% and 45\%, respectively (Table~\ref{tab:cost-main}). We observe a similar pattern in the transfer experiments: R stays close to Plain, while Gaussian filtering usually adds cost. The measured times for all settings are reported in Appendix~\ref{app:cost}.
 \input{tables/cost_main}
-Smaller maps also do not guarantee a wall-time saving (Table~\ref{tab:cost-main}). In the selection batch, R takes about as long as plain, while G and RG add approximately 23\% and 45\% to total wall time, respectively. The transfer timings show the same practical distinction: R stays close to plain, while filtering usually adds cost. Appendix~\ref{app:cost} reports the measured times for all settings. These shared-GPU measurements include evaluation and checkpoint overhead; they do not establish a hardware-independent speedup. All methods recover the original inference computation, so no added filtering or reduction remains at test time. Energy consumption and peak memory are not measured here.
+
+These measurements include evaluation and checkpoint saving, and were collected on shared GPUs so timing differences posibly depend on the hardware and execution conditions. At inference however all added filters and resolution reductions are disabled, so computation is  unchanged. 
+\FloatBarrier
+\subsection{Training and test loss }
+In our initiale experiments, we observed the interventions produced a higher final training CE, but lower test CE and higher test accuracy. This pattern also appears in many of the other settings. Across the nine settings with both training and test CE measurements, 26 method--baseline comparisons improve mean test accuracy. Of these, 22 show higher training-probe CE and lower test CE, while the remaining four show a decrease in both losses (Table~\ref{tab:transfer-ce}). These comparisons use means over three seeds and a fixed 500-image training probe.
+
+The separate five-seed reference study confirms the first pattern on the full training set: all three methods have higher training CE, lower test CE and higher test accuracy than Plain in every seed (Table~\ref{tab:landscape-endpoints}). The gains therefore cannot be explained simply by a lower final training loss. They often occur despite a higher training loss, although this increase is not necessary for better test performance.
+
+
+
+
+
