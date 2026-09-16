@@ -1,12 +1,12 @@
 \section{Spatial continuation}
 \label{sec:methods}
-Let $\mathcal D=\{(x_i,y_i)\}_{i=1}^n$ be the training sample and $f_\theta$ the original network. An intervention state $s$ specifies a spatial resolution and the scales of any added filters. It defines
+Let $\mathcal D={(x_i,y_i)}_{i=1}^n$ be the training sample and $f_\theta$ the original network. During training, we modify the spatial resolution and, when filtering is used, the filter scales of the inner layers. We describe these choices by a state $s$ and write $f_{\theta,s}$ for the corresponding network, with loss
 \begin{equation}
- L_s(\theta)=\frac1n\sum_{i=1}^n\ell(f_{\theta,s}(x_i),y_i),
- \qquad f_{\theta,s_\star}=f_\theta,
- \label{eq:family}
+L_s(\theta)=\frac1n\sum_{i=1}^n\ell(f_{\theta,s}(x_i),y_i),
+\qquad f_{\theta,s_\star}=f_\theta,
+\label{eq:family}
 \end{equation}
-where $\ell$ is cross-entropy and $s_\star$ the final state. We take a finite number of stochastic gradient updates at each state and retain the weights and optimizer state across transitions. We do not solve each intermediate problem exactly. Since resolutions are discrete and max-pooling is nonsmooth, ``continuation'' describes a staged training procedure, not a smooth path with a proved minimizer-tracking guarantee. BatchNorm statistics are specified separately.
+where $\ell$ is cross-entropy and the final state $s_\star$ restores the original network. We train for a fixed number of stochastic gradient updates at each state, then move to the next while keeping the weights and optimizer state. This gradually recovers the original training problem without requiring each intermediate problem to be solved exactly. We use ``continuation'' to describe this progression. Since resolution changes are discrete and max-pooling is nonsmooth, we do not claim to follow a smooth path of minimizers.
 
 \subsection{Resolution reduction}
 For a feature map $h\in\R^{C\times H\times W}$, adaptive max-pooling returns a smaller map:
@@ -17,12 +17,13 @@ For a feature map $h\in\R^{C\times H\times W}$, adaptive max-pooling returns a s
 The windows $B_{i,j}$ are defined in Appendix~\ref{app:sites}. In the selected ResNet-20, we reduce the complete output of the second residual block, after its residual addition and final ReLU. Both branches of the next block receive the pooled tensor. Its side length follows $16\to24\to32$ over epochs 0--5, 6--11 and 12--29. Later layers process the smaller tensors directly; there is no immediate upsampling. Global average pooling preserves the classifier input dimension. The trainable parameter shapes are unchanged. Max-pooling keeps local maxima; it is not a linear low-pass projection.
 
 \subsection{Gaussian filtering}
-At an insertion site $j$, we replace a feature map by
+For these methods, we smooth each feature map $h_j$ by averaging neighboring values with Gaussian weights as follows
 \begin{equation}
- h_{j,s}=G_{\sigma_j(s)}*h_j,
- \label{eq:gaussian}
+h_{j,s}=G_{\sigma_j(s)}*h_j,
+\label{eq:gaussian}
 \end{equation}
-using a normalized Gaussian applied separately to each channel. In the reference setting, it is separable with nine taps per axis and reflection padding. The filters have no trainable parameters and are bypassed exactly at scale zero. The Gaussian-only method filters ten post-ReLU outputs: the stem and the nine residual blocks. The activation inside each block is not filtered. The scale $g(e)$ decreases by three-epoch plateaus, from $1$ to $0.3$, and is zero from epoch 21.
+where $\sigma_j(s)$ controls the amount of smoothing. The filter is applied independently to each channel, using a $9\times9$ window with weights that sum to one. Near the boundaries, values outside the map are obtained by reflecting those inside it. The filter introduces no trainable parameters, and setting $\sigma_j(s)=0$ leaves the feature map unchanged. For the Gaussian-only method, we apply this filter after the initial ReLU and after the final ReLU of each of the nine residual blocks, giving ten filtering sites in total. The ReLU inside each block is left unchanged. During training, the common scale $g(e)$ decreases from $1$ to $0.3$ in stages lasting three epochs each, and filtering is removed from epoch 21 onward.
+
 
 \subsection{The three selected procedures}
 \input{tables/methods}
