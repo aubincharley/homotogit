@@ -9,12 +9,15 @@ L_s(\theta)=\frac1n\sum_{i=1}^n\ell(f_{\theta,s}(x_i),y_i),
 where $\ell$ is cross-entropy and the final state $s_\star$ restores the original network. We train for a fixed number of stochastic gradient updates at each state, then move to the next while keeping the weights and optimizer state. This gradually recovers the original training problem without requiring each intermediate problem to be solved exactly. We use ``continuation'' to describe this progression. Since resolution changes are discrete and max-pooling is nonsmooth, we do not claim to follow a smooth path of minimizers.
 
 \subsection{Resolution reduction}
-For a feature map $h\in\R^{C\times H\times W}$, adaptive max-pooling returns a smaller map:
+Here we reduce the spatial size of a feature map $h\in\R^{C\times H\times W}$ using adaptive max-pooling, which keeps the largest value in each window, separately for each channel:
 \begin{equation}
- [R_{r_h,r_w}(h)]_{c,i,j}=\max_{(p,q)\in B_{i,j}}h_{c,p,q}.
- \label{eq:pool}
+[R_{r_h,r_w}(h)]_{c,i,j}=\max_{(p,q)\in B_{i,j}}h_{c,p,q}.
+\label{eq:pool}
 \end{equation}
-The windows $B_{i,j}$ are defined in Appendix~\ref{app:sites}. In the selected ResNet-20, we reduce the complete output of the second residual block, after its residual addition and final ReLU. Both branches of the next block receive the pooled tensor. Its side length follows $16\to24\to32$ over epochs 0--5, 6--11 and 12--29. Later layers process the smaller tensors directly; there is no immediate upsampling. Global average pooling preserves the classifier input dimension. The trainable parameter shapes are unchanged. Max-pooling keeps local maxima; it is not a linear low-pass projection.
+Each window $B_{i,j}$ contains the positions of the original map summarized by the output value at $(i,j)$. For example, reducing a $32\times32$ map to $16\times16$ amounts to taking the maximum in each $2\times2$ block. For other size changes, the windows can overlap their exact definition is given in Appendix~\ref{app:sites}. In the selected ResNet-20, we apply this operation to the full output of the second residual block, after the residual addition and final ReLU. The resulting map feeds both branches of the next block. Its side length increases from 16 during epochs 0--5 to 24 during epochs 6--11, then returns to 32 for epochs 12--29.
+
+The following layers process these smaller maps directly, without first upsampling them. Global average pooling ensures that the classifier still receives an input of the same dimension, and all trainable parameter shapes remain unchanged. Although this operation reduces spatial resolution, it does so by retaining local maxima and is therefore not a linear low-pass projection.
+
 
 \subsection{Gaussian filtering}
 For these methods, we smooth each feature map $h_j$ by averaging neighboring values with Gaussian weights as follows
@@ -22,14 +25,22 @@ For these methods, we smooth each feature map $h_j$ by averaging neighboring val
 h_{j,s}=G_{\sigma_j(s)}*h_j,
 \label{eq:gaussian}
 \end{equation}
-where $\sigma_j(s)$ controls the amount of smoothing. The filter is applied independently to each channel, using a $9\times9$ window with weights that sum to one. Near the boundaries, values outside the map are obtained by reflecting those inside it. The filter introduces no trainable parameters, and setting $\sigma_j(s)=0$ leaves the feature map unchanged. For the Gaussian-only method, we apply this filter after the initial ReLU and after the final ReLU of each of the nine residual blocks, giving ten filtering sites in total. The ReLU inside each block is left unchanged. During training, the common scale $g(e)$ decreases from $1$ to $0.3$ in stages lasting three epochs each, and filtering is removed from epoch 21 onward.
+where $\sigma_j(s)$ controls the amount of smoothing. The filter is applied independently to each channel. The filter introduces no trainable parameters, and setting $\sigma_j(s)=0$ leaves the feature map unchanged. In the reference ResNet-20, the Gaussian-only method applies the filter after the initial ReLU and after the final ReLU of each residual block, giving ten filtering sites. The combined method instead filters the outputs of all 19 convolutions, before BatchNorm.
 
-
+Both methods use a base scale $g(e)$ that decreases from $1$ to $0.3$ in stages lasting three epochs each, with filtering removed from epoch 21 onward. For Gaussian-only, the filter scale is simply $g(e)$; in the combined method, it is also adjusted to the resolution schedule, as described below.
 \subsection{The three selected procedures}
+
+From our CIFAR-10 exploration (Appendix~\ref{app:exploration}), we retain three procedures: resolution reduction alone, which we call \methodR{} (R); Gaussian filtering alone, \methodG{} (G); and their combination, \methodRG{} (RG). Table~\ref{tab:methods} summarizes their settings. We compare them with Plain, the original network trained without either intervention.
+
 \input{tables/methods}
-The combined procedure uses the same reduction as \methodR{}, but places the Gaussian at all 19 convolution outputs, before BatchNorm. Its effective scale is
+
+The combined procedure follows the same resolution schedule as R, with one additional rule linking the Gaussian scale to the resolution. If $r(e)$ is the side length chosen at epoch $e$, its filter scale is
 \begin{equation}
- \sigma_j(e)=g(e)\frac{r(e)}{32}\quad\text{at all 19 sites},
- \label{eq:coupling}
+\sigma_j(e)=g(e)\frac{r(e)}{32}
+\quad\text{at all 19 filtering sites}.
+\label{eq:coupling}
 \end{equation}
-including the five sites upstream of the reduction, whose maps remain $32\times32$. This executed rule produces some upward jumps in the effective scale when resolution increases (Appendix~\ref{app:schedules}). Consequently, \methodRG{} is not the literal composition of the selected \methodR{} and \methodG{} presets: the Gaussian placement and scale differ. The comparison concerns three selected procedures, not a strict factorial decomposition of two independent interventions. All finish at the native grid with the added operations bypassed.
+The same factor is applied even at the five sites before the reduction, where the maps remain $32\times32$. As a result, an increase in resolution can temporarily increase the effective blur, even though $g(e)$ decreases (Appendix~\ref{app:schedules}).
+
+Together with the different filtering locations described above, this means that RG does more than simply add the Gaussian-only procedure to R. We therefore compare three complete training procedures, rather than independently switching the same two interventions on and off. All three end at the original resolution with the added operations disabled.
+
