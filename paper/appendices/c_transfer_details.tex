@@ -1,0 +1,31 @@
+\FloatBarrier
+\section{Transfer protocols and complete endpoint metrics}
+\label{app:transfer}
+The transfer experiments were run after selecting the three procedures. The matrix is targeted: changing several axes does not amount to crossing every dataset with every architecture and optimizer. All methods within a setting use the same training budget, examples, per-seed initial state and ordering. New architectures require new initial weights, so their seeds are not paired with weights of a different architecture. No study uses augmentation. Final test accuracy is always taken at the scheduled endpoint.
+
+\paragraph{Optimizer and architecture changes on CIFAR-10.}
+All full-data CIFAR-10 settings use 50,000 training images, all 10,000 test images and 30 epochs of 391 updates. Batch size is 128, accumulated over microbatches of 32; warm-up, cosine decay and numerical weight decay $5\times10^{-4}$ follow Appendix~\ref{app:protocol}. The ResNet-20-BN/ReLU optimizer comparison uses learning rates $0.005$, $0.003$, $0.02$ and $0.003$ for SGD, Adam, AdamW and RAdam, respectively. All activation, normalization and architecture variants use SGD at $0.005$.
+
+GELU and SiLU replace the functional activations but retain the pinned initial weights and their Kaiming-ReLU gain. GroupNorm uses eight groups, new initial weights and the reference data order; its models have no running-statistics policy. VGG-11-BN has eight convolution-output and eight post-ReLU sites. Reduction follows its first pooling layer, with map side $8\to12\to16$; four later native pools can bring the last maps to $1\times1$. Its weights are new, while data indices and order match the reference.
+
+\paragraph{Dataset and budget changes with ResNet-20-BN/ReLU and SGD.}
+SVHN uses 50,000 of its 73,257 training images and all 26,032 test images, with learning rate $0.005$, 30 epochs, 11,730 updates and the reference 32-pixel scales. STL-10 uses all 5,000 labelled training and 8,000 test images at $96\times96$, the same learning rate and 60 epochs of 40 updates. Reduction becomes $48\to72\to96$, Gaussian scales are multiplied by three (25 taps per axis), and epoch boundaries are doubled. Evaluation occurs every third epoch and at the endpoint.
+
+The two CIFAR-10 5k settings use the same 5,000 training images and all 10,000 test images, with the same model and SGD rate. The 60-epoch setting follows STL-10's 2,400-update budget and evaluation frequency, with 32-pixel spatial scales. The 293-epoch setting uses 11,720 updates, approximately matching the full-data reference. Reference epoch boundaries are scaled by $391/40$ and rounded to whole epochs: transitions occur at updates 1,160, 2,360, 3,520, 4,680, 5,880, 7,040 and 8,200. Evaluation occurs every tenth epoch and at the endpoint.
+
+\paragraph{Optimizer selection.}
+The optimizer study contains twelve imported selection-batch runs, 36 runs at the selected adaptive learning rates, fourteen learning-rate pilot runs and three SGD consistency runs. Only the first two groups enter Table~\ref{tab:transfer}. Pilot choices used final plain seed-0 \emph{test} accuracy, with a 0.3-point near-tie preference for the lower rate and extensions when a grid edge was competitive. The chosen rate was then shared by plain and all interventions; it was not tuned separately for each method. SGD was not retuned. The stronger adaptive baselines and the smaller intervention gains therefore concern different selected recipes, with test-set reuse. Equal numerical weight decay does not make SGD/Adam and AdamW equivalent regularization schemes \citep{loshchilov2019decoupled}.
+
+\input{tables/transfer_paired}
+\input{tables/transfer_ce}
+
+Training CE is evaluated on a fixed 500-image probe. In both CIFAR-10 5k settings, the probe is contained in the same 5,000-image training subset shared by all methods and budgets. Per-channel normalization uses the full 50,000-image training split. These CEs describe a probe, not the full training set.
+
+The training-probe and test CEs help delimit the initial training--test observation. For example, after 293 epochs on the 5,000-image CIFAR-10 subset, every method has 100\% training-probe accuracy and very small CE, while test CE remains substantially lower under G and RG. This is compatible with a difference in the fitted predictors, but does not by itself identify a regularization mechanism. Conversely, R improves both training-probe and test CE with GroupNorm and on STL-10. A statement that continuation always sacrifices training fit would be false for these experiments.
+
+\subsection{Observed computational cost}
+\label{app:cost}
+\input{tables/costs}
+The timer starts after data and model construction and ends after the last evaluation. It includes evaluation and checkpoint writes. Subtracting evaluation time still leaves indexing and I/O; it would not isolate GPU computation. The reference runs use a Tesla T4, while hardware identifiers are not recorded in the transfer export. Runs used shared GPU sessions, sometimes with two jobs per device. Evaluation frequency and the number of evaluated paths also vary across studies. These timings therefore describe the observed cost of each recipe rather than a controlled hardware benchmark.
+
+R stays close to Plain in elapsed time, while Gaussian filtering generally adds cost. Smaller early feature maps do not by themselves imply an end-to-end speedup. No energy or peak-memory measurements are available, and we do not infer them from wall time. At inference, all methods use the original architecture without added filtering or reduction.

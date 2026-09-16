@@ -1,0 +1,55 @@
+{
+ "compiled": "2026-09-16",
+ "pages": 27,
+ "main_text_ends_page": 6,
+ "references_start_page": 6,
+ "appendix_starts_page": 9,
+ "tables_in_paper": 17,
+ "figures_in_paper": 8,
+ "bibliography_entries": 34,
+ "citation_commands": 40,
+ "overfull_boxes": 0,
+ "undefined_references_or_citations": 0,
+ "pages_with_content_crossing_the_text_margin": 0,
+ "official_style_files_byte_identical_to_the_supplied_project": {
+  "aistats2026.sty": true,
+  "fancyhdr.sty": true,
+  "checklist_template.tex": true,
+  "references.bib": true,
+  "macros.tex": true
+ },
+ "companion_catalogue": {
+  "pages": 6,
+  "configurations": 165,
+  "runs_behind_them": 377,
+  "printed_in_the_paper": false,
+  "toggle": "\\catalogueinpapertrue in main.tex prints it in the paper again"
+ },
+ "asset_pipeline": [
+  "py paper/tools/build_records.py",
+  "py paper/tools/build_assets.py",
+  "py paper/tools/build_catalogue.py",
+  "latexmk -pdf -interaction=nonstopmode -halt-on-error main.tex"
+ ],
+ "historical_assets": {
+  "generator": "py paper/tools/make_legacy_assets_with_repo.py",
+  "reproduces_the_supplied_files": true,
+  "table_diff_lines": 0,
+  "figure_pixel_diff_at_100dpi": 0
+ },
+ "toolchain": {
+  "pdflatex": "MiKTeX-pdfTeX 4.24 (MiKTeX 26.1)",
+  "python": "3.12.1",
+  "matplotlib": "3.8.2",
+  "numpy": "1.26.3",
+  "pandas": "2.2.0"
+ },
+ "source_snapshots": {
+  "manuscript": "1bd1fe7",
+  "methods": "continuation-core@ef5564c",
+  "historical_index": "benchmark-organized@8d353f20",
+  "landscape": "visualization@9e9275c plus raw outputs produced after that push",
+  "input_diagnostics": "continuation-core-experiments@4179584"
+ },
+ "verification_limit": "No model was trained or evaluated for this revision. Idriss's checkpoint binaries are not committed, so their hashes could not be compared; his branch has since moved to 1a60649, whose newer results are not used here."
+}

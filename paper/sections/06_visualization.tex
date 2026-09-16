@@ -1,4 +1,51 @@
-\section{Visualizing the continuation}
+\section{Loss geometry after spatial continuation}
 \label{sec:visualization}
-\textcolor{red}{To be completed: visualizations of how an intervention changes the loss at fixed weights, how the optimization trajectory changes at schedule transitions, and how sensitive the final solution is to weight perturbations.}
-% Requirements for these figures: paper/handover/FUTURE_WORK_NOTES.md
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/sensitivity_summary.pdf}
+\caption{Finite sensitivity relative to Plain: CIFAR-10 / ResNet-20-BN / SGD, final 30-epoch checkpoints. Points average five seed-level differences on 1k-image probes; bands show $\pm1$ sample SD after averaging 20 directions per seed. Negative means a smaller CE increase. Amplitude axes are logarithmic; vertical scales differ between panels. Centre-frozen results and larger-set checks appear in Appendix~\ref{app:landscape}.}
+\label{fig:sensitivity}
+\end{figure*}
+We next ask whether the trained networks differ in their response to weight perturbations. This study uses a separate matched batch of the four procedures and five training seeds, with the reference CIFAR-10 recipe. All final comparisons use the native, filter-free network. A fixed training probe and test probe each contain 1,000 class-balanced images. Larger checks use 10,000 training images and all 10,000 test images. Directions are repeated measurements of a checkpoint; the five training seeds, not the directions, are the replication units.
+
+\subsection{What is held fixed?}
+BatchNorm has learned affine parameters and running statistics. A loss surface depends on both. We evaluate three conventions: \emph{saved}, which freezes the checkpoint statistics; \emph{centre-frozen}, which recalibrates them once at the unperturbed weights and then freezes them; and \emph{pointwise-recalibrated}, which recalibrates at every perturbed point. Calibration uses the same 2,000 training images, disjoint from the training probe, and no test data. The latter surface measures a different function: it includes the response of the statistics to the perturbation. It is not a correction that makes the other two surfaces invalid.
+
+Following \citet{li2018visualizing}, we draw Gaussian directions and normalize each convolutional output filter, and each classifier row, to the norm of that weight block. With block index $j$,
+\begin{equation}
+ d_j=\norm{\theta_j}_2\frac{u_j}{\norm{u_j}_2},
+ \qquad u_j\sim\mathcal N(0,I).
+ \label{eq:direction}
+\end{equation}
+Biases and BatchNorm affine parameters are held fixed. The same underlying draws are used across methods within a seed, then scaled by each model's own norms. Thus we match \emph{relative} perturbations, not identical displacements in parameter space.
+
+For a specified data set and BatchNorm convention, write its evaluation loss as $L$. Our finite sensitivity is
+\begin{equation}
+ S_\theta(\varepsilon)=\frac1K\sum_{k=1}^K
+ \left[\frac{L(\theta+\varepsilon d_k)+L(\theta-\varepsilon d_k)}2-L(\theta)\right],
+ \label{eq:sensitivity}
+\end{equation}
+with $K=20$ and ten amplitudes from $0.005$ to $0.5$. For each seed we form $\Delta S=S_{\rm method}-S_{\rm plain}$; a negative value means a smaller loss increase. The central loss is subtracted separately for every model and policy. $S$ can be negative and is not clipped.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/landscape_compact.pdf}
+\caption{Illustrative loss slices for the four final seed-0 models: CIFAR-10 / ResNet-20-BN / SGD, 30 epochs, 1k-image training probe, pointwise BatchNorm recalibration. Surfaces join the 41-by-41 measured values of $L(\theta_0+a d_1+b d_2)-L(\theta_0)$. Viewing angles, axis limits and colour scales are identical. Directions share random draws but use each model's filter norms. These slices illustrate relative perturbations in one seed, not a general ordering of curvature.}
+\label{fig:wide-surfaces}
+\end{figure*}
+Figure~\ref{fig:wide-surfaces} shows two-dimensional slices of this loss. Their appearance depends on the directions and normalization policy; the repeated-direction measurements in Figure~\ref{fig:sensitivity} provide the quantitative comparison.
+
+\subsection{Finite perturbations depend on the evaluation policy}
+
+With saved or centre-frozen statistics, R and RG have lower $S$ than plain in every seed, on both probes and at every tested amplitude. With pointwise recalibration, the training-probe difference remains negative for R and RG in every seed, but the test-probe effects are smaller and less uniform at the smallest amplitudes. The full-test check at $\varepsilon=0.1$ gives mean differences $\tRPointTestFullOneDelta$ for R and $\tRGPointTestFullOneDelta$ for RG, negative in \tRPointTestFullOneBelow{} and \tRGPointTestFullOneBelow{} of the five seeds, respectively. At $\varepsilon=0.25$ they are $\tRPointTestFullQuarterDelta$ and $\tRGPointTestFullQuarterDelta$, with the same counts (Table~\ref{tab:sensitivity-validation}).
+
+For G, recalibration changes the interpretation more substantially. With pointwise recalibration its test-probe sensitivity is higher than plain in every seed at every amplitude. Full-test differences are $\tGPointTestFullOneDelta$ at $\varepsilon=0.1$ and $\tGPointTestFullQuarterDelta$ at $0.25$, positive in all five seeds. Nevertheless, G has better unperturbed test performance. The finite sensitivity measured by this policy therefore does not provide a common ordering that explains the accuracy gains of all three procedures.
+
+\subsection{Local Hessian measurements}
+\input{tables/hessian_main}
+A two-dimensional slice can miss directions of high or negative curvature. We therefore estimate the two largest algebraic eigenvalues and the smallest one of the CE Hessian, using automatic-differentiation Hessian--vector products and Lanczos iteration \citep{pearlmutter1994hessian,ghorbani2019hessian}. We use the same weight subset as in Equation~\eqref{eq:direction}, saved and centre-frozen statistics, and both ordinary and block-relative coordinates. The latter give $H_{\rm rel}=A^\top H A$, where $A_j=\norm{\theta_j}_2 I$ is fixed at the checkpoint. We do not compute the Hessian of the pointwise-recalibrated function.
+
+All three procedures have a smaller estimated largest eigenvalue than plain in every seed, under both coordinate choices, both fixed-statistics policies and both probes (Table~\ref{tab:hessian}). This includes G. The result is compatible with its larger finite sensitivity after pointwise recalibration because the quantities concern different functions and perturbation scales. Small negative eigenvalues are also found in all \tHessProblems{} eigenproblems. The gradients are nonzero, so these endpoints should not be called certified local minima. Appendix~\ref{app:hessian-checks} reports residuals, repeatability checks and the limits of finite-difference checks for the ReLU network.
+
+\subsection{Trajectories and input derivatives}
+Intermediate checkpoints, straight segments between final solutions and PCA projections are reported in Appendix~\ref{app:paths}. They show path and state dependence, but neither disconnected basins nor a faithfully two-dimensional training trajectory. A separate exploratory grid examines derivatives of logits with respect to input pixels at fixed weights (Appendix~\ref{app:input}). The reference runs have lower mean input-Jacobian norms after each intervention, while their spatial-frequency summaries differ. This is complementary evidence; it does not turn the weight-space observations into a generalization theorem.

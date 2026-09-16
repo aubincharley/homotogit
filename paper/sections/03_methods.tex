@@ -1,41 +1,34 @@
 \section{Spatial continuation}
 \label{sec:methods}
-Let $S=\{(x_i,y_i)\}_{i=1}^n$ be the training sample and $f_\theta$ the original network. An intervention state $s$ specifies a spatial resolution and the scales of any added filters. It defines the objective
+Let $\mathcal D=\{(x_i,y_i)\}_{i=1}^n$ be the training sample and $f_\theta$ the original network. An intervention state $s$ specifies a spatial resolution and the scales of any added filters. It defines
 \begin{equation}
- L_s(\theta)=\frac1n\sum_{i=1}^n
- \ell\bigl(f_{\theta,s}(x_i),y_i\bigr),
- \qquad f_{\theta,1}=f_\theta,
+ L_s(\theta)=\frac1n\sum_{i=1}^n\ell(f_{\theta,s}(x_i),y_i),
+ \qquad f_{\theta,s_\star}=f_\theta,
  \label{eq:family}
 \end{equation}
-where $\ell$ is cross-entropy. We take a finite number of stochastic gradient updates at each state and retain the weights and optimizer state when the intervention changes. We do not solve each intermediate problem exactly. Since resolutions are discrete and max-pooling is nonsmooth, ``continuation'' here describes a staged training procedure, not a smooth path for which a continuation theorem has been proved. BatchNorm statistics and the evaluation convention are specified separately.
+where $\ell$ is cross-entropy and $s_\star$ the final state. We take a finite number of stochastic gradient updates at each state and retain the weights and optimizer state across transitions. We do not solve each intermediate problem exactly. Since resolutions are discrete and max-pooling is nonsmooth, ``continuation'' describes a staged training procedure, not a smooth path with a proved minimizer-tracking guarantee. BatchNorm statistics are specified separately.
 
 \subsection{Resolution reduction}
-For a feature map $h\in\R^{C\times H\times W}$, an adaptive max-pooling operator returns a smaller map:
+For a feature map $h\in\R^{C\times H\times W}$, adaptive max-pooling returns a smaller map:
 \begin{equation}
- [R_{r_h,r_w}(h)]_{c,i,j}
- =\max_{(p,q)\in B_{i,j}} h_{c,p,q}.
+ [R_{r_h,r_w}(h)]_{c,i,j}=\max_{(p,q)\in B_{i,j}}h_{c,p,q}.
  \label{eq:pool}
 \end{equation}
-Here $B_{i,j}$ is the adaptive pooling window associated with output position $(i,j)$. For $32\to16$, these are non-overlapping $2\times2$ windows. For $32\to24$, the windows are two pixels wide and neighboring windows may overlap. The operation is applied independently to each channel and is bypassed when the native resolution is restored.
-
-In the selected ResNet-20 configuration, we intervene once, on the output of the second residual block (index 1 when counting from zero), after its residual addition and final ReLU. The pooled map is what the next block receives, on both its residual branch and its shortcut; in the code this is a forward pre-hook on \texttt{blocks[2]}. The map entering that block follows $16\times16\to24\times24\to32\times32$ during training. Subsequent layers, including the native strided convolutions, process the smaller tensors directly: the map is not enlarged back immediately. Global average pooling preserves the dimension expected by the classifier. This changes the spatial computation while leaving the trainable parameter shapes unchanged. Max-pooling keeps local maxima; it is not a linear low-pass projection.
+The windows $B_{i,j}$ are defined in Appendix~\ref{app:sites}. In the selected ResNet-20, we reduce the complete output of the second residual block, after its residual addition and final ReLU. Both branches of the next block receive the pooled tensor. Its side length follows $16\to24\to32$ over epochs 0--5, 6--11 and 12--29. Later layers process the smaller tensors directly; there is no immediate upsampling. Global average pooling preserves the classifier input dimension. The trainable parameter shapes are unchanged. Max-pooling keeps local maxima; it is not a linear low-pass projection.
 
 \subsection{Gaussian filtering}
-At an insertion site $\ell$, we replace a feature map by
+At an insertion site $j$, we replace a feature map by
 \begin{equation}
- h_{\ell,s}=G_{\sigma_\ell(s)}*h_\ell,
+ h_{j,s}=G_{\sigma_j(s)}*h_j,
  \label{eq:gaussian}
 \end{equation}
-using a normalized spatial Gaussian kernel with a fixed nine-tap support, applied separately to each channel (Appendix~\ref{app:schedules}). The added filters have no trainable parameters and are bypassed exactly when their scale is zero. The Gaussian-only method uses ten post-ReLU sites: the stem activation and the final activation of each of the nine residual blocks; the activation inside a block is not filtered. The reference scale decreases by three-epoch plateaus from $1$ to $0.3$ and is zero for the last nine of the 30 epochs.
+using a normalized Gaussian applied separately to each channel. In the reference setting, it is separable with nine taps per axis and reflection padding. The filters have no trainable parameters and are bypassed exactly at scale zero. The Gaussian-only method filters ten post-ReLU outputs: the stem and the nine residual blocks. The activation inside each block is not filtered. The scale $g(e)$ decreases by three-epoch plateaus, from $1$ to $0.3$, and is zero from epoch 21.
 
 \subsection{The three selected procedures}
 \input{tables/methods}
-We retain one representative per family (Table~\ref{tab:methods}), selected from the exploration. In the combined procedure, the Gaussian is placed at all 19 convolution outputs, before the following BatchNorm and activation, rather than at the ten post-ReLU sites used by the Gaussian-only method. BatchNorm therefore normalizes filtered activations and accumulates its running statistics on them.
-
-There is also a coupling in the executed combined preset: if $g(s)$ is its reference Gaussian scale and $r(s)$ the current resolution after block index 1, the effective scale is
+The combined procedure uses the same reduction as \methodR{}, but places the Gaussian at all 19 convolution outputs, before BatchNorm. Its effective scale is
 \begin{equation}
- \sigma_\ell(s)=g(s)\,\frac{r(s)}{32}
- \quad\text{at all 19 sites}.
+ \sigma_j(e)=g(e)\frac{r(e)}{32}\quad\text{at all 19 sites},
  \label{eq:coupling}
 \end{equation}
-This includes the five sites upstream of the reduction whose maps remain $32\times32$. We preserve this convention to study the method that produced the reported results. Thus the combined preset is not the literal composition of the selected resolution-only and Gaussian-only presets. Their comparison evaluates three selected procedures; it is not a strict factorial decomposition of two independent interventions.
+including the five sites upstream of the reduction, whose maps remain $32\times32$. This executed rule produces some upward jumps in the effective scale when resolution increases (Appendix~\ref{app:schedules}). Consequently, \methodRG{} is not the literal composition of the selected \methodR{} and \methodG{} presets: the Gaussian placement and scale differ. The comparison concerns three selected procedures, not a strict factorial decomposition of two independent interventions. All finish at the native grid with the added operations bypassed.

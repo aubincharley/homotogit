@@ -1,0 +1,21 @@
+\FloatBarrier
+\section{Exploration catalogue (companion record)}
+\label{app:catalogue}
+The complete record of every configuration trained during the CIFAR-10 exploration is
+supplied as a companion file rather than printed here: \texttt{catalogue/exploration\_catalogue.pdf}
+for reading, \texttt{catalogue/exploration\_catalogue.csv} for machine use, and
+\texttt{catalogue/exploration\_catalogue.md} as plain text. It is rebuilt from the run
+records by \texttt{paper/tools/build\_records.py} followed by
+\texttt{paper/tools/build\_catalogue.py}, and \texttt{catalogue/CHANGE\_LOG.md} states
+which values changed, if any, when they were recomputed.
+
+The companion keeps all \idxConfigurations{} configurations behind the
+\idxRuns{} recorded runs of \idxExperiments{} experiments, including the configurations
+whose runs produced non-finite losses and the separate launches of the same
+configuration, each with its accuracy, seed counts and wall time, grouped by experiment
+with that experiment's data, budget, evaluation split and timing scope. Nothing was
+removed in moving it out of the paper; the decisive comparisons, the controls and the
+adverse results that bear on the claims of this paper stay in
+Appendix~\ref{app:exploration}, including the failed operator, the reduced-resolution
+controls that never restore the native grid, the pilots whose sign disagrees with the
+reference protocol, and the statement that the selection reused CIFAR-10 test results.

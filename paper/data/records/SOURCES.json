@@ -1,0 +1,771 @@
+{
+ "generator": "paper/tools/build_records.py",
+ "benchmark_index": "8d353f2086:experiments/index.json",
+ "idriss_commit": "4179584171134da96e354c853b6274d40e913395",
+ "optimizer_branch": "ac23aa749189ca49073849897d97c7651e18b266",
+ "transfer_branches": {
+  "activation-transfer": "2b013efffd58f712f83a052fd861d2e1dbfe04f6",
+  "groupnorm-transfer": "3a774278e8607512eef0213f7369ae4c534f7a75",
+  "vgg11-transfer": "216fd86ee9577fa105ec635c1293b8e63005f6e9",
+  "svhn-transfer": "51f38b0be20f20210d3e14da61b8032180df32c7",
+  "stl10-transfer": "3a9c34c2de2f100dfa539f922d9435b0251551c3",
+  "cifar10-subset": "29c18eaa2c94f5468578aeb5b7b0d86f3c3b224c"
+ },
+ "tables": {
+  "benchmark_runs": {
+   "rows": 144,
+   "columns": [
+    "setting",
+    "config_id",
+    "method",
+    "seed",
+    "dataset",
+    "n_train",
+    "n_test",
+    "arch",
+    "activation",
+    "norm",
+    "optimizer",
+    "lr",
+    "weight_decay",
+    "epochs",
+    "updates",
+    "updates_per_epoch",
+    "eval_every_epochs",
+    "test_acc",
+    "test_ce",
+    "train_probe_ce",
+    "train_probe_n",
+    "last_epoch_train_loss",
+    "wall_seconds",
+    "train_seconds",
+    "eval_seconds",
+    "device",
+    "record",
+    "batch",
+    "train_probe_acc",
+    "endpoint_path",
+    "subset_sha",
+    "probe_sha",
+    "init_sha",
+    "order_sha",
+    "code",
+    "status"
+   ],
+   "sha256": "b8823881ae7f3a65dfe5184bfe8ea0c66093f8b193d0df4b61d15bb91bc99c3a",
+   "sources": {
+    "index": "8d353f2086:experiments/index.json"
+   },
+   "note": "one row per training run of the twelve reported settings"
+  },
+  "benchmark_pilot_runs": {
+   "rows": 17,
+   "columns": [
+    "setting",
+    "config_id",
+    "method",
+    "seed",
+    "dataset",
+    "n_train",
+    "n_test",
+    "arch",
+    "activation",
+    "norm",
+    "optimizer",
+    "lr",
+    "weight_decay",
+    "epochs",
+    "updates",
+    "updates_per_epoch",
+    "eval_every_epochs",
+    "test_acc",
+    "wall_seconds",
+    "status",
+    "record",
+    "batch"
+   ],
+   "sha256": "b83ce231ae30f63b365ba32348e0907c8d6d5d85e549fc3a43e3a493eb24effe",
+   "sources": {
+    "branch": "ac23aa749189ca49073849897d97c7651e18b266"
+   },
+   "note": "learning-rate pilots and the SGD drift control; not part of any reported setting"
+  },
+  "benchmark_settings": {
+   "rows": 48,
+   "columns": [
+    "setting",
+    "label",
+    "method",
+    "n_seeds",
+    "seeds",
+    "dataset",
+    "n_train",
+    "n_test",
+    "arch",
+    "activation",
+    "norm",
+    "optimizer",
+    "lr",
+    "epochs",
+    "updates",
+    "updates_per_epoch",
+    "eval_every_epochs",
+    "train_probe_n",
+    "test_acc_mean",
+    "test_acc_sd",
+    "test_acc_per_seed",
+    "gain_mean",
+    "gain_sd",
+    "gain_per_seed",
+    "n_seeds_gain_positive",
+    "test_ce_mean",
+    "test_ce_sd",
+    "train_probe_ce_mean",
+    "train_probe_ce_sd",
+    "wall_minutes_mean",
+    "wall_minutes_sd",
+    "wall_ratio_to_plain_mean",
+    "wall_ratio_to_plain_sd"
+   ],
+   "sha256": "4aa9a5575f93f7b25434857bac342ac12e660d48090aa008be29e5fbb3ab9f86",
+   "sources": {
+    "derived_from": "benchmark_runs"
+   },
+   "note": "per setting and method: absolute accuracy, paired gain, CE and wall time"
+  },
+  "catalogue_cells": {
+   "rows": 377,
+   "columns": [
+    "experiment",
+    "config_id",
+    "cell_id",
+    "seed",
+    "group",
+    "acc_from_record",
+    "ce_from_record",
+    "valid",
+    "wall_seconds",
+    "index_final_acc",
+    "index_valid",
+    "record"
+   ],
+   "sha256": "ba1782aae45a54888a1a317edfb657bdd4bfddffa2c630ff349e7dbf5a9dc439",
+   "sources": {
+    "index": "8d353f2086:experiments/index.json"
+   },
+   "note": "every historical run, with the value recomputed from its own summary record"
+  },
+  "catalogue_configurations": {
+   "rows": 165,
+   "columns": [
+    "experiment",
+    "experiment_title",
+    "owner",
+    "conditions",
+    "evaluation_split",
+    "timing_scope",
+    "config_id",
+    "label",
+    "family",
+    "status",
+    "flags",
+    "seeds_attempted",
+    "seeds_valid",
+    "acc_mean",
+    "acc_sd",
+    "acc_per_seed",
+    "wall_seconds_mean",
+    "final_path",
+    "asset_sets",
+    "epochs",
+    "n_train",
+    "index_acc_mean",
+    "index_acc_sd"
+   ],
+   "sha256": "d14173beb54137a06c722bc1bc38b05d647ef4d785fafca3704b88e1665c1ca6",
+   "sources": {
+    "index": "8d353f2086:experiments/index.json"
+   },
+   "note": "the 165 historical configurations, aggregated from the cell records"
+  },
+  "input_diagnostics_cells": {
+   "rows": 28,
+   "columns": [
+    "cell",
+    "method",
+    "recipe_variant",
+    "training_seed",
+    "train_n",
+    "train_ce",
+    "train_error",
+    "test_n",
+    "test_ce",
+    "test_error",
+    "jac_images",
+    "jac_frobenius",
+    "jac_spectral",
+    "jac_participation",
+    "freq_mean_radius",
+    "hess_images",
+    "hess_parameters",
+    "hutchinson_draws",
+    "trace_deflated",
+    "trace_raw",
+    "top5_sum",
+    "top_eig1",
+    "top5_converged",
+    "record",
+    "logit_displacement_eps0.05",
+    "logit_displacement_eps0.1",
+    "logit_displacement_eps0.25",
+    "logit_displacement_eps0.5",
+    "logit_displacement_eps1",
+    "logit_displacement_eps2",
+    "logit_displacement_eps3",
+    "logit_displacement_eps6",
+    "logit_displacement_eps12",
+    "linearity_ratio_eps0.05",
+    "linearity_ratio_eps0.1",
+    "linearity_ratio_eps0.25",
+    "linearity_ratio_eps0.5",
+    "linearity_ratio_eps1",
+    "linearity_ratio_eps2",
+    "linearity_ratio_eps3",
+    "linearity_ratio_eps6",
+    "linearity_ratio_eps12"
+   ],
+   "sha256": "ec23ed7729fe0f452670d1b73cd11aa8c691c4142d4c4e42a31056d682ee99c8",
+   "sources": {
+    "commit": "4179584171134da96e354c853b6274d40e913395"
+   },
+   "note": "the 28 input-derivative grid cells"
+  },
+  "input_diagnostics_frequency": {
+   "rows": 672,
+   "columns": [
+    "cell",
+    "method",
+    "recipe_variant",
+    "radius",
+    "energy_fraction"
+   ],
+   "sha256": "e8ac898c109c45845a0c99bcc72cd48331fa790b9c63b3e21c09b967d6f4e1d4",
+   "sources": {
+    "commit": "4179584171134da96e354c853b6274d40e913395"
+   },
+   "note": "Jacobian energy by spatial frequency radius"
+  },
+  "landscape_sensitivity_per_direction": {
+   "rows": 24000,
+   "columns": [
+    "method",
+    "seed",
+    "policy",
+    "split",
+    "direction",
+    "amplitude",
+    "centre_ce",
+    "dL_plus",
+    "dL_minus",
+    "S"
+   ],
+   "sha256": "ad87a3bea947b14d3afd57af4bfa475d7e6a6a2caf1db81f0beb06286408ba38",
+   "sources": {
+    "worktree": "C:\\Users\\mnica\\Documents\\Projet_filiere-worktrees\\visualization",
+    "n_v3_points": 96116,
+    "n_v2_points": 33820,
+    "accounts": [
+     "maximemonstrenikez",
+     "maximemonstrenikez_rerun",
+     "maxlebossdu91",
+     "maxlebossdu91_rerun",
+     "maxlefrr",
+     "maxlefrr_rerun",
+     "maxmonstre",
+     "maxnicaise",
+     "maxnikezz",
+     "maxnikezz_rerun"
+    ]
+   },
+   "note": "recomputed from raw landscape evaluation records"
+  },
+  "landscape_sensitivity_per_seed": {
+   "rows": 1200,
+   "columns": [
+    "method",
+    "seed",
+    "policy",
+    "split",
+    "amplitude",
+    "S_mean",
+    "S_direction_sd",
+    "n_directions"
+   ],
+   "sha256": "4d9569ca9a4b172256685e60e07ddf188135f29f84b3b7551c63844e59dacf19",
+   "sources": {
+    "worktree": "C:\\Users\\mnica\\Documents\\Projet_filiere-worktrees\\visualization",
+    "n_v3_points": 96116,
+    "n_v2_points": 33820,
+    "accounts": [
+     "maximemonstrenikez",
+     "maximemonstrenikez_rerun",
+     "maxlebossdu91",
+     "maxlebossdu91_rerun",
+     "maxlefrr",
+     "maxlefrr_rerun",
+     "maxmonstre",
+     "maxnicaise",
+     "maxnikezz",
+     "maxnikezz_rerun"
+    ]
+   },
+   "note": "recomputed from raw landscape evaluation records"
+  },
+  "landscape_sensitivity_paired": {
+   "rows": 180,
+   "columns": [
+    "method",
+    "policy",
+    "split",
+    "amplitude",
+    "mean_delta",
+    "sd_delta",
+    "n_seeds",
+    "n_seeds_below_plain"
+   ],
+   "sha256": "7fc3fd7794a4a1c4e81100cb5757c0e90dc8d421a73737f45999389ebc7c6585",
+   "sources": {
+    "worktree": "C:\\Users\\mnica\\Documents\\Projet_filiere-worktrees\\visualization",
+    "n_v3_points": 96116,
+    "n_v2_points": 33820,
+    "accounts": [
+     "maximemonstrenikez",
+     "maximemonstrenikez_rerun",
+     "maxlebossdu91",
+     "maxlebossdu91_rerun",
+     "maxlefrr",
+     "maxlefrr_rerun",
+     "maxmonstre",
+     "maxnicaise",
+     "maxnikezz",
+     "maxnikezz_rerun"
+    ]
+   },
+   "note": "recomputed from raw landscape evaluation records"
+  },
+  "landscape_large_set_per_seed": {
+   "rows": 160,
+   "columns": [
+    "method",
+    "seed",
+    "policy",
+    "evaluation_set",
+    "n_images",
+    "amplitude",
+    "n_directions",
+    "S",
+    "centre_ce",
+    "centre_acc"
+   ],
+   "sha256": "330c9c3e7e90782cf83bff4a4eb530bcdda98cba36acb8d630a112138c43816b",
+   "sources": {
+    "worktree": "C:\\Users\\mnica\\Documents\\Projet_filiere-worktrees\\visualization",
+    "n_v3_points": 96116,
+    "n_v2_points": 33820,
+    "accounts": [
+     "maximemonstrenikez",
+     "maximemonstrenikez_rerun",
+     "maxlebossdu91",
+     "maxlebossdu91_rerun",
+     "maxlefrr",
+     "maxlefrr_rerun",
+     "maxmonstre",
+     "maxnicaise",
+     "maxnikezz",
+     "maxnikezz_rerun"
+    ]
+   },
+   "note": "recomputed from raw landscape evaluation records"
+  },
+  "landscape_large_set_paired": {
+   "rows": 24,
+   "columns": [
+    "method",
+    "policy",
+    "evaluation_set",
+    "amplitude",
+    "mean_delta",
+    "sd_delta",
+    "n_seeds",
+    "n_seeds_below_plain"
+   ],
+   "sha256": "30783271dddaab120a9c36404dcd949fb2e976c37416bf6737f66bd8d80cda5a",
+   "sources": {
+    "worktree": "C:\\Users\\mnica\\Documents\\Projet_filiere-worktrees\\visualization",
+    "n_v3_points": 96116,
+    "n_v2_points": 33820,
+    "accounts": [
+     "maximemonstrenikez",
+     "maximemonstrenikez_rerun",
+     "maxlebossdu91",
+     "maxlebossdu91_rerun",
+     "maxlefrr",
+     "maxlefrr_rerun",
+     "maxmonstre",
+     "maxnicaise",
+     "maxnikezz",
+     "maxnikezz_rerun"
+    ]
+   },
+   "note": "recomputed from raw landscape evaluation records"
+  },
+  "landscape_endpoints": {
+   "rows": 20,
+   "columns": [
+    "method",
+    "seed",
+    "policy",
+    "train_full_n",
+    "train_full_ce",
+    "train_full_acc",
+    "test_full_n",
+    "test_full_ce",
+    "test_full_acc",
+    "training_log_test_acc",
+    "training_log_test_ce",
+    "wall_seconds"
+   ],
+   "sha256": "a6bc792756802f92528b35a7d62779c380c80c2b716908b8d5d99886551bcf24",
+   "sources": {
+    "worktree": "C:\\Users\\mnica\\Documents\\Projet_filiere-worktrees\\visualization",
+    "n_v3_points": 96116,
+    "n_v2_points": 33820,
+    "accounts": [
+     "maximemonstrenikez",
+     "maximemonstrenikez_rerun",
+     "maxlebossdu91",
+     "maxlebossdu91_rerun",
+     "maxlefrr",
+     "maxlefrr_rerun",
+     "maxmonstre",
+     "maxnicaise",
+     "maxnikezz",
+     "maxnikezz_rerun"
+    ]
+   },
+   "note": "recomputed from raw landscape evaluation records"
+  },
+  "landscape_hessian": {
+   "rows": 160,
+   "columns": [
+    "problem",
+    "method",
+    "seed",
+    "probe",
+    "policy",
+    "coords",
+    "loss",
+    "grad_norm",
+    "n_params",
+    "n_blocks",
+    "top1",
+    "top2",
+    "min",
+    "top1_rel_resid",
+    "top2_rel_resid",
+    "min_rel_resid",
+    "top1_start1",
+    "min_start1",
+    "converged_start0",
+    "converged_start1",
+    "iterations_start0",
+    "iterations_start1",
+    "min_rayleigh_f64",
+    "source"
+   ],
+   "sha256": "a0f06024793966f7e5565ec3c74892fd4b589977ae875b4f811a376ef70caaec",
+   "sources": {
+    "worktree": "C:\\Users\\mnica\\Documents\\Projet_filiere-worktrees\\visualization",
+    "n_v3_points": 96116,
+    "n_v2_points": 33820,
+    "accounts": [
+     "maximemonstrenikez",
+     "maximemonstrenikez_rerun",
+     "maxlebossdu91",
+     "maxlebossdu91_rerun",
+     "maxlefrr",
+     "maxlefrr_rerun",
+     "maxmonstre",
+     "maxnicaise",
+     "maxnikezz",
+     "maxnikezz_rerun"
+    ]
+   },
+   "note": "recomputed from raw landscape evaluation records"
+  },
+  "landscape_hvp_checks": {
+   "rows": 40,
+   "columns": [
+    "m",
+    "s",
+    "policy",
+    "probe",
+    "hvp_seconds_f32",
+    "hvp_repeat_bitwise",
+    "hvp_repeat_max_abs_diff",
+    "symmetry_rel",
+    "loss_f32",
+    "grad_norm_f32",
+    "hvp_seconds_f64",
+    "hvp_f32_vs_f64_rel",
+    "fd_gradient_vs_hvp_rel_err_all_masked",
+    "fd_gradient_vs_hvp_rel_err_fc_only",
+    "key"
+   ],
+   "sha256": "8a2ebb44fee64f495b68af43c8c239119b4706acb00c4ad25ebde08c7ee70d72",
+   "sources": {
+    "worktree": "C:\\Users\\mnica\\Documents\\Projet_filiere-worktrees\\visualization",
+    "n_v3_points": 96116,
+    "n_v2_points": 33820,
+    "accounts": [
+     "maximemonstrenikez",
+     "maximemonstrenikez_rerun",
+     "maxlebossdu91",
+     "maxlebossdu91_rerun",
+     "maxlefrr",
+     "maxlefrr_rerun",
+     "maxmonstre",
+     "maxnicaise",
+     "maxnikezz",
+     "maxnikezz_rerun"
+    ]
+   },
+   "note": "recomputed from raw landscape evaluation records"
+  },
+  "landscape_float64_checks": {
+   "rows": 960,
+   "columns": [
+    "method",
+    "seed",
+    "policy",
+    "split",
+    "direction",
+    "amplitude",
+    "S_f32",
+    "S_f64",
+    "abs_diff"
+   ],
+   "sha256": "c4b290fc4c42861775b7b2bd9a1cdaf618277444dd46ea9b4a02aa5f8fee43af",
+   "sources": {
+    "worktree": "C:\\Users\\mnica\\Documents\\Projet_filiere-worktrees\\visualization",
+    "n_v3_points": 96116,
+    "n_v2_points": 33820,
+    "accounts": [
+     "maximemonstrenikez",
+     "maximemonstrenikez_rerun",
+     "maxlebossdu91",
+     "maxlebossdu91_rerun",
+     "maxlefrr",
+     "maxlefrr_rerun",
+     "maxmonstre",
+     "maxnicaise",
+     "maxnikezz",
+     "maxnikezz_rerun"
+    ]
+   },
+   "note": "recomputed from raw landscape evaluation records"
+  },
+  "landscape_transitions": {
+   "rows": 960,
+   "columns": [
+    "method",
+    "epoch",
+    "state_label",
+    "state",
+    "seed",
+    "policy",
+    "split",
+    "centre_ce"
+   ],
+   "sha256": "c7b07e6fa24dfa669a2eeae0d9f6591f7a8d109c7e93b2eae25f7f8fbcd3c608",
+   "sources": {
+    "worktree": "C:\\Users\\mnica\\Documents\\Projet_filiere-worktrees\\visualization",
+    "n_v3_points": 96116,
+    "n_v2_points": 33820,
+    "accounts": [
+     "maximemonstrenikez",
+     "maximemonstrenikez_rerun",
+     "maxlebossdu91",
+     "maxlebossdu91_rerun",
+     "maxlefrr",
+     "maxlefrr_rerun",
+     "maxmonstre",
+     "maxnicaise",
+     "maxnikezz",
+     "maxnikezz_rerun"
+    ]
+   },
+   "note": "recomputed from raw landscape evaluation records"
+  },
+  "landscape_transitions_audit": {
+   "rows": 64,
+   "columns": [
+    "method",
+    "epoch",
+    "split",
+    "policy",
+    "n_seeds",
+    "n_states_compared",
+    "n_seeds_trained_state_lowest",
+    "n_seeds_next_state_lower"
+   ],
+   "sha256": "9f06c33e1b905f09c62a83254ad0a7056af54dff21848914f7d0b8a3a740412b",
+   "sources": {
+    "worktree": "C:\\Users\\mnica\\Documents\\Projet_filiere-worktrees\\visualization",
+    "n_v3_points": 96116,
+    "n_v2_points": 33820,
+    "accounts": [
+     "maximemonstrenikez",
+     "maximemonstrenikez_rerun",
+     "maxlebossdu91",
+     "maxlebossdu91_rerun",
+     "maxlefrr",
+     "maxlefrr_rerun",
+     "maxmonstre",
+     "maxnicaise",
+     "maxnikezz",
+     "maxnikezz_rerun"
+    ]
+   },
+   "note": "recomputed from raw landscape evaluation records"
+  },
+  "landscape_interpolation": {
+   "rows": 1020,
+   "columns": [
+    "pair",
+    "seed",
+    "alpha",
+    "policy",
+    "train_probe_ce",
+    "test_probe_ce",
+    "source"
+   ],
+   "sha256": "2d9cb1b129673ae39eb21f37e626064289b76e6a3f4380494673f4293d29c83e",
+   "sources": {
+    "worktree": "C:\\Users\\mnica\\Documents\\Projet_filiere-worktrees\\visualization",
+    "n_v3_points": 96116,
+    "n_v2_points": 33820,
+    "accounts": [
+     "maximemonstrenikez",
+     "maximemonstrenikez_rerun",
+     "maxlebossdu91",
+     "maxlebossdu91_rerun",
+     "maxlefrr",
+     "maxlefrr_rerun",
+     "maxmonstre",
+     "maxnicaise",
+     "maxnikezz",
+     "maxnikezz_rerun"
+    ]
+   },
+   "note": "recomputed from raw landscape evaluation records"
+  },
+  "landscape_interpolation_barriers": {
+   "rows": 20,
+   "columns": [
+    "pair",
+    "seed",
+    "n_points",
+    "train_probe_barrier",
+    "train_probe_argmax_alpha",
+    "test_probe_barrier",
+    "test_probe_argmax_alpha"
+   ],
+   "sha256": "945bc7af1cc85aec91e77a06b0d6d1d48b5b936943e41f131b5b93518b0b4dd4",
+   "sources": {
+    "worktree": "C:\\Users\\mnica\\Documents\\Projet_filiere-worktrees\\visualization",
+    "n_v3_points": 96116,
+    "n_v2_points": 33820,
+    "accounts": [
+     "maximemonstrenikez",
+     "maximemonstrenikez_rerun",
+     "maxlebossdu91",
+     "maxlebossdu91_rerun",
+     "maxlefrr",
+     "maxlefrr_rerun",
+     "maxmonstre",
+     "maxnicaise",
+     "maxnikezz",
+     "maxnikezz_rerun"
+    ]
+   },
+   "note": "recomputed from raw landscape evaluation records"
+  },
+  "landscape_pca": {
+   "rows": 5,
+   "columns": [
+    "seed",
+    "n_checkpoints",
+    "evr_pc1",
+    "evr_pc1_2",
+    "evr_pc1_4",
+    "evr_pc1_10",
+    "median_unexplained_2pc",
+    "max_unexplained_2pc",
+    "median_unexplained_5pc",
+    "max_unexplained_5pc"
+   ],
+   "sha256": "14916931f9001a7362b55279765ae16b6aefa1ebe66081f9fe35cd16b9638685",
+   "sources": {
+    "worktree": "C:\\Users\\mnica\\Documents\\Projet_filiere-worktrees\\visualization",
+    "n_v3_points": 96116,
+    "n_v2_points": 33820,
+    "accounts": [
+     "maximemonstrenikez",
+     "maximemonstrenikez_rerun",
+     "maxlebossdu91",
+     "maxlebossdu91_rerun",
+     "maxlefrr",
+     "maxlefrr_rerun",
+     "maxmonstre",
+     "maxnicaise",
+     "maxnikezz",
+     "maxnikezz_rerun"
+    ]
+   },
+   "note": "recomputed from raw landscape evaluation records"
+  },
+  "landscape_random_planes": {
+   "rows": 13780,
+   "columns": [
+    "method",
+    "seed",
+    "grid",
+    "a",
+    "b",
+    "train_probe_ce",
+    "test_probe_ce",
+    "source"
+   ],
+   "sha256": "4d08b19a60f24d87250ddde9a1d2e5e06247ba4c5daab2b8106d13f7c3b4e39e",
+   "sources": {
+    "worktree": "C:\\Users\\mnica\\Documents\\Projet_filiere-worktrees\\visualization",
+    "n_v3_points": 96116,
+    "n_v2_points": 33820,
+    "accounts": [
+     "maximemonstrenikez",
+     "maximemonstrenikez_rerun",
+     "maxlebossdu91",
+     "maxlebossdu91_rerun",
+     "maxlefrr",
+     "maxlefrr_rerun",
+     "maxmonstre",
+     "maxnicaise",
+     "maxnikezz",
+     "maxnikezz_rerun"
+    ]
+   },
+   "note": "recomputed from raw landscape evaluation records"
+  }
+ }
+}

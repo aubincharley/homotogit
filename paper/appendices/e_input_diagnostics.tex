@@ -1,0 +1,42 @@
+\FloatBarrier
+\section{Exploratory input-derivative measurements}
+\label{app:input}
+A separate grid contains 28 models: four methods at three reference seeds, plus four methods at seed 0 under each of four changes (learning rate $0.0025$ or $0.01$, weight decay $10^{-4}$ or $2\times10^{-3}$). All use CIFAR-10 (50k training / 10k test images), ResNet-20-BN/ReLU, SGD and 30 epochs. These twenty method--recipe conditions are exploratory; the changed recipes have only one seed and are not recommended hyperparameters. All diagnostics concern final checkpoints.
+
+\subsection{Input Jacobians and finite logit changes}
+Let $x\in[0,1]^{3\times32\times32}$ be an image in raw intensity units. Per-channel normalization is included inside $f_\theta(x)\in\R^{10}$, the vector of logits. With the model in eval mode, saved BatchNorm statistics and the final intervention state, we compute
+\[
+ J(x)=\frac{\partial f_\theta(x)}{\partial x}\in\R^{10\times3072}.
+\]
+Ten backward passes give the rows of $J$; singular values follow from its float64 $10\times10$ Gram matrix. Norms average the first 1,000 images in the pinned training order, without class balancing. Units are logits per unit input intensity. Logit scaling can change these norms without changing classification decisions; they do not give the uniform bounds required by a margin argument such as \citet{sokolic2017robust}.
+\input{tables/input_reference}
+
+For the spatial Fourier profile, we apply an orthonormal two-dimensional transform to each Jacobian row, sum squared magnitudes over logits and channels, and group them by rounded radius. Energy fractions are normalized within each 250-image batch, then averaged over four batches. The energy-weighted mean radius is in cycles per image; this is a batch-normalized Jacobian spectrum, not a mean of per-image normalized spectra.
+
+For each image, let $v_1(x)$ be a unit top right singular vector of $J(x)$. The finite input diagnostic is
+\[
+ D(\varepsilon)=\frac1N\sum_i
+ \|f_\theta(x_i+\varepsilon v_1(x_i))-f_\theta(x_i)\|_2,
+ \quad \varepsilon\in\{0.05,0.1,0.25,0.5,1,2,3,6,12\}.
+\]
+The singular direction is fixed at the original image. Inputs are not clipped to $[0,1]$, so large perturbations leave the image domain. This logit displacement differs from the CE sensitivity $S$. At $\varepsilon=0.5$, the ratio $D(\varepsilon)/(\varepsilon\,\mathbb E\sigma_{\max}(J))$ is about 0.32--0.47 in the reference runs: the local linear approximation is already inadequate.
+
+\begin{figure}[htbp]\centering
+\includegraphics[width=.90\linewidth]{figures/input_diagnostics.pdf}
+\caption{Input-diagnostic reference group. Left: Jacobian frequency profiles, mean $\pm$ SD over three seeds. Right: mean logit displacement along the top input singular direction, without clipping. R lowers the Jacobian norm but increases its mean frequency radius.}
+\label{fig:input}
+\end{figure}
+All three interventions lower the mean Jacobian norms, but R increases the mean frequency radius whereas G and RG decrease it (Table~\ref{tab:input-reference}). These measurements therefore do not establish a common low-frequency explanation of improved accuracy.
+
+\subsection{Parameter trace and cross-condition analysis}
+The grid also estimates the Hessian trace of mean training CE on 5,000 images, with saved BatchNorm and all 269,722 parameters, including biases and normalization parameters. Five power-iteration components deflate a 64-draw Rademacher Hutchinson estimate \citep{hutchinson1989trace}. Mean reference traces are $\tJacPlainTrace$ (Plain), $\tJacRTrace$ (R), $\tJacGTrace$ (G) and $\tJacRGTrace$ (RG). The parameter subset, data and solver differ from Appendix~\ref{app:hessian-checks}, so the two studies are not pooled.
+
+Of \tGridEstimates{} power-iteration estimates, \tGridConverged{} met a relative-change threshold of $10^{-4}$ within 40 iterations, including all \tGridCells{} leading estimates. This is not an eigenvector-residual certificate; the main Hessian comparison uses the residual-checked Lanczos results.
+
+Table~\ref{tab:input-grid} gives the full twenty-condition grid. Exploratory correlations with test error, controlling training error, weakened when restricted to intervention conditions. Unequal replication, few conditions and joint dependence on method and recipe limit that analysis. It neither validates a predictor on held-out conditions nor establishes causality.
+
+
+\input{tables/input_grid}
+
+\paragraph{Validation and scope.}
+All 28 re-evaluated test accuracies match their training-log endpoints, with CE discrepancies below $2\times10^{-8}$ nats. The intervention runs have unusually narrow seed spreads (R: $80.21,80.22,80.22\%$). Initial-weight and data-order records distinguish the seeds, and trajectories diverge, but final-checkpoint hashes were unavailable to the audit. We keep this batch separate and make no claim of reduced seed variance.

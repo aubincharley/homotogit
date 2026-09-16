@@ -4,12 +4,4 @@
 \newcommand{\methodR}{\textsc{Resolution}}
 \newcommand{\methodG}{\textsc{Gaussian}}
 \newcommand{\methodRG}{\textsc{Combined}}
-\newcommand{\pending}[1]{\par\noindent\textit{Work in progress. #1}\par}
-% Missing figures compile as explicit slots. They never stand in for results.
-% Usage: \figureslot{figures/file.pdf}{height when missing}{short description}
-\newcommand{\figureslot}[3]{%
-  \IfFileExists{#1}{\includegraphics[width=\linewidth]{#1}}{%
-    \fbox{\parbox[c][#2][c]{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{%
-      \centering\small Figure reserved\\[3pt]#3}}}}
-\newtheorem{proposition}{Proposition}
-\newtheorem{assumption}{Assumption}
+\newcommand{\todo}[1]{\textcolor{red}{#1}}

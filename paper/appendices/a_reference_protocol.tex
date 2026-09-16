@@ -1,6 +1,6 @@
 \section{Reference protocol and method definitions}
 \label{app:protocol}
-The comparisons that support our final selection use the protocol below. The three retained methods and the plain control are defined as they were executed in the final batch. The same definitions are frozen in our shared code, which reproduces the executed intervention states and parameter updates bitwise on CPU at sampled updates.
+The comparisons that support our final selection use the protocol below. The three retained methods and the plain control are defined as they were executed in the final batch. Insertion sites, schedules and the final bypass are specified below.
 
 \subsection{Training recipe}
 \begin{center}\small
@@ -22,13 +22,16 @@ Evaluation & Before training and after every epoch, on the test set and on a fix
 
 \paragraph{Evaluation paths.} The \emph{current path} evaluates the network with the intervention of the epoch just completed. The \emph{target path} evaluates the same weights at the native resolution without added filters, which is the network kept at the end. After epoch 30 the two paths coincide for every retained method. Before that, the target path uses BatchNorm running statistics accumulated on the current path, so it combines the effect of removing the intervention with a mismatch of these statistics.
 
-\paragraph{Training loss.} Training cross-entropy is evaluated on the fixed probe of 500 training images, not on the full training set, which we did not evaluate. We also record the mean training loss of each epoch, computed while the weights are being updated.
+\paragraph{Training loss.} In the selection batch, training cross-entropy is evaluated on a fixed probe of 500 training images. It is not the full-training-set CE. Full-training-set CE was evaluated later for the twenty models used in the landscape study and for the separate 28-run diagnostic grid. The online mean loss during an epoch is another quantity: it is computed while the weights are changing.
 
-\paragraph{Records.} Run identifiers, asset hashes, commits and the complete configuration catalogue, including failed runs, are archived with the sources of this report (\texttt{paper/archive/}).
+\paragraph{Supplementary material.}
+\label{app:catalogue}
+The complete exploration catalogue retains all \idxConfigurations{} configurations, \idxRuns{} runs and \idxExperiments{} experiments, including failures and separate launches. The accompanying material also contains per-run results, configurations and figure-generation scripts.
+\todo{À compléter avant soumission : ajouter la référence au matériel supplémentaire et au dépôt de code anonymisé.}
 
 \subsection{Insertion sites and the reduction point}
 \label{app:sites}
-``After block 1'' denotes the complete output of the second residual block, after its residual addition and final ReLU. The adaptive max-pooling is applied to this tensor as it enters the third block, so both branches of every later block, including the shortcut, see the reduced grid. Table~\ref{tab:sites} lists the sites in forward order.
+``After block 1'' denotes the complete output of the second residual block, after its residual addition and final ReLU. The adaptive max-pooling is applied to this tensor as it enters the third block, so both branches of every later block, including the shortcut, see the reduced grid. For an input side $n$ and output side $r$, the one-dimensional adaptive pooling window is $[\lfloor in/r\rfloor,\lceil(i+1)n/r\rceil)$; the two-dimensional window is its Cartesian product across axes. Table~\ref{tab:sites} lists the sites in forward order.
 
 \begin{table}[!htbp]
 \caption{Insertion sites of the ResNet-20 reference model. Each residual block has two convolutions, and stride-2 convolutions open blocks 3 and 6. Map sides are given for $r=16/24/32$ at the reduction point; the Gaussian-only method never reduces, so its maps are those of the $r=32$ column. Post-ReLU sites are the stem ReLU output ($p_0$) and the output of each block ($p_1$--$p_9$).}
@@ -58,6 +61,6 @@ A state holds for a whole epoch: a transition at epoch $e$ means that update $39
 
 The Gaussian kernel has the same nine taps for every $\sigma$, $w_d\propto\exp(-d^2/(2\sigma^2))$ for $d=-4,\dots,4$, normalized to sum one. It is applied separably and channel by channel, with reflection padding that does not repeat the edge sample; on $4\times4$ maps, where the radius equals the map side, the same reflection is applied by explicit indexing. The scale $\sigma$ is measured in pixels of the feature map at the site.
 
-The combined method uses $\sigma=(r/32)\,G$ at all 19 sites, including $c_0$--$c_4$, which remain at $32\times32$ upstream of the reduction. This rescaling comes from our earlier input-resolution arms (Appendix~\ref{app:explore-resolution}) and makes the effective scale non-monotone: it increases from $0.425$ to $0.525$ when $r$ changes from 16 to 24 at epoch 6. We keep this executed rule rather than a local width ratio, so the combined method is not the literal composition of the two other methods.
+The combined method uses $\sigma=(r/32)\,G$ at all 19 sites, including $c_0$--$c_4$, which remain at $32\times32$ upstream of the reduction. This rescaling comes from our earlier input-resolution arms (Appendix~\ref{app:exploration}) and makes the effective scale non-monotone: it increases from $0.425$ to $0.525$ when $r$ changes from 16 to 24 at epoch 6. We keep this executed rule rather than a local width ratio, so the combined method is not the literal composition of the two other methods.
 
-When $G=0$, a Gaussian hook returns its input unchanged, and when $r=32$ the reduction hook returns its input. In the final state $(r=32,G=0)$, every method therefore computes exactly the plain ResNet-20. Neither BatchNorm statistics nor optimizer state are reset at a transition.
+When $G=0$, a Gaussian hook returns its input unchanged, and when $r=32$ the reduction hook returns its input. In the final state $(r=32,G=0)$, the augmented network therefore computes exactly the plain ResNet-20 when given the same weights and BatchNorm buffers. The trained predictors themselves need not coincide. Neither BatchNorm statistics nor optimizer state are reset at a transition.

@@ -1,15 +1,14 @@
 \begin{table}[t]
-\caption{Selected interventions in the ResNet-20 reference model: side of the map entering residual block index 2, reduced by adaptive max-pooling, and Gaussian sites. Every method ends with the added operators bypassed.}
+\caption{Selected procedures in ResNet-20. R, G and RG are used as abbreviations in tables. Plain has no intervention.}
 \label{tab:methods}
-\centering
-\begin{tabular}{@{}lll@{}}
+\centering\small
+\begin{tabularx}{\columnwidth}{@{}lXX@{}}
 \toprule
-Method & Map side & Gaussian sites\\
+Method & Reduction & Added Gaussian\\
 \midrule
-Plain & 32 & none\\
-\methodR & $16\to24\to32$ & none\\
-\methodG & 32 & 10 post-ReLU\\
-\methodRG & $16\to24\to32$ & 19 conv outputs\\
+R & After block 1 & None\\
+G & None & 10 post-ReLU sites\\
+RG & After block 1 & 19 conv outputs\\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}

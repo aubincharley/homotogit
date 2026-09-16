@@ -1,0 +1,79 @@
+\FloatBarrier
+\section{Weight-space diagnostics and numerical checks}
+\label{app:landscape}
+The geometry study uses twenty separately trained reference models: plain, R, G and RG at seeds 0--4. Initial weights and data order are paired within each seed. All new amplitude, temporal and Hessian evaluations reuse those checkpoints; no additional optimization is needed for these diagnostics. The five-seed batch is separate from the three-seed selection batch, so its repeated seed labels do not justify pooling the runs.
+\input{tables/landscape_endpoints}
+
+\subsection{Evaluation sets and normalization}
+The training and test probes each contain 1,000 fixed, class-balanced examples. Calibration uses a fixed 2,000-image training subset, disjoint from the training probe, in four batches of 500. Larger finite-sensitivity checks use 10,000 training images and the full test set; the larger training subset includes the training probe but is disjoint from calibration. Calibration resets running statistics and accumulates their cumulative batch averages without gradient updates. Evaluation then uses these buffers in eval mode. No test examples calibrate BatchNorm, and previous grid points do not leave their buffers in the next evaluation.
+
+Writing $b$ for the BatchNorm buffers and $\widehat b(\theta)$ for this calibration procedure clarifies the three functions measured:
+\[
+ L_{\rm saved}(\theta)=L(\theta;b_{\rm checkpoint}),\qquad
+ L_{\rm centre}(\theta)=L(\theta;\widehat b(\theta_0)),\qquad
+ L_{\rm point}(\theta)=L(\theta;\widehat b(\theta)).
+\]
+The calibration batch size, order and procedure are part of the definition of $\widehat b$; it is not an exact population statistic. In centre-frozen evaluations, $\theta_0$ is the checkpoint about which the plot or derivative is computed. Saved and centre-frozen policies keep the buffers constant under weight perturbations. Pointwise recalibration includes their change. At intermediate checkpoints, the intervention state is also specified independently of the buffers.
+
+\subsection{Direction sampling, aggregation and amplitudes}
+The perturbed vector contains 268,336 convolution and classifier weights, arranged in 698 output-filter or classifier-row blocks. Biases and BatchNorm affine parameters are fixed. Every measured block has a nonzero norm. Gaussian draws are generated deterministically, shared across methods within a seed, and normalized as in Equation~\eqref{eq:direction}. One useful displacement scale is
+\[
+ r(\delta)=\left(\frac1{698}\sum_j\frac{\|\delta_j\|_2^2}{\|\theta_j\|_2^2}\right)^{1/2}.
+\]
+For the random directions, $r(\varepsilon d)=|\varepsilon|$. Directions normalized using different checkpoints need not have the same physical length or span the same plane.
+
+The amplitudes are $0.005,0.01,0.02,0.025,0.05,0.1,0.2,0.25,0.35,0.5$. Twenty directions per model give $20\times20\times3\times2\times10=24{,}000$ directional sensitivity values across networks, policies, probes and amplitudes. We first average over directions within a checkpoint, then pair each method with plain in that seed, and only then average across the five seeds. Repeated directions and amplitudes do not increase the number of independent training replications. Sample SDs over seeds are descriptive spreads, not confidence intervals or hypothesis tests.
+
+For a twice differentiable fixed function and a sufficiently small displacement,
+\[
+ \frac{2S_\theta(\varepsilon)}{\varepsilon^2}
+ \longrightarrow \frac1K\sum_k d_k^\top H d_k.
+\]
+The symmetric evaluation cancels the first-order term. At finite amplitudes, ReLU activation changes and nonquadratic terms can invalidate that approximation; pointwise recalibration also changes the function. We therefore call $S$ a finite sensitivity, not a Hessian eigenvalue or a universal flatness measure.
+\input{tables/sensitivity_validation}
+\input{tables/sensitivity_validation_paired}
+\begin{figure}[htbp]\centering
+\includegraphics[width=.92\linewidth]{figures/sensitivity_centre_frozen.pdf}
+\caption{The centre-frozen policy, using the same conventions as Figure~\ref{fig:sensitivity}. R and RG have negative paired differences at every amplitude in every seed on both probes. G does not share that full pattern.}
+\label{fig:centre-frozen}
+\end{figure}
+
+\subsection{What the surfaces show}
+A random plane evaluates $L(\theta_0+a d_1+b d_2)$ on a grid. The axes are two chosen directions in parameter space; they are not coordinates of input images. An absolute surface displays the CE itself. A centred surface displays $L(\theta_0+a d_1+b d_2)-L(\theta_0)$, so every centre has height zero even though the quoted centre CEs differ. This removes the vertical offset, not the shape. The smooth bowl-like appearance of a sampled plane does not establish convexity in all parameter directions.
+Figure~\ref{fig:wide-surfaces} in the main text shows the final seed-0 planes with pointwise recalibration, using the same viewing angle, axis limits and colour scale for every method. The surfaces join all 41-by-41 measured vertices; no additional training seeds are represented by the plane.
+
+
+\subsection{Hessian definitions and convergence}
+\label{app:hessian-checks}
+The Hessian is that of mean CE, excluding weight decay, on the selected weight subset at the final checkpoint. The ordinary operator is $H=\nabla^2_\theta L$. For block-relative coordinates, $\theta=\theta_0+Aq$ with $A_j=\|\theta_{0,j}\|_2 I$, we use $H_{\rm rel}=A^\top H A$ and keep $A$ fixed during differentiation. Normalizing by filter norms reduces an obvious scale mismatch but does not give invariance to arbitrary reparameterizations \citep{dinh2017sharp}. It also does not make the random directions isotropic in relative coordinates: their block covariance includes a factor inverse to block dimension. Random-direction averages and extreme eigenvalues answer different questions.
+
+Hessian--vector products are computed by differentiating the loss gradient, accumulated with correct sample weights. Lanczos uses full reorthogonalization and two deterministic starts for each of 160 problems (twenty networks, two probes, two fixed-statistics policies and two coordinate choices). Each requested eigenpair must satisfy an explicit residual criterion of the form
+\[
+ \|Hv-\lambda v\|_2\le10^{-3}
+ \max\{|\lambda|,10^{-3}|\lambda_{\max}|\},\qquad \|v\|_2=1,
+\]
+with $H$ replaced by $H_{\rm rel}$ when appropriate. All \tHessProblems{} problems met the criterion for the two largest and the smallest algebraic eigenvalue, from both starts; they required \tHessIterMin--\tHessIterMax{} iterations. The largest recorded relative residual is $\tHessResidTop\times10^{-7}$ for the two leading eigenpairs and $\tHessResidMin\times10^{-4}$ for the minimum eigenpair. Residuals assess the numerical eigenproblem, not whether the checkpoint is a local optimum.
+\input{tables/hessian_all}
+
+The evaluations use float32 with TF32 disabled and deterministic cuDNN settings. On \tFloatChecks{} small-amplitude comparisons, float64 recomputation changes $S$ by at most $\tFloatMaxDiff\times10^{-7}$ nats. Repeated HVPs were identical in the recorded checks; the relative symmetry discrepancy was at most $\tHvpSymmetry\times10^{-6}$, and float32--float64 HVP differences at most $\tHvpPrecision\times10^{-4}$. Dense pilot checks and classifier-only central finite differences support the implementation. Finite differences through all perturbed ReLU weights do \emph{not} show uniform convergence over the tested steps. We therefore interpret the HVP as the automatic-differentiation local Hessian, not as a quadratic model valid over every plotted interval.
+
+The smallest eigenvalue is negative in all \tHessProblems{} cases, and the corresponding checks include float64 Rayleigh quotients. Yet the CE gradient norms range from $\tHessGradMin$ to $\tHessGradMax$ on the selected parameters: the checkpoints are not stationary points of these evaluation losses. These facts are compatible with visually bowl-shaped random slices. Neither a positive random slice nor a finite straight-line barrier certifies a local minimum or its basin.
+
+\subsection{Intermediate states, segments and PCA}
+\label{app:paths}
+Ten directions are evaluated at epochs 3, 6, 9, 12, 18, 21 and 30, at amplitudes 0.1 and 0.25, under both the state that produced the checkpoint and the final state. The recorded transitions additionally compare before/after states at fixed weights. R already has lower sensitivity in the first measured produced-state checkpoints; this does not establish what happened before epoch 3. For G, the saved-statistics ordering changes as filtering is removed, whereas pointwise-recalibrated sensitivity need not follow it. A lower loss under the state that produced the weights is common, but not universal: at G's epoch-3 transition with recalibration, the next state has slightly lower loss in \tGaussEpochThreeTrain{} of the five training-probe seeds and \tGaussEpochThreeTest{} of the five test-probe seeds. We avoid a blanket claim that the training state always minimizes fixed-weight loss.
+
+Straight-segment evaluations use
+\[
+ \theta(\alpha)=(1-\alpha)\theta_A+\alpha\theta_B,\qquad
+ B_{A,B}=\max_{\alpha\in\mathcal G}L(\theta(\alpha))-
+ \max\{L(\theta_A),L(\theta_B)\},
+\]
+where $\mathcal G$ is a 51-point uniform grid in $[0,1]$. They use the final intervention state and pointwise-recalibrated BatchNorm. The comparisons are plain--R, plain--G, plain--RG and R--RG, each at five seeds. The barriers are positive on both probes, but the R--RG barrier is not always higher than plain--R: it is lower in \tBarrierTrainCount{} of the five seeds on the training probe (seeds \tBarrierTrainSeeds) and in \tBarrierTestCount{} on the test probe (seed \tBarrierTestSeeds). These are barriers on sampled straight segments in the given parameterization. They do not exclude low-loss curved paths, as found by mode-connectivity methods \citep{garipov2018surfaces}; no optimized connecting path was computed here.
+\begin{figure}[htbp]\centering
+\includegraphics[width=.96\linewidth]{figures/interpolation_summary.pdf}
+\caption{Measured straight-segment losses on the training and test probes, with recalibration at every point. Each thin line is one seed. Endpoints correspond to separately trained models, and the horizontal coordinate is interpolation in weights, not training time. Barriers do not establish disconnected basins.}
+\label{fig:interpolation}
+\end{figure}
+
+PCA summarizes the recorded weight trajectory rather than selecting random directions \citep{li2018visualizing}. In the shared four-method analysis, the first two components explain only $\tPcaTwoLow$--$\tPcaTwoHigh\%$ of the centred checkpoint variance across seeds; four explain $\tPcaFourLow$--$\tPcaFourHigh\%$. Large individual projection errors remain in two dimensions. A checkpoint's projected location on a plotted plane is consequently not the checkpoint itself, and the plane's CE at that location is not its measured CE. Connecting recorded checkpoints also does not recover the unobserved optimization path between them. We retain these projections as diagnostics and do not use them as the main evidence for a geometric mechanism.

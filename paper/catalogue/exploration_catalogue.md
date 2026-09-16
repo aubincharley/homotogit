@@ -1,0 +1,273 @@
+# Exploration catalogue
+
+Every trained configuration of the CIFAR-10 exploration, grouped by experiment, recomputed from the per-run records. Accuracy is the final recorded evaluation, averaged over valid seeds; seeds are valid/attempted.
+
+## Promising methods in one batch, evaluated every epoch
+
+Promising methods in one batch, evaluated every epoch (unified_selected; owner Max). Conditions: reference recipe; evaluation after every epoch; per-epoch mean training loss recorded. Evaluation split: test. Timing: wall_seconds from model construction to summary write, including evaluations and checkpoint writes; eval_seconds counts snapshot evaluation only; train_seconds = wall - eval (so it includes data indexing and checkpoint I/O). One T4, two cells in parallel on a two-GPU kernel..
+
+| Configuration | Acc. (%) | SD | Seeds | Wall (s) |
+|---|---|---|---|---|
+| Baseline: no blur, full 32x32 throughout | 75.43 | 0.76 | 3/3 | 505 |
+| Blur after every ReLU, annealed to zero | 79.91 | 0.27 | 3/3 | 624 |
+| Blur every conv layer, annealed to zero | 78.37 | 0.77 | 3/3 | 737 |
+| Shrink block 0 with max-pool, 16 to 24 to 32 | 80.24 | 0.48 | 3/3 | 483 |
+| Shrink block 0, plus blur after every ReLU | 80.80 | 0.41 | 3/3 | 623 |
+| Shrink block 0, plus blur scaled by receptive field after every ReLU | 81.11 | 0.37 | 3/3 | 620 |
+| Shrink block 1 with max-pool, 16 to 24 to 32 | 80.37 | 0.61 | 3/3 | 499 |
+| Shrink block 1, plus blur after every ReLU | 81.00 | 0.43 | 3/3 | 631 |
+| Shrink block 1, plus blur every conv layer | 81.51 | 0.22 | 3/3 | 733 |
+| Shrink block 1, plus blur scaled by receptive field after every ReLU | 81.05 | 0.57 | 3/3 | 624 |
+| Shrink block 1, plus blur scaled by sqrt of map size after every ReLU | 80.10 | 0.20 | 3/3 | 636 |
+| Shrink block 2 with max-pool, 16 to 24 to 32 | 80.12 | 0.45 | 3/3 | 499 |
+| Shrink block 2, plus blur after every ReLU | 80.95 | 0.25 | 3/3 | 620 |
+| Shrink block 2, plus blur scaled by receptive field after every ReLU | 80.94 | 0.17 | 3/3 | 621 |
+| Shrink the input image, 16 to 24 to 32 | 79.28 | 0.53 | 3/3 | 482 |
+| Shrink the input image, plus blur after every ReLU | 80.92 | 0.38 | 3/3 | 619 |
+
+## Resolution-only benchmark: 7 operators x 5 sites x 4 schedules, all Gaussian disabled
+
+Resolution-only benchmark: 7 operators x 5 sites x 4 schedules, all Gaussian disabled (resbench_resolution_only; owner Max). Conditions: reference recipe; evaluation every 2 epochs; fixed16 / fixed24 controls report their reduced-resolution path. Evaluation split: test. Timing: wall_seconds from model construction to summary write, including evaluations and checkpoint writes; eval_seconds counts snapshot evaluation only; train_seconds = wall - eval (so it includes data indexing and checkpoint I/O). One T4, two cells in parallel on a two-GPU kernel..
+
+| Configuration | Acc. (%) | SD | Seeds | Wall (s) |
+|---|---|---|---|---|
+| Baseline: no blur, full 32x32 throughout (resolution batch) | 75.53 | 0.36 | 3/3 | 428 |
+| Shrink block 0 with max-pool, 16 to 24 to 32 | 80.08 | 0.61 | 3/3 | 438 |
+| Shrink block 1 with bilinear, 16 to 24 to 32 | 80.23 | 0.38 | 3/3 | 436 |
+| Shrink block 1 with least-squares reconstruction, 16 to 24 to 32 | 80.11 | 0.52 | 3/3 | 510 |
+| Shrink block 1 with max-pool then anti-alias blur, 16 to 24 to 32 | 80.43 | 0.75 | 3/3 | 519 |
+| Shrink block 1 with max-pool then anti-alias blur, 16 to 24 to 32, longer at low res | 80.20 | 0.52 | 3/3 | 446 |
+| Shrink block 1 with max-pool then anti-alias blur, 24 to 16 to 32 (order control) | 80.46 | 0.44 | 3/3 | 448 |
+| Shrink block 1 with max-pool then anti-alias blur, 24 to 32 only | 80.32 | 0.22 | 3/3 | 499 |
+| Shrink block 1 with max-pool, 16 to 24 to 32 | 80.60 | 0.20 | 3/3 | 433 |
+| Shrink block 1 with max-pool, 16 to 24 to 32, longer at low res | 80.07 | 0.53 | 3/3 | 436 |
+| Shrink block 1 with max-pool, 24 to 16 to 32 (order control) | 80.21 | 0.30 | 3/3 | 438 |
+| Shrink block 1 with max-pool, 24 to 32 only | 79.78 | 0.32 | 3/3 | 430 |
+| Shrink block 1 with max-pool, fixed 16x16, never restored (fixed-resolution control: trained and evaluated at 16x16 after block/site reduction,  final metric is that reduced path, the 32x32 path is a diagnostic) | 73.13 | 0.54 | 3/3 | 419 |
+| Shrink block 1 with max-pool, fixed 24x24, never restored (fixed-resolution control: trained and evaluated at 24x24,  final metric is that reduced path) | 76.15 | 0.49 | 3/3 | 436 |
+| Shrink block 1 with perceptual (SSIM-style), 16 to 24 to 32 (diverged) | --- | --- | 0/3 | --- |
+| Shrink block 1 with smoothness-optimal reconstruction, 16 to 24 to 32 | 79.85 | 0.76 | 3/3 | 507 |
+| Shrink block 1 with smoothness-optimal reconstruction, 16 to 24 to 32, longer at low res | 79.55 | 0.66 | 3/3 | 564 |
+| Shrink block 1 with smoothness-optimal reconstruction, 24 to 16 to 32 (order control) | 79.50 | 0.41 | 3/3 | 527 |
+| Shrink block 1 with smoothness-optimal reconstruction, 24 to 32 only | 78.90 | 0.11 | 3/3 | 548 |
+| Shrink block 1 with softmax-weighted pooling, 16 to 24 to 32 | 80.34 | 0.48 | 3/3 | 482 |
+| Shrink block 2 with max-pool, 16 to 24 to 32 | 80.24 | 0.56 | 3/3 | 428 |
+| Shrink the first conv layer with max-pool, 16 to 24 to 32 | 79.61 | 0.82 | 3/3 | 409 |
+| Shrink the input image with bilinear, 16 to 24 to 32 | 79.56 | 0.68 | 3/3 | 427 |
+| Shrink the input image with least-squares reconstruction, 16 to 24 to 32 | 79.64 | 0.33 | 3/3 | 537 |
+| Shrink the input image with max-pool then anti-alias blur, 16 to 24 to 32 | 79.17 | 0.43 | 3/3 | 505 |
+| Shrink the input image with max-pool, 16 to 24 to 32 | 79.23 | 0.48 | 3/3 | 433 |
+| Shrink the input image with perceptual (SSIM-style), 16 to 24 to 32 | 79.98 | 0.40 | 3/3 | 462 |
+| Shrink the input image with smoothness-optimal reconstruction, 16 to 24 to 32 | 79.76 | 0.65 | 3/3 | 560 |
+| Shrink the input image with softmax-weighted pooling, 16 to 24 to 32 | 79.28 | 0.46 | 3/3 | 456 |
+
+## 21-configuration grid: resolution x blur x site
+
+21-configuration grid: resolution x blur x site (campaign_grid21; owner Max). Conditions: reference recipe; evaluation every 2 epochs. Evaluation split: test. Timing: wall_seconds from model construction to summary write, including evaluations and checkpoint writes; eval_seconds counts snapshot evaluation only; train_seconds = wall - eval (so it includes data indexing and checkpoint I/O). One T4, two cells in parallel on a two-GPU kernel..
+
+| Configuration | Acc. (%) | SD | Seeds | Wall (s) |
+|---|---|---|---|---|
+| Baseline: no blur, full 32x32 throughout | 75.62 | 0.49 | 3/3 | 489 |
+| Blend each layer between itself and its blur | 78.18 | 0.36 | 3/3 | 789 |
+| Blur every conv layer, annealed to zero | 78.69 | 0.68 | 3/3 | 696 |
+| Blur every conv layer, annealed to zero, first 7 layers only | 75.24 | 0.74 | 3/3 | 593 |
+| Blur every conv layer, geometric decay | 78.28 | 0.50 | 3/3 | 703 |
+| Shrink the first conv layer (bilinear), 16 to 24 to 32 | 78.91 | 0.37 | 3/3 | 484 |
+| Shrink the first conv layer (bilinear), 16 to 24 to 32, plus blur every conv layer, annealed to zero | 79.30 | 0.62 | 3/3 | 750 |
+| Shrink the first conv layer (max-pool), 16 to 24 to 32 | 79.97 | 0.58 | 3/3 | 491 |
+| Shrink the first conv layer (max-pool), 16 to 24 to 32, plus blur every conv layer, annealed to zero | 79.81 | 0.79 | 3/3 | 747 |
+| Shrink the input image (bilinear), 16 to 24 to 32 | 79.48 | 0.54 | 3/3 | 492 |
+| Shrink the input image (bilinear), 16 to 24 to 32, plus blend each layer between itself and its blur | 79.51 | 0.80 | 3/3 | 783 |
+| Shrink the input image (bilinear), 16 to 24 to 32, plus blur every conv layer, annealed to zero | 80.71 | 0.65 | 3/3 | 700 |
+| Shrink the input image (bilinear), 16 to 24 to 32, plus blur every conv layer, annealed to zero, first 7 layers only | 79.27 | 0.57 | 3/3 | 596 |
+| Shrink the input image (bilinear), 16 to 24 to 32, plus blur every conv layer, geometric decay | 79.91 | 0.92 | 3/3 | 709 |
+| Shrink the input image (bilinear), 24 to 16 to 32 (order control) | 79.23 | 0.40 | 3/3 | 467 |
+| Shrink the input image (bilinear), 24 to 16 to 32 (order control), plus blur every conv layer, annealed to zero | 79.33 | 0.38 | 3/3 | 757 |
+| Shrink the input image (bilinear), 24 to 32 only | 78.56 | 0.34 | 3/3 | 486 |
+| Shrink the input image (bilinear), 24 to 32 only, plus blur every conv layer, annealed to zero | 79.77 | 0.72 | 3/3 | 694 |
+| Shrink the input image (bilinear), 24 to 32 only, plus blur every conv layer, geometric decay | 79.68 | 0.57 | 3/3 | 704 |
+| Shrink the input image (max-pool), 16 to 24 to 32 | 79.80 | 0.50 | 3/3 | 489 |
+| Shrink the input image (max-pool), 16 to 24 to 32, plus blur every conv layer, annealed to zero | 80.34 | 0.76 | 3/3 | 738 |
+
+## Anti-aliasing ablation: placement, masks, constant sigma, BlurPool, internal reductions, per-layer profiles
+
+Anti-aliasing ablation: placement, masks, constant sigma, BlurPool, internal reductions, per-layer profiles (ablation_aa; owner Idriss). Conditions: reference recipe; own pinned initial weights (r20bn-ablation-assets); evaluation every 2 epochs. Evaluation split: test. Timing: wall_seconds from model construction to summary write, including evaluations and checkpoint writes; eval_seconds counts snapshot evaluation only; train_seconds = wall - eval (so it includes data indexing and checkpoint I/O). One T4, two cells in parallel on a two-GPU kernel..
+
+| Configuration | Acc. (%) | SD | Seeds | Wall (s) |
+|---|---|---|---|---|
+| Baseline: no blur, full 32x32 throughout (ablation batch) | 75.06 | --- | 1/1 | 423 |
+| Blur after every BatchNorm, annealed to zero | 78.39 | --- | 1/1 | 673 |
+| Blur after every ReLU (10 places), annealed to zero | 80.08 | 0.21 | 3/3 | 538 |
+| Blur every conv layer, annealed to zero | 78.18 | --- | 1/1 | 648 |
+| Blur only the 2 layers feeding a downsample | 77.55 | --- | 1/1 | 436 |
+| Blur rising with depth, after every ReLU (direction control) | 77.01 | 0.38 | 3/3 | 585 |
+| Blur scaled by map size, after every ReLU | 78.48 | 0.33 | 3/3 | 550 |
+| Blur scaled by receptive field, after every ReLU | 79.59 | 0.10 | 3/3 | 532 |
+| Blur scaled by sqrt of map size, after every ReLU | 79.55 | 0.46 | 3/3 | 579 |
+| Blur the 17 layers away from a downsample | 78.52 | --- | 1/1 | 605 |
+| Fixed anti-alias blur before each downsample (control) (fixed BlurPool architecture kept at inference: its target path is not the plain ResNet-20) | 78.51 | --- | 1/1 | 460 |
+| Fixed anti-alias blur before each downsample, plus annealed blur everywhere (fixed BlurPool architecture kept at inference: its target path is not the plain ResNet-20) | 79.19 | --- | 1/1 | 698 |
+| Fixed blur 0.30, never annealed (control) (fixed-filter control: constant sigma, never annealed,  final metric is the filtered (current) path) | 74.97 | --- | 1/1 | 755 |
+| Fixed blur 0.50, never annealed (control) (fixed-filter control: constant sigma, never annealed,  final metric is the filtered (current) path) | 78.69 | --- | 1/1 | 738 |
+| Fixed blur 0.80, never annealed (control) (fixed-filter control: constant sigma, never annealed,  final metric is the filtered (current) path) | 75.02 | --- | 1/1 | 736 |
+| Fixed blur 1.00, never annealed (control) (fixed-filter control: constant sigma, never annealed,  final metric is the filtered (current) path) | 71.15 | --- | 1/1 | 749 |
+| Fixed blur after every ReLU, never annealed (control) (fixed-filter control: constant post-ReLU sigma,  final metric is the filtered (current) path) | 79.78 | --- | 1/1 | 557 |
+| Shrink after the first ReLU, plus blur after every ReLU | 79.65 | --- | 1/1 | 536 |
+| Shrink block 0 with max-pool, 16 to 24 to 32 | 80.44 | 0.43 | 3/3 | 455 |
+| Shrink block 0, plus blur after every ReLU | 80.53 | --- | 1/1 | 545 |
+| Shrink block 1 with max-pool, 16 to 24 to 32 | 80.59 | 0.41 | 3/3 | 447 |
+| Shrink block 1, plus blur after every ReLU | 80.08 | --- | 1/1 | 519 |
+| Shrink block 2 with max-pool, 16 to 24 to 32 | 80.09 | 0.17 | 3/3 | 447 |
+| Shrink block 2, plus blur after every ReLU | 80.99 | 0.41 | 3/3 | 574 |
+| Shrink block 2, plus blur rising with depth after every ReLU (direction control) | 80.18 | 0.46 | 3/3 | 583 |
+| Shrink block 2, plus blur scaled by map size after every ReLU | 79.61 | 0.44 | 3/3 | 633 |
+| Shrink block 2, plus blur scaled by receptive field after every ReLU | 81.14 | 0.22 | 3/3 | 594 |
+| Shrink block 2, plus blur scaled by sqrt of map size after every ReLU | 80.28 | 0.24 | 3/3 | 551 |
+| Shrink the first conv layer, 16 to 24 to 32 | 79.95 | --- | 1/1 | 437 |
+| Shrink the input image, 16 to 24 to 32 | 78.92 | --- | 1/1 | 443 |
+| Shrink the input image, 16 to 24 to 32, plus blur after every ReLU | 80.14 | --- | 1/1 | 542 |
+| Shrink the input image, 16 to 24 to 32, plus blur every conv layer | 79.15 | --- | 1/1 | 604 |
+
+## Per-layer sigma profiles (rho), adaptive controller, sigma0 sweep
+
+Per-layer sigma profiles (rho), adaptive controller, sigma0 sweep (per_layer_sigma; owner Aubin). Conditions: own self-paired assets per seed (different digest scheme); per_layer_cpu is a 6,000/2,000-image CPU pilot of 12 epochs. Evaluation split: test. Timing: wall_seconds from model construction to summary write, including evaluations and checkpoint writes; eval_seconds counts snapshot evaluation only; train_seconds = wall - eval (so it includes data indexing and checkpoint I/O). One T4, two cells in parallel on a two-GPU kernel..
+
+| Configuration | Acc. (%) | SD | Seeds | Wall (s) |
+|---|---|---|---|---|
+| Baseline: no blur, full 32x32 throughout (per-layer batch) [5000 train / 2000 eval, 4 epochs] | 28.40 | --- | 1/1 | --- |
+| Baseline: no blur, full 32x32 throughout (per-layer batch) [6000 train / 2000 eval, 12 epochs] | 47.65 | --- | 1/1 | --- |
+| Baseline: no blur, full 32x32 throughout (per-layer batch) [launch per-layer-adaptive-fix-20260910-130520] | 73.91 | 0.62 | 3/3 | --- |
+| Baseline: no blur, full 32x32 throughout (per-layer batch) [launch per-layer-sigma-20260910-094757] | 74.42 | 0.29 | 3/3 | --- |
+| Baseline: no blur, full 32x32 throughout (per-layer batch), sigma0 = 1 | 74.13 | 0.73 | 3/3 | --- |
+| Per-layer blur strength chosen by the network [5000 train / 2000 eval, 4 epochs] | 31.65 | --- | 1/1 | --- |
+| Per-layer blur strength chosen by the network [launch per-layer-adaptive-fix-20260910-130520] | 77.35 | 0.49 | 3/3 | --- |
+| Per-layer blur strength chosen by the network [launch per-layer-sigma-20260910-094757] | 77.50 | 0.61 | 3/3 | --- |
+| Per-layer blur strength, exponent 0.5 | 74.65 | 0.67 | 3/3 | --- |
+| Per-layer blur strength, exponent 0.5 [6000 train / 2000 eval, 12 epochs] | 45.80 | --- | 1/1 | --- |
+| Per-layer blur strength, exponent 1 [6000 train / 2000 eval, 12 epochs] | 49.00 | --- | 1/1 | --- |
+| Per-layer blur strength, exponent 1 [launch per-layer-adaptive-fix-20260910-130520] | 77.66 | 0.68 | 3/3 | --- |
+| Per-layer blur strength, exponent 1 [launch per-layer-sigma-20260910-094757] | 77.65 | 0.74 | 3/3 | --- |
+| Per-layer blur strength, exponent 1, sigma0 = 0.25 | 73.81 | 0.96 | 3/3 | --- |
+| Per-layer blur strength, exponent 1, sigma0 = 0.5 | 76.41 | 0.86 | 3/3 | --- |
+| Per-layer blur strength, exponent 1, sigma0 = 1 | 77.84 | 0.63 | 3/3 | --- |
+| Per-layer blur strength, exponent 1, sigma0 = 1.5 | 74.55 | 0.38 | 3/3 | --- |
+| Per-layer blur strength, exponent 1, sigma0 = 2 | 70.59 | 0.71 | 3/3 | --- |
+| Per-layer blur strength, exponent 2 | 76.65 | 0.21 | 3/3 | --- |
+| Per-layer blur strength, exponent 2 [5000 train / 2000 eval, 4 epochs] | 31.80 | --- | 1/1 | --- |
+| Per-layer blur strength, exponent 2 [6000 train / 2000 eval, 12 epochs] | 50.10 | --- | 1/1 | --- |
+
+## Data-triggered schedules, gradient-norm calibration, dwell allocation, long-horizon runs
+
+Data-triggered schedules, gradient-norm calibration, dwell allocation, long-horizon runs (adaptive_continuation; owner Aubin). Conditions: reference recipe, mostly seed 0 only; long-conv runs use 120 epochs and are not comparable on accuracy. Evaluation split: test. Timing: wall_seconds from model construction to summary write, including evaluations and checkpoint writes; eval_seconds counts snapshot evaluation only; train_seconds = wall - eval (so it includes data indexing and checkpoint I/O). One T4, two cells in parallel on a two-GPU kernel..
+
+| Configuration | Acc. (%) | SD | Seeds | Wall (s) |
+|---|---|---|---|---|
+| Blur every conv layer, annealed (instrumented rerun) [launch gradnorm-cal-20260910-105845] | 77.97 | --- | 1/1 | 637 |
+| Blur every conv layer, annealed (instrumented rerun) [launch gradnorm-cal2-20260910-111547] | 77.94 | --- | 1/1 | 719 |
+| Blur every conv layer, annealed (instrumented rerun) [launch signals-cal3-20260910-113759] | 78.33 | --- | 1/1 | 721 |
+| Blur schedule chosen by a transfer-gap trigger (mis-set) [launch adaptive-gap-20260910-115703] | 75.39 | --- | 1/1 | 619 |
+| Blur schedule chosen by a transfer-gap trigger [launch adaptive-gap2-20260910-121319] | 77.13 | --- | 1/1 | 622 |
+| Blur schedule chosen by the network (first trigger) | 76.34 | --- | 1/1 | 610 |
+| Blur schedule, more time at high blur | 76.57 | --- | 1/1 | 663 |
+| Blur schedule, more time at low blur | 78.74 | --- | 1/1 | 654 |
+| Resolution schedule chosen by a transfer-gap trigger | 77.29 | --- | 1/1 | 410 |
+| adaptgap hi [50000 train / 10000 eval, 120 epochs] (budget 120 epochs: not comparable on accuracy with 30-epoch arms) | 86.73 | --- | 1/1 | 2639 |
+| adaptgap lo [50000 train / 10000 eval, 120 epochs] (budget 120 epochs: not comparable on accuracy with 30-epoch arms) | 78.40 | --- | 1/1 | 2598 |
+| gplateau hi [50000 train / 10000 eval, 120 epochs] (budget 120 epochs: not comparable on accuracy with 30-epoch arms) | 87.16 | --- | 1/1 | 2594 |
+| gplateau lo [50000 train / 10000 eval, 120 epochs] (budget 120 epochs: not comparable on accuracy with 30-epoch arms) | 80.68 | --- | 1/1 | 2765 |
+| plain hi [50000 train / 10000 eval, 120 epochs] (budget 120 epochs: not comparable on accuracy with 30-epoch arms) | 86.04 | --- | 1/1 | 1752 |
+| plain lo [50000 train / 10000 eval, 120 epochs] (budget 120 epochs: not comparable on accuracy with 30-epoch arms) | 77.10 | --- | 1/1 | 1774 |
+
+## Full-data plain / Gaussian plateau / geometric
+
+Full-data plain / Gaussian plateau / geometric (fulldata_gaussian; owner Max). Conditions: reference recipe; evaluation every 2 epochs; this run produced the pinned campaign asset set. Evaluation split: test. Timing: wall_seconds of the run as recorded by continuation_driver; includes periodic evaluation..
+
+| Configuration | Acc. (%) | SD | Seeds | Wall (s) |
+|---|---|---|---|---|
+| geometric_seed0 | 78.46 | 0.72 | 3/3 | 684 |
+| plain_seed0 | 75.40 | 0.40 | 3/3 | 458 |
+| plateau_seed0 | 78.41 | 0.32 | 3/3 | 693 |
+
+## Progressive input resolution, one seed
+
+Progressive input resolution, one seed (progressive_resolution_pilot; owner Max). Conditions: reference recipe, seed 0; pairs with fulldata_gaussian seed 0. Evaluation split: test. Timing: wall_seconds of the run as recorded by continuation_driver; includes periodic evaluation..
+
+| Configuration | Acc. (%) | SD | Seeds | Wall (s) |
+|---|---|---|---|---|
+| progres_gauss_seed0 | 79.93 | --- | 1/1 | 674 |
+| progres_seed0 | 79.57 | --- | 1/1 | 452 |
+
+## ResNet-20 BN pilot, plain vs internal Gaussian
+
+ResNet-20 BN pilot, plain vs internal Gaussian (resnet20bn_gaussian_pilot; owner Max). Conditions: 10,000-image subset, 2,400 updates, val split; seed 0. Evaluation split: val. Timing: wall_seconds of the run as recorded by continuation_driver; includes periodic evaluation..
+
+| Configuration | Acc. (%) | SD | Seeds | Wall (s) |
+|---|---|---|---|---|
+| gaussian_r20bn_seed0 | 59.62 | --- | 1/1 | 174 |
+| plain_r20bn_seed0 | 55.36 | --- | 1/1 | 119 |
+
+## ResNet-18 BN, plain vs internal Gaussian
+
+ResNet-18 BN, plain vs internal Gaussian (resnet18bn_gaussian_pilot; owner Max). Conditions: 10,000-image subset, val split; ResNet-18 BatchNorm; seed 0. Evaluation split: val. Timing: wall_seconds of the run as recorded by continuation_driver; includes periodic evaluation..
+
+| Configuration | Acc. (%) | SD | Seeds | Wall (s) |
+|---|---|---|---|---|
+| gaussian_r18_seed0 [launch resnet18-gaussian-20260908-144640] | 62.16 | --- | 1/1 | 197 |
+| gaussian_r18_seed0 [launch resnet18-gaussian-complete] | 62.16 | --- | 1/1 | 197 |
+| plain_r18_seed0 | 54.26 | --- | 1/1 | 151 |
+
+## db2 wavelet shrinkage pilot (thread closed)
+
+db2 wavelet shrinkage pilot (thread closed) (db2_pilot; owner Max). Conditions: 10,000-image subset, 2,400 updates, val split; seed 0. Evaluation split: val. Timing: wall_seconds of the run as recorded by continuation_driver; includes periodic evaluation..
+
+| Configuration | Acc. (%) | SD | Seeds | Wall (s) |
+|---|---|---|---|---|
+| db2_r20bn_seed0 | 56.34 | --- | 1/1 | 3856 |
+| plain_r20bn_seed0 | 55.40 | --- | 1/1 | 89 |
+
+## GroupNorm LR diagnosis and 10,000-image plain vs Gaussian
+
+GroupNorm LR diagnosis and 10,000-image plain vs Gaussian (gn_lr_audit; owner Max). Conditions: 10,000 train images, 5,000 val; ResNet-20 GroupNorm; 1,200 updates; val accuracy, not test. Evaluation split: val. Timing: wall_seconds of the run as recorded by continuation_driver; includes periodic evaluation..
+
+| Configuration | Acc. (%) | SD | Seeds | Wall (s) |
+|---|---|---|---|---|
+| gaussian_seed0 | 46.91 | 0.60 | 3/3 | 61 |
+| gaussian_seed0_lr0p02 | 47.94 | --- | 1/1 | 66 |
+| plain_lr0p005 | 41.78 | --- | 1/1 | 25 |
+| plain_lr0p02 | 34.74 | --- | 1/1 | 26 |
+| plain_seed0 | 50.36 | 0.52 | 3/3 | 47 |
+| plain_seed0_lr0p02 | 50.72 | --- | 1/1 | 49 |
+
+## First internal-filter pilots (prelim checks, one collapsed run)
+
+First internal-filter pilots (prelim checks, one collapsed run) (pilot_internal_gaussian; owner Max). Conditions: 10,000-image subsets, ResNet-20 GroupNorm; the first pilot collapsed to uniform prediction (LR too high). Evaluation split: val. Timing: wall_seconds of the run as recorded by continuation_driver; includes periodic evaluation..
+
+| Configuration | Acc. (%) | SD | Seeds | Wall (s) |
+|---|---|---|---|---|
+| db2 | 23.34 | --- | 1/1 | 648 |
+| gaussian [launch pilot-continuation-20260908-122558] | 20.26 | --- | 1/1 | 33 |
+| gaussian [launch pilot-manual] | 20.62 | --- | 1/1 | 31 |
+| plain [launch pilot-continuation-20260908-122558] | 14.10 | --- | 1/1 | 24 |
+| plain [launch pilot-manual] | 14.12 | --- | 1/1 | 23 |
+
+## Fixed Gaussian input blur, GroupNorm
+
+Fixed Gaussian input blur, GroupNorm (exp0_input_gaussian; owner Max). Conditions: CIFAR-10 45,000 train / 5,000 stratified val; ResNet-20 GroupNorm; 14,040 updates; fixed sigma per run. Evaluation split: val. Timing: not recorded.
+
+| Configuration | Acc. (%) | SD | Seeds | Wall (s) |
+|---|---|---|---|---|
+| level_0 | 84.11 | 0.60 | 3/3 | --- |
+| level_0p5 | 82.55 | 0.06 | 3/3 | --- |
+| level_1 | 71.33 | 2.38 | 3/3 | --- |
+| level_2 | 48.32 | 2.96 | 3/3 | --- |
+| level_3 | 38.85 | 1.86 | 3/3 | --- |
+
+## Input-blur warm starts, GroupNorm
+
+Input-blur warm starts, GroupNorm (exp1_input_warmstart; owner Max). Conditions: as exp0; warm-start branching from blurred prefixes. Evaluation split: val. Timing: not recorded.
+
+| Configuration | Acc. (%) | SD | Seeds | Wall (s) |
+|---|---|---|---|---|
+| arm_P | 83.19 | 0.51 | 3/3 | --- |
+| arm_W | 82.93 | 0.11 | 3/3 | --- |
+| prefix_sigma_warm | 55.57 | 2.10 | 3/3 | --- |

@@ -1,64 +1,50 @@
-# Continuation methods for training CNNs — working paper
+# Training Convolutional Networks with Spatial Continuation
 
-AISTATS-style working paper of the project, on branch `manuscript`. It uses the
-AISTATS 2026 style files with the `preprint` option: a research-project manuscript,
-not a submission.
+This revision preserves the records audited on 16 September 2026 and improves the paper's presentation. Author order, English voice, method definitions, and official AISTATS style files are preserved. This is a named preprint, not an anonymous submission.
 
-The paper presents completed work only: the method definitions and the CIFAR-10
-exploration that led to the three retained methods. Unfinished parts (transfer,
-theory, visualization, discussion) are marked by red notes; their plans are in
-`handover/FUTURE_WORK_NOTES.md`.
+## Documents
 
-## Build
+- `main.pdf`: the revised paper, 22 pages in total. Main text and all main figures finish on page 7; the appendices occupy pages 9–22.
+- `catalogue/exploration_catalogue.pdf`: the complete historical catalogue. Its CSV and source remain alongside it.
+- `handover/LAYOUT_REVISION.md`: the presentation changes and validation summary.
+- `handover/FINAL_SOURCE_CHECKS.md`: the experiment owner's numerical audit, preserved unchanged.
 
-* Overleaf: upload this directory as a ZIP, select `main.tex`, compiler **pdfLaTeX**.
-* Locally, from `paper/`:
+## Compile
 
-  ```bash
-  latexmk -pdf main.tex
-  ```
+Upload the project contents to Overleaf, select `main.tex`, and use pdfLaTeX. All figures and tables are provided, so Python and the experiment repository are not required to compile the paper.
 
-* The exhaustive record of the exploration (complete configuration catalogue,
-  asset hashes, campaign-wide figures) is a separate document, from `paper/archive/`:
+Locally, from this directory:
 
-  ```bash
-  latexmk -pdf exploration_archive.tex
-  ```
-
-The two official `.sty` files are unchanged. Do not edit them or compress margins,
-fonts or spacing.
-
-## Generated figures, tables and numbers
-
-Every number in the paper and the archive comes from records:
-
-```bash
-py paper/tools/make_paper_assets.py
+```sh
+latexmk -pdf -interaction=nonstopmode -halt-on-error main.tex
 ```
 
-It reads `experiments/index.json` and the run records of `benchmark-organized` at
-the pinned commit `8d353f2` (and the ablation at `591e125`) through `git show`, plus
-the frozen presets of `continuation_core`, and asserts that they agree. It needs
-`matplotlib`, `numpy` and `torch`.
+All scientific results previously in the three-page companion are now integrated into Appendices B, D and E. There is no separate numerical companion to compile. The main bibliography is also supplied as a BBL. Margins, document font size, and official style files are unchanged. Ragged page bottoms avoid stretching paragraph gaps to justify a column vertically.
 
-| Output | Used in |
-|---|---|
-| `tables/numbers.tex` (all numbers quoted in the text, exploration included) | paper |
-| `tables/unified_reference.tex`, `tables/schedules.tex` | paper |
-| `figures/appendix_resolution.pdf`, `appendix_unified.pdf`, `appendix_unified_curves.pdf` | paper |
-| `tables/asset_sets.tex`, `plain_arms.tex`, `resolution_operators.tex`, `all_exploratory.tex`, `figures/archive_*.pdf` | archive |
-| `provenance/generated_assets.json` | configurations, seeds, cell ids and files behind each output |
+## Rebuild figures and tables from the audited records
 
-Generated files start with `% GENERATED`; edit the generator, not the output.
+```sh
+python3 -m pip install -r requirements-assets.txt
+python3 tools/build_assets.py
+latexmk -pdf -interaction=nonstopmode -halt-on-error main.tex
+```
 
-## Structure
+`build_assets.py` reads the frozen `data/records/` CSVs. Its presentation functions live in `tools/paper_layout.py`, which is called automatically. Rebuilding preserves the revised table layouts, accuracy highlighting, compact sensitivity panels, and four-panel loss surface. No model is loaded or evaluated.
 
-| File | Content |
-|---|---|
-| `sections/01`–`07` | Main text (Max's wording; red notes for unfinished sections) |
-| `appendices/a_reference_protocol.tex` | Recipe, conventions, sites, schedules, operators |
-| `appendices/b_exploratory_results.tex` | CIFAR-10 exploration in four decisions |
-| `appendices/c_other_approaches.tex` | TV budgets vs reconstruction operators, other directions, limitations |
-| `archive/exploration_archive.tex` | Exhaustive catalogue and campaign figures |
-| `handover/SOURCES_AND_PENDING.md` | Verification, corrections, pending team work |
-| `handover/FUTURE_WORK_NOTES.md` | Plans for transfer, theory, visualization |
+The record extraction stage, `tools/build_records.py`, requires the experiment owner's repository and archived worktrees; it is not necessary for rebuilding from this bundle. `data/records/SOURCES.json` records those sources. The historical exploration figures can be rebuilt in that repository with `tools/make_legacy_assets_with_repo.py`; their audited PDFs are included here. `tools/build_catalogue.py` rebuilds the separate catalogue from the records.
+
+## Reading conventions
+
+- Numerical column headings are centred; numerical entries remain right-aligned. Tiny cross-entropies use decimal notation in nats.
+- Bold accuracy means exceed the corresponding Plain mean. Bold does not denote statistical significance.
+- Error bars are sample standard deviations across training seeds.
+- Paired differences are formed within a setting and seed before aggregation.
+- CE on a training probe is distinguished from CE on the complete training set.
+- Timing values are observed wall times, including evaluation and checkpoint writes. Hardware energy and peak memory were not measured.
+- The compact 3D surfaces join all measured 41-by-41 grid vertices for seed 0, with the same camera, axis limits and colour scale; they are illustrations, not additional replications.
+
+One red French author note marks the outstanding reference to supplementary material and an anonymized code repository. No public URL has been invented.
+
+## Contents
+
+`sections/` and `appendices/` hold the article; `tables/` and `figures/` hold generated assets; `data/` contains the unchanged numerical records and supplied exports; `evidence/`, `provenance/` and `handover/` retain the audit trail. The full training repository, checkpoints and datasets are not included.
