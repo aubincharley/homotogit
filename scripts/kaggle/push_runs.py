@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 import sys
 import time
@@ -32,8 +33,30 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
 
+def kaggle_env(credentials: str | None) -> dict:
+    """Environment for the kaggle CLI, optionally for a different account.
+
+    Credentials are read from the given kaggle.json and passed as
+    KAGGLE_USERNAME / KAGGLE_KEY for the child process only -- nothing is copied
+    into ~/.kaggle and no key is ever printed.  Without it the CLI's own default
+    (~/.kaggle/kaggle.json) applies.
+    """
+    env = dict(os.environ)
+    if credentials:
+        j = json.loads(Path(credentials).expanduser().read_text())
+        env["KAGGLE_USERNAME"], env["KAGGLE_KEY"] = j["username"], j["key"]
+        env.pop("KAGGLE_CONFIG_DIR", None)
+    return env
+
+
+def credential_user(credentials: str | None) -> str | None:
+    if not credentials:
+        return None
+    return json.loads(Path(credentials).expanduser().read_text())["username"]
+
+
 REPO = "https://github.com/aubincharley/homotogit.git"
-BRANCH = "activation-transfer"
+BRANCH = "optimizer-transfer"
 
 #: ``slug`` is the kernel-name prefix, defaulting to the key.  Kaggle rejects a
 #: kernel slug longer than ~50 characters with a bare 400 and no explanation, and
@@ -126,6 +149,50 @@ DATASETS = {
         "dataset_arg": "cifar10", "arch": "resnet20_act_cifar", "epochs": "30",
         "extra": [], "skip_assets": True,
         "config_extra": ["--activation", "silu"], "config_subdir": "silu",
+    },
+    # SVHN and STL-10 under Adam / AdamW. Everything except the optimizer comes
+    # from that dataset's own study script, so the contrast is the optimizer.
+    # Split by dataset across accounts, so adam-vs-adamw is always within one
+    # account and cannot pick up an account-level systematic.
+    "svhn_adam": {
+        "slug": "svadam",
+        "source": "aubincharley/svhn-binary",
+        "marker": "train_X.bin", "link": "data/svhn_binary",
+        "configs": "scripts/optimizer_configs.py", "assets": "assets/svhn_resnet20bn",
+        "dataset_arg": "svhn", "epochs": "30",
+        "extra": ["--subset-size", "50000"],
+        "config_extra": ["--dataset", "svhn", "--optimizer", "adam"],
+        "config_subdir": "svhn/adam",
+    },
+    "svhn_adamw": {
+        "slug": "svadamw",
+        "source": "aubincharley/svhn-binary",
+        "marker": "train_X.bin", "link": "data/svhn_binary",
+        "configs": "scripts/optimizer_configs.py", "assets": "assets/svhn_resnet20bn",
+        "dataset_arg": "svhn", "epochs": "30",
+        "extra": ["--subset-size", "50000"],
+        "config_extra": ["--dataset", "svhn", "--optimizer", "adamw"],
+        "config_subdir": "svhn/adamw",
+    },
+    "stl10_adam": {
+        "slug": "stadam",
+        "source": "yellowflag/stl10labeled2",
+        "marker": "train_X.bin", "link": "data/stl10_binary",
+        "configs": "scripts/optimizer_configs.py", "assets": "assets/stl10_resnet20bn",
+        "dataset_arg": "stl10", "epochs": "90",
+        "extra": [],
+        "config_extra": ["--dataset", "stl10", "--optimizer", "adam"],
+        "config_subdir": "stl10/adam",
+    },
+    "stl10_adamw": {
+        "slug": "stadamw",
+        "source": "yellowflag/stl10labeled2",
+        "marker": "train_X.bin", "link": "data/stl10_binary",
+        "configs": "scripts/optimizer_configs.py", "assets": "assets/stl10_resnet20bn",
+        "dataset_arg": "stl10", "epochs": "90",
+        "extra": [],
+        "config_extra": ["--dataset", "stl10", "--optimizer", "adamw"],
+        "config_subdir": "stl10/adamw",
     },
     "svhn": {
         "source": "aubincharley/svhn-binary",
@@ -266,6 +333,8 @@ METADATA = {
 #: anything already running, from an earlier invocation or another terminal,
 #: occupies a slot too -- so retry on the error Kaggle actually returns.
 BUSY = "Maximum batch GPU session count"
+#: set from --credentials in main(); the CLI's own default until then
+ENV = dict(os.environ)
 POLL_SECONDS = 60
 MAX_WAIT_SECONDS = 3 * 60 * 60
 
@@ -279,7 +348,7 @@ def push(folder: Path) -> bool:
     deadline = time.time() + MAX_WAIT_SECONDS
     while True:
         r = subprocess.run(["kaggle", "kernels", "push", "-p", str(folder)],
-                           capture_output=True, text=True)
+                           capture_output=True, text=True, env=ENV)
         out = r.stdout + r.stderr
         if BUSY not in out:
             if r.returncode != 0 or "Error" in out:
@@ -307,7 +376,7 @@ def already_handled(user: str, slug: str) -> str | None:
     they die often, to the OOM killer.
     """
     r = subprocess.run(["kaggle", "kernels", "status", "%s/%s" % (user, slug)],
-                       capture_output=True, text=True)
+                       capture_output=True, text=True, env=ENV)
     for state in ("COMPLETE", "RUNNING", "QUEUED"):
         if state in r.stdout:
             return state.lower()
@@ -366,7 +435,11 @@ def main(argv=None):
     ap.add_argument("--methods",
                     default="plain,resolution_max_b1,gaussian_postrelu,"
                             "resolution_max_b1_gaussian_conv")
-    ap.add_argument("--user", default="aubincharley")
+    ap.add_argument("--user", help="kernel owner; defaults to the credentials' "
+                                   "own username, else aubincharley")
+    ap.add_argument("--credentials",
+                    help="path to another account's kaggle.json; its username "
+                         "and key are passed to the CLI by environment only")
     ap.add_argument("--commit", help="default: HEAD, which must be pushed to origin")
     ap.add_argument("--out", default=str(Path(__file__).parent / "kernels"))
     ap.add_argument("--dry-run", action="store_true", help="write the kernels, push nothing")
@@ -374,6 +447,11 @@ def main(argv=None):
                     help="do not re-push kernels that already completed or are "
                          "running; use when resuming a campaign whose pusher died")
     args = ap.parse_args(argv)
+
+    global ENV
+    ENV = kaggle_env(args.credentials)
+    args.user = args.user or credential_user(args.credentials) or "aubincharley"
+    print("pushing as %s" % args.user)
 
     commit = args.commit or head_commit()
     if not commit_is_on_origin(commit):
