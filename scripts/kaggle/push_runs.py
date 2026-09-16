@@ -26,6 +26,7 @@ import argparse
 import json
 import os
 import subprocess
+import tempfile
 import sys
 import time
 from pathlib import Path
@@ -36,17 +37,48 @@ sys.path.insert(0, str(ROOT / "scripts"))
 def kaggle_env(credentials: str | None) -> dict:
     """Environment for the kaggle CLI, optionally for a different account.
 
-    Credentials are read from the given kaggle.json and passed as
-    KAGGLE_USERNAME / KAGGLE_KEY for the child process only -- nothing is copied
-    into ~/.kaggle and no key is ever printed.  Without it the CLI's own default
-    (~/.kaggle/kaggle.json) applies.
+    The CLI resolves credentials as KAGGLE_API_TOKEN, then
+    ``~/.kaggle/access_token``, then ``~/.kaggle/kaggle.json`` -- and it takes the
+    **first** that exists.  With an access token cached in the real home, neither
+    ``KAGGLE_USERNAME``/``KAGGLE_KEY`` nor ``KAGGLE_CONFIG_DIR`` has any effect:
+    both are silently ignored and the push lands on the default account under a
+    slug the metadata did not ask for.  That is not hypothetical; it happened.
+
+    So point ``HOME`` at a private directory holding only the other account's
+    ``kaggle.json``.  No access token lives there, so resolution falls through to
+    the username and key.  Nothing is written to the real ``~/.kaggle`` and no key
+    is printed.
     """
     env = dict(os.environ)
-    if credentials:
-        j = json.loads(Path(credentials).expanduser().read_text())
-        env["KAGGLE_USERNAME"], env["KAGGLE_KEY"] = j["username"], j["key"]
-        env.pop("KAGGLE_CONFIG_DIR", None)
+    if not credentials:
+        return env
+    src = Path(credentials).expanduser()
+    j = json.loads(src.read_text())
+    home = Path(tempfile.mkdtemp(prefix="kaggle-home-"))
+    (home / ".kaggle").mkdir(mode=0o700)
+    dst = home / ".kaggle" / "kaggle.json"
+    dst.write_text(json.dumps({"username": j["username"], "key": j["key"]}))
+    dst.chmod(0o600)
+    env["HOME"] = str(home)
+    for stale in ("KAGGLE_API_TOKEN", "KAGGLE_CONFIG_DIR", "KAGGLE_USERNAME", "KAGGLE_KEY"):
+        env.pop(stale, None)
     return env
+
+
+def verify_account(env: dict, expected: str) -> None:
+    """Refuse to push until the CLI actually authenticates as the right user.
+
+    A mismatch here previously sent a run to the wrong account with a success
+    message, so this is checked rather than assumed.
+    """
+    r = subprocess.run(["kaggle", "kernels", "list", "--mine"],
+                       capture_output=True, text=True, env=env)
+    owners = {l.split("/")[0].strip() for l in r.stdout.splitlines() if "/" in l}
+    owners.discard("")
+    if owners and expected not in owners:
+        raise SystemExit("the CLI authenticates as %s, not %s -- refusing to push"
+                         % (", ".join(sorted(owners)) or "nobody", expected))
+    print("authenticated as %s" % expected)
 
 
 def credential_user(credentials: str | None) -> str | None:
@@ -451,7 +483,7 @@ def main(argv=None):
     global ENV
     ENV = kaggle_env(args.credentials)
     args.user = args.user or credential_user(args.credentials) or "aubincharley"
-    print("pushing as %s" % args.user)
+    verify_account(ENV, args.user)
 
     commit = args.commit or head_commit()
     if not commit_is_on_origin(commit):
