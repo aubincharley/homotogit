@@ -1,0 +1,173 @@
+{
+  "schema": "continuation_core.results/1",
+  "method": "resolution_max_b1_gaussian_conv__transfer",
+  "seed": 0,
+  "validation_status": "unvalidated",
+  "dataset": "stl10",
+  "arch": "resnet20_bn_cifar",
+  "arch_validated": true,
+  "epochs": 60,
+  "updates": 2400,
+  "updates_per_epoch": 40,
+  "n_train": 5000,
+  "n_test": 8000,
+  "final": {
+    "current": {
+      "train_probe": {
+        "ce": 0.8452462158203125,
+        "acc": 0.69,
+        "n": 500
+      },
+      "test": {
+        "ce": 1.030569938659668,
+        "acc": 0.63125,
+        "n": 8000
+      }
+    },
+    "target": {
+      "train_probe": {
+        "ce": 0.8452462158203125,
+        "acc": 0.69,
+        "n": 500
+      },
+      "test": {
+        "ce": 1.030569938659668,
+        "acc": 0.63125,
+        "n": 8000
+      }
+    }
+  },
+  "final_state_used": {
+    "state": {
+      "resolution": 96,
+      "sigma": 0.0,
+      "label": "epoch 59"
+    },
+    "per_site_sigma": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "final_state_is_target": true,
+  "transition_updates": [
+    240,
+    480,
+    720,
+    960,
+    1200,
+    1440,
+    1680
+  ],
+  "timing": {
+    "wall_seconds": 1128.655301723,
+    "eval_seconds": 243.73534453699972,
+    "train_seconds": 884.9199571860004,
+    "scope": "from the start of run() (after data and model construction) to the last evaluation, including checkpoint writes; resumed runs add the wall time stored in the checkpoint"
+  },
+  "method_definition": {
+    "id": "resolution_max_b1_gaussian_conv__transfer",
+    "description": "Adaptive max pooling after blocks[1] (48 / 72 / 96) plus the Gaussian at all 19 convolution outputs, sigma scaled by r(e)/96 at every site.",
+    "gaussian": {
+      "placement": "conv_out",
+      "schedule": {
+        "starts": [
+          0,
+          6,
+          12,
+          18,
+          24,
+          30,
+          36,
+          42
+        ],
+        "values": [
+          3.0,
+          2.55,
+          2.1,
+          1.8,
+          1.5,
+          1.2,
+          0.9,
+          0.0
+        ]
+      },
+      "sigma_scale": "resolution_ratio_all_sites",
+      "sigma_max": 3.0,
+      "truncate": 4.0,
+      "units": "pixels of the feature map at the site; the reference levels scaled by 96/32 so the blur covers the same fraction of the image extent as on CIFAR-10"
+    },
+    "resolution": {
+      "point": "block1",
+      "schedule": {
+        "starts": [
+          0,
+          12,
+          24
+        ],
+        "values": [
+          48,
+          72,
+          96
+        ]
+      },
+      "reference_resolution": 96,
+      "operator": "adaptive_max"
+    },
+    "source": {
+      "transferred_from": "resolution_max_b1_gaussian_conv",
+      "experiment": "unified_selected",
+      "branch": "benchmark-organized",
+      "config_id": "shrink_b1_conv",
+      "label": "Shrink block 1, plus blur every conv layer",
+      "cells": [
+        "shrink_b1_conv__seed0",
+        "shrink_b1_conv__seed1",
+        "shrink_b1_conv__seed2"
+      ],
+      "final_test_acc_per_seed": {
+        "0": 0.813,
+        "1": 0.815,
+        "2": 0.8173
+      },
+      "final_test_acc_mean": 0.8151,
+      "final_test_acc_sd": 0.002152,
+      "final_path": "target (equal to current at epoch 30)",
+      "asset_set": "r20bn-campaign-assets"
+    },
+    "validated_on": []
+  },
+  "provenance": {
+    "assets_dir": "assets/stl10_resnet20bn",
+    "asset_states": {
+      "init_seed0": "6e652c49e5139e785887b9cb6b08ce5b0dee734bde6384550be6a8a3641e2c1b",
+      "init_seed1": "f6fb22087956ae3e39398efa42ab92580bbd66d86a8886a468e13bb4fc28ef5e",
+      "init_seed2": "fb19c69f3b02419133c852d831622cba0adc539775e578f826fdb0944ab815db"
+    },
+    "asset_arrays": {
+      "subset": "7080a3a6949fa5ec8ce280ab752ed1f7394b652efb69e8ead00cd8a003551e9d",
+      "train_probe": "0634544f72218a898f7f8bbb575f4236139e24a24a3098d3b981b95c2b9552d4",
+      "perm_seed0": "1a497477b9d90ebcb31a65c7dc56ff16d176a11a81ba170f5c83bfeab697f389",
+      "perm_seed1": "0834989f8925b8503823bb167296fde23524cdc0dabb0ab08b08000c683edbfb",
+      "perm_seed2": "33b0b9acd091722dcbe2052b9ac275ff60c6089be06649deed9885260e4f111a"
+    },
+    "torch": "2.10.0+cu128",
+    "code": "f3288c0ded8d845bf0749368f11cf0e86977e212"
+  }
+}

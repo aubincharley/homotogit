@@ -1,0 +1,89 @@
+{
+  "schema": "continuation_core.results/1",
+  "method": "plain__transfer",
+  "seed": 1,
+  "validation_status": "unvalidated",
+  "dataset": "stl10",
+  "arch": "resnet20_bn_cifar",
+  "arch_validated": true,
+  "epochs": 60,
+  "updates": 2400,
+  "updates_per_epoch": 40,
+  "n_train": 5000,
+  "n_test": 8000,
+  "final": {
+    "current": {
+      "train_probe": {
+        "ce": 0.19908940124511718,
+        "acc": 0.96,
+        "n": 500
+      },
+      "test": {
+        "ce": 1.1113111343383788,
+        "acc": 0.629375,
+        "n": 8000
+      }
+    }
+  },
+  "final_state_used": {
+    "state": {
+      "resolution": null,
+      "sigma": null,
+      "label": "epoch 59"
+    },
+    "per_site_sigma": []
+  },
+  "final_state_is_target": true,
+  "transition_updates": [],
+  "timing": {
+    "wall_seconds": 646.9906025360001,
+    "eval_seconds": 79.94952430599983,
+    "train_seconds": 567.0410782300003,
+    "scope": "from the start of run() (after data and model construction) to the last evaluation, including checkpoint writes; resumed runs add the wall time stored in the checkpoint"
+  },
+  "method_definition": {
+    "id": "plain__transfer",
+    "description": "ResNet-20 BN with no intervention (control).",
+    "gaussian": null,
+    "resolution": null,
+    "source": {
+      "transferred_from": "plain",
+      "experiment": "unified_selected",
+      "branch": "benchmark-organized",
+      "config_id": "plain",
+      "label": "Baseline: no blur, full 32x32 throughout",
+      "cells": [
+        "plain__seed0",
+        "plain__seed1",
+        "plain__seed2"
+      ],
+      "final_test_acc_per_seed": {
+        "0": 0.7458,
+        "1": 0.7566,
+        "2": 0.7605
+      },
+      "final_test_acc_mean": 0.7543,
+      "final_test_acc_sd": 0.007615,
+      "final_path": "target (equal to current at epoch 30)",
+      "asset_set": "r20bn-campaign-assets"
+    },
+    "validated_on": []
+  },
+  "provenance": {
+    "assets_dir": "assets/stl10_resnet20bn",
+    "asset_states": {
+      "init_seed0": "6e652c49e5139e785887b9cb6b08ce5b0dee734bde6384550be6a8a3641e2c1b",
+      "init_seed1": "f6fb22087956ae3e39398efa42ab92580bbd66d86a8886a468e13bb4fc28ef5e",
+      "init_seed2": "fb19c69f3b02419133c852d831622cba0adc539775e578f826fdb0944ab815db"
+    },
+    "asset_arrays": {
+      "subset": "7080a3a6949fa5ec8ce280ab752ed1f7394b652efb69e8ead00cd8a003551e9d",
+      "train_probe": "0634544f72218a898f7f8bbb575f4236139e24a24a3098d3b981b95c2b9552d4",
+      "perm_seed0": "1a497477b9d90ebcb31a65c7dc56ff16d176a11a81ba170f5c83bfeab697f389",
+      "perm_seed1": "0834989f8925b8503823bb167296fde23524cdc0dabb0ab08b08000c683edbfb",
+      "perm_seed2": "33b0b9acd091722dcbe2052b9ac275ff60c6089be06649deed9885260e4f111a"
+    },
+    "torch": "2.10.0+cu128",
+    "code": "f3288c0ded8d845bf0749368f11cf0e86977e212"
+  }
+}

@@ -263,6 +263,72 @@ schedule -- 32x32, so resolution is held fixed while the budget matches STL-10's
 No parity reference exists for any of this.
 
 
+## Optimizers: the Gaussian needs a weak optimizer, the resolution schedule does not
+
+The same four methods on CIFAR-10, SVHN and STL-10 under SGD, Adam and AdamW:
+3 datasets x 4 methods x 3 optimizers x 3 seeds = 108 runs. Each dataset's own
+study decisions are unchanged -- `optimizer_configs.py` imports `cifar10_configs`,
+`svhn_configs` and `stl10_configs` and overrides only `cfg.optimizer`, and a test
+asserts every other config section is byte-identical. Records under
+`results/optimizer/`.
+
+    adam   lr 1e-3, weight_decay 0
+    adamw  lr 1e-3, weight_decay 0.01
+
+Paired delta vs `plain`, in points, 3 seeds:
+
+| dataset | method | SGD | Adam | AdamW |
+|---|---|---|---|---|
+| CIFAR-10 | `RG` | +6.08 | +3.61 +- 0.28 | +4.23 +- 0.77 |
+| | `R` | +4.94 | +3.32 +- 0.53 | +3.67 +- 0.57 |
+| | `G` | +4.48 | +2.53 +- 0.56 | +2.35 +- 0.40 |
+| | *plain* | 75.43 +- 0.76 | **79.64 +- 0.19** | **79.54 +- 0.55** |
+| SVHN | `RG` | +1.74 | +0.51 +- 0.15 | +0.55 +- 0.20 |
+| | `R` | +1.16 | +0.38 +- 0.23 | +0.39 +- 0.24 |
+| | `G` | +1.16 | +0.31 +- 0.02 | +0.35 +- 0.32 |
+| | *plain* | 93.10 +- 0.03 | 94.40 +- 0.19 | 94.46 +- 0.24 |
+| STL-10 | `RG` | -1.29 | -0.03 +- 1.32 | -0.32 +- 1.32 |
+| | `R` | +2.58 | **+5.93 +- 1.31** | **+5.65 +- 1.44** |
+| | `G` | +1.09 | +0.54 +- 2.22 | +0.06 +- 1.68 |
+| | *plain* | 57.35 +- 0.53 | 62.79 +- 1.09 | 62.95 +- 0.96 |
+
+`R` = `resolution_max_b1`, `G` = `gaussian_postrelu`,
+`RG` = `resolution_max_b1_gaussian_conv`.
+
+**Adam and AdamW are interchangeable.** All nine pairs agree within their
+spreads. Whatever these methods interact with, it is not decoupled weight decay.
+
+**The two families separate, for the first time in this benchmark.** The Gaussian
+shrinks everywhere a better optimizer is used -- 4.48 -> ~2.4 on CIFAR-10,
+1.16 -> ~0.3 on SVHN, and on STL-10 it disappears into noise (+1.09 -> +0.06 +-
+1.68). The resolution reduction does not: it shrinks less on CIFAR-10 and SVHN,
+and on STL-10 it more than **doubles**, to +5.93 +- 1.31, the largest
+single-method effect recorded anywhere here.
+
+So the blur behaves like a substitute for optimization the optimizer is not
+doing: give Adam what SGD at lr 0.005 was missing and most of its benefit goes.
+The resolution schedule behaves like something else, and in the data-scarce,
+high-resolution setting it gets *stronger* with a better optimizer.
+
+`RG` is the weakest arm under Adam on all three datasets and is
+indistinguishable from the control on STL-10 (-0.03 +- 1.32). It is the method
+that blurs at 19 pre-normalisation convolution outputs, which is consistent with
+the same reading.
+
+### What this does not establish
+
+The learning rates are textbook values, not calibrated to match the SGD recipe's
+difficulty, so every control improves: CIFAR-10's rises 75.4 -> 79.6, STL-10's
+57.4 -> 62.9. Part of the shrinkage is therefore lost headroom rather than the
+optimizer substituting for the method, and this study cannot separate the two.
+
+What headroom does **not** explain is the split. STL-10's control rose as much as
+CIFAR-10's, and `R` grew there while `G` vanished -- if less headroom were the
+whole story, both would have moved the same way. Settling the magnitudes would
+need an arm whose learning rate puts each control back at its SGD accuracy, which
+was not run.
+
+
 ## CIFAR-10 at 5,000 images: the STL-10 control
 
 STL-10 changed image size, training-set size and update budget at once. This

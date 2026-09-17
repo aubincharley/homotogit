@@ -1,0 +1,155 @@
+{
+  "data": {
+    "name": "stl10",
+    "root": "data",
+    "normalization": "fit_on_train",
+    "expected_mean": [
+      0.44671061635017395,
+      0.4398098289966583,
+      0.4066464602947235
+    ],
+    "expected_std": [
+      0.26034098863601685,
+      0.2565772831439972,
+      0.2712673842906952
+    ],
+    "stats_atol": 1e-07
+  },
+  "model": {
+    "arch": "resnet20_bn_cifar",
+    "options": {}
+  },
+  "optimizer": {
+    "name": "adam",
+    "lr": 0.001,
+    "weight_decay": 0.0,
+    "momentum": 0.9,
+    "nesterov": false,
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "eps": 1e-08,
+    "schedule": "warmup_cosine",
+    "warmup_updates": 60,
+    "min_lr": 0.0
+  },
+  "method": {
+    "id": "resolution_max_b1_gaussian_conv__transfer",
+    "description": "Adaptive max pooling after blocks[1] (48 / 72 / 96) plus the Gaussian at all 19 convolution outputs, sigma scaled by r(e)/96 at every site.",
+    "gaussian": {
+      "placement": "conv_out",
+      "schedule": {
+        "starts": [
+          0,
+          6,
+          12,
+          18,
+          24,
+          30,
+          36,
+          42
+        ],
+        "values": [
+          3.0,
+          2.55,
+          2.1,
+          1.8,
+          1.5,
+          1.2,
+          0.9,
+          0.0
+        ]
+      },
+      "sigma_scale": "resolution_ratio_all_sites",
+      "sigma_max": 3.0,
+      "truncate": 4.0,
+      "units": "pixels of the feature map at the site; the reference levels scaled by 96/32 so the blur covers the same fraction of the image extent as on CIFAR-10"
+    },
+    "resolution": {
+      "point": "block1",
+      "schedule": {
+        "starts": [
+          0,
+          12,
+          24
+        ],
+        "values": [
+          48,
+          72,
+          96
+        ]
+      },
+      "reference_resolution": 96,
+      "operator": "adaptive_max"
+    },
+    "source": {
+      "transferred_from": "resolution_max_b1_gaussian_conv",
+      "experiment": "unified_selected",
+      "branch": "benchmark-organized",
+      "config_id": "shrink_b1_conv",
+      "label": "Shrink block 1, plus blur every conv layer",
+      "cells": [
+        "shrink_b1_conv__seed0",
+        "shrink_b1_conv__seed1",
+        "shrink_b1_conv__seed2"
+      ],
+      "final_test_acc_per_seed": {
+        "0": 0.813,
+        "1": 0.815,
+        "2": 0.8173
+      },
+      "final_test_acc_mean": 0.8151,
+      "final_test_acc_sd": 0.002152,
+      "final_path": "target (equal to current at epoch 30)",
+      "asset_set": "r20bn-campaign-assets"
+    },
+    "validated_on": []
+  },
+  "budget": {
+    "epochs": 60,
+    "effective_batch": 128,
+    "microbatch": 32
+  },
+  "evaluation": {
+    "every_epochs": 3,
+    "at_epoch_zero": true,
+    "batch_size": 500,
+    "paths": [
+      "current",
+      "target"
+    ],
+    "splits": [
+      "train_probe",
+      "test"
+    ],
+    "bn_policy": "running_stats"
+  },
+  "checkpoint": {
+    "every_epoch": false,
+    "every_updates": null,
+    "transition_offsets": [],
+    "keep_rolling": true
+  },
+  "run": {
+    "seed": 2,
+    "device": "auto",
+    "out_dir": "/kaggle/working/runs",
+    "name": "resolution_max_b1_gaussian_conv__stl10_adam__seed2",
+    "cudnn_deterministic": false,
+    "cudnn_benchmark": false
+  },
+  "assets": {
+    "dir": "assets/stl10_resnet20bn",
+    "verify": true
+  },
+  "validation_status": "unvalidated",
+  "notes": [
+    "transfer preset: not trained, not validated",
+    "insertion mapping: input of blocks.2, as in the reference; on a 96x96 image that site runs at 96, so reference_resolution is 96 and not 32",
+    "sigma x3 and resolution x3 from the CIFAR-10 reference; schedule boundaries x2 for 60 epochs",
+    "normalisation statistics pinned from the training images",
+    "optimizer swapped from sgd lr 0.005 wd 0.0005 to adam lr 0.001 wd 0; every other decision is this dataset's study unchanged",
+    "lr is the textbook value, NOT matched to the SGD recipe's difficulty: SGD lr 0.005 is ~1/20 of a normal rate and is what keeps the control undertrained. Expect less headroom here; read gaps against this column's own control, and rule out a better-optimized baseline before concluding the optimizer broke the methods."
+  ]
+}
