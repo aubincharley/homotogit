@@ -1,0 +1,154 @@
+{
+  "schema": "continuation_core.results/1",
+  "method": "gaussian_postrelu",
+  "seed": 0,
+  "validation_status": "unvalidated",
+  "dataset": "cifar10",
+  "arch": "resnet20_bn_cifar",
+  "arch_validated": true,
+  "epochs": 60,
+  "updates": 23460,
+  "updates_per_epoch": 391,
+  "n_train": 50000,
+  "n_test": 10000,
+  "final": {
+    "current": {
+      "train_probe": {
+        "ce": 0.0027200706005096435,
+        "obj": 0.0027200705371797085,
+        "acc": 1.0,
+        "n": 500
+      },
+      "test": {
+        "ce": 0.7068220916748047,
+        "obj": 0.7068220883607864,
+        "acc": 0.8244,
+        "n": 10000
+      }
+    },
+    "target": {
+      "train_probe": {
+        "ce": 0.0027200706005096435,
+        "obj": 0.0027200705371797085,
+        "acc": 1.0,
+        "n": 500
+      },
+      "test": {
+        "ce": 0.7068220916748047,
+        "obj": 0.7068220883607864,
+        "acc": 0.8244,
+        "n": 10000
+      }
+    }
+  },
+  "final_state_used": {
+    "state": {
+      "resolution": null,
+      "sigma": 0.0,
+      "label": "epoch 59"
+    },
+    "per_site_sigma": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "final_state_is_target": true,
+  "transition_updates": [
+    1173,
+    2346,
+    3519,
+    4692,
+    5865,
+    7038,
+    8211
+  ],
+  "timing": {
+    "wall_seconds": 1049.0985250539998,
+    "eval_seconds": 69.62750887300535,
+    "train_seconds": 979.4710161809944,
+    "scope": "from the start of run() (after data and model construction) to the last evaluation, including checkpoint writes; resumed runs add the wall time stored in the checkpoint"
+  },
+  "method_definition": {
+    "id": "gaussian_postrelu",
+    "description": "Gaussian at the 10 post-ReLU positions (stem output + 9 block outputs), plateau schedule, no resolution change.",
+    "gaussian": {
+      "placement": "post_relu",
+      "schedule": {
+        "starts": [
+          0,
+          3,
+          6,
+          9,
+          12,
+          15,
+          18,
+          21
+        ],
+        "values": [
+          1.0,
+          0.85,
+          0.7,
+          0.6,
+          0.5,
+          0.4,
+          0.3,
+          0.0
+        ]
+      },
+      "sigma_scale": "none",
+      "sigma_max": 1.0,
+      "truncate": 4.0,
+      "units": "pixels of the feature map at the site"
+    },
+    "resolution": null,
+    "source": {
+      "experiment": "unified_selected",
+      "branch": "benchmark-organized",
+      "config_id": "blur_relu",
+      "label": "Blur after every ReLU, annealed to zero",
+      "cells": [
+        "blur_relu__seed0",
+        "blur_relu__seed1",
+        "blur_relu__seed2"
+      ],
+      "final_test_acc_per_seed": {
+        "0": 0.8006,
+        "1": 0.8006,
+        "2": 0.796
+      },
+      "final_test_acc_mean": 0.799067,
+      "final_test_acc_sd": 0.002656,
+      "final_path": "target (equal to current at epoch 30)",
+      "asset_set": "r20bn-campaign-assets"
+    },
+    "validated_on": [
+      "cifar10",
+      "resnet20_bn_cifar"
+    ]
+  },
+  "provenance": {
+    "assets_dir": "/kaggle/input/datasets/idrisselk/cc-assets-r20bn-e60",
+    "asset_states": {
+      "init_seed0": "6e652c49e5139e785887b9cb6b08ce5b0dee734bde6384550be6a8a3641e2c1b",
+      "init_seed1": "f6fb22087956ae3e39398efa42ab92580bbd66d86a8886a468e13bb4fc28ef5e",
+      "init_seed2": "fb19c69f3b02419133c852d831622cba0adc539775e578f826fdb0944ab815db"
+    },
+    "asset_arrays": {
+      "subset": "33236cc6bd19fa6b89e06d441d3fcd8eb37dc8540f6a4f2b627b20af10894a41",
+      "train_probe": "a33645e0e4f024d8c47c0c5bdd7fbc7ea59a976090a815c58ba029908f2c86bc",
+      "perm_seed0": "d7afca677cdb4f08966e678fdf3beb575404e074d2fa034ecc95690a01eaa546",
+      "perm_seed1": "4d97fdac2b6380936841cf4db4cc026188a80569c5f516985b6c409d44d22a95",
+      "perm_seed2": "5d418895f114830e44429fdc6de6285a21cac9419d677eed1609a6378eeae1be"
+    },
+    "torch": "2.10.0+cu128",
+    "code": null
+  }
+}

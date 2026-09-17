@@ -1,0 +1,126 @@
+{
+  "schema": "continuation_core.results/1",
+  "method": "resolution_max_b1",
+  "seed": 0,
+  "validation_status": "unvalidated",
+  "dataset": "cifar10",
+  "arch": "resnet20_bn_cifar",
+  "arch_validated": true,
+  "epochs": 60,
+  "updates": 23460,
+  "updates_per_epoch": 391,
+  "n_train": 50000,
+  "n_test": 10000,
+  "final": {
+    "current": {
+      "train_probe": {
+        "ce": 0.0020933358669281005,
+        "obj": 0.002093335846439004,
+        "acc": 1.0,
+        "n": 500
+      },
+      "test": {
+        "ce": 0.6600180236816406,
+        "obj": 0.6600180298089982,
+        "acc": 0.833,
+        "n": 10000
+      }
+    },
+    "target": {
+      "train_probe": {
+        "ce": 0.0020933358669281005,
+        "obj": 0.002093335846439004,
+        "acc": 1.0,
+        "n": 500
+      },
+      "test": {
+        "ce": 0.6600180236816406,
+        "obj": 0.6600180298089982,
+        "acc": 0.833,
+        "n": 10000
+      }
+    }
+  },
+  "final_state_used": {
+    "state": {
+      "resolution": 32,
+      "sigma": null,
+      "label": "epoch 59"
+    },
+    "per_site_sigma": []
+  },
+  "final_state_is_target": true,
+  "transition_updates": [
+    2346,
+    4692
+  ],
+  "timing": {
+    "wall_seconds": 1092.6691935710005,
+    "eval_seconds": 62.59986403200219,
+    "train_seconds": 1030.0693295389983,
+    "scope": "from the start of run() (after data and model construction) to the last evaluation, including checkpoint writes; resumed runs add the wall time stored in the checkpoint"
+  },
+  "method_definition": {
+    "id": "resolution_max_b1",
+    "description": "Adaptive max pooling of the complete output of blocks[1] (input of blocks[2]) to 16 / 24 / 32; no Gaussian.",
+    "gaussian": null,
+    "resolution": {
+      "point": "block1",
+      "schedule": {
+        "starts": [
+          0,
+          6,
+          12
+        ],
+        "values": [
+          16,
+          24,
+          32
+        ]
+      },
+      "reference_resolution": 32,
+      "operator": "adaptive_max"
+    },
+    "source": {
+      "experiment": "unified_selected",
+      "branch": "benchmark-organized",
+      "config_id": "shrink_b1",
+      "label": "Shrink block 1 with max-pool, 16 to 24 to 32",
+      "cells": [
+        "shrink_b1__seed0",
+        "shrink_b1__seed1",
+        "shrink_b1__seed2"
+      ],
+      "final_test_acc_per_seed": {
+        "0": 0.7997,
+        "1": 0.8006,
+        "2": 0.8107
+      },
+      "final_test_acc_mean": 0.803667,
+      "final_test_acc_sd": 0.006108,
+      "final_path": "target (equal to current at epoch 30)",
+      "asset_set": "r20bn-campaign-assets"
+    },
+    "validated_on": [
+      "cifar10",
+      "resnet20_bn_cifar"
+    ]
+  },
+  "provenance": {
+    "assets_dir": "/kaggle/input/datasets/idrisselk/cc-assets-r20bn-e60",
+    "asset_states": {
+      "init_seed0": "6e652c49e5139e785887b9cb6b08ce5b0dee734bde6384550be6a8a3641e2c1b",
+      "init_seed1": "f6fb22087956ae3e39398efa42ab92580bbd66d86a8886a468e13bb4fc28ef5e",
+      "init_seed2": "fb19c69f3b02419133c852d831622cba0adc539775e578f826fdb0944ab815db"
+    },
+    "asset_arrays": {
+      "subset": "33236cc6bd19fa6b89e06d441d3fcd8eb37dc8540f6a4f2b627b20af10894a41",
+      "train_probe": "a33645e0e4f024d8c47c0c5bdd7fbc7ea59a976090a815c58ba029908f2c86bc",
+      "perm_seed0": "d7afca677cdb4f08966e678fdf3beb575404e074d2fa034ecc95690a01eaa546",
+      "perm_seed1": "4d97fdac2b6380936841cf4db4cc026188a80569c5f516985b6c409d44d22a95",
+      "perm_seed2": "5d418895f114830e44429fdc6de6285a21cac9419d677eed1609a6378eeae1be"
+    },
+    "torch": "2.10.0+cu128",
+    "code": null
+  }
+}

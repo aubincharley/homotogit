@@ -24,7 +24,7 @@ Every draw is a pure function of `(run seed, epoch, batch index, microbatch
 offset)`, so a resumed run reproduces the crops an uninterrupted one saw. See
 [`continuation_core/augment.py`](../continuation_core/augment.py).
 
-## The result, 30 epochs, three seeds
+## The result, three seeds throughout
 
 | | baseline test | baseline train | R | G | RG |
 |---|---|---|---|---|---|
@@ -35,6 +35,31 @@ offset)`, so a resumed run reproduces the crops an uninterrupted one saw. See
 
 The gain falls from about +5 pp to about zero. At `crop_flip, lr 0.01` the
 Gaussian arm is **below** the control.
+
+### 60 epochs, and the control that settles it
+
+Schedules are indexed by absolute epoch, so a 60-epoch run reaches its target
+state at the same epoch as a 30-epoch one and trains bare for the remaining 39.
+That dilution could by itself shrink the gain, which is why `none` was run at the
+same budget and learning rate:
+
+| | baseline test | baseline train | R | G | RG |
+|---|---|---|---|---|---|
+| **no augmentation, 60e, lr 0.01** | 80.27 % | **100.00 %** | **+3.25** | **+2.57** | **+4.24** |
+| crop_flip, 60e, lr 0.005 | 85.51 % | 89.40 % | +0.19 | −0.09 | +0.52 |
+| **crop_flip, 60e, lr 0.01** | **88.27 %** | 94.20 % | **+0.19** | **−0.44** | **+0.12** |
+
+**The gain survives the dilution and dies on the augmentation.** Same budget,
+same schedule, same learning rate: +3.25 / +2.57 / +4.24 without, +0.19 / −0.44 /
++0.12 with.
+
+The training accuracies say why. Without augmentation every arm reaches
+**100.00 %** — complete memorisation, a 20-point train/test gap — and that is
+where the curriculum still has something to close. With augmentation training
+stops at 94.2 %, the gap falls to 6 points, and there is nothing left to recover.
+
+The augmented baseline now reaches 88.27 %, within reach of the 91–92 % the
+recipe is worth, so the comparison is no longer being made in a degraded regime.
 
 ## The same curve, reached two different ways
 
@@ -82,9 +107,6 @@ is the *interpretation* of the headline number that moves, not the data.
 
 ## Not yet excluded
 
-* **30 epochs is short for augmentation.** The augmented baseline reaches 84.7 %,
-  not the 91-92 % the recipe is worth. The 60-epoch arm will say whether the gain
-  stays at zero.
 * **The schedule was never retuned for these regimes.** `Rprog` and the Gaussian
   plateaus are indexed by absolute epoch and were chosen under cross-entropy at
   lr 0.005. A curriculum designed for an augmented run at lr 0.01 is a different
