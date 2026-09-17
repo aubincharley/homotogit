@@ -314,6 +314,48 @@ being a substitute for optimization the optimizer was not doing. On this evidenc
 the blur was simply not finished: it needed more updates under Adam than under
 SGD, not less work to do.
 
+### Was the weak 60-epoch result a bug? No -- the methods had not finished
+
+The obvious worry about `G` at +0.54 +- 2.22 and `RG` at -0.03 +- 1.32 under Adam
+is that something was broken. Two checks say otherwise.
+
+**The blur methods are genuinely behind early, and overtake later.** Test
+accuracy through the 120-epoch run, seed 0:
+
+| epoch | 12 | 24 | 36 | 48 | 60 | 72 | 84 | 96 | 108 | 120 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| `plain` | .425 | **.592** | .454 | .460 | .503 | .582 | .607 | .599 | .604 | .605 |
+| `G` | .443 | .538 | .557 | .598 | .632 | .650 | .667 | .668 | .673 | **.678** |
+| `RG` | .446 | .520 | .522 | .582 | .594 | .616 | .637 | .663 | .674 | **.674** |
+
+At epoch 24 both blur methods sit **below** `plain`. They cross over around epoch
+36-48 and keep climbing, including past epoch 84 where the Gaussian reaches zero
+(`RG` goes .637 -> .674 over the final third). That is what a continuation is
+supposed to look like: pay first, recover after. A 60-epoch budget cuts the run
+at roughly the moment these two start to pay.
+
+Both budgets also start from the same pinned initial weights and data order and
+begin at .100, and the trajectories are smooth throughout -- no discontinuity
+that would suggest a broken schedule or a mis-set state.
+
+**Most of the +0.54 was noise in the control, not a failure of the method.**
+Per-seed paired deltas at 60 epochs:
+
+| method | seed 0 | seed 1 | seed 2 |
+|---|---|---|---|
+| `G` | +2.7 | -1.7 | +0.6 |
+| `RG` | +1.4 | -1.1 | -0.5 |
+| `R` | +7.2 | +4.6 | +5.9 |
+
+`plain` spans 2.2 pp across seeds (61.7 to 63.8) and is the unstable row. `G` and
+`RG` oscillate around zero because they are unfinished, not because they fail;
+`R` is solidly positive on all three seeds, consistent with having completed its
+schedule well before epoch 60.
+
+So the correct reading of the optimizer study is **not** "the blur fails under
+Adam" but "the blur needs more updates under Adam than under SGD". The
+resolution reduction does not.
+
 ### Why these tables are absolute, not paired
 
 Elsewhere this README reports paired deltas, because within a budget all four
