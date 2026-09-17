@@ -182,6 +182,30 @@ DATASETS = {
         "extra": [], "skip_assets": True,
         "config_extra": ["--activation", "silu"], "config_subdir": "silu",
     },
+    "cifar10_adam": {
+        "slug": "cfadam",
+        "source": "aubincharley/cifar-10-batches-py",
+        "marker": "data_batch_1", "link": "data/cifar-10-batches-py",
+        "configs": "scripts/optimizer_configs.py",
+        "assets": "assets/cifar10_resnet20bn",
+        "dataset_arg": "cifar10", "epochs": "30",
+        # the reference asset set is committed: same weights, same data order
+        "extra": [], "skip_assets": True,
+        "config_extra": ["--dataset", "cifar10", "--optimizer", "adam"],
+        "config_subdir": "cifar10/adam",
+    },
+    "cifar10_adamw": {
+        "slug": "cfadamw",
+        "source": "aubincharley/cifar-10-batches-py",
+        "marker": "data_batch_1", "link": "data/cifar-10-batches-py",
+        "configs": "scripts/optimizer_configs.py",
+        "assets": "assets/cifar10_resnet20bn",
+        "dataset_arg": "cifar10", "epochs": "30",
+        # the reference asset set is committed: same weights, same data order
+        "extra": [], "skip_assets": True,
+        "config_extra": ["--dataset", "cifar10", "--optimizer", "adamw"],
+        "config_subdir": "cifar10/adamw",
+    },
     # SVHN and STL-10 under Adam / AdamW. Everything except the optimizer comes
     # from that dataset's own study script, so the contrast is the optimizer.
     # Split by dataset across accounts, so adam-vs-adamw is always within one

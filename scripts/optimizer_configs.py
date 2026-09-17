@@ -1,4 +1,4 @@
-"""SVHN and STL-10 under Adam and AdamW: does the optimizer change the picture?
+"""CIFAR-10, SVHN and STL-10 under Adam and AdamW: does the optimizer change the picture?
 
 Every study so far used the frozen SGD recipe: lr 0.005, weight decay 5e-4,
 momentum 0.9, warmup_cosine.  This swaps the optimizer and **nothing else**.
@@ -43,10 +43,12 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 from continuation_core.config import OptimizerConfig                  # noqa: E402
 
+import cifar10_configs                                                # noqa: E402
 import stl10_configs                                                  # noqa: E402
 import svhn_configs                                                   # noqa: E402
 
-STUDIES = {"svhn": svhn_configs, "stl10": stl10_configs}
+STUDIES = {"cifar10": cifar10_configs, "svhn": svhn_configs,
+           "stl10": stl10_configs}
 
 #: warmup and the cosine shape are shared machinery and stay as the recipe has
 #: them; only the optimizer, its lr and its decay change

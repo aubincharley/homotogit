@@ -17,8 +17,10 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 from continuation_core.config import OptimizerConfig                  # noqa: E402
 from continuation_core.optim import build_optimizer, lr_at            # noqa: E402
+from continuation_core.presets import CIFAR10_MEAN                    # noqa: E402
 
 import optimizer_configs as O                                         # noqa: E402
+import cifar10_configs                                                # noqa: E402
 import stl10_configs                                                  # noqa: E402
 import svhn_configs                                                   # noqa: E402
 
@@ -83,7 +85,9 @@ def test_the_chosen_settings_are_the_textbook_ones():
 
 # -- only the optimizer differs from the recorded SGD study --------------------
 
-@pytest.mark.parametrize("dataset,module", [("svhn", svhn_configs), ("stl10", stl10_configs)])
+@pytest.mark.parametrize("dataset,module", [("cifar10", cifar10_configs),
+                                           ("svhn", svhn_configs),
+                                           ("stl10", stl10_configs)])
 @pytest.mark.parametrize("optimizer", sorted(O.OPTIMIZERS))
 @pytest.mark.parametrize("method_id", O.METHODS)
 def test_everything_except_the_optimizer_matches_the_sgd_study(
@@ -116,6 +120,11 @@ def test_the_dataset_s_own_decisions_survive(dataset):
         assert cfg.budget.epochs == 30                       # the reference budget
         assert spec.gaussian.schedule.values[0] == 1.00      # unscaled
         assert spec.resolution.schedule.values == (16, 24, 32)
+    if dataset == "cifar10":
+        # the assets dir is the caller's, so assert the module's default and the
+        # statistics it pins rather than what this test happened to pass in
+        assert cifar10_configs.REFERENCE_ASSETS == "assets/cifar10_resnet20bn"
+        assert cfg.data.expected_mean == list(CIFAR10_MEAN)
 
 
 @pytest.mark.parametrize("dataset", sorted(O.STUDIES))
@@ -135,3 +144,28 @@ def test_the_headroom_caveat_is_recorded_in_every_config():
                           assets_dir="a", out_dir="runs")
             joined = " ".join(cfg.notes)
             assert "NOT matched" in joined and "headroom" in joined
+
+
+def test_cifar10_under_sgd_reproduces_the_reference_recipe():
+    """The study module must be the frozen recipe, or the optimizer arm is not
+    measuring the optimizer."""
+    from continuation_core.presets import reference
+    for method_id in cifar10_configs.METHODS:
+        ref = reference(method_id, 0)
+        mine = cifar10_configs.build(method_id, 0, data_root="data",
+                                     assets_dir="assets/cifar10_resnet20bn",
+                                     out_dir="runs")
+        for f in ("lr", "weight_decay", "momentum", "nesterov", "schedule",
+                  "warmup_updates", "min_lr", "name"):
+            assert getattr(ref.optimizer, f) == getattr(mine.optimizer, f), f
+        assert ref.budget.epochs == mine.budget.epochs == 30
+        assert ref.data.expected_mean == mine.data.expected_mean
+        assert ref.assets.dir == mine.assets.dir
+        rs, ms = ref.method_spec(), mine.method_spec()
+        assert (rs.gaussian is None) == (ms.gaussian is None)
+        if rs.gaussian:
+            assert rs.gaussian.schedule.values == ms.gaussian.schedule.values
+            assert rs.gaussian.placement == ms.gaussian.placement
+        if rs.resolution:
+            assert rs.resolution.schedule.values == ms.resolution.schedule.values
+            assert rs.resolution.point == ms.resolution.point
