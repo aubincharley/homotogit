@@ -1,0 +1,107 @@
+{
+  "schema": "continuation_core.results/1",
+  "method": "plain",
+  "seed": 2,
+  "validation_status": "unvalidated",
+  "dataset": "cifar10",
+  "arch": "resnet20_bn_cifar",
+  "arch_validated": true,
+  "epochs": 30,
+  "updates": 11730,
+  "updates_per_epoch": 391,
+  "n_train": 50000,
+  "n_test": 10000,
+  "final": {
+    "current": {
+      "train_probe": {
+        "ce": 2.11352685546875,
+        "obj": 0.06994571536779404,
+        "acc": 0.458,
+        "n": 500
+      },
+      "test": {
+        "ce": 2.1105173828125,
+        "obj": 0.06935140825808048,
+        "acc": 0.4723,
+        "n": 10000
+      }
+    },
+    "target": {
+      "train_probe": {
+        "ce": 2.11352685546875,
+        "obj": 0.06994571536779404,
+        "acc": 0.458,
+        "n": 500
+      },
+      "test": {
+        "ce": 2.1105173828125,
+        "obj": 0.06935140825808048,
+        "acc": 0.4723,
+        "n": 10000
+      }
+    }
+  },
+  "final_state_used": {
+    "state": {
+      "resolution": null,
+      "sigma": null,
+      "label": "epoch 29"
+    },
+    "per_site_sigma": []
+  },
+  "final_state_is_target": true,
+  "transition_updates": [],
+  "timing": {
+    "wall_seconds": 473.6276331730005,
+    "eval_seconds": 31.897119493995433,
+    "train_seconds": 441.73051367900507,
+    "scope": "from the start of run() (after data and model construction) to the last evaluation, including checkpoint writes; resumed runs add the wall time stored in the checkpoint"
+  },
+  "method_definition": {
+    "id": "plain",
+    "description": "ResNet-20 BN with no intervention (control).",
+    "gaussian": null,
+    "resolution": null,
+    "source": {
+      "experiment": "unified_selected",
+      "branch": "benchmark-organized",
+      "config_id": "plain",
+      "label": "Baseline: no blur, full 32x32 throughout",
+      "cells": [
+        "plain__seed0",
+        "plain__seed1",
+        "plain__seed2"
+      ],
+      "final_test_acc_per_seed": {
+        "0": 0.7458,
+        "1": 0.7566,
+        "2": 0.7605
+      },
+      "final_test_acc_mean": 0.7543,
+      "final_test_acc_sd": 0.007615,
+      "final_path": "target (equal to current at epoch 30)",
+      "asset_set": "r20bn-campaign-assets"
+    },
+    "validated_on": [
+      "cifar10",
+      "resnet20_bn_cifar"
+    ]
+  },
+  "provenance": {
+    "assets_dir": "/kaggle/input/datasets/idrisselkhamlichi/cc-assets-r20bn",
+    "asset_states": {
+      "init_seed0": "6e652c49e5139e785887b9cb6b08ce5b0dee734bde6384550be6a8a3641e2c1b",
+      "init_seed1": "f6fb22087956ae3e39398efa42ab92580bbd66d86a8886a468e13bb4fc28ef5e",
+      "init_seed2": "fb19c69f3b02419133c852d831622cba0adc539775e578f826fdb0944ab815db"
+    },
+    "asset_arrays": {
+      "subset": "33236cc6bd19fa6b89e06d441d3fcd8eb37dc8540f6a4f2b627b20af10894a41",
+      "train_probe": "a33645e0e4f024d8c47c0c5bdd7fbc7ea59a976090a815c58ba029908f2c86bc",
+      "perm_seed0": "5df32d0d922962e72fb4dd718a5eaad13f3209f75b8363aff64e57b89b4bb22f",
+      "perm_seed1": "b3c1460f166f3e3afb821c9b5cebc30a1915ce47b3a2502b85921041e8b58cb0",
+      "perm_seed2": "995dcd74c2f86f26d89d170041b8996b37e7dc881ebe9db103ddf2fc76f3e5bb"
+    },
+    "torch": "2.10.0+cu128",
+    "code": null
+  }
+}

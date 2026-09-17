@@ -133,6 +133,36 @@ def _run(cmd, **kwargs):
     return subprocess.run(cmd, text=True, capture_output=True, **kwargs)
 
 
+#: substrings of a transient failure: the network is gone, not the kernel
+_TRANSIENT = ("nameresolutionerror", "failed to resolve", "max retries exceeded",
+              "connection aborted", "connection reset", "temporary failure",
+              "timed out", "502", "503", "504")
+
+
+def _is_transient(proc) -> bool:
+    blob = ((proc.stdout or "") + (proc.stderr or "")).lower()
+    return any(t in blob for t in _TRANSIENT)
+
+
+def _run_resilient(cmd, *, attempts: int = 6, delay: int = 30, **kwargs):
+    """``_run``, retried while the failure looks like a lost network.
+
+    A laptop that suspends mid-run wakes with no DNS for a few seconds, which is
+    long enough for a single attempt to fail and long enough to lose a night of
+    GPU time: the kernel finished on Kaggle, and only the local retrieval failed.
+    Retrying a read-only call costs nothing and is never destructive.
+    """
+    proc = _run(cmd, **kwargs)
+    for attempt in range(2, attempts + 1):
+        if proc.returncode == 0 or not _is_transient(proc):
+            return proc
+        print("  transient failure; retry %d/%d in %ds"
+              % (attempt, attempts, delay), flush=True)
+        time.sleep(delay)
+        proc = _run(cmd, **kwargs)
+    return proc
+
+
 def _zip_includes(includes) -> bytes:
     """Zip the requested files/dirs (repo-relative), skipping caches."""
     buf = io.BytesIO()
@@ -288,7 +318,8 @@ def push_and_run(script_path: Path, *, gpu: bool = False, internet: bool = False
     status = ""
     ok = False
     while time.time() < deadline:
-        status = _run(["kaggle", "kernels", "status", kernel_id]).stdout.strip()
+        status = _run_resilient(["kaggle", "kernels", "status", kernel_id],
+                                attempts=4, delay=poll_seconds).stdout.strip()
         print(status, flush=True)
         low = status.lower()
         if any(t in low for t in _TERMINAL_OK):
@@ -298,9 +329,18 @@ def push_and_run(script_path: Path, *, gpu: bool = False, internet: bool = False
             break
         time.sleep(poll_seconds)
 
+    # The local deadline is wall-clock, so a suspended laptop can blow through it
+    # while the kernel runs to completion on Kaggle.  Ask once more before
+    # treating a local timeout as a failed run.
+    if not ok:
+        status = _run_resilient(["kaggle", "kernels", "status", kernel_id]).stdout.strip()
+        print(status, flush=True)
+        ok = any(t in status.lower() for t in _TERMINAL_OK)
+
     # Always try to retrieve outputs and log, including for failed runs.
     output_dir.mkdir(parents=True, exist_ok=True)
-    pull = _run(["kaggle", "kernels", "output", kernel_id, "-p", str(output_dir)])
+    pull = _run_resilient(["kaggle", "kernels", "output", kernel_id,
+                           "-p", str(output_dir)])
     print(pull.stdout or pull.stderr)
     # "kernels output" already retrieves the run log; no separate call needed.
 

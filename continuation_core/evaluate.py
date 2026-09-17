@@ -40,11 +40,17 @@ def evaluate(model: torch.nn.Module, controller: InterventionController, pipelin
              images: torch.Tensor, labels: torch.Tensor, state: InterventionState,
              *, bn_policy: str = "running_stats", batch_size: int = 500,
              params: dict | None = None, buffers: dict | None = None,
-             split: str = "unnamed") -> dict:
+             split: str = "unnamed", objective=None) -> dict:
     """Mean CE and accuracy of ``model`` under ``state``.
 
     ``params`` / ``buffers`` optionally override tensors by name (e.g. a point
     on a loss plane); the model's own tensors are left untouched either way.
+
+    ``ce`` is reported whatever was trained, so runs with different objectives
+    stay comparable on one scale.  Passing ``objective`` -- the per-sample-mean
+    callable the run optimises -- adds ``obj`` beside it; without it the result
+    keeps exactly the keys every recorded evaluation has.  ``obj`` is weighted by
+    batch size, so it is exact for unequal final batches.
     """
     if bn_policy not in BN_POLICIES:
         raise ValueError("bn_policy must be one of %s" % (BN_POLICIES,))
@@ -61,7 +67,7 @@ def evaluate(model: torch.nn.Module, controller: InterventionController, pipelin
         if bn_policy == "fixed_batch_stats":
             bufs = {n: b.clone() for n, b in bufs.items()}
         tensors.update(bufs)
-    total_ce, correct, n = 0.0, 0, int(images.shape[0])
+    total_ce, total_obj, correct, n = 0.0, 0.0, 0, int(images.shape[0])
     try:
         with torch.random.fork_rng(devices=_devices(model)):
             model.train(bn_policy == "fixed_batch_stats")
@@ -70,11 +76,16 @@ def evaluate(model: torch.nn.Module, controller: InterventionController, pipelin
                 logits = model(x) if direct else functional_call(model, tensors, (x,))
                 y = labels[i:i + batch_size]
                 total_ce += float(F.cross_entropy(logits, y, reduction="sum"))
+                if objective is not None:
+                    total_obj += float(objective(logits, y)) * int(y.numel())
                 correct += int((logits.argmax(1) == y).sum())
     finally:
         controller.set_state(previous)
         model.train(was_training)
-    return {"split": split, "n": n, "ce": total_ce / n, "acc": correct / n,
-            "path": state.label, "state": state.to_dict(),
-            "per_site_sigma": per_site, "bn_policy": bn_policy,
-            "batch_size": batch_size}
+    out = {"split": split, "n": n, "ce": total_ce / n, "acc": correct / n,
+           "path": state.label, "state": state.to_dict(),
+           "per_site_sigma": per_site, "bn_policy": bn_policy,
+           "batch_size": batch_size}
+    if objective is not None:
+        out["obj"] = total_obj / n
+    return out

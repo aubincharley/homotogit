@@ -28,13 +28,14 @@ from pathlib import Path
 
 import numpy as np
 import torch
-import torch.nn.functional as F
 
 from . import assets as assets_mod
 from .checkpoint import load_checkpoint, save_checkpoint
 from .config import ExperimentConfig
 from .controller import InterventionController, InterventionState
 from .data import build_pipeline, load_dataset
+from . import augment as augment_mod
+from . import losses
 from .evaluate import evaluate
 from .models import build_model, is_validated, site_map
 from .optim import build_optimizer, lr_at, set_lr
@@ -87,6 +88,8 @@ class Trainer:
                                  int(self.train_images.shape[1]), **config.model.options)
         self.model.load_state_dict(self.assets["init_state"], strict=True)
         self.model.to(dev).train()
+        self.loss_fn = losses.build(config.loss)
+        self.augment = augment_mod.build(config.data)
         self.method = config.method_spec()
         self.controller = InterventionController(self.method, site_map(arch), arch)
         self.handles = self.controller.attach(self.model)
@@ -215,8 +218,10 @@ class Trainer:
                 x, y = splits[split]
                 r = evaluate(self.model, self.controller, self.pipeline, x, y,
                              states[path], bn_policy=ecfg.bn_policy,
-                             batch_size=ecfg.batch_size, split=split)
-                ev[path][split] = {"ce": r["ce"], "acc": r["acc"], "n": r["n"]}
+                             batch_size=ecfg.batch_size, split=split,
+                             objective=self.loss_fn)
+                ev[path][split] = {"ce": r["ce"], "obj": r["obj"],
+                                   "acc": r["acc"], "n": r["n"]}
         u = self.global_update
         rec = {"epoch": done_epochs, "update": u,
                "lr_last_update": lr_at(min(max(u - 1, 0), self.total_updates - 1),
@@ -249,8 +254,12 @@ class Trainer:
         for a in range(0, total, self.micro):
             sl = idx[a:a + self.micro]
             n_m = int(sl.numel())
-            loss = F.cross_entropy(self.model(self.pipeline(self.train_images[sl])),
-                                   self.train_labels[sl])
+            images = self.train_images[sl]
+            if self.augment is not None:
+                images = self.augment(images, augment_mod.batch_seed(
+                    self.cfg.run.seed, e, self.batch_index, a))
+            loss = self.loss_fn(self.model(self.pipeline(images)),
+                                self.train_labels[sl])
             (loss * (n_m / total)).backward()
             self.run_loss += float(loss.detach()) * n_m
             self.run_n += n_m

@@ -36,6 +36,12 @@ class DataConfig:
     expected_mean: list | None = None
     expected_std: list | None = None
     stats_atol: float = 1e-7
+    #: "none" reproduces every recorded run; "crop_flip" is the standard CIFAR
+    #: recipe (pad 4, random 32x32 crop, horizontal flip).  Training only --
+    #: evaluation never augments (see :mod:`continuation_core.augment`).
+    augmentation: str = "none"
+    augment_pad: int = 4
+    augment_flip_p: float = 0.5
 
 
 @dataclass
@@ -57,6 +63,19 @@ class OptimizerConfig:
     schedule: str = "warmup_cosine"     # warmup_cosine | constant
     warmup_updates: int = 0
     min_lr: float = 0.0
+
+
+@dataclass
+class LossConfig:
+    """The training objective.  ``cross_entropy`` reproduces every recorded run.
+
+    Fields not used by the selected ``name`` are still recorded, so a run's
+    config always states the full setting (see :mod:`continuation_core.losses`).
+    """
+    name: str = "cross_entropy"
+    label_smoothing: float = 0.1        # label_smoothing only
+    gamma: float = 2.0                  # focal only
+    normalise_by_classes: bool = True   # square only; divides by C
 
 
 @dataclass
@@ -110,6 +129,7 @@ class ExperimentConfig:
     data: DataConfig = field(default_factory=DataConfig)
     model: ModelConfig = field(default_factory=ModelConfig)
     optimizer: OptimizerConfig = field(default_factory=OptimizerConfig)
+    loss: LossConfig = field(default_factory=LossConfig)
     method: dict = field(default_factory=lambda: {"id": "plain"})
     budget: BudgetConfig = field(default_factory=BudgetConfig)
     evaluation: EvaluationConfig = field(default_factory=EvaluationConfig)

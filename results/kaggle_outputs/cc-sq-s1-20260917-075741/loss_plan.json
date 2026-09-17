@@ -1,0 +1,58 @@
+{
+  "n_cells": 36,
+  "methods": [
+    "plain",
+    "resolution_max_b1",
+    "gaussian_postrelu",
+    "resolution_max_b1_gaussian_conv"
+  ],
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "arms": {
+    "ce": {
+      "loss": {
+        "name": "cross_entropy"
+      },
+      "learning_rates": [
+        0.005
+      ],
+      "n_cells": 0
+    },
+    "ls": {
+      "loss": {
+        "name": "label_smoothing",
+        "label_smoothing": 0.1
+      },
+      "learning_rates": [
+        0.005
+      ],
+      "n_cells": 0
+    },
+    "focal": {
+      "loss": {
+        "name": "focal",
+        "gamma": 2.0
+      },
+      "learning_rates": [
+        0.005
+      ],
+      "n_cells": 0
+    },
+    "square": {
+      "loss": {
+        "name": "square",
+        "normalise_by_classes": true
+      },
+      "learning_rates": [
+        0.05,
+        0.1,
+        0.5
+      ],
+      "n_cells": 36
+    }
+  },
+  "note": "test accuracy is the objective-agnostic comparator; every run also reports cross-entropy, so columns share one scale"
+}
