@@ -1,0 +1,26 @@
+\begin{table}[!t]
+\caption{Measured costs of the runs trained in this comparison (minutes, mean $\pm$ SD over three seeds): one Tesla T4, float32, one run per GPU. Training: wall time of the training loop excluding per-epoch evaluation, including checkpoint writes; epoch evaluations: 31 evaluations of a 500-image training probe and the test set; final: all recalibrations and full-set evaluations of the endpoint.}\label{tab:comparators-costs}
+\centering\small\setlength{\tabcolsep}{4pt}\renewcommand{\arraystretch}{1.08}
+\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}lrrr@{}}
+\toprule
+Procedure & Training & Epoch evaluations & Final evaluation\\
+\midrule
+\addlinespace[3pt]\multicolumn{4}{@{}l@{}}{\textit{SGD (lr 0.005)}}\\[1pt]
+Plain & \multicolumn{3}{c}{not retrained (different session and checkpoint cadence)}\\
+R & \multicolumn{3}{c}{not retrained (different session and checkpoint cadence)}\\
+G & \multicolumn{3}{c}{not retrained (different session and checkpoint cadence)}\\
+RG & \multicolumn{3}{c}{not retrained (different session and checkpoint cadence)}\\
+CBS (published) & $9.0\pm0.1$ & $0.6\pm0.1$ & $0.44\pm0.04$\\
+CBS (budget-matched) & $8.7\pm0.1$ & $0.6\pm0.0$ & $0.24\pm0.02$\\
+SDPoint & $7.6\pm0.3$ & $0.5\pm0.1$ & $0.24\pm0.02$\\
+\addlinespace[3pt]\multicolumn{4}{@{}l@{}}{\textit{AdamW (lr 0.02)}}\\[1pt]
+Plain & $7.6\pm0.1$ & $0.5\pm0.0$ & $0.23\pm0.00$\\
+R & $7.5\pm0.0$ & $0.5\pm0.0$ & $0.24\pm0.01$\\
+G & $9.6\pm0.2$ & $0.7\pm0.0$ & $0.24\pm0.01$\\
+RG & $11.3\pm0.3$ & $0.7\pm0.0$ & $0.23\pm0.01$\\
+CBS (published) & $8.9\pm0.1$ & $0.6\pm0.0$ & $0.43\pm0.01$\\
+CBS (budget-matched) & $8.6\pm0.1$ & $0.6\pm0.0$ & $0.24\pm0.01$\\
+SDPoint & $7.4\pm0.1$ & $0.5\pm0.0$ & $0.24\pm0.01$\\
+\bottomrule
+\end{tabular*}
+\end{table}

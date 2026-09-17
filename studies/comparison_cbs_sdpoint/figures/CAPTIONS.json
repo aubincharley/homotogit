@@ -1,0 +1,20 @@
+{
+ "C1_accuracy_panelA": {
+  "caption": "Final test accuracy of seven training procedures: CIFAR-10 (50,000 training / 10,000 test images), ResNet-20 with BatchNorm, no augmentation, 30 epochs, left SGD and right AdamW; three seeds (dots; bar = mean). Primary evaluation (Panel A): each procedure's native inference network, BatchNorm statistics recalibrated on all training images with the same protocol. Crosses: published-schedule CBS evaluated without its final Gaussian filters (Panel B). Vertical scales differ between panels.",
+  "sources": [
+   "results/per_run.csv"
+  ]
+ },
+ "C2_cbs_native_vs_unfiltered": {
+  "caption": "CBS endpoints with and without their final filters: CIFAR-10 / ResNet-20-BN, 30 epochs, three seeds per procedure. Published-schedule CBS ends with sigma = 0.59 filters in place; budget-matched CBS and G end unfiltered, so their two states coincide. Recalibrated: BatchNorm statistics re-estimated on all training images in the evaluated state; saved BN: the checkpoint's running statistics.",
+  "sources": [
+   "results/per_run.csv"
+  ]
+ },
+ "C3_training_time": {
+  "caption": "Measured training time of the runs trained in this comparison: 30 epochs of CIFAR-10 on one Tesla T4, float32, one run per GPU at a time, including 31 per-epoch evaluations and checkpoint writes. SGD Plain/R/G/RG were not retrained (their existing runs used another session and wrote more checkpoints), so they are omitted rather than compared.",
+  "sources": [
+   "results/per_run.csv"
+  ]
+ }
+}

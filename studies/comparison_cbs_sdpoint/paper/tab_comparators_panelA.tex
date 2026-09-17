@@ -1,0 +1,20 @@
+\begin{table*}[!t]
+\caption{Comparison with Curriculum By Smoothing and SDPoint: final test accuracy (\%) on CIFAR-10 (50\,000 training / 10\,000 test images), ResNet-20 with BatchNorm, no augmentation, 30 epochs, three seeds. Native inference network of each procedure; BatchNorm statistics recalibrated on all training images with one protocol for all procedures. Mean $\pm$ sample SD across seeds; $\Delta$: seed-paired difference from Plain (percentage points), mean $\pm$ SD of the three differences.}\label{tab:comparators}
+\centering\small\setlength{\tabcolsep}{4pt}\renewcommand{\arraystretch}{1.08}
+\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}lrrrr@{}}
+\toprule
+& \multicolumn{2}{c}{SGD, lr 0.005} & \multicolumn{2}{c}{AdamW, lr 0.02}\\
+\cmidrule(lr){2-3}\cmidrule(l){4-5}
+Procedure & Accuracy & $\Delta$ vs Plain & Accuracy & $\Delta$ vs Plain\\
+\midrule
+Plain & $75.46\pm0.85$ & --- & $84.28\pm0.20$ & ---\\
+R & $80.46\pm0.51$ & $+5.00\pm0.76$ & $86.65\pm0.14$ & $+2.37\pm0.29$\\
+G & $79.94\pm0.03$ & $+4.48\pm0.88$ & $83.75\pm0.23$ & $-0.53\pm0.31$\\
+RG & $81.63\pm0.27$ & $+6.17\pm0.76$ & $86.24\pm0.36$ & $+1.96\pm0.41$\\
+CBS (published) & $78.01\pm0.61$ & $+2.55\pm0.44$ & $80.56\pm0.24$ & $-3.72\pm0.18$\\
+CBS (budget-matched) & $78.71\pm0.90$ & $+3.25\pm0.69$ & $83.23\pm0.38$ & $-1.05\pm0.52$\\
+SDPoint & $79.83\pm0.34$ & $+4.37\pm0.70$ & $87.57\pm0.59$ & $+3.29\pm0.51$\\
+\bottomrule
+\end{tabular*}
+\par\smallskip\begin{minipage}{\linewidth}\footnotesize CBS (published): $\sigma=0.9^{\lfloor e/5\rfloor}$, evaluated with its final filters. CBS (budget-matched): 22 update-level plateaus over the first 70\% of training, then no filter; our adaptation, not an author schedule. SDPoint: full-resolution instance; its reduced-cost instances are not evaluated. R, G and RG are our selected procedures; G is a CBS-inspired variant.\end{minipage}
+\end{table*}

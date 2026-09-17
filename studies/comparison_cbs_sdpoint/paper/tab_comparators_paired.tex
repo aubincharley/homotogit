@@ -1,0 +1,22 @@
+\begin{table}[!t]
+\caption{Predeclared paired comparisons: CIFAR-10 / ResNet-20-BN, 30 epochs, three seeds, full test set. Accuracy differences in percentage points and test cross-entropy differences in nats, mean $\pm$ SD of the three seed-paired differences; A: native network, B: added interventions removed; both with recalibrated BatchNorm.}\label{tab:comparators-paired}
+\centering\small\setlength{\tabcolsep}{3pt}\renewcommand{\arraystretch}{1.08}
+\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}lrrrr@{}}
+\toprule
+Comparison & $\Delta$acc A & $>0$ & $\Delta$acc B & $\Delta$CE A\\
+\midrule
+\addlinespace[3pt]\multicolumn{5}{@{}l@{}}{\textit{SGD (lr 0.005)}}\\[1pt]
+G $-$ CBS (published) & $+1.93\pm0.63$ & 3/3 & $+35.60\pm2.28$ & $-0.054\pm0.015$\\
+G $-$ CBS (budget-matched) & $+1.23\pm0.91$ & 3/3 & $+1.23\pm0.91$ & $-0.068\pm0.018$\\
+R $-$ SDPoint & $+0.63\pm0.19$ & 3/3 & $+0.63\pm0.19$ & $-0.013\pm0.007$\\
+RG $-$ R & $+1.17\pm0.24$ & 3/3 & $+1.17\pm0.24$ & $-0.033\pm0.007$\\
+CBS (budget-matched) $-$ CBS (published) & $+0.70\pm0.36$ & 3/3 & $+34.37\pm2.06$ & $+0.014\pm0.008$\\
+\addlinespace[3pt]\multicolumn{5}{@{}l@{}}{\textit{AdamW (lr 0.02)}}\\[1pt]
+G $-$ CBS (published) & $+3.20\pm0.17$ & 3/3 & $+11.14\pm0.31$ & $-0.002\pm0.018$\\
+G $-$ CBS (budget-matched) & $+0.53\pm0.23$ & 3/3 & $+0.53\pm0.23$ & $-0.197\pm0.022$\\
+R $-$ SDPoint & $-0.92\pm0.53$ & 0/3 & $-0.92\pm0.53$ & $+0.310\pm0.010$\\
+RG $-$ R & $-0.41\pm0.49$ & 0/3 & $-0.41\pm0.49$ & $-0.056\pm0.016$\\
+CBS (budget-matched) $-$ CBS (published) & $+2.67\pm0.40$ & 3/3 & $+10.62\pm0.16$ & $+0.195\pm0.014$\\
+\bottomrule
+\end{tabular*}
+\end{table}

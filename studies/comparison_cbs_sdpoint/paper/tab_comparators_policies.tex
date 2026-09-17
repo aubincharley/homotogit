@@ -1,0 +1,26 @@
+\begin{table*}[!t]
+\caption{All evaluation policies: CIFAR-10 / ResNet-20-BN, 30 epochs, three seeds, mean $\pm$ SD. Test accuracy (\%) of the native network with recalibrated BatchNorm (A), without added interventions and recalibrated (B), native with the checkpoint's saved statistics, and without interventions with saved statistics; training-set accuracy (50\,000 images) and training/test cross-entropy under A. Saved-statistics values are diagnostics; for SDPoint they mix statistics over its training instances.}\label{tab:comparators-policies}
+\centering\small\setlength{\tabcolsep}{3pt}\renewcommand{\arraystretch}{1.08}
+\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}lrrrrrr@{}}
+\toprule
+Procedure & Test A & Test B & Test saved (native) & Test saved (removed) & Train A & CE train / test A\\
+\midrule
+\addlinespace[3pt]\multicolumn{7}{@{}l@{}}{\textit{SGD (lr 0.005)}}\\[1pt]
+Plain & $75.46\pm0.85$ & $75.46\pm0.85$ & $75.47\pm0.87$ & $75.47\pm0.87$ & $94.45\pm0.84$ & $0.204$ / $0.753$\\
+R & $80.46\pm0.51$ & $80.46\pm0.51$ & $80.38\pm0.40$ & $80.38\pm0.40$ & $90.57\pm0.38$ & $0.299$ / $0.575$\\
+G & $79.94\pm0.03$ & $79.94\pm0.03$ & $79.93\pm0.13$ & $79.93\pm0.13$ & $91.60\pm0.16$ & $0.274$ / $0.589$\\
+RG & $81.63\pm0.27$ & $81.63\pm0.27$ & $81.48\pm0.34$ & $81.48\pm0.34$ & $89.97\pm0.14$ & $0.314$ / $0.542$\\
+CBS (published) & $78.01\pm0.61$ & $44.34\pm2.30$ & $77.92\pm0.60$ & $11.67\pm1.37$ & $87.87\pm0.35$ & $0.370$ / $0.643$\\
+CBS (budget-matched) & $78.71\pm0.90$ & $78.71\pm0.90$ & $78.61\pm0.90$ & $78.61\pm0.90$ & $94.93\pm0.39$ & $0.192$ / $0.657$\\
+SDPoint & $79.83\pm0.34$ & $79.83\pm0.34$ & $77.92\pm1.17$ & $77.92\pm1.17$ & $84.21\pm0.37$ & $0.477$ / $0.588$\\
+\addlinespace[3pt]\multicolumn{7}{@{}l@{}}{\textit{AdamW (lr 0.02)}}\\[1pt]
+Plain & $84.28\pm0.20$ & $84.28\pm0.20$ & $84.25\pm0.18$ & $84.25\pm0.18$ & $100.00\pm0.00$ & $0.000$ / $0.953$\\
+R & $86.65\pm0.14$ & $86.65\pm0.14$ & $86.61\pm0.20$ & $86.61\pm0.20$ & $100.00\pm0.00$ & $0.001$ / $0.696$\\
+G & $83.75\pm0.23$ & $83.75\pm0.23$ & $83.61\pm0.32$ & $83.61\pm0.32$ & $99.62\pm0.10$ & $0.024$ / $0.683$\\
+RG & $86.24\pm0.36$ & $86.24\pm0.36$ & $86.15\pm0.28$ & $86.15\pm0.28$ & $99.98\pm0.01$ & $0.006$ / $0.640$\\
+CBS (published) & $80.56\pm0.24$ & $72.61\pm0.51$ & $80.39\pm0.36$ & $33.28\pm1.56$ & $96.25\pm0.38$ & $0.127$ / $0.685$\\
+CBS (budget-matched) & $83.23\pm0.38$ & $83.23\pm0.38$ & $83.20\pm0.17$ & $83.20\pm0.17$ & $100.00\pm0.00$ & $0.002$ / $0.880$\\
+SDPoint & $87.57\pm0.59$ & $87.57\pm0.59$ & $85.95\pm0.69$ & $85.95\pm0.69$ & $96.45\pm0.22$ & $0.111$ / $0.386$\\
+\bottomrule
+\end{tabular*}
+\end{table*}
