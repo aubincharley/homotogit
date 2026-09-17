@@ -399,6 +399,10 @@ METADATA = {
 BUSY = "Maximum batch GPU session count"
 #: set from --credentials in main(); the CLI's own default until then
 ENV = dict(os.environ)
+#: --no-wait: return instead of sleeping until a GPU slot frees.  A pusher that
+#: sits in the retry loop for an hour is what the OOM killer reaches for on a
+#: machine with exhausted swap; short passes that exit immediately survive.
+NO_WAIT = False
 POLL_SECONDS = 60
 MAX_WAIT_SECONDS = 3 * 60 * 60
 
@@ -421,6 +425,9 @@ def push(folder: Path) -> bool:
                 return False
             print("  pushed", folder.name, flush=True)
             return True
+        if NO_WAIT:
+            print("  GPU queue full; leaving %s for the next pass" % folder.name, flush=True)
+            return None
         if time.time() > deadline:
             print("  FAILED %s: no GPU slot after %d s" % (folder.name, MAX_WAIT_SECONDS),
                   flush=True)
@@ -507,13 +514,18 @@ def main(argv=None):
     ap.add_argument("--commit", help="default: HEAD, which must be pushed to origin")
     ap.add_argument("--out", default=str(Path(__file__).parent / "kernels"))
     ap.add_argument("--dry-run", action="store_true", help="write the kernels, push nothing")
+    ap.add_argument("--no-wait", action="store_true",
+                    help="do not sleep waiting for a GPU slot; leave the rest for "
+                         "a later pass. Use for short repeated passes on a machine "
+                         "whose long-lived processes get OOM-killed.")
     ap.add_argument("--skip-complete", action="store_true",
                     help="do not re-push kernels that already completed or are "
                          "running; use when resuming a campaign whose pusher died")
     args = ap.parse_args(argv)
 
-    global ENV
+    global ENV, NO_WAIT
     ENV = kaggle_env(args.credentials)
+    NO_WAIT = args.no_wait
     args.user = args.user or credential_user(args.credentials) or "aubincharley"
     verify_account(ENV, args.user)
 
@@ -522,7 +534,7 @@ def main(argv=None):
         print("warning: %s is not on any origin branch; the kernel's git clone will "
               "fail until you push it" % commit[:12], file=sys.stderr)
 
-    pushed, failed, skipped = [], [], []
+    pushed, failed, skipped, deferred = [], [], [], []
     for seed in (int(s) for s in args.seeds.split(",")):
         for method in args.methods.split(","):
             d = write(args.dataset, method, seed, commit, args.user, Path(args.out))
@@ -534,9 +546,15 @@ def main(argv=None):
                 print("  already %s, skipping %s" % (state, d.name), flush=True)
                 skipped.append(d.name)
                 continue
-            (pushed if push(d) else failed).append(d.name)
+            r = push(d)
+            if r is None:
+                deferred.append(d.name)
+            else:
+                (pushed if r else failed).append(d.name)
     print("\npushed %d kernel(s)%s"
           % (len(pushed), ", skipped %d already complete" % len(skipped) if skipped else ""))
+    if deferred:
+        print("deferred %d (no GPU slot): %s" % (len(deferred), ", ".join(deferred)))
     if failed:
         print("FAILED %d: %s" % (len(failed), ", ".join(failed)))
     return 1 if failed else 0
