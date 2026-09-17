@@ -88,7 +88,7 @@ def credential_user(credentials: str | None) -> str | None:
 
 
 REPO = "https://github.com/aubincharley/homotogit.git"
-BRANCH = "optimizer-transfer"
+BRANCH = "longer-budget"
 
 #: ``source`` must be reachable by whichever account runs the study.  A dataset
 #: owned by one account is **not** visible to another -- ``kaggle datasets files``
@@ -189,6 +189,26 @@ DATASETS = {
         "dataset_arg": "cifar10", "arch": "resnet20_act_cifar", "epochs": "30",
         "extra": [], "skip_assets": True,
         "config_extra": ["--activation", "silu"], "config_subdir": "silu",
+    },
+    "cifar10_long": {
+        "slug": "cfx3",
+        "source": "aubincharley/cifar-10-batches-py",
+        "marker": "data_batch_1", "link": "data/cifar-10-batches-py",
+        "configs": "scripts/longer_budget_configs.py", "assets": "assets/cifar10_x3",
+        "dataset_arg": "cifar10", "epochs": "90",
+        "extra": [],
+        "config_extra": ["--dataset", "cifar10"],
+        "config_subdir": "cifar10",
+    },
+    "stl10_long": {
+        "slug": "stx2",
+        "source": "yellowflag/stl10labeled2",
+        "marker": "train_X.bin", "link": "data/stl10_binary",
+        "configs": "scripts/longer_budget_configs.py", "assets": "assets/stl10_x2",
+        "dataset_arg": "stl10", "epochs": "180",
+        "extra": [],
+        "config_extra": ["--dataset", "stl10"],
+        "config_subdir": "stl10",
     },
     "cifar10_adam": {
         "slug": "cfadam",
