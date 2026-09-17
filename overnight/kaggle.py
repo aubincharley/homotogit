@@ -173,6 +173,26 @@ def push(accounts, tag, mode, hours, resume_from):
             print("PUSH FAILED for %s" % acc)
 
 
+def pull(acc, tag, pattern=None, attempts=4):
+    """Kernel output through the Python API in a subprocess (the CLI aborted with a JSON error on
+    large outputs); retried, then checked by ``verify``."""
+    import sys
+    import time
+    dest = RAW / tag / acc
+    dest.mkdir(parents=True, exist_ok=True)
+    env, _ = env_for(acc)
+    code = ("from kaggle.api.kaggle_api_extended import KaggleApi; api = KaggleApi(); api.authenticate(); "
+            "api.kernels_output(%r, path=%r, force=True, quiet=True, file_pattern=%r); print('pulled')"
+            % (kid(acc, tag), str(dest), pattern or "ovn/(?!_repo)"))
+    for i in range(attempts):
+        r = subprocess.run([sys.executable, "-c", code], env=env, capture_output=True, text=True, encoding="utf-8", errors="replace")
+        print(acc, tag, "attempt", i + 1, (r.stdout + r.stderr)[-400:].strip())
+        if r.returncode == 0:
+            return True
+        time.sleep(10)
+    return False
+
+
 def verify(acc, tag):
     root = RAW / tag / acc / "ovn"
     rep = {"account": acc, "tag": tag}
@@ -203,6 +223,7 @@ def main():
     ap.add_argument("--old-endpoints", default="maxmonstre")
     ap.add_argument("--hours", type=float, default=11.0)
     ap.add_argument("--resume-from")
+    ap.add_argument("--pattern")
     a = ap.parse_args()
     if a.action == "publish":
         publish(a.accounts, a.old_endpoints)
@@ -213,9 +234,7 @@ def main():
             run(["kaggle", "kernels", "status", kid(acc, a.tag)], env_for(acc)[0])
     elif a.action == "pull":
         for acc in a.accounts:
-            dest = RAW / a.tag / acc
-            dest.mkdir(parents=True, exist_ok=True)
-            run(["kaggle", "kernels", "output", kid(acc, a.tag), "-p", str(dest), "-o"], env_for(acc)[0])
+            pull(acc, a.tag, a.pattern)
     else:
         for acc in a.accounts:
             verify(acc, a.tag)
