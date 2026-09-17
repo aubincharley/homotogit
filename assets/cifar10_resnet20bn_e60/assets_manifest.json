@@ -1,0 +1,74 @@
+{
+  "source_job": "fulldata-r20bn-20260908-161221",
+  "source_study": "fulldata_r20bn_20260908-161234",
+  "files": {
+    "init_seed0.pt": {
+      "sha256": "40798ddc4f7f8dc4bd0ddf92bef672c3b6505789df43d8f14bfe449de3812bd8",
+      "bytes": 1121477
+    },
+    "init_seed1.pt": {
+      "sha256": "c07003b8edc6d2ecfab636dd24802e53bb22460a684ce7840a064ba13ee40d0b",
+      "bytes": 1121477
+    },
+    "init_seed2.pt": {
+      "sha256": "803ed002b4bcd912bfa18782223fdd5f7eb96c5c0db5420fc9af7bdc3aaf512e",
+      "bytes": 1121477
+    },
+    "shared_indices.npz": {
+      "sha256": "d39f0391e08f08d72c65dde8d5f107ba726d31c6fb1783aa3a6711cbbd026058",
+      "bytes": 36405276
+    }
+  },
+  "arrays": {
+    "subset": {
+      "sha256": "33236cc6bd19fa6b89e06d441d3fcd8eb37dc8540f6a4f2b627b20af10894a41",
+      "shape": [
+        50000
+      ],
+      "dtype": "int64"
+    },
+    "train_probe": {
+      "sha256": "a33645e0e4f024d8c47c0c5bdd7fbc7ea59a976090a815c58ba029908f2c86bc",
+      "shape": [
+        500
+      ],
+      "dtype": "int64"
+    },
+    "perm_seed0": {
+      "sha256": "d7afca677cdb4f08966e678fdf3beb575404e074d2fa034ecc95690a01eaa546",
+      "shape": [
+        60,
+        50000
+      ],
+      "dtype": "int32"
+    },
+    "perm_seed1": {
+      "sha256": "4d97fdac2b6380936841cf4db4cc026188a80569c5f516985b6c409d44d22a95",
+      "shape": [
+        60,
+        50000
+      ],
+      "dtype": "int32"
+    },
+    "perm_seed2": {
+      "sha256": "5d418895f114830e44429fdc6de6285a21cac9419d677eed1609a6378eeae1be",
+      "shape": [
+        60,
+        50000
+      ],
+      "dtype": "int32"
+    }
+  },
+  "states": {
+    "init_seed0": "6e652c49e5139e785887b9cb6b08ce5b0dee734bde6384550be6a8a3641e2c1b",
+    "init_seed1": "f6fb22087956ae3e39398efa42ab92580bbd66d86a8886a468e13bb4fc28ef5e",
+    "init_seed2": "fb19c69f3b02419133c852d831622cba0adc539775e578f826fdb0944ab815db"
+  },
+  "generated_by": "extension of cifar10_resnet20bn from 30 to 60 epochs",
+  "extends": {
+    "source": "assets/cifar10_resnet20bn",
+    "epochs_before": 30,
+    "epochs_after": 60,
+    "note": "the batch-order generator is sequential, so the first 30 permutations are bit-identical to the pinned set and every 30-epoch run reproduces exactly; subset, train_probe and the initial weights are copied verbatim"
+  }
+}

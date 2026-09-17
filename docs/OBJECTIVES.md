@@ -98,7 +98,9 @@ That row is confounded and must be reported as such: square-at-86 % differs from
 cross-entropy-at-78 % in *both* the objective and the accuracy level, so "the
 gain is specific to cross-entropy" and "the gain shrinks once the baseline is
 strong" are not separated by this grid. Raising the baseline at a fixed objective
-is what separates them -- which is what the augmentation experiment does.
+is what separates them -- which is what the augmentation experiment does, and it
+answers: the gain collapses there too, at the same baseline levels, so the level
+is the variable and not the objective. See [`AUGMENTATION.md`](AUGMENTATION.md).
 
 Two readings the focal column invites, only one of which is supported. The
 control falls from 75.93 to 72.86 while RG falls only 81.35 to 79.24, so +6.38

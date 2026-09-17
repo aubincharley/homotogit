@@ -37,6 +37,7 @@ from __future__ import annotations
 from dataclasses import replace
 
 from .presets import reference
+from .schedules import EpochSchedule
 
 #: the four frozen methods, unchanged
 METHOD_IDS = ("plain", "resolution_max_b1", "gaussian_postrelu",
@@ -209,43 +210,110 @@ def loss_summary(**kw) -> dict:
 # reference cells of the 28-cell grid -- so only three of the four corners are
 # paid for.
 
-#: ``(augmentation, epochs)`` corners.  ``("none", 30)`` is the recorded one.
-AUGMENT_CORNERS = (("none", 30), ("crop_flip", 30), ("none", 60), ("crop_flip", 60))
+#: ``(augmentation, epochs, lr)`` corners.  ``("none", 30, 0.005)`` is the
+#: recorded one.  The learning rate is part of a corner rather than a separate
+#: axis because 0.005 is demonstrably below the optimum -- cross-entropy is still
+#: improving at the top of the 28-cell grid's own sweep, and the square loss needs
+#: twenty times it -- so a corner run at 0.005 alone can answer "the gain survives
+#: augmentation" with a baseline that never got strong enough for the question to
+#: mean anything.
+AUGMENT_CORNERS = (("none", 30, 0.005),
+                   ("crop_flip", 30, 0.005), ("crop_flip", 30, 0.01),
+                   ("none", 60, 0.005), ("none", 60, 0.01),
+                   ("crop_flip", 60, 0.005), ("crop_flip", 60, 0.01))
 
 
-def augment_cell_id(method_id: str, aug: str, epochs: int, seed: int) -> str:
-    return "%s__%s__e%d__seed%d" % (method_id, aug, epochs, seed)
+def stretch_method(spec, factor: int):
+    """The same method over ``factor`` times as many epochs.
+
+    Schedules are indexed by **absolute** epoch, so doubling the budget without
+    touching them would leave the operator off for 39 of 60 epochs instead of 9
+    of 30 -- the curriculum would fall from 70 % of training to 35 %, and its
+    contribution would shrink for a reason that has nothing to do with the
+    question being asked.  Multiplying the boundaries keeps the method's shape
+    and makes the 30-versus-60 comparison a comparison of budget alone.
+
+    The stretched schedule is written into the run's config like any other, so
+    what ran stays recoverable from the record.
+    """
+    from dataclasses import replace as _replace
+
+    def _sched(sc):
+        return EpochSchedule(tuple(int(v) * int(factor) for v in sc.starts), sc.values)
+
+    out = spec
+    if out.gaussian is not None:
+        out = _replace(out, gaussian=_replace(out.gaussian,
+                                              schedule=_sched(out.gaussian.schedule)))
+    if out.resolution is not None:
+        out = _replace(out, resolution=_replace(out.resolution,
+                                                schedule=_sched(out.resolution.schedule)))
+    return out
 
 
-def build_augment_grid(*, corners=None, seeds=SEEDS, data_root: str = "data",
+def augment_cell_id(method_id: str, aug: str, epochs: int, lr: float, seed: int) -> str:
+    return "%s__%s__e%d__lr%g__seed%d" % (method_id, aug, epochs, lr, seed)
+
+
+def build_augment_grid(*, corners=None, seeds=SEEDS, stretch: bool = False,
+                       data_root: str = "data",
                        assets_dir: str = "assets/cifar10_resnet20bn",
                        out_dir: str = "runs", device: str = "auto") -> list:
     """Every ``(cell_id, ExperimentConfig)`` of the augmentation grid.
 
     ``corners`` selects a subset of :data:`AUGMENT_CORNERS`; the default drops
-    ``("none", 30)`` because those runs are the recorded reference cells and
-    ``analyze_augment.py`` reads them from the grid shards as that corner.
+    ``("none", 30, 0.005)`` because those runs are the recorded reference cells
+    and ``analyze_augment.py`` reads them from the grid shards as that corner.
+
+    ``stretch`` decides what a longer budget means, and the two readings are
+    different experiments rather than one right and one wrong.
+
+    Left ``False`` (the default), schedules keep their **absolute** epochs: the
+    resolution reaches 32 at epoch 12 and the blur switches off at 21 whatever the
+    budget, so a 60-epoch run is *the method as defined* followed by 39 epochs of
+    bare training.  It asks whether the head start the curriculum buys survives
+    being trained past.
+
+    Set ``True``, the boundaries are multiplied by the budget ratio, so the
+    operator keeps the same share of training and the comparison isolates budget
+    alone.  Use it when the question is about the budget rather than about what
+    the curriculum leaves behind.
     """
     from dataclasses import replace as _replace
 
-    wanted = (tuple(corners) if corners is not None
-              else tuple(c for c in AUGMENT_CORNERS if c != ("none", 30)))
-    unknown = [c for c in wanted if tuple(c) not in AUGMENT_CORNERS]
+    wanted = (tuple(tuple(c) for c in corners) if corners is not None
+              else tuple(c for c in AUGMENT_CORNERS if c != ("none", 30, 0.005)))
+    unknown = [c for c in wanted if c not in AUGMENT_CORNERS]
     if unknown:
         raise ValueError("unknown corner(s) %s" % (unknown,))
 
     cells = []
-    for aug, epochs in wanted:
+    for aug, epochs, lr in wanted:
         for m in METHOD_IDS:
             for s in seeds:
                 cfg = reference(m, s, data_root=data_root, assets_dir=assets_dir,
                                 out_dir=out_dir, device=device)
                 cfg.data = _replace(cfg.data, augmentation=aug)
                 cfg.budget = _replace(cfg.budget, epochs=int(epochs))
-                if (aug, epochs) != ("none", 30):
+                cfg.optimizer = _replace(cfg.optimizer, lr=float(lr))
+                if stretch and epochs != 30:
+                    factor = int(epochs) // 30
+                    if factor * 30 != int(epochs):
+                        raise ValueError("epochs must be a multiple of 30 to stretch "
+                                         "the schedule, got %r" % (epochs,))
+                    cfg.method = stretch_method(cfg.method_spec(), factor).to_dict()
+                    cfg.notes.append("schedules stretched x%d so the operator keeps "
+                                     "the same share of training" % factor)
+                elif epochs != 30:
+                    cfg.notes.append(
+                        "schedules left at absolute epochs: the operator reaches its "
+                        "target state at the same epoch as at 30, and the remaining "
+                        "%d epochs train the bare network" % (int(epochs) - 21))
+                if (aug, epochs, lr) != ("none", 30, 0.005):
                     cfg.validation_status = "unvalidated"
-                    cfg.notes.append("augmentation grid: %s, %d epochs" % (aug, epochs))
-                cfg.run.name = augment_cell_id(m, aug, epochs, s)
+                    cfg.notes.append("augmentation grid: %s, %d epochs, lr %g"
+                                     % (aug, epochs, lr))
+                cfg.run.name = augment_cell_id(m, aug, epochs, lr, s)
                 cells.append((cfg.run.name, cfg))
     return cells
 
@@ -254,6 +322,10 @@ def augment_summary(**kw) -> dict:
     cells = build_augment_grid(**kw)
     return {"n_cells": len(cells), "methods": list(METHOD_IDS), "seeds": list(SEEDS),
             "corners": [list(c) for c in AUGMENT_CORNERS],
+            "schedule_note": ("schedules are indexed by absolute epoch, so a 60-epoch "
+                              "corner leaves the operator off for 39 of 60 epochs "
+                              "instead of 9 of 30; decide whether to stretch them "
+                              "before reading that corner"),
             "recipe": "pad 4 zeros, random 32x32 crop, horizontal flip p=0.5; training only",
             "note": ("the (none, 30) corner is the recorded reference cells and is "
                      "not re-run; evaluation never augments, so the train probe "
