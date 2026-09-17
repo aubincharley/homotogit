@@ -208,7 +208,9 @@ class Trainer:
         return save_checkpoint(folder / name, self.checkpoint_payload(reason))
 
     def resume(self, path) -> None:
-        ck = load_checkpoint(path, map_location=self.device)
+        # loaded on the CPU: RNG states must stay CPU ByteTensors; model and optimizer state are
+        # copied to the parameters' device by load_state_dict
+        ck = load_checkpoint(path, map_location="cpu")
         if ck["config"] != self.cfg.to_dict():
             raise ValueError("checkpoint config differs from this trainer's config")
         self.model.load_state_dict(ck["model_state"])

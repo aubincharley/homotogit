@@ -1,0 +1,105 @@
+{
+  "data": {
+    "name": "cifar10",
+    "root": "/kaggle/input/datasets/pankrzysiu/cifar10-python",
+    "normalization": "fit_on_train",
+    "expected_mean": [
+      0.4913996756076813,
+      0.4821584224700928,
+      0.44653090834617615
+    ],
+    "expected_std": [
+      0.24703222513198853,
+      0.24348512291908264,
+      0.26158782839775085
+    ],
+    "stats_atol": 1e-07,
+    "augmentation": "pad4_crop32_hflip",
+    "augmentation_stream": "augment::pad4_crop32_hflip::epoch::%d"
+  },
+  "model": {
+    "arch": "resnet20_bn_cifar",
+    "options": {}
+  },
+  "optimizer": {
+    "name": "adamw",
+    "lr": 0.02,
+    "weight_decay": 0.0005,
+    "momentum": 0.9,
+    "nesterov": false,
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "eps": 1e-08,
+    "schedule": "warmup_cosine",
+    "warmup_updates": 60,
+    "min_lr": 0.0,
+    "milestones": [],
+    "gamma": 0.1
+  },
+  "method": {
+    "id": "cbs_budget_matched",
+    "description": "Same CBS operator and sites; 22 update-level plateaus sigma = 0.9 ** floor(22 u / u_off) for u < u_off = floor(0.7 U), then exact bypass. CBS-derived adaptation to our horizon, not an author schedule.",
+    "gaussian": null,
+    "resolution": null,
+    "source": {
+      "adaptation": "predetermined before any result; see comparison/METHOD_MAPPING.md"
+    },
+    "validated_on": [],
+    "cbs": {
+      "schedule": "update_plateaus",
+      "sigma0": 1.0,
+      "factor": 0.9,
+      "every_epochs": 5,
+      "off_fraction": 0.7,
+      "placement": "conv_out",
+      "kernel_size": 3,
+      "source": "github.com/pairlab/CBS@5f62e7da5b290e8f62f408c6f89146f3f361cc2e"
+    },
+    "sdpoint": null
+  },
+  "budget": {
+    "epochs": 160,
+    "effective_batch": 128,
+    "microbatch": 32
+  },
+  "evaluation": {
+    "every_epochs": 1,
+    "at_epoch_zero": false,
+    "batch_size": 500,
+    "paths": [
+      "current",
+      "target"
+    ],
+    "splits": [
+      "train_probe",
+      "test"
+    ],
+    "bn_policy": "running_stats"
+  },
+  "checkpoint": {
+    "every_epoch": false,
+    "every_updates": null,
+    "transition_offsets": [],
+    "keep_rolling": false,
+    "at_epochs": []
+  },
+  "run": {
+    "seed": 0,
+    "device": "auto",
+    "out_dir": "/kaggle/working/ovn/pilot",
+    "name": "adamw_long_aug_160__cbs_budget_matched__seed0",
+    "cudnn_deterministic": false,
+    "cudnn_benchmark": false
+  },
+  "assets": {
+    "dir": "/kaggle/input/datasets/maxlebossdu91/overnight-inputs/assets",
+    "verify": true
+  },
+  "validation_status": "overnight-follow-up",
+  "notes": [
+    "overnight_long_aug_bn: regime adamw_long_aug_160 (priority 3)",
+    "data order: perm_seed0 epochs 0-29 pinned, 30-159 from perm_extension::epoch::%d"
+  ]
+}

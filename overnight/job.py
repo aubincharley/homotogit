@@ -318,7 +318,18 @@ def _pilot_worker(gpu, cells, ctx_args, log_path, pilot_updates):
         except Exception:
             (out / "FAILED.json").write_text(json.dumps({"traceback": traceback.format_exc()}))
             log(log_path, gpu, "FAILED pilot %s\n%s" % (cell["run"], traceback.format_exc()))
-    # exact resumption on GPU (reported, not assumed bitwise: cuDNN kernels are not forced deterministic)
+    _resume_check(gpu, ctx, ds)
+
+
+def _resume_check_worker(gpu, ctx_args):
+    ctx = _setup_worker(gpu, ctx_args)
+    ctx["assets_loaded"] = load_assets(ctx, [0])
+    _resume_check(gpu, ctx, ctx["dataset"])
+
+
+def _resume_check(gpu, ctx, ds):
+    """Exact resumption on GPU (reported, not assumed bitwise: cuDNN kernels are not forced deterministic)."""
+    from continuation_core.train import Trainer
     try:
         cfg = MX.config("adamw_long_aug_160", "sdpoint", 0, ctx["data_root"], ctx["assets"], str(Path(ctx["out"]) / "pilot_resume"))
         cfg.evaluation.at_epoch_zero = False
@@ -414,6 +425,10 @@ def main():
         by_run = {c["run"]: c for c in MX.cells()}
         queues = [[by_run[r] for r in q] for q in json.loads(a.queues)]
         (out / "queues.json").write_text(json.dumps([[c["run"] for c in q] for q in queues], indent=1))
+        if not Path(out, "pilot_resume_gpu0.json").exists():
+            chk = ctxm.Process(target=_resume_check_worker, args=(0, ctx))       # ~1 min, before training
+            chk.start()
+            chk.join()
         procs = [ctxm.Process(target=_train_worker, args=(g, q, ctx, str(log_path), deadline))
                  for g, q in enumerate(queues[:n_gpu]) if q]
         for q in queues[n_gpu:]:

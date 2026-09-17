@@ -1,0 +1,165 @@
+{
+ "created_utc": "2026-09-17T16:52:50.421748+00:00",
+ "rule": "Deal the 63 runs to GPU queues from measured pilot costs (operational, not a scientific choice).\n\n    py -m overnight.allocate --pilot <pilot ovn dir> --accounts acc:gpus:offset_hours ...\n\nCells are taken in the frozen priority order (regime priority, then seed, then arm) and each goes\nto the GPU queue with the smallest projected finishing time, so every GPU works through\npriority 1 before priority 2 and so on.  Costs come only from pilot timings (no score is read).",
+ "cost_hours_per_run": {
+  "adamw_long_aug_160__cbs_budget_matched": 0.9456122270464962,
+  "adamw_long_aug_160__cbs_published_schedule": 0.9390440960027767,
+  "adamw_long_aug_160__gaussian_postrelu": 1.094420855403172,
+  "adamw_long_aug_160__plain": 0.90443968867322,
+  "adamw_long_aug_160__resolution_max_b1": 0.90443968867322,
+  "adamw_long_aug_160__resolution_max_b1_gaussian_conv": 1.7121679849534015,
+  "adamw_long_aug_160__sdpoint": 0.8153800378448954,
+  "adamw_long_noaug_160__cbs_budget_matched": 0.9754240941399989,
+  "adamw_long_noaug_160__cbs_published_schedule": 0.9739498218652193,
+  "adamw_long_noaug_160__gaussian_postrelu": 1.094284577915321,
+  "adamw_long_noaug_160__plain": 0.8659481597771641,
+  "adamw_long_noaug_160__resolution_max_b1": 0.8659481597771641,
+  "adamw_long_noaug_160__resolution_max_b1_gaussian_conv": 1.7372209626154482,
+  "adamw_long_noaug_160__sdpoint": 0.8004962545101081,
+  "sgd_standard_aug_160__cbs_budget_matched": 0.7676141072173858,
+  "sgd_standard_aug_160__cbs_published_schedule": 0.7617258636703911,
+  "sgd_standard_aug_160__gaussian_postrelu": 0.8964558599581607,
+  "sgd_standard_aug_160__plain": 0.6671474499085597,
+  "sgd_standard_aug_160__resolution_max_b1": 0.6671474499085597,
+  "sgd_standard_aug_160__resolution_max_b1_gaussian_conv": 1.1653926179456089,
+  "sgd_standard_aug_160__sdpoint": 0.6160538334177756
+ },
+ "total_projected_gpu_hours": 60.51094137367214,
+ "accounts": {
+  "maximemonstrenikez": {
+   "queues": [
+    [
+     "sgd_standard_aug_160__plain__seed0",
+     "sgd_standard_aug_160__cbs_published_schedule__seed1",
+     "adamw_long_noaug_160__resolution_max_b1_gaussian_conv__seed0",
+     "adamw_long_aug_160__resolution_max_b1_gaussian_conv__seed0"
+    ],
+    [
+     "sgd_standard_aug_160__resolution_max_b1__seed0",
+     "sgd_standard_aug_160__cbs_budget_matched__seed1",
+     "adamw_long_noaug_160__cbs_budget_matched__seed0",
+     "adamw_long_noaug_160__resolution_max_b1__seed2",
+     "adamw_long_aug_160__cbs_budget_matched__seed0",
+     "adamw_long_aug_160__gaussian_postrelu__seed2"
+    ]
+   ],
+   "projected_hours": [
+    4.878262261147801,
+    5.316166893492776
+   ]
+  },
+  "maxlebossdu91": {
+   "queues": [
+    [
+     "sgd_standard_aug_160__gaussian_postrelu__seed0",
+     "sgd_standard_aug_160__resolution_max_b1_gaussian_conv__seed2",
+     "adamw_long_noaug_160__cbs_budget_matched__seed1",
+     "adamw_long_aug_160__gaussian_postrelu__seed0",
+     "adamw_long_aug_160__sdpoint__seed1"
+    ],
+    [
+     "sgd_standard_aug_160__resolution_max_b1_gaussian_conv__seed0",
+     "adamw_long_noaug_160__plain__seed0",
+     "adamw_long_noaug_160__cbs_published_schedule__seed1",
+     "adamw_long_aug_160__resolution_max_b1__seed0",
+     "adamw_long_aug_160__cbs_budget_matched__seed1"
+    ]
+   ],
+   "projected_hours": [
+    4.947073465291836,
+    4.855342515307708
+   ]
+  },
+  "maxlefrr": {
+   "queues": [
+    [
+     "sgd_standard_aug_160__cbs_published_schedule__seed0",
+     "sgd_standard_aug_160__resolution_max_b1__seed2",
+     "adamw_long_noaug_160__cbs_published_schedule__seed0",
+     "adamw_long_noaug_160__plain__seed2",
+     "adamw_long_aug_160__cbs_published_schedule__seed0",
+     "adamw_long_aug_160__resolution_max_b1__seed2"
+    ],
+    [
+     "sgd_standard_aug_160__cbs_budget_matched__seed0",
+     "sgd_standard_aug_160__gaussian_postrelu__seed2",
+     "adamw_long_noaug_160__resolution_max_b1__seed1",
+     "adamw_long_noaug_160__cbs_budget_matched__seed2",
+     "adamw_long_aug_160__plain__seed1",
+     "adamw_long_aug_160__cbs_published_schedule__seed2"
+    ]
+   ],
+   "projected_hours": [
+    5.11225507989733,
+    5.348926005768706
+   ]
+  },
+  "maxnicaise": {
+   "queues": [
+    [
+     "sgd_standard_aug_160__sdpoint__seed0",
+     "sgd_standard_aug_160__resolution_max_b1_gaussian_conv__seed1",
+     "adamw_long_noaug_160__resolution_max_b1_gaussian_conv__seed1",
+     "adamw_long_aug_160__gaussian_postrelu__seed1",
+     "adamw_long_aug_160__sdpoint__seed2"
+    ],
+    [
+     "sgd_standard_aug_160__plain__seed1",
+     "sgd_standard_aug_160__sdpoint__seed1",
+     "adamw_long_noaug_160__resolution_max_b1__seed0",
+     "adamw_long_noaug_160__sdpoint__seed1",
+     "adamw_long_aug_160__plain__seed0",
+     "adamw_long_aug_160__cbs_published_schedule__seed1"
+    ]
+   ],
+   "projected_hours": [
+    5.4284683072269,
+    4.793129482289603
+   ]
+  },
+  "maxnikezz": {
+   "queues": [
+    [
+     "sgd_standard_aug_160__resolution_max_b1__seed1",
+     "sgd_standard_aug_160__plain__seed2",
+     "adamw_long_noaug_160__gaussian_postrelu__seed0",
+     "adamw_long_noaug_160__resolution_max_b1_gaussian_conv__seed2",
+     "adamw_long_aug_160__plain__seed2"
+    ],
+    [
+     "sgd_standard_aug_160__gaussian_postrelu__seed1",
+     "sgd_standard_aug_160__cbs_published_schedule__seed2",
+     "adamw_long_noaug_160__plain__seed1",
+     "adamw_long_noaug_160__cbs_published_schedule__seed2",
+     "adamw_long_aug_160__sdpoint__seed0",
+     "adamw_long_aug_160__resolution_max_b1_gaussian_conv__seed2"
+    ]
+   ],
+   "projected_hours": [
+    5.0702401290211085,
+    6.025627728069232
+   ]
+  },
+  "maxmonstre": {
+   "queues": [
+    [
+     "sgd_standard_aug_160__cbs_budget_matched__seed2",
+     "adamw_long_noaug_160__gaussian_postrelu__seed1",
+     "adamw_long_noaug_160__sdpoint__seed2",
+     "adamw_long_aug_160__resolution_max_b1_gaussian_conv__seed1"
+    ],
+    [
+     "sgd_standard_aug_160__sdpoint__seed2",
+     "adamw_long_noaug_160__sdpoint__seed0",
+     "adamw_long_noaug_160__gaussian_postrelu__seed2",
+     "adamw_long_aug_160__resolution_max_b1__seed1",
+     "adamw_long_aug_160__cbs_budget_matched__seed2"
+    ]
+   ],
+   "projected_hours": [
+    5.374562924596216,
+    5.36088658156292
+   ]
+  }
+ }
+}
