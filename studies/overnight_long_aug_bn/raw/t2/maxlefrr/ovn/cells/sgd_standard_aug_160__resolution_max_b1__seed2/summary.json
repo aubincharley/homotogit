@@ -1,0 +1,152 @@
+{
+  "schema": "continuation_core.results/1",
+  "method": "resolution_max_b1",
+  "seed": 2,
+  "optimizer": {
+    "tag": "sgd_lr0.1",
+    "name": "sgd",
+    "lr": 0.1,
+    "weight_decay": 0.0001,
+    "schedule": "multistep",
+    "warmup_updates": 0,
+    "min_lr": 0.0,
+    "momentum": 0.9,
+    "nesterov": false
+  },
+  "validation_status": "overnight-follow-up",
+  "dataset": "cifar10",
+  "arch": "resnet20_bn_cifar",
+  "arch_validated": true,
+  "epochs": 160,
+  "updates": 62560,
+  "updates_per_epoch": 391,
+  "n_train": 50000,
+  "n_test": 10000,
+  "augmentation": {
+    "kind": "pad4_crop32_hflip",
+    "pad": 4,
+    "padding_value": 0,
+    "crop": "uniform 32x32 of the 40x40 padded image",
+    "flip": "horizontal, probability 1/2",
+    "stream": "augment::pad4_crop32_hflip::epoch::%d",
+    "keyed_by": "(run seed, zero-based epoch); entry i is example i of the training tensor",
+    "applied": "uint8, before normalisation, training batches only"
+  },
+  "final": {
+    "current": {
+      "train_probe": {
+        "ce": 0.015599932670593262,
+        "acc": 0.996,
+        "n": 500
+      },
+      "test": {
+        "ce": 0.35157725982666016,
+        "acc": 0.9162,
+        "n": 10000
+      }
+    },
+    "target": {
+      "train_probe": {
+        "ce": 0.015599932670593262,
+        "acc": 0.996,
+        "n": 500
+      },
+      "test": {
+        "ce": 0.35157725982666016,
+        "acc": 0.9162,
+        "n": 10000
+      }
+    }
+  },
+  "final_state_used": {
+    "state": {
+      "resolution": 32,
+      "sigma": null,
+      "label": "epoch 159"
+    },
+    "per_site_sigma": []
+  },
+  "final_state_is_target": true,
+  "transition_updates": [
+    12512,
+    25024
+  ],
+  "native_inference_state": {
+    "resolution": 32,
+    "sigma": null,
+    "label": "native"
+  },
+  "schedule_segments": null,
+  "timing": {
+    "wall_seconds": 2102.042219423,
+    "eval_seconds": 149.873321485004,
+    "diagnostic_seconds": 22.409459734998563,
+    "train_seconds": 1929.7594382029974,
+    "scope": "from the start of run() (after data and model construction) to the last evaluation, including checkpoint writes; resumed runs add the wall time stored in the checkpoint"
+  },
+  "method_definition": {
+    "id": "resolution_max_b1",
+    "description": "Adaptive max pooling of the complete output of blocks[1] (input of blocks[2]) to 16 / 24 / 32 at epochs 0 / 32 / 64; no Gaussian. [160-epoch follow-up schedule]",
+    "gaussian": null,
+    "resolution": {
+      "point": "block1",
+      "schedule": {
+        "starts": [
+          0,
+          32,
+          64
+        ],
+        "values": [
+          16,
+          24,
+          32
+        ]
+      },
+      "reference_resolution": 32,
+      "operator": "adaptive_max"
+    },
+    "source": {
+      "experiment": "unified_selected",
+      "branch": "benchmark-organized",
+      "config_id": "shrink_b1",
+      "label": "Shrink block 1 with max-pool, 16 to 24 to 32",
+      "cells": [
+        "shrink_b1__seed0",
+        "shrink_b1__seed1",
+        "shrink_b1__seed2"
+      ],
+      "final_test_acc_per_seed": {
+        "0": 0.7997,
+        "1": 0.8006,
+        "2": 0.8107
+      },
+      "final_test_acc_mean": 0.803667,
+      "final_test_acc_sd": 0.006108,
+      "final_path": "target (equal to current at epoch 30)",
+      "asset_set": "r20bn-campaign-assets"
+    },
+    "validated_on": [
+      "cifar10",
+      "resnet20_bn_cifar"
+    ],
+    "cbs": null,
+    "sdpoint": null
+  },
+  "provenance": {
+    "assets_dir": "/kaggle/input/datasets/maxlefrr/overnight-inputs/assets",
+    "asset_states": {
+      "init_seed0": "6e652c49e5139e785887b9cb6b08ce5b0dee734bde6384550be6a8a3641e2c1b",
+      "init_seed1": "f6fb22087956ae3e39398efa42ab92580bbd66d86a8886a468e13bb4fc28ef5e",
+      "init_seed2": "fb19c69f3b02419133c852d831622cba0adc539775e578f826fdb0944ab815db"
+    },
+    "asset_arrays": {
+      "subset": "33236cc6bd19fa6b89e06d441d3fcd8eb37dc8540f6a4f2b627b20af10894a41",
+      "train_probe": "a33645e0e4f024d8c47c0c5bdd7fbc7ea59a976090a815c58ba029908f2c86bc",
+      "perm_seed0": "5df32d0d922962e72fb4dd718a5eaad13f3209f75b8363aff64e57b89b4bb22f",
+      "perm_seed1": "b3c1460f166f3e3afb821c9b5cebc30a1915ce47b3a2502b85921041e8b58cb0",
+      "perm_seed2": "995dcd74c2f86f26d89d170041b8996b37e7dc881ebe9db103ddf2fc76f3e5bb"
+    },
+    "torch": "2.10.0+cu128",
+    "code": null
+  }
+}

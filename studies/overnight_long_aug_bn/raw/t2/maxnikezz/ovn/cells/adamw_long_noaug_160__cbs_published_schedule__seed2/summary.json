@@ -1,0 +1,340 @@
+{
+  "schema": "continuation_core.results/1",
+  "method": "cbs_published_schedule",
+  "seed": 2,
+  "optimizer": {
+    "tag": "adamw_lr0.02",
+    "name": "adamw",
+    "lr": 0.02,
+    "weight_decay": 0.0005,
+    "schedule": "warmup_cosine",
+    "warmup_updates": 60,
+    "min_lr": 0.0,
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "eps": 1e-08,
+    "weight_decay_coupling": "decoupled"
+  },
+  "validation_status": "overnight-follow-up",
+  "dataset": "cifar10",
+  "arch": "resnet20_bn_cifar",
+  "arch_validated": true,
+  "epochs": 160,
+  "updates": 62560,
+  "updates_per_epoch": 391,
+  "n_train": 50000,
+  "n_test": 10000,
+  "augmentation": {
+    "kind": "none",
+    "pad": 4,
+    "padding_value": 0,
+    "crop": "uniform 32x32 of the 40x40 padded image",
+    "flip": "horizontal, probability 1/2",
+    "stream": "augment::pad4_crop32_hflip::epoch::%d",
+    "keyed_by": "(run seed, zero-based epoch); entry i is example i of the training tensor",
+    "applied": "uint8, before normalisation, training batches only"
+  },
+  "final": {
+    "current": {
+      "train_probe": {
+        "ce": 4.907235037535429e-06,
+        "acc": 1.0,
+        "n": 500
+      },
+      "test": {
+        "ce": 1.3086474670410155,
+        "acc": 0.8355,
+        "n": 10000
+      }
+    },
+    "target": {
+      "train_probe": {
+        "ce": 4.907235037535429e-06,
+        "acc": 1.0,
+        "n": 500
+      },
+      "test": {
+        "ce": 1.3086474670410155,
+        "acc": 0.8355,
+        "n": 10000
+      }
+    }
+  },
+  "final_state_used": {
+    "state": {
+      "resolution": null,
+      "sigma": 0.038152042447694615,
+      "label": "update 62559"
+    },
+    "per_site_sigma": [
+      0.038152042447694615,
+      0.038152042447694615,
+      0.038152042447694615,
+      0.038152042447694615,
+      0.038152042447694615,
+      0.038152042447694615,
+      0.038152042447694615,
+      0.038152042447694615,
+      0.038152042447694615,
+      0.038152042447694615,
+      0.038152042447694615,
+      0.038152042447694615,
+      0.038152042447694615,
+      0.038152042447694615,
+      0.038152042447694615,
+      0.038152042447694615,
+      0.038152042447694615,
+      0.038152042447694615,
+      0.038152042447694615
+    ]
+  },
+  "final_state_is_target": false,
+  "transition_updates": [
+    1955,
+    3910,
+    5865,
+    7820,
+    9775,
+    11730,
+    13685,
+    15640,
+    17595,
+    19550,
+    21505,
+    23460,
+    25415,
+    27370,
+    29325,
+    31280,
+    33235,
+    35190,
+    37145,
+    39100,
+    41055,
+    43010,
+    44965,
+    46920,
+    48875,
+    50830,
+    52785,
+    54740,
+    56695,
+    58650,
+    60605
+  ],
+  "native_inference_state": {
+    "resolution": null,
+    "sigma": 0.038152042447694615,
+    "label": "native"
+  },
+  "schedule_segments": [
+    {
+      "first_update": 0,
+      "epoch": 0,
+      "sigma": 1.0
+    },
+    {
+      "first_update": 1955,
+      "epoch": 5,
+      "sigma": 0.9
+    },
+    {
+      "first_update": 3910,
+      "epoch": 10,
+      "sigma": 0.81
+    },
+    {
+      "first_update": 5865,
+      "epoch": 15,
+      "sigma": 0.7290000000000001
+    },
+    {
+      "first_update": 7820,
+      "epoch": 20,
+      "sigma": 0.6561
+    },
+    {
+      "first_update": 9775,
+      "epoch": 25,
+      "sigma": 0.5904900000000001
+    },
+    {
+      "first_update": 11730,
+      "epoch": 30,
+      "sigma": 0.531441
+    },
+    {
+      "first_update": 13685,
+      "epoch": 35,
+      "sigma": 0.4782969000000001
+    },
+    {
+      "first_update": 15640,
+      "epoch": 40,
+      "sigma": 0.4304672100000001
+    },
+    {
+      "first_update": 17595,
+      "epoch": 45,
+      "sigma": 0.3874204890000001
+    },
+    {
+      "first_update": 19550,
+      "epoch": 50,
+      "sigma": 0.3486784401000001
+    },
+    {
+      "first_update": 21505,
+      "epoch": 55,
+      "sigma": 0.31381059609000006
+    },
+    {
+      "first_update": 23460,
+      "epoch": 60,
+      "sigma": 0.2824295364810001
+    },
+    {
+      "first_update": 25415,
+      "epoch": 65,
+      "sigma": 0.2541865828329001
+    },
+    {
+      "first_update": 27370,
+      "epoch": 70,
+      "sigma": 0.2287679245496101
+    },
+    {
+      "first_update": 29325,
+      "epoch": 75,
+      "sigma": 0.20589113209464907
+    },
+    {
+      "first_update": 31280,
+      "epoch": 80,
+      "sigma": 0.18530201888518416
+    },
+    {
+      "first_update": 33235,
+      "epoch": 85,
+      "sigma": 0.16677181699666577
+    },
+    {
+      "first_update": 35190,
+      "epoch": 90,
+      "sigma": 0.15009463529699918
+    },
+    {
+      "first_update": 37145,
+      "epoch": 95,
+      "sigma": 0.13508517176729928
+    },
+    {
+      "first_update": 39100,
+      "epoch": 100,
+      "sigma": 0.12157665459056935
+    },
+    {
+      "first_update": 41055,
+      "epoch": 105,
+      "sigma": 0.10941898913151242
+    },
+    {
+      "first_update": 43010,
+      "epoch": 110,
+      "sigma": 0.09847709021836118
+    },
+    {
+      "first_update": 44965,
+      "epoch": 115,
+      "sigma": 0.08862938119652507
+    },
+    {
+      "first_update": 46920,
+      "epoch": 120,
+      "sigma": 0.07976644307687256
+    },
+    {
+      "first_update": 48875,
+      "epoch": 125,
+      "sigma": 0.0717897987691853
+    },
+    {
+      "first_update": 50830,
+      "epoch": 130,
+      "sigma": 0.06461081889226677
+    },
+    {
+      "first_update": 52785,
+      "epoch": 135,
+      "sigma": 0.058149737003040096
+    },
+    {
+      "first_update": 54740,
+      "epoch": 140,
+      "sigma": 0.05233476330273609
+    },
+    {
+      "first_update": 56695,
+      "epoch": 145,
+      "sigma": 0.047101286972462485
+    },
+    {
+      "first_update": 58650,
+      "epoch": 150,
+      "sigma": 0.04239115827521624
+    },
+    {
+      "first_update": 60605,
+      "epoch": 155,
+      "sigma": 0.038152042447694615
+    }
+  ],
+  "timing": {
+    "wall_seconds": 3186.914611954,
+    "eval_seconds": 180.47625997499927,
+    "diagnostic_seconds": 27.67330246000347,
+    "train_seconds": 2978.7650495189973,
+    "scope": "from the start of run() (after data and model construction) to the last evaluation, including checkpoint writes; resumed runs add the wall time stored in the checkpoint"
+  },
+  "method_definition": {
+    "id": "cbs_published_schedule",
+    "description": "Curriculum By Smoothing: 3x3 Gaussian (zero padding) between each of the 19 main-path convolutions and its BatchNorm; sigma(e) = 0.9 ** floor(e / 5); native inference keeps the epoch-29 filter (sigma 0.59049).",
+    "gaussian": null,
+    "resolution": null,
+    "source": {
+      "paper": "Sinha, Garg, Larochelle, NeurIPS 2020, arXiv:2003.01367v5, Sec. 3-4, App. C",
+      "code": "github.com/pairlab/CBS@5f62e7da5b290e8f62f408c6f89146f3f361cc2e"
+    },
+    "validated_on": [],
+    "cbs": {
+      "schedule": "epoch_decay",
+      "sigma0": 1.0,
+      "factor": 0.9,
+      "every_epochs": 5,
+      "off_fraction": 0.7,
+      "placement": "conv_out",
+      "kernel_size": 3,
+      "source": "github.com/pairlab/CBS@5f62e7da5b290e8f62f408c6f89146f3f361cc2e"
+    },
+    "sdpoint": null
+  },
+  "provenance": {
+    "assets_dir": "/kaggle/input/datasets/maxnikezz/overnight-inputs/assets",
+    "asset_states": {
+      "init_seed0": "6e652c49e5139e785887b9cb6b08ce5b0dee734bde6384550be6a8a3641e2c1b",
+      "init_seed1": "f6fb22087956ae3e39398efa42ab92580bbd66d86a8886a468e13bb4fc28ef5e",
+      "init_seed2": "fb19c69f3b02419133c852d831622cba0adc539775e578f826fdb0944ab815db"
+    },
+    "asset_arrays": {
+      "subset": "33236cc6bd19fa6b89e06d441d3fcd8eb37dc8540f6a4f2b627b20af10894a41",
+      "train_probe": "a33645e0e4f024d8c47c0c5bdd7fbc7ea59a976090a815c58ba029908f2c86bc",
+      "perm_seed0": "5df32d0d922962e72fb4dd718a5eaad13f3209f75b8363aff64e57b89b4bb22f",
+      "perm_seed1": "b3c1460f166f3e3afb821c9b5cebc30a1915ce47b3a2502b85921041e8b58cb0",
+      "perm_seed2": "995dcd74c2f86f26d89d170041b8996b37e7dc881ebe9db103ddf2fc76f3e5bb"
+    },
+    "torch": "2.10.0+cu128",
+    "code": null
+  }
+}

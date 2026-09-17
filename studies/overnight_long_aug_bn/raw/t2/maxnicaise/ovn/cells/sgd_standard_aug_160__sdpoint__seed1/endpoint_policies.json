@@ -1,0 +1,181 @@
+{
+ "state": {
+  "resolution": null,
+  "sigma": null,
+  "label": "native",
+  "sd_point": 0,
+  "sd_ratio": null
+ },
+ "seed": 1,
+ "method": "sdpoint",
+ "learned_sha256": "9297192ba6caa2d86a0d61900b246b61c3aaf2cd8a525482396ef5cca1d34b42",
+ "saved_buffers_sha256": "7ebd91ea20f6666fd437cefee2b720c9f1d4e7c3bf58f78309199601d7d78940",
+ "physical_batch_for_P3": 128,
+ "augmentation_for_P3": "pad4_crop32_hflip",
+ "policies": {
+  "P0_saved_native": {
+   "policy": "P0_saved_native",
+   "state": {
+    "resolution": null,
+    "sigma": null,
+    "label": "native",
+    "sd_point": 0,
+    "sd_ratio": null
+   },
+   "per_site_sigma": [],
+   "calibration": null,
+   "buffers_sha256": "7ebd91ea20f6666fd437cefee2b720c9f1d4e7c3bf58f78309199601d7d78940",
+   "train_full": {
+    "n": 50000,
+    "ce": 0.14458722816467284,
+    "acc": 0.95132
+   },
+   "test_full": {
+    "n": 10000,
+    "ce": 0.2857364845275879,
+    "acc": 0.9023
+   },
+   "learned_tensors_unchanged": true,
+   "seconds": 2.9583532679998825
+  },
+  "P1_cumulative_clean_500": {
+   "policy": "P1_cumulative_clean_500",
+   "state": {
+    "resolution": null,
+    "sigma": null,
+    "label": "native",
+    "sd_point": 0,
+    "sd_ratio": null
+   },
+   "per_site_sigma": [],
+   "calibration": {
+    "dataset": "CIFAR-10 training set (50,000), clean",
+    "order": "official file order 0..N-1",
+    "order_sha256": "33236cc6bd19fa6b89e06d441d3fcd8eb37dc8540f6a4f2b627b20af10894a41",
+    "augmentation": "none",
+    "batch_size": 500,
+    "n_batches": 100,
+    "final_batch": 500,
+    "remainder": "kept; weighted as one batch in the cumulative average",
+    "reset": true,
+    "momentum": null,
+    "passes": 1,
+    "mode": "train() forward, no_grad",
+    "labels_used": false
+   },
+   "buffers_sha256": "b0b86a6171f6e55cc1cc58f2092edd89232d0154b31d25ce1f3abaef77f11f0c",
+   "train_full": {
+    "n": 50000,
+    "ce": 0.2116168846130371,
+    "acc": 0.9252
+   },
+   "test_full": {
+    "n": 10000,
+    "ce": 0.34574896087646484,
+    "acc": 0.8856
+   },
+   "learned_tensors_unchanged": true,
+   "seconds": 5.627882615999624
+  },
+  "P2_cumulative_clean_32": {
+   "policy": "P2_cumulative_clean_32",
+   "state": {
+    "resolution": null,
+    "sigma": null,
+    "label": "native",
+    "sd_point": 0,
+    "sd_ratio": null
+   },
+   "per_site_sigma": [],
+   "calibration": {
+    "dataset": "CIFAR-10 training set (50,000), clean",
+    "order": "official file order 0..N-1",
+    "order_sha256": "33236cc6bd19fa6b89e06d441d3fcd8eb37dc8540f6a4f2b627b20af10894a41",
+    "augmentation": "none",
+    "batch_size": 32,
+    "n_batches": 1563,
+    "final_batch": 16,
+    "remainder": "kept; weighted as one batch in the cumulative average",
+    "reset": true,
+    "momentum": null,
+    "passes": 1,
+    "mode": "train() forward, no_grad",
+    "labels_used": false
+   },
+   "buffers_sha256": "b8752f30325aa6c62e3601d203ef368c2cc9be00b23a574666eb4db7876220d2",
+   "train_full": {
+    "n": 50000,
+    "ce": 0.21277815246582032,
+    "acc": 0.92476
+   },
+   "test_full": {
+    "n": 10000,
+    "ce": 0.3489301162719727,
+    "acc": 0.885
+   },
+   "learned_tensors_unchanged": true,
+   "seconds": 9.830321882000135
+  },
+  "P3_ema_training_loader": {
+   "policy": "P3_ema_training_loader",
+   "state": {
+    "resolution": null,
+    "sigma": null,
+    "label": "native",
+    "sd_point": 0,
+    "sd_ratio": null
+   },
+   "per_site_sigma": [],
+   "calibration": {
+    "dataset": "CIFAR-10 training set (50,000)",
+    "order": "seed-specific frozen permutation (bn_p3::calibration_order)",
+    "order_sha256": "e15364b57b0b9d6470314d0d7c369ce3dbbc462b04e950430bf41f07b9945f9f",
+    "augmentation": "pad4_crop32_hflip, draws bn_p3::pad4_crop32_hflip::pass::0 keyed by official index",
+    "augmentation_draws_sha256": "ea4cc2ecc74e66dfe8755540d40a8dcdb8ca0627fc3f2a8a84591ca0e2661d5a",
+    "batch_size": 128,
+    "n_batches": 391,
+    "final_batch": 80,
+    "remainder": "kept",
+    "reset": false,
+    "start": "checkpoint's own saved buffers",
+    "momentum": 0.1,
+    "passes": 1,
+    "mode": "train() forward, no_grad",
+    "labels_used": false,
+    "note": "author-style adaptation of xternalz/SDPoint@0013c5d main.py validate(); not the released ImageNet pipeline"
+   },
+   "buffers_sha256": "0e46a716702022f16d687b931d8536c4674d6fd3443853547667e81c75ec45a6",
+   "train_full": {
+    "n": 50000,
+    "ce": 0.08780821640014648,
+    "acc": 0.97052
+   },
+   "test_full": {
+    "n": 10000,
+    "ce": 0.24951197052001953,
+    "acc": 0.9168
+   },
+   "learned_tensors_unchanged": true,
+   "seconds": 5.659034854000311
+  }
+ },
+ "P0_repeat_identical": true,
+ "checkpoint": "checkpoints/epoch_160.pt",
+ "checkpoint_sha256": "05ebefd622141ba7ca61d05935fc915f6e18ac91f15eb4a46c24fc8911390047",
+ "recorded_check": {
+  "recorded_current_test": {
+   "ce": 0.2857364845275879,
+   "acc": 0.9023,
+   "n": 10000
+  },
+  "P0_test_full": {
+   "n": 10000,
+   "ce": 0.2857364845275879,
+   "acc": 0.9023
+  },
+  "abs_diff_acc": 0.0,
+  "abs_diff_ce": 0.0,
+  "matches": true,
+  "note": "current path at epoch 160 is the native inference state for every arm"
+ }
+}

@@ -1,0 +1,23 @@
+{
+ "straight_vs_resumed": {
+  "learned_max_abs": 0.326959028840065,
+  "buffers_max_abs": 326.392578125,
+  "num_batches_equal": true,
+  "worst_learned": "blocks.3.conv2.weight",
+  "bitwise_equal": false
+ },
+ "straight_vs_straight_repeat": {
+  "learned_max_abs": 0.41462332010269165,
+  "buffers_max_abs": 159.0400619506836,
+  "num_batches_equal": true,
+  "worst_learned": "blocks.4.conv1.weight",
+  "bitwise_equal": false
+ },
+ "updates": [
+  60,
+  "25+35"
+ ],
+ "arm": "sdpoint",
+ "regime": "adamw_long_aug_160",
+ "note": "cuDNN is not forced deterministic; compare the resumed difference with the repeat difference"
+}

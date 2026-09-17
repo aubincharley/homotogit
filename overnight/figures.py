@@ -116,12 +116,15 @@ def fig_curves(p1, saved, out):
             a.grid(alpha=.2)
         ax.set_title(CTEX[camp], fontsize=9)
         ax2.set_xlabel("completed epochs")
-        ax2.set_ylim(bottom=max(0, ax2.get_ylim()[0]))
+        # the first epochs would otherwise compress the whole diagnostic panel
+        late = saved[(saved.campaign == camp) & (saved.epoch >= 10)].current_test_acc
+        if len(late):
+            ax2.set_ylim(100 * late.min() - 1, 100 * late.max() + 1)
     axes[0][0].set_ylabel("test acc (%), P1 at scheduled state")
     axes[1][0].set_ylabel("test acc (%), saved buffers, current path")
-    axes[0][-1].legend(fontsize=7, frameon=False, loc="lower right")
-    fig.text(0.01, 0.005, "dotted blue: R transitions (32, 64); dotted orange: G/RG bypass (112); dash-dot: SGD lr steps. "
-             "SDPoint saved-buffer curve (dashed) mixes training instances.", fontsize=6.5)
+    axes[0][-1].legend(fontsize=7, frameon=False, loc="lower right", ncol=2)
+    # guides are described in CAPTIONS.md rather than on the figure, which has no free space:
+    # dotted blue = R transitions (32, 64), dotted orange = G/RG bypass (112), dash-dot = SGD lr steps
     save(fig, out, "fig_learning_curves_p1_and_saved")
 
 
