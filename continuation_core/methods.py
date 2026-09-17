@@ -16,6 +16,7 @@ ratio.  ``resolution_max_b1_gaussian_conv`` is therefore *not*
 from __future__ import annotations
 
 import math
+from fractions import Fraction
 from dataclasses import asdict, dataclass, field
 
 from .schedules import EpochSchedule
@@ -108,10 +109,16 @@ class CBSSpec:
         u = int(update)
         if self.schedule == "epoch_decay":
             return float(self.sigma0 * self.factor ** ((u // int(updates_per_epoch)) // int(self.every_epochs)))
-        u_off = int(math.floor(self.off_fraction * int(total_updates)))
+        u_off = self.off_update(total_updates)
         if u >= u_off:
             return 0.0
         return float(self.sigma0 * self.factor ** ((self.n_plateaus() * u) // u_off))
+
+    def off_update(self, total_updates: int) -> int:
+        """``floor(off_fraction * U)`` in exact rational arithmetic (0.7 * 62560 is 43791.999...
+        in binary floating point; the decimal fraction 7/10 gives 43792)."""
+        f = Fraction(str(self.off_fraction))
+        return int(f.numerator * int(total_updates) // f.denominator)
 
     def table(self, updates_per_epoch: int, total_updates: int) -> list:
         """(first update, epoch, sigma) of every constant segment."""

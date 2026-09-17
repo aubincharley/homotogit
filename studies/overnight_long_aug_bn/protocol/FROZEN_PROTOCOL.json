@@ -1,0 +1,946 @@
+{
+ "frozen_utc": "2026-09-17T16:39:39.522517+00:00",
+ "code_base_commit": "6b28489eda3ccc1023ae6c9d5545869f8a0b5a74",
+ "statement": "Prospective rules for this follow-up, written before any of its training runs or new BN evaluations produced a result. Not a retrospective preregistration of the project: our four methods, their schedules and the AdamW learning rate 0.02 were selected earlier with CIFAR-10 test-set exposure; the 42-run 30-epoch comparison (branch comparison-cbs-sdpoint @ 6b28489) and its P0/P1 results were already seen. No tuning grid; no recipe change after a poor finite run.",
+ "base_study": {
+  "branch": "comparison-cbs-sdpoint",
+  "commit": "6b28489",
+  "cells": 42,
+  "reused_results": [
+   "saved_native (P0)",
+   "panelA_recalibrated_native (P1)"
+  ],
+  "reuse_rule": "reused only if the checkpoint sha256, the native state and the recomputed P0/P1 match (|dacc| <= 2e-4, |dCE| <= 1e-4)"
+ },
+ "dataset": "CIFAR-10, full 50,000 training / official 10,000 test",
+ "architecture": "ResNet-20 BN/ReLU (resnet20_bn_cifar)",
+ "loss": "cross-entropy",
+ "precision": "float32, no autocast, TF32 off, no compilation",
+ "initialisation": "pinned assets/cifar10_resnet20bn/init_seed<k>.pt (parameters and BN buffers), shared by all arms of a seed",
+ "normalisation": {
+  "rule": "per-channel mean/std of the 50,000 unfiltered training images (float64, population std)",
+  "mean": [
+   0.4913996756076813,
+   0.4821584224700928,
+   0.44653090834617615
+  ],
+  "std": [
+   0.24703222513198853,
+   0.24348512291908264,
+   0.26158782839775085
+  ]
+ },
+ "data_order": {
+  "epochs_0_29": "pinned perm_seed<k> (unchanged)",
+  "epochs_30_159": "PCG64(derive_seed(k, 'perm_extension::epoch::%d' % e)).permutation(50000)",
+  "sha256_of_160x50000_int32": {
+   "0": "c2db40c99f59545e11f2628fbafc5cec9723c83a3f1a6155d94bbeb62c460915",
+   "1": "1428b8186c4d428c3d7b411c77cfcf4b781c9213dc567d3f3f093e368578e643",
+   "2": "293b2b26b3d3896a5876ff325ee2a272052f57b71cad5cfae5d7c0bb30154060"
+  },
+  "batches": "consecutive slices of 128; 391 updates per epoch, last batch 80"
+ },
+ "augmentation": {
+  "kind": "pad4_crop32_hflip",
+  "definition": "zero padding of 4 px per side on uint8 images, uniform 32x32 crop, horizontal flip p=1/2, before normalisation; training images only",
+  "stream": "PCG64(derive_seed(k, 'augment::pad4_crop32_hflip::epoch::%d' % e)): dx, dy, flip arrays over example indices",
+  "pairing": "same crop/flip for the same image in the same epoch across arms and batch conventions; independent of SDPoint's stream and all global RNGs"
+ },
+ "regimes": {
+  "sgd_standard_aug_160": {
+   "priority": 1,
+   "optimizer": {
+    "name": "sgd",
+    "lr": 0.1,
+    "weight_decay": 0.0001,
+    "momentum": 0.9,
+    "nesterov": false,
+    "betas": [
+     0.9,
+     0.999
+    ],
+    "eps": 1e-08,
+    "schedule": "multistep",
+    "warmup_updates": 0,
+    "min_lr": 0.0,
+    "milestones": [
+     31280,
+     46920
+    ],
+    "gamma": 0.1
+   },
+   "augmentation": "pad4_crop32_hflip",
+   "epochs": 160,
+   "updates": 62560,
+   "logical_batch": 128,
+   "physical_batch": 128,
+   "note": "adaptation of He et al. (2016) Sec. 4.2 to our trainer, initialisation and normalisation; not an exact reproduction"
+  },
+  "adamw_long_noaug_160": {
+   "priority": 2,
+   "optimizer": {
+    "name": "adamw",
+    "lr": 0.02,
+    "weight_decay": 0.0005,
+    "momentum": 0.9,
+    "nesterov": false,
+    "betas": [
+     0.9,
+     0.999
+    ],
+    "eps": 1e-08,
+    "schedule": "warmup_cosine",
+    "warmup_updates": 60,
+    "min_lr": 0.0,
+    "milestones": [],
+    "gamma": 0.1
+   },
+   "augmentation": "none",
+   "epochs": 160,
+   "updates": 62560,
+   "logical_batch": 128,
+   "physical_batch": 32,
+   "note": "historical AdamW recipe with the cosine extended to 62,560 updates"
+  },
+  "adamw_long_aug_160": {
+   "priority": 3,
+   "optimizer": {
+    "name": "adamw",
+    "lr": 0.02,
+    "weight_decay": 0.0005,
+    "momentum": 0.9,
+    "nesterov": false,
+    "betas": [
+     0.9,
+     0.999
+    ],
+    "eps": 1e-08,
+    "schedule": "warmup_cosine",
+    "warmup_updates": 60,
+    "min_lr": 0.0,
+    "milestones": [],
+    "gamma": 0.1
+   },
+   "augmentation": "pad4_crop32_hflip",
+   "epochs": 160,
+   "updates": 62560,
+   "logical_batch": 128,
+   "physical_batch": 32,
+   "note": "historical AdamW recipe with the cosine extended to 62,560 updates"
+  }
+ },
+ "arms": {
+  "plain": {
+   "id": "plain",
+   "description": "ResNet-20 BN with no intervention (control).",
+   "gaussian": null,
+   "resolution": null,
+   "source": {
+    "experiment": "unified_selected",
+    "branch": "benchmark-organized",
+    "config_id": "plain",
+    "label": "Baseline: no blur, full 32x32 throughout",
+    "cells": [
+     "plain__seed0",
+     "plain__seed1",
+     "plain__seed2"
+    ],
+    "final_test_acc_per_seed": {
+     "0": 0.7458,
+     "1": 0.7566,
+     "2": 0.7605
+    },
+    "final_test_acc_mean": 0.7543,
+    "final_test_acc_sd": 0.007615,
+    "final_path": "target (equal to current at epoch 30)",
+    "asset_set": "r20bn-campaign-assets"
+   },
+   "validated_on": [
+    "cifar10",
+    "resnet20_bn_cifar"
+   ],
+   "cbs": null,
+   "sdpoint": null
+  },
+  "resolution_max_b1": {
+   "id": "resolution_max_b1",
+   "description": "Adaptive max pooling of the complete output of blocks[1] (input of blocks[2]) to 16 / 24 / 32 at epochs 0 / 32 / 64; no Gaussian. [160-epoch follow-up schedule]",
+   "gaussian": null,
+   "resolution": {
+    "point": "block1",
+    "schedule": {
+     "starts": [
+      0,
+      32,
+      64
+     ],
+     "values": [
+      16,
+      24,
+      32
+     ]
+    },
+    "reference_resolution": 32,
+    "operator": "adaptive_max"
+   },
+   "source": {
+    "experiment": "unified_selected",
+    "branch": "benchmark-organized",
+    "config_id": "shrink_b1",
+    "label": "Shrink block 1 with max-pool, 16 to 24 to 32",
+    "cells": [
+     "shrink_b1__seed0",
+     "shrink_b1__seed1",
+     "shrink_b1__seed2"
+    ],
+    "final_test_acc_per_seed": {
+     "0": 0.7997,
+     "1": 0.8006,
+     "2": 0.8107
+    },
+    "final_test_acc_mean": 0.803667,
+    "final_test_acc_sd": 0.006108,
+    "final_path": "target (equal to current at epoch 30)",
+    "asset_set": "r20bn-campaign-assets"
+   },
+   "validated_on": [
+    "cifar10",
+    "resnet20_bn_cifar"
+   ],
+   "cbs": null,
+   "sdpoint": null
+  },
+  "gaussian_postrelu": {
+   "id": "gaussian_postrelu",
+   "description": "Gaussian at the 10 post-ReLU positions (stem output + 9 block outputs), plateau schedule, no resolution change. 16-epoch plateaus, bypass from epoch 112. [160-epoch follow-up schedule]",
+   "gaussian": {
+    "placement": "post_relu",
+    "schedule": {
+     "starts": [
+      0,
+      16,
+      32,
+      48,
+      64,
+      80,
+      96,
+      112
+     ],
+     "values": [
+      1.0,
+      0.85,
+      0.7,
+      0.6,
+      0.5,
+      0.4,
+      0.3,
+      0.0
+     ]
+    },
+    "sigma_scale": "none",
+    "sigma_max": 1.0,
+    "truncate": 4.0,
+    "units": "pixels of the feature map at the site"
+   },
+   "resolution": null,
+   "source": {
+    "experiment": "unified_selected",
+    "branch": "benchmark-organized",
+    "config_id": "blur_relu",
+    "label": "Blur after every ReLU, annealed to zero",
+    "cells": [
+     "blur_relu__seed0",
+     "blur_relu__seed1",
+     "blur_relu__seed2"
+    ],
+    "final_test_acc_per_seed": {
+     "0": 0.8006,
+     "1": 0.8006,
+     "2": 0.796
+    },
+    "final_test_acc_mean": 0.799067,
+    "final_test_acc_sd": 0.002656,
+    "final_path": "target (equal to current at epoch 30)",
+    "asset_set": "r20bn-campaign-assets"
+   },
+   "validated_on": [
+    "cifar10",
+    "resnet20_bn_cifar"
+   ],
+   "cbs": null,
+   "sdpoint": null
+  },
+  "resolution_max_b1_gaussian_conv": {
+   "id": "resolution_max_b1_gaussian_conv",
+   "description": "Adaptive max pooling after blocks[1] (16 / 24 / 32) plus the Gaussian at all 19 convolution outputs, sigma scaled by r(e)/32 at every site. r at epochs 0/32/64, g plateaus of 16 epochs. [160-epoch follow-up schedule]",
+   "gaussian": {
+    "placement": "conv_out",
+    "schedule": {
+     "starts": [
+      0,
+      16,
+      32,
+      48,
+      64,
+      80,
+      96,
+      112
+     ],
+     "values": [
+      1.0,
+      0.85,
+      0.7,
+      0.6,
+      0.5,
+      0.4,
+      0.3,
+      0.0
+     ]
+    },
+    "sigma_scale": "resolution_ratio_all_sites",
+    "sigma_max": 1.0,
+    "truncate": 4.0,
+    "units": "pixels of the feature map at the site"
+   },
+   "resolution": {
+    "point": "block1",
+    "schedule": {
+     "starts": [
+      0,
+      32,
+      64
+     ],
+     "values": [
+      16,
+      24,
+      32
+     ]
+    },
+    "reference_resolution": 32,
+    "operator": "adaptive_max"
+   },
+   "source": {
+    "experiment": "unified_selected",
+    "branch": "benchmark-organized",
+    "config_id": "shrink_b1_conv",
+    "label": "Shrink block 1, plus blur every conv layer",
+    "cells": [
+     "shrink_b1_conv__seed0",
+     "shrink_b1_conv__seed1",
+     "shrink_b1_conv__seed2"
+    ],
+    "final_test_acc_per_seed": {
+     "0": 0.813,
+     "1": 0.815,
+     "2": 0.8173
+    },
+    "final_test_acc_mean": 0.8151,
+    "final_test_acc_sd": 0.002152,
+    "final_path": "target (equal to current at epoch 30)",
+    "asset_set": "r20bn-campaign-assets"
+   },
+   "validated_on": [
+    "cifar10",
+    "resnet20_bn_cifar"
+   ],
+   "cbs": null,
+   "sdpoint": null
+  },
+  "cbs_published_schedule": {
+   "id": "cbs_published_schedule",
+   "description": "Curriculum By Smoothing: 3x3 Gaussian (zero padding) between each of the 19 main-path convolutions and its BatchNorm; sigma(e) = 0.9 ** floor(e / 5); native inference keeps the epoch-29 filter (sigma 0.59049).",
+   "gaussian": null,
+   "resolution": null,
+   "source": {
+    "paper": "Sinha, Garg, Larochelle, NeurIPS 2020, arXiv:2003.01367v5, Sec. 3-4, App. C",
+    "code": "github.com/pairlab/CBS@5f62e7da5b290e8f62f408c6f89146f3f361cc2e"
+   },
+   "validated_on": [],
+   "cbs": {
+    "schedule": "epoch_decay",
+    "sigma0": 1.0,
+    "factor": 0.9,
+    "every_epochs": 5,
+    "off_fraction": 0.7,
+    "placement": "conv_out",
+    "kernel_size": 3,
+    "source": "github.com/pairlab/CBS@5f62e7da5b290e8f62f408c6f89146f3f361cc2e"
+   },
+   "sdpoint": null
+  },
+  "cbs_budget_matched": {
+   "id": "cbs_budget_matched",
+   "description": "Same CBS operator and sites; 22 update-level plateaus sigma = 0.9 ** floor(22 u / u_off) for u < u_off = floor(0.7 U), then exact bypass. CBS-derived adaptation to our horizon, not an author schedule.",
+   "gaussian": null,
+   "resolution": null,
+   "source": {
+    "adaptation": "predetermined before any result; see comparison/METHOD_MAPPING.md"
+   },
+   "validated_on": [],
+   "cbs": {
+    "schedule": "update_plateaus",
+    "sigma0": 1.0,
+    "factor": 0.9,
+    "every_epochs": 5,
+    "off_fraction": 0.7,
+    "placement": "conv_out",
+    "kernel_size": 3,
+    "source": "github.com/pairlab/CBS@5f62e7da5b290e8f62f408c6f89146f3f361cc2e"
+   },
+   "sdpoint": null
+  },
+  "sdpoint": {
+   "id": "sdpoint",
+   "description": "SDPoint: per batch, p ~ U{0..9}, ratio ~ U{0.5, 0.75}; adaptive average pooling after the residual addition, before the final ReLU, of block p; inference on the full-resolution instance.",
+   "gaussian": null,
+   "resolution": null,
+   "source": {
+    "paper": "Kuen et al., CVPR 2018, arXiv:1801.09335v1, Sec. 4-6, Alg. 1",
+    "code": "github.com/xternalz/SDPoint@0013c5dafe80780ea749198ebc42824c3ed41e6c"
+   },
+   "validated_on": [],
+   "cbs": null,
+   "sdpoint": {
+    "n_points": 9,
+    "ratios": [
+     0.5,
+     0.75
+    ],
+    "placement": "post_add",
+    "operator": "adaptive_avg",
+    "inference_instance": "full_resolution",
+    "stream": "sdpoint::update::%d",
+    "source": "github.com/xternalz/SDPoint@0013c5dafe80780ea749198ebc42824c3ed41e6c"
+   }
+  }
+ },
+ "schedule_rules": {
+  "R": "r=16 for u<0.2U, 24 for 0.2U<=u<0.4U, else 32 (bypass): updates 12,512 and 25,024 (epochs 32, 64)",
+  "G": "g=[1,.85,.70,.60,.50,.40,.30] on consecutive tenths of u/U, bypass for the last 30% (from epoch 112)",
+  "RG": "same r and g; sigma_j = g*r/32 at all 19 conv outputs (upward jumps at resolution transitions kept)",
+  "CBS_published": "sigma(e)=0.9**floor(e/5) by actual epoch; native inference keeps sigma 0.9**31",
+  "CBS_budget_matched": "u_off=floor(0.7U)=43,792 (integer arithmetic), K=22, sigma=0.9**floor(K*u/u_off) for u<u_off, then bypass",
+  "SDPoint": "unchanged stochastic procedure for all 160 epochs; inference at point 0"
+ },
+ "matrix": [
+  {
+   "regime": "sgd_standard_aug_160",
+   "arm": "plain",
+   "seed": 0,
+   "priority": 1,
+   "run": "sgd_standard_aug_160__plain__seed0"
+  },
+  {
+   "regime": "sgd_standard_aug_160",
+   "arm": "resolution_max_b1",
+   "seed": 0,
+   "priority": 1,
+   "run": "sgd_standard_aug_160__resolution_max_b1__seed0"
+  },
+  {
+   "regime": "sgd_standard_aug_160",
+   "arm": "gaussian_postrelu",
+   "seed": 0,
+   "priority": 1,
+   "run": "sgd_standard_aug_160__gaussian_postrelu__seed0"
+  },
+  {
+   "regime": "sgd_standard_aug_160",
+   "arm": "resolution_max_b1_gaussian_conv",
+   "seed": 0,
+   "priority": 1,
+   "run": "sgd_standard_aug_160__resolution_max_b1_gaussian_conv__seed0"
+  },
+  {
+   "regime": "sgd_standard_aug_160",
+   "arm": "cbs_published_schedule",
+   "seed": 0,
+   "priority": 1,
+   "run": "sgd_standard_aug_160__cbs_published_schedule__seed0"
+  },
+  {
+   "regime": "sgd_standard_aug_160",
+   "arm": "cbs_budget_matched",
+   "seed": 0,
+   "priority": 1,
+   "run": "sgd_standard_aug_160__cbs_budget_matched__seed0"
+  },
+  {
+   "regime": "sgd_standard_aug_160",
+   "arm": "sdpoint",
+   "seed": 0,
+   "priority": 1,
+   "run": "sgd_standard_aug_160__sdpoint__seed0"
+  },
+  {
+   "regime": "sgd_standard_aug_160",
+   "arm": "plain",
+   "seed": 1,
+   "priority": 1,
+   "run": "sgd_standard_aug_160__plain__seed1"
+  },
+  {
+   "regime": "sgd_standard_aug_160",
+   "arm": "resolution_max_b1",
+   "seed": 1,
+   "priority": 1,
+   "run": "sgd_standard_aug_160__resolution_max_b1__seed1"
+  },
+  {
+   "regime": "sgd_standard_aug_160",
+   "arm": "gaussian_postrelu",
+   "seed": 1,
+   "priority": 1,
+   "run": "sgd_standard_aug_160__gaussian_postrelu__seed1"
+  },
+  {
+   "regime": "sgd_standard_aug_160",
+   "arm": "resolution_max_b1_gaussian_conv",
+   "seed": 1,
+   "priority": 1,
+   "run": "sgd_standard_aug_160__resolution_max_b1_gaussian_conv__seed1"
+  },
+  {
+   "regime": "sgd_standard_aug_160",
+   "arm": "cbs_published_schedule",
+   "seed": 1,
+   "priority": 1,
+   "run": "sgd_standard_aug_160__cbs_published_schedule__seed1"
+  },
+  {
+   "regime": "sgd_standard_aug_160",
+   "arm": "cbs_budget_matched",
+   "seed": 1,
+   "priority": 1,
+   "run": "sgd_standard_aug_160__cbs_budget_matched__seed1"
+  },
+  {
+   "regime": "sgd_standard_aug_160",
+   "arm": "sdpoint",
+   "seed": 1,
+   "priority": 1,
+   "run": "sgd_standard_aug_160__sdpoint__seed1"
+  },
+  {
+   "regime": "sgd_standard_aug_160",
+   "arm": "plain",
+   "seed": 2,
+   "priority": 1,
+   "run": "sgd_standard_aug_160__plain__seed2"
+  },
+  {
+   "regime": "sgd_standard_aug_160",
+   "arm": "resolution_max_b1",
+   "seed": 2,
+   "priority": 1,
+   "run": "sgd_standard_aug_160__resolution_max_b1__seed2"
+  },
+  {
+   "regime": "sgd_standard_aug_160",
+   "arm": "gaussian_postrelu",
+   "seed": 2,
+   "priority": 1,
+   "run": "sgd_standard_aug_160__gaussian_postrelu__seed2"
+  },
+  {
+   "regime": "sgd_standard_aug_160",
+   "arm": "resolution_max_b1_gaussian_conv",
+   "seed": 2,
+   "priority": 1,
+   "run": "sgd_standard_aug_160__resolution_max_b1_gaussian_conv__seed2"
+  },
+  {
+   "regime": "sgd_standard_aug_160",
+   "arm": "cbs_published_schedule",
+   "seed": 2,
+   "priority": 1,
+   "run": "sgd_standard_aug_160__cbs_published_schedule__seed2"
+  },
+  {
+   "regime": "sgd_standard_aug_160",
+   "arm": "cbs_budget_matched",
+   "seed": 2,
+   "priority": 1,
+   "run": "sgd_standard_aug_160__cbs_budget_matched__seed2"
+  },
+  {
+   "regime": "sgd_standard_aug_160",
+   "arm": "sdpoint",
+   "seed": 2,
+   "priority": 1,
+   "run": "sgd_standard_aug_160__sdpoint__seed2"
+  },
+  {
+   "regime": "adamw_long_noaug_160",
+   "arm": "plain",
+   "seed": 0,
+   "priority": 2,
+   "run": "adamw_long_noaug_160__plain__seed0"
+  },
+  {
+   "regime": "adamw_long_noaug_160",
+   "arm": "resolution_max_b1",
+   "seed": 0,
+   "priority": 2,
+   "run": "adamw_long_noaug_160__resolution_max_b1__seed0"
+  },
+  {
+   "regime": "adamw_long_noaug_160",
+   "arm": "gaussian_postrelu",
+   "seed": 0,
+   "priority": 2,
+   "run": "adamw_long_noaug_160__gaussian_postrelu__seed0"
+  },
+  {
+   "regime": "adamw_long_noaug_160",
+   "arm": "resolution_max_b1_gaussian_conv",
+   "seed": 0,
+   "priority": 2,
+   "run": "adamw_long_noaug_160__resolution_max_b1_gaussian_conv__seed0"
+  },
+  {
+   "regime": "adamw_long_noaug_160",
+   "arm": "cbs_published_schedule",
+   "seed": 0,
+   "priority": 2,
+   "run": "adamw_long_noaug_160__cbs_published_schedule__seed0"
+  },
+  {
+   "regime": "adamw_long_noaug_160",
+   "arm": "cbs_budget_matched",
+   "seed": 0,
+   "priority": 2,
+   "run": "adamw_long_noaug_160__cbs_budget_matched__seed0"
+  },
+  {
+   "regime": "adamw_long_noaug_160",
+   "arm": "sdpoint",
+   "seed": 0,
+   "priority": 2,
+   "run": "adamw_long_noaug_160__sdpoint__seed0"
+  },
+  {
+   "regime": "adamw_long_noaug_160",
+   "arm": "plain",
+   "seed": 1,
+   "priority": 2,
+   "run": "adamw_long_noaug_160__plain__seed1"
+  },
+  {
+   "regime": "adamw_long_noaug_160",
+   "arm": "resolution_max_b1",
+   "seed": 1,
+   "priority": 2,
+   "run": "adamw_long_noaug_160__resolution_max_b1__seed1"
+  },
+  {
+   "regime": "adamw_long_noaug_160",
+   "arm": "gaussian_postrelu",
+   "seed": 1,
+   "priority": 2,
+   "run": "adamw_long_noaug_160__gaussian_postrelu__seed1"
+  },
+  {
+   "regime": "adamw_long_noaug_160",
+   "arm": "resolution_max_b1_gaussian_conv",
+   "seed": 1,
+   "priority": 2,
+   "run": "adamw_long_noaug_160__resolution_max_b1_gaussian_conv__seed1"
+  },
+  {
+   "regime": "adamw_long_noaug_160",
+   "arm": "cbs_published_schedule",
+   "seed": 1,
+   "priority": 2,
+   "run": "adamw_long_noaug_160__cbs_published_schedule__seed1"
+  },
+  {
+   "regime": "adamw_long_noaug_160",
+   "arm": "cbs_budget_matched",
+   "seed": 1,
+   "priority": 2,
+   "run": "adamw_long_noaug_160__cbs_budget_matched__seed1"
+  },
+  {
+   "regime": "adamw_long_noaug_160",
+   "arm": "sdpoint",
+   "seed": 1,
+   "priority": 2,
+   "run": "adamw_long_noaug_160__sdpoint__seed1"
+  },
+  {
+   "regime": "adamw_long_noaug_160",
+   "arm": "plain",
+   "seed": 2,
+   "priority": 2,
+   "run": "adamw_long_noaug_160__plain__seed2"
+  },
+  {
+   "regime": "adamw_long_noaug_160",
+   "arm": "resolution_max_b1",
+   "seed": 2,
+   "priority": 2,
+   "run": "adamw_long_noaug_160__resolution_max_b1__seed2"
+  },
+  {
+   "regime": "adamw_long_noaug_160",
+   "arm": "gaussian_postrelu",
+   "seed": 2,
+   "priority": 2,
+   "run": "adamw_long_noaug_160__gaussian_postrelu__seed2"
+  },
+  {
+   "regime": "adamw_long_noaug_160",
+   "arm": "resolution_max_b1_gaussian_conv",
+   "seed": 2,
+   "priority": 2,
+   "run": "adamw_long_noaug_160__resolution_max_b1_gaussian_conv__seed2"
+  },
+  {
+   "regime": "adamw_long_noaug_160",
+   "arm": "cbs_published_schedule",
+   "seed": 2,
+   "priority": 2,
+   "run": "adamw_long_noaug_160__cbs_published_schedule__seed2"
+  },
+  {
+   "regime": "adamw_long_noaug_160",
+   "arm": "cbs_budget_matched",
+   "seed": 2,
+   "priority": 2,
+   "run": "adamw_long_noaug_160__cbs_budget_matched__seed2"
+  },
+  {
+   "regime": "adamw_long_noaug_160",
+   "arm": "sdpoint",
+   "seed": 2,
+   "priority": 2,
+   "run": "adamw_long_noaug_160__sdpoint__seed2"
+  },
+  {
+   "regime": "adamw_long_aug_160",
+   "arm": "plain",
+   "seed": 0,
+   "priority": 3,
+   "run": "adamw_long_aug_160__plain__seed0"
+  },
+  {
+   "regime": "adamw_long_aug_160",
+   "arm": "resolution_max_b1",
+   "seed": 0,
+   "priority": 3,
+   "run": "adamw_long_aug_160__resolution_max_b1__seed0"
+  },
+  {
+   "regime": "adamw_long_aug_160",
+   "arm": "gaussian_postrelu",
+   "seed": 0,
+   "priority": 3,
+   "run": "adamw_long_aug_160__gaussian_postrelu__seed0"
+  },
+  {
+   "regime": "adamw_long_aug_160",
+   "arm": "resolution_max_b1_gaussian_conv",
+   "seed": 0,
+   "priority": 3,
+   "run": "adamw_long_aug_160__resolution_max_b1_gaussian_conv__seed0"
+  },
+  {
+   "regime": "adamw_long_aug_160",
+   "arm": "cbs_published_schedule",
+   "seed": 0,
+   "priority": 3,
+   "run": "adamw_long_aug_160__cbs_published_schedule__seed0"
+  },
+  {
+   "regime": "adamw_long_aug_160",
+   "arm": "cbs_budget_matched",
+   "seed": 0,
+   "priority": 3,
+   "run": "adamw_long_aug_160__cbs_budget_matched__seed0"
+  },
+  {
+   "regime": "adamw_long_aug_160",
+   "arm": "sdpoint",
+   "seed": 0,
+   "priority": 3,
+   "run": "adamw_long_aug_160__sdpoint__seed0"
+  },
+  {
+   "regime": "adamw_long_aug_160",
+   "arm": "plain",
+   "seed": 1,
+   "priority": 3,
+   "run": "adamw_long_aug_160__plain__seed1"
+  },
+  {
+   "regime": "adamw_long_aug_160",
+   "arm": "resolution_max_b1",
+   "seed": 1,
+   "priority": 3,
+   "run": "adamw_long_aug_160__resolution_max_b1__seed1"
+  },
+  {
+   "regime": "adamw_long_aug_160",
+   "arm": "gaussian_postrelu",
+   "seed": 1,
+   "priority": 3,
+   "run": "adamw_long_aug_160__gaussian_postrelu__seed1"
+  },
+  {
+   "regime": "adamw_long_aug_160",
+   "arm": "resolution_max_b1_gaussian_conv",
+   "seed": 1,
+   "priority": 3,
+   "run": "adamw_long_aug_160__resolution_max_b1_gaussian_conv__seed1"
+  },
+  {
+   "regime": "adamw_long_aug_160",
+   "arm": "cbs_published_schedule",
+   "seed": 1,
+   "priority": 3,
+   "run": "adamw_long_aug_160__cbs_published_schedule__seed1"
+  },
+  {
+   "regime": "adamw_long_aug_160",
+   "arm": "cbs_budget_matched",
+   "seed": 1,
+   "priority": 3,
+   "run": "adamw_long_aug_160__cbs_budget_matched__seed1"
+  },
+  {
+   "regime": "adamw_long_aug_160",
+   "arm": "sdpoint",
+   "seed": 1,
+   "priority": 3,
+   "run": "adamw_long_aug_160__sdpoint__seed1"
+  },
+  {
+   "regime": "adamw_long_aug_160",
+   "arm": "plain",
+   "seed": 2,
+   "priority": 3,
+   "run": "adamw_long_aug_160__plain__seed2"
+  },
+  {
+   "regime": "adamw_long_aug_160",
+   "arm": "resolution_max_b1",
+   "seed": 2,
+   "priority": 3,
+   "run": "adamw_long_aug_160__resolution_max_b1__seed2"
+  },
+  {
+   "regime": "adamw_long_aug_160",
+   "arm": "gaussian_postrelu",
+   "seed": 2,
+   "priority": 3,
+   "run": "adamw_long_aug_160__gaussian_postrelu__seed2"
+  },
+  {
+   "regime": "adamw_long_aug_160",
+   "arm": "resolution_max_b1_gaussian_conv",
+   "seed": 2,
+   "priority": 3,
+   "run": "adamw_long_aug_160__resolution_max_b1_gaussian_conv__seed2"
+  },
+  {
+   "regime": "adamw_long_aug_160",
+   "arm": "cbs_published_schedule",
+   "seed": 2,
+   "priority": 3,
+   "run": "adamw_long_aug_160__cbs_published_schedule__seed2"
+  },
+  {
+   "regime": "adamw_long_aug_160",
+   "arm": "cbs_budget_matched",
+   "seed": 2,
+   "priority": 3,
+   "run": "adamw_long_aug_160__cbs_budget_matched__seed2"
+  },
+  {
+   "regime": "adamw_long_aug_160",
+   "arm": "sdpoint",
+   "seed": 2,
+   "priority": 3,
+   "run": "adamw_long_aug_160__sdpoint__seed2"
+  }
+ ],
+ "n_runs": 63,
+ "execution_order": "priority 1 (sgd_standard_aug_160) before 2 (adamw_long_noaug_160) before 3 (adamw_long_aug_160); within a regime complete seven-arm seeds; never reallocated by preliminary scores",
+ "checkpoints": {
+  "at_completed_epochs": [
+   30,
+   60,
+   120,
+   160
+  ],
+  "rolling": "every completed epoch and at the kernel time budget"
+ },
+ "periodic_evaluation": "after every epoch (and epoch 0): saved BN statistics, current and target paths, 500-image fixed training probe and full test set (historical diagnostic)",
+ "p1_learning_curve": {
+  "epochs": [
+   40,
+   80,
+   120,
+   160
+  ],
+  "state": "scheduled state of the last update of the epoch (SDPoint: full-resolution instance); 160 = endpoint P1",
+  "isolation": "separate model and controller, all RNG states restored, time recorded as diagnostic"
+ },
+ "bn_policies": {
+  "P0_saved_native": "checkpoint buffers, native state (diagnostic for SDPoint)",
+  "P1_cumulative_clean_500": "PRIMARY. reset, momentum None, 50,000 clean train images in official order, batch 500, one train()-mode pass, then eval()",
+  "P2_cumulative_clean_32": "P1 with batch 32 (1,563 batches incl. a final 16); cumulative per-batch average, not a pooled dataset variance",
+  "P3_ema_training_loader": "author-style adaptation of SDPoint validate(): no reset, saved buffers as start, momentum 0.1, one train()-mode pass over all 50,000 train images in a frozen seed order (bn_p3::calibration_order), batch = physical training batch (128 new SGD; 32 AdamW and historical SGD/AdamW), crop/flip from bn_p3::pad4_crop32_hflip::pass::%d only for regimes trained with it",
+  "p3_digests": {
+   "0": {
+    "order_sha256": "e88a35145a7f8319e3cc2df19fe3127c8baef23a912e20da467bab1c264dd9e7",
+    "augmentation_draws_sha256": {
+     "dx": "5cb2c3c61686f160d12c8d9db2d0ca363f3669f02e49e74d18b7f3e1b66260f8",
+     "dy": "d14b38d599a88106aaffe8a85663d0ec434ee5961826bbfe78204683a415d9ff",
+     "flip": "1f90141d5f7cf86fb18c89ed044ce778b15346ce5f8579e2f19a110bc659f3c9"
+    }
+   },
+   "1": {
+    "order_sha256": "e15364b57b0b9d6470314d0d7c369ce3dbbc462b04e950430bf41f07b9945f9f",
+    "augmentation_draws_sha256": {
+     "dx": "06a2ee8fc4c4b7455d79f4795b1b146185538875ef66b9bbec10d941bdb1cda3",
+     "dy": "71c4e34cf60bbdfdad8e4f27b5d4fd65e028a92bc6c0075e6741d05d16c14def",
+     "flip": "7e455faedd6ccc71152ae72df3515e45ce7bceb0ee16a05fff95071aa36a1ed1"
+    }
+   },
+   "2": {
+    "order_sha256": "ff5ef3d0e3d75a3fba2b59f18da29e8873df26f5ff89bd6056c5fc035cc19f4a",
+    "augmentation_draws_sha256": {
+     "dx": "d8582b50245b485e8ee095655a50ebe10a71d6747c140d8491729c639d26ced1",
+     "dy": "cdd0b38d715105722e152b3fd87c203c495ff5793aad6fb7fa0cc74cfc11c150",
+     "flip": "784fa36caced0b0af637a997d93b94cbee198658a2608ad5ca085a6fefde9ca0"
+    }
+   }
+  },
+  "native_state": "Plain/R/G/RG/CBS budget-matched: original path; SDPoint: point 0; CBS published: final filter",
+  "rules": "fresh restoration per policy; learned-tensor hash unchanged; P0 re-run identical after calibrations; train-set labels unused; eval() after calibration; no test-batch statistics",
+  "order": [
+   "P0_saved_native",
+   "P1_cumulative_clean_500",
+   "P2_cumulative_clean_32",
+   "P3_ema_training_loader"
+  ]
+ },
+ "analysis_plan": {
+  "metrics": "accuracy and mean CE on full clean train (50,000) and test (10,000) for every final checkpoint x policy",
+  "paired_contrasts": [
+   "each arm - plain",
+   "R - SDPoint",
+   "RG - SDPoint",
+   "G - CBS published",
+   "G - CBS budget-matched",
+   "RG - R",
+   "CBS budget-matched - CBS published"
+  ],
+  "per_contrast": "individual seed differences, mean, sample SD of the paired differences, sign counts; pp for accuracy",
+  "cross_regime": "short AdamW 30e (historical) -> long AdamW no-aug -> long AdamW aug, gains vs plain per seed; pairing across campaigns only where initial state and data order are shared (all use init_seed<k> and perm_seed<k> epochs 0-29); schedules and horizons differ",
+  "primary_policy": "P1, fixed before results",
+  "replication_unit": "training seed (3); repeated BN evaluations are not seeds"
+ }
+}

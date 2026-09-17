@@ -36,6 +36,13 @@ class DataConfig:
     expected_mean: list | None = None
     expected_std: list | None = None
     stats_atol: float = 1e-7
+    #: training-image augmentation: "none" (reference) or "pad4_crop32_hflip" (zero padding of 4
+    #: pixels per side on the uint8 image, uniform 32x32 crop, horizontal flip with probability
+    #: 1/2, before normalisation; draws from the counter-based stream ``augmentation_stream``
+    #: keyed by (seed, epoch) and indexed by example; see ``augment.py``).  Evaluation never
+    #: augments.
+    augmentation: str = "none"
+    augmentation_stream: str = "augment::pad4_crop32_hflip::epoch::%d"
 
 
 @dataclass
@@ -54,9 +61,12 @@ class OptimizerConfig:
     nesterov: bool = False              # sgd only
     betas: tuple = (0.9, 0.999)         # adam / adamw / radam
     eps: float = 1e-8                   # adam / adamw / radam
-    schedule: str = "warmup_cosine"     # warmup_cosine | constant
+    schedule: str = "warmup_cosine"     # warmup_cosine | constant | multistep
     warmup_updates: int = 0
     min_lr: float = 0.0
+    #: multistep only: zero-based updates at which lr is multiplied by ``gamma``
+    milestones: tuple = ()
+    gamma: float = 0.1
 
 
 @dataclass
@@ -86,6 +96,8 @@ class CheckpointConfig:
     #: (weights produced by the old state, next update uses the new one)
     transition_offsets: tuple = ()
     keep_rolling: bool = True
+    #: completed epochs after which ``checkpoints/epoch_XXX.pt`` is written
+    at_epochs: tuple = ()
 
 
 @dataclass
@@ -155,7 +167,8 @@ def _build(tp, d):
         v = d[name]
         if is_dataclass(sub):
             kwargs[name] = _build(type(sub), v)
-        elif isinstance(v, list) and name in ("paths", "splits", "transition_offsets", "betas"):
+        elif isinstance(v, list) and name in ("paths", "splits", "transition_offsets", "betas",
+                                                           "milestones", "at_epochs"):
             kwargs[name] = tuple(v)
         else:
             kwargs[name] = v

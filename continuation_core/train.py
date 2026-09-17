@@ -31,6 +31,7 @@ import torch
 import torch.nn.functional as F
 
 from . import assets as assets_mod
+from .augment import EpochAugmenter
 from .checkpoint import load_checkpoint, save_checkpoint
 from .config import ExperimentConfig
 from .controller import InterventionController, InterventionState
@@ -101,6 +102,12 @@ class Trainer:
             raise ValueError("data order %s does not cover %d epochs of %d examples"
                              % (self.perms.shape, b.epochs, self.n_train))
         self.optimizer = build_optimizer(self.model.parameters(), config.optimizer)
+        self.augmenter = EpochAugmenter(config.data.augmentation, seed, self.n_train, dev,
+                                        config.data.augmentation_stream)
+        #: called as ``fn(trainer, done_epochs)`` after each epoch's snapshot; its time is
+        #: recorded in ``diagnostic_seconds`` and excluded from ``train_seconds``
+        self.epoch_callbacks: list = []
+        self.diagnostic_seconds = 0.0
 
         self.global_update = 0
         self.epoch = 0
@@ -189,6 +196,7 @@ class Trainer:
             "intervention": {"used_for_last_update": self._state_record(used),
                              "next_update": self._state_record(nxt)},
             "metrics": self.metrics, "eval_seconds": self.eval_seconds,
+            "diagnostic_seconds": self.diagnostic_seconds,
             "wall_seconds": self._wall(),
             "reason": reason,
             "provenance": self.provenance(),
@@ -211,6 +219,7 @@ class Trainer:
         self.global_update = int(ck["global_update"])
         self.metrics = list(ck["metrics"])
         self.eval_seconds = float(ck.get("eval_seconds", 0.0))
+        self.diagnostic_seconds = float(ck.get("diagnostic_seconds", 0.0))
         self.wall_offset = float(ck.get("wall_seconds", 0.0))
         set_rng_state(ck["rng"])
         self.log("resumed at update %d (epoch %d, batch %d)"
@@ -269,8 +278,8 @@ class Trainer:
         for a in range(0, total, self.micro):
             sl = idx[a:a + self.micro]
             n_m = int(sl.numel())
-            loss = F.cross_entropy(self.model(self.pipeline(self.train_images[sl])),
-                                   self.train_labels[sl])
+            x = self.augmenter(self.train_images[sl], sl, e)
+            loss = F.cross_entropy(self.model(self.pipeline(x)), self.train_labels[sl])
             (loss * (n_m / total)).backward()
             self.run_loss += float(loss.detach()) * n_m
             self.run_n += n_m
@@ -278,8 +287,11 @@ class Trainer:
         self.global_update += 1
         self.batch_index += 1
 
-    def run(self, max_updates: int | None = None) -> dict | None:
-        """Train to the end of the budget (or stop after ``max_updates`` more)."""
+    def run(self, max_updates: int | None = None, deadline: float | None = None) -> dict | None:
+        """Train to the end of the budget (or stop after ``max_updates`` more).
+
+        ``deadline`` (``time.time()`` seconds): checked before every update; when passed, the
+        exact position is saved to ``rolling.pt`` and ``None`` is returned."""
         self.out_dir.mkdir(parents=True, exist_ok=True)
         self._write_json("config.json", self.cfg.to_dict())
         self._write_json("environment.json", self.environment())
@@ -296,6 +308,10 @@ class Trainer:
             while self.batch_index < self.updates_per_epoch:
                 if stop_at is not None and self.global_update >= stop_at:
                     return None
+                if deadline is not None and time.time() >= deadline:
+                    self.save("rolling", name="rolling.pt")
+                    self.log("deadline reached at update %d; rolling checkpoint saved" % self.global_update)
+                    return None
                 self.train_update()
                 reason = self.extra_checkpoints.get(self.global_update)
                 if reason and self.batch_index < self.updates_per_epoch:
@@ -307,7 +323,13 @@ class Trainer:
             self._set_epoch_state(self.epoch)
             self.epoch, self.batch_index = done, 0
             self.run_loss, self.run_n = 0.0, 0
-            if self.cfg.checkpoint.every_epoch or self.global_update in self.extra_checkpoints:
+            for fn in self.epoch_callbacks:
+                t_cb = time.perf_counter()
+                fn(self, done)
+                self.diagnostic_seconds += time.perf_counter() - t_cb
+            if done in tuple(int(x) for x in self.cfg.checkpoint.at_epochs):
+                self.save("at_epochs", name="epoch_%03d.pt" % done)
+            elif self.cfg.checkpoint.every_epoch or self.global_update in self.extra_checkpoints:
                 self.save(self.extra_checkpoints.get(self.global_update, "epoch_end")
                           if not self.cfg.checkpoint.every_epoch else "epoch_end",
                           name="epoch_%03d.pt" % done)
@@ -333,6 +355,7 @@ class Trainer:
             "epochs": int(self.cfg.budget.epochs), "updates": self.global_update,
             "updates_per_epoch": self.updates_per_epoch,
             "n_train": self.n_train, "n_test": int(self.test_images.shape[0]),
+            "augmentation": self.augmenter.describe(),
             "final": {path: {split: dict(v) for split, v in d.items()}
                       for path, d in last["eval"].items()},
             "final_state_used": self._state_record(final_state),
@@ -344,7 +367,8 @@ class Trainer:
             "schedule_segments": (self.method.cbs.table(self.updates_per_epoch, self.total_updates)
                                   if self.method.cbs else None),
             "timing": {"wall_seconds": wall, "eval_seconds": self.eval_seconds,
-                       "train_seconds": wall - self.eval_seconds,
+                       "diagnostic_seconds": self.diagnostic_seconds,
+                       "train_seconds": wall - self.eval_seconds - self.diagnostic_seconds,
                        "scope": "from the start of run() (after data and model "
                                 "construction) to the last evaluation, including "
                                 "checkpoint writes; resumed runs add the wall time "

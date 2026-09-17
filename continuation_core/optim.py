@@ -89,6 +89,8 @@ def lr_at(update: int, cfg: OptimizerConfig, total_updates: int) -> float:
         return cfg.lr * float(update + 1) / float(warm)
     if cfg.schedule == "constant":
         return cfg.lr
+    if cfg.schedule == "multistep":
+        return cfg.lr * cfg.gamma ** sum(1 for m in cfg.milestones if update >= int(m))
     if cfg.schedule == "warmup_cosine":
         denom = max(total - warm, 1)
         p = min(max((update - warm) / float(denom), 0.0), 1.0)
