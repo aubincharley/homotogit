@@ -90,6 +90,14 @@ def credential_user(credentials: str | None) -> str | None:
 REPO = "https://github.com/aubincharley/homotogit.git"
 BRANCH = "optimizer-transfer"
 
+#: ``source`` must be reachable by whichever account runs the study.  A dataset
+#: owned by one account is **not** visible to another -- ``kaggle datasets files``
+#: returns 403 -- and a kernel whose dataset did not attach fails with an empty
+#: ``/kaggle/input``, not with a permissions error, so the cause is not obvious
+#: from the kernel log alone.  Only ``yellowflag/stl10labeled2`` is third-party
+#: and public; the CIFAR-10 and SVHN datasets belong to aubincharley and their
+#: studies must run there.
+#:
 #: ``slug`` is the kernel-name prefix, defaulting to the key.  Kaggle rejects a
 #: kernel slug longer than ~50 characters with a bare 400 and no explanation, and
 #: "<key>-resolution-max-b1-gaussian-conv-seed0" is 59 for the arm names below.
