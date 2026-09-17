@@ -1,0 +1,54 @@
+{
+ "task": {
+  "kind": "trace",
+  "id": "gaussian_s2_test_centre_frozen",
+  "m": "gaussian_postrelu",
+  "s": 2,
+  "probe": "test_probe",
+  "draw_from": 64,
+  "draw_to": 128,
+  "identity": {
+   "problem": "gaussian_s2_test_centre_frozen_ord",
+   "loss": 0.5980935990810394,
+   "grad_norm": 3.5195002704181038,
+   "n_params": 268336,
+   "n_blocks": 698
+  }
+ },
+ "resumed": 0,
+ "status": "complete",
+ "gpu": 1,
+ "identity": {
+  "loss": 0.5980935990810394,
+  "grad_norm": 3.5195002704181038,
+  "expected": {
+   "problem": "gaussian_s2_test_centre_frozen_ord",
+   "loss": 0.5980935990810394,
+   "grad_norm": 3.5195002704181038,
+   "n_params": 268336,
+   "n_blocks": 698
+  },
+  "loss_rel_diff": 0.0,
+  "grad_norm_rel_diff": 0.0,
+  "n_params": 268336,
+  "n_blocks": 698
+ },
+ "state_check": {
+  "before": {
+   "buffers_sha": "6d90acb833bde9030067499a0e69b87c679fb519f26f86d46637c185673e923c",
+   "centre_stats_sha": "c39052a2e351c7faf1c1346551b24f5f5f2857a778afbb43a87e5835da7f3991",
+   "buffers_equal_centre_stats": true,
+   "masked_weights_sha": "1dc3a7b815e00076adfe3b0b145afce44633d8beac0dd3556d13004d4841bca2",
+   "model_training_flag": false
+  },
+  "after": {
+   "buffers_sha": "6d90acb833bde9030067499a0e69b87c679fb519f26f86d46637c185673e923c",
+   "masked_weights_sha": "1dc3a7b815e00076adfe3b0b145afce44633d8beac0dd3556d13004d4841bca2",
+   "model_training_flag": false
+  },
+  "buffers_unchanged": true,
+  "weights_unchanged": true
+ },
+ "seconds": 69.40518879890442,
+ "n_new_draws": 64
+}

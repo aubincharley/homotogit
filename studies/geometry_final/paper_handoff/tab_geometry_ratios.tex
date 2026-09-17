@@ -1,0 +1,19 @@
+\begin{table*}[!t]
+\caption{Curvature relative to Plain within each seed. CIFAR-10 / ResNet-20-BN / SGD, final 30-epoch checkpoints, five training seeds; mean cross-entropy without weight decay on the 1k-image probe; centre-frozen BatchNorm (recalibrated once at the unperturbed weights on 2,000 training images, then held fixed); variables: the 268,336 convolution and classifier weights (698 filter/row blocks); ordinary coordinates unless marked $A^\top HA$ with $A_g=\|\theta_g\|I$.}\label{tab:geometry-ratios}
+\centering\small\setlength{\tabcolsep}{4pt}\renewcommand{\arraystretch}{1.08}
+\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}lrrrrrr@{}}
+\toprule
+Method & $\lambda_{\max}(H)$ & $\mathrm{tr}(H)$ & $\lambda_{\max}(A^\top HA)$ & $\mathrm{tr}(A^\top HA)$ & $\mathrm{tr}(HC)$ & $\overline{d^\top Hd}$ (20)\\
+\midrule
+\addlinespace[3pt]\multicolumn{7}{@{}l@{}}{\textit{Training probe}}\\[1pt]
+R & $0.61\pm0.07$ {\scriptsize(5)} & $0.67\pm0.04$ {\scriptsize(5/0)} & $0.61\pm0.07$ {\scriptsize(5)} & $0.67\pm0.04$ {\scriptsize(5/0)} & $0.71\pm0.05$ {\scriptsize(5/0)} & $0.69\pm0.06$ {\scriptsize(5)}\\
+G & $0.55\pm0.08$ {\scriptsize(5)} & $0.66\pm0.07$ {\scriptsize(5/0)} & $0.56\pm0.09$ {\scriptsize(5)} & $0.69\pm0.07$ {\scriptsize(5/0)} & $0.95\pm0.11$ {\scriptsize(2/1)} & $0.98\pm0.13$ {\scriptsize(2)}\\
+RG & $0.48\pm0.05$ {\scriptsize(5)} & $0.57\pm0.06$ {\scriptsize(5/0)} & $0.49\pm0.04$ {\scriptsize(5)} & $0.58\pm0.05$ {\scriptsize(5/0)} & $0.64\pm0.06$ {\scriptsize(5/0)} & $0.63\pm0.05$ {\scriptsize(5)}\\
+\addlinespace[3pt]\multicolumn{7}{@{}l@{}}{\textit{Test probe}}\\[1pt]
+R & $0.52\pm0.04$ {\scriptsize(5)} & $0.54\pm0.03$ {\scriptsize(5/0)} & $0.51\pm0.04$ {\scriptsize(5)} & $0.54\pm0.03$ {\scriptsize(5/0)} & $0.57\pm0.01$ {\scriptsize(5/0)} & $0.57\pm0.03$ {\scriptsize(5)}\\
+G & $0.46\pm0.06$ {\scriptsize(5)} & $0.54\pm0.05$ {\scriptsize(5/0)} & $0.47\pm0.06$ {\scriptsize(5)} & $0.57\pm0.04$ {\scriptsize(5/0)} & $0.78\pm0.07$ {\scriptsize(5/0)} & $0.81\pm0.08$ {\scriptsize(5)}\\
+RG & $0.40\pm0.05$ {\scriptsize(5)} & $0.45\pm0.04$ {\scriptsize(5/0)} & $0.40\pm0.05$ {\scriptsize(5)} & $0.46\pm0.04$ {\scriptsize(5/0)} & $0.50\pm0.02$ {\scriptsize(5/0)} & $0.50\pm0.01$ {\scriptsize(5)}\\
+\bottomrule
+\end{tabular*}
+\par\smallskip\begin{minipage}{\linewidth}\footnotesize Within-seed ratio to Plain, mean $\pm$ SD over five seeds. In brackets: seeds below Plain for eigenvalues and the 20-direction mean; for traces, seeds whose paired difference from Plain is below/above zero by more than two Monte Carlo SEM (paired draws); the remaining seeds are unresolved. The last column is the existing average of $d_k^\top Hd_k$ over the 20 sampled directions, an independent Monte Carlo estimate of $\mathrm{tr}(HC)$.\end{minipage}
+\end{table*}

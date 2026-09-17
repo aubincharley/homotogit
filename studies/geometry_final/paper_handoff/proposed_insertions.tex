@@ -1,0 +1,26 @@
+% Proposed insertions for sec:visualization (not applied). Numbers come from numbers_geometry.tex.
+
+% (1) After the Hessian paragraph:
+Leading eigenvalues describe one direction. We therefore also estimate traces of the same centre-frozen objective from
+\geoTraceDraws{} Rademacher probes per checkpoint, shared across methods within a seed (Monte Carlo SEM at most
+\geoTraceSemMaxPct\% of each estimate; Table~\ref{tab:geometry-primary}). The ordinary trace is smaller than Plain for R, G and RG
+in every seed on both probes (training-probe ratios \geoRTrainTrRatio, \geoGTrainTrRatio{} and \geoRGTrainTrRatio), as is the
+block-relative trace. Smaller leading eigenvalues therefore accompany smaller traces in these models and conventions.
+
+% (2) Why random slices and eigenvalues rank G differently:
+Our random directions do not sample curvature isotropically. Their covariance weights each filter by
+$\|\theta_g\|^2/p_g$, so their mean curvature is $\mathrm{tr}(HC)$ rather than $\mathrm{tr}(H)$ or $\lambda_{\max}$. For G this
+quantity is close to Plain on the training probe (ratio \geoGTrainTrCovRatio; \geoGTrainTrCovBelow{} of five seeds resolved below
+Plain), although its leading eigenvalue is about half of Plain's. R and RG are lower on every measure. The steepest direction
+is \geoExtremeOverRandomMin--\geoExtremeOverRandomMax{} times steeper per unit relative displacement than the average random
+direction, so a two-dimensional random slice cannot display it (proposed Figure~\ref{fig:hessian-vs-random}).
+
+% (3) BatchNorm policy:
+Recalibrating at every perturbed point changes the function, not only the scale. For identical perturbations of Plain it
+reduces $S$ by factors of about 3 to 8 (more at larger amplitude), at most amplitudes it reverses the sign of G's difference from Plain, and
+along the leading eigendirections it removes almost all of the rise (Table~\ref{tab:geometry-bn-policy}). Those
+eigendirections are not predominantly filter rescalings (at most 1\% of their squared relative displacement is radial), so the
+reduction is not explained by the rescaling invariance of BatchNorm alone.
+
+% (4) Scope sentence:
+None of these quantities orders the four procedures in the same way as their test accuracy, and none is shown to cause it.

@@ -1,0 +1,21 @@
+\begin{table*}[!t]
+\caption{Curvature of the final solutions under one fixed objective. CIFAR-10 / ResNet-20-BN / SGD, final 30-epoch checkpoints, five training seeds; mean cross-entropy without weight decay on the 1k-image probe; centre-frozen BatchNorm (recalibrated once at the unperturbed weights on 2,000 training images, then held fixed); variables: the 268,336 convolution and classifier weights (698 filter/row blocks); ordinary coordinates unless marked $A^\top HA$ with $A_g=\|\theta_g\|I$.}\label{tab:geometry-primary}
+\centering\small\setlength{\tabcolsep}{4pt}\renewcommand{\arraystretch}{1.08}
+\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}lrrrrr@{}}
+\toprule
+Method & $\lambda_{\max}(H)$ & $\mathrm{tr}(H)$ & $\lambda_{\max}(A^\top HA)$ & $\mathrm{tr}(A^\top HA)$ & $\mathrm{tr}(HC)$\\
+\midrule
+\addlinespace[3pt]\multicolumn{6}{@{}l@{}}{\textit{Training probe (1,000 images)}}\\[1pt]
+Plain & $2\,354\pm160$ & $14\,976\pm621$ & $3\,775\pm260$ & $24\,092\pm961$ & $104.7\pm6.5$\\
+Resolution (R) & $1\,438\pm107$ & $9\,966\pm304$ & $2\,297\pm167$ & $16\,002\pm454$ & $73.5\pm1.6$\\
+Gaussian (G) & $1\,275\pm128$ & $9\,844\pm729$ & $2\,090\pm215$ & $16\,624\pm1\,205$ & $99.1\pm5.6$\\
+Combined (RG) & $1\,135\pm70$ & $8\,535\pm513$ & $1\,838\pm107$ & $13\,957\pm781$ & $66.3\pm2.8$\\
+\addlinespace[3pt]\multicolumn{6}{@{}l@{}}{\textit{Test probe (1,000 images)}}\\[1pt]
+Plain & $3\,230\pm296$ & $21\,408\pm1\,198$ & $5\,194\pm480$ & $34\,463\pm1\,812$ & $150.3\pm6.1$\\
+Resolution (R) & $1\,664\pm70$ & $11\,505\pm365$ & $2\,654\pm126$ & $18\,485\pm570$ & $85.3\pm3.1$\\
+Gaussian (G) & $1\,482\pm104$ & $11\,591\pm625$ & $2\,430\pm179$ & $19\,580\pm1\,047$ & $117.1\pm7.6$\\
+Combined (RG) & $1\,268\pm69$ & $9\,662\pm528$ & $2\,052\pm107$ & $15\,806\pm786$ & $75.1\pm2.1$\\
+\bottomrule
+\end{tabular*}
+\par\smallskip\begin{minipage}{\linewidth}\footnotesize Mean $\pm$ sample SD across the five training seeds. $\lambda_{\max}$: Lanczos with full reorthogonalisation, two starts, explicit relative residual $\le10^{-3}$ (all converged). Traces: Hutchinson estimates from 128 Rademacher draws per checkpoint, shared by the four methods within a seed; within-checkpoint Monte Carlo SEM is 2.7--4.8\% of each estimate (not included in the $\pm$). $\mathrm{tr}(HC)$ is the expected quadratic form $\mathbb E[d^\top Hd]$ under our filter-normalised random directions ($C_g=\|\theta_g\|^2/p_g\,I$). Traces are signed; all 40 objectives also have a negative eigenvalue.\end{minipage}
+\end{table*}

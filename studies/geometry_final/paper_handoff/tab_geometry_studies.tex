@@ -1,0 +1,17 @@
+\begin{table*}[!t]
+\caption{Curvature measurements in the two studies and their conventions.}\label{tab:geometry-studies}
+\centering\small\setlength{\tabcolsep}{4pt}\renewcommand{\arraystretch}{1.08}
+\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}llll@{}}
+\toprule
+ & Landscape cohort (this section) & Endpoint grid & BN-policy check\\
+\midrule
+Checkpoints & landscape\_v2 runs, 5 seeds (sha256 pinned) & Idriss grid reference cells, 3 seeds & same as grid\\
+Parameters & 268,336 conv + fc weights & all 269,722 learnable & all 269,722 learnable\\
+Images & 1k class-balanced train / test probe & 5k training subset & first 2k train or test, batches of 500\\
+BatchNorm & centre-frozen (saved as check) & saved statistics & saved, or train-mode batch statistics\\
+Estimator & $\lambda$: Lanczos; traces: 128 draws & 64 draws, 5-pair deflation & 24 draws, 1-pair deflation\\
+Coordinates & ordinary, block-relative, $C$-weighted & ordinary & ordinary\\
+\bottomrule
+\end{tabular*}
+\par\smallskip\begin{minipage}{\linewidth}\footnotesize The train-mode column differentiates through each batch's own statistics; it is neither the centre-frozen objective nor pointwise recalibration of running statistics. The studies agree in direction (all three procedures have smaller ordinary traces than Plain) but are not pooled numerically.\end{minipage}
+\end{table*}

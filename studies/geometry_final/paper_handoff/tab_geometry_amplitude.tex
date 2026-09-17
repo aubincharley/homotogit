@@ -1,0 +1,19 @@
+\begin{table}[!t]
+\caption{Local quadratic forms against measured finite differences, centre-frozen BatchNorm. CIFAR-10 / ResNet-20-BN / SGD final checkpoints, five seeds, 1k-image probes.}\label{tab:geometry-amplitude}
+\centering\small\setlength{\tabcolsep}{4pt}\renewcommand{\arraystretch}{1.08}
+\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}lrrrr@{}}
+\toprule
+Method, probe & $\varepsilon=0.005$ & $0.05$ & $0.2$ & $0.5$\\
+\midrule
+Plain, train & $1.26$ & $1.26$ & $1.57$ & $1.63$\\
+R, train & $1.17$ & $1.18$ & $1.59$ & $1.99$\\
+G, train & $1.16$ & $1.26$ & $1.39$ & $1.29$\\
+RG, train & $1.15$ & $1.16$ & $1.56$ & $2.10$\\
+Plain, test & $0.68$ & $0.77$ & $1.03$ & $1.07$\\
+R, test & $0.93$ & $0.86$ & $1.29$ & $1.65$\\
+G, test & $0.78$ & $0.90$ & $1.12$ & $1.14$\\
+RG, test & $0.84$ & $0.88$ & $1.33$ & $1.81$\\
+\bottomrule
+\end{tabular*}
+\par\smallskip\begin{minipage}{\linewidth}\footnotesize Median over five seeds of $C(\varepsilon)/\overline{d^\top Hd}$, where $C=2S/\varepsilon^2$ averages the 20 random directions and $\overline{d^\top Hd}$ is their HVP quadratic form (same objective). Along existing eigendirections scaled to $r=1$ (float64 finite differences, 80 centre-frozen problems): top1, $t=10^{-5}$: median 1.01, sign agrees 80/80; top1, $t=10^{-4}$: median 1.01, sign agrees 80/80; top1, $t=10^{-3}$: median 1.10, sign agrees 80/80; top1, $t=10^{-2}$: median 0.48, sign agrees 80/80; min, $t=10^{-5}$: median 0.57, sign agrees 53/80; min, $t=10^{-4}$: median 0.54, sign agrees 70/80; min, $t=10^{-3}$: median 0.42, sign agrees 67/80; min, $t=10^{-2}$: median -9.23, sign agrees 0/80.\end{minipage}
+\end{table}
