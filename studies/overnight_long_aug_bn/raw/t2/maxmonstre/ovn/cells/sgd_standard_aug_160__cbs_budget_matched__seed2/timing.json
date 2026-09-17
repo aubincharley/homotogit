@@ -1,0 +1,33 @@
+{
+ "run": "sgd_standard_aug_160__cbs_budget_matched__seed2",
+ "gpu_index": 0,
+ "gpu": "Tesla T4",
+ "concurrency": "one run at a time on this GPU; 2 GPU worker(s) in the kernel, each running its own queue",
+ "precision": "float32 (no autocast), TF32 off, cudnn.benchmark False, cudnn.deterministic False, no compilation",
+ "training": {
+  "wall_seconds": 2697.570020258,
+  "eval_seconds": 182.14376844099775,
+  "diagnostic_seconds": 27.706180701999187,
+  "train_seconds": 2487.7200711150035,
+  "scope": "from the start of run() (after data and model construction) to the last evaluation, including checkpoint writes; resumed runs add the wall time stored in the checkpoint"
+ },
+ "periodic_saved_bn_evaluation_seconds": 182.14376844099775,
+ "p1_curve_diagnostic_seconds": 27.706180701999187,
+ "final_policy_evaluation_seconds": 29.197278469999674,
+ "final_policy_seconds_each": {
+  "P0_saved_native": 2.92509120800014,
+  "P1_cumulative_clean_500": 5.5769535300000825,
+  "P2_cumulative_clean_32": 9.778312926000126,
+  "P3_ema_training_loader": 5.581127521000326
+ },
+ "sessions": [
+  {
+   "kernel_start_utc": "2026-09-17T17:22:54.838438+00:00",
+   "resumed_from_update": null,
+   "session_start_utc": "2026-09-17T17:23:38.428502+00:00",
+   "peak_cuda_memory_allocated_mib": 540.3134765625,
+   "session_end_utc": "2026-09-17T18:08:36.238195+00:00"
+  }
+ ],
+ "cell_wall_seconds_this_session": 2730.809387136
+}

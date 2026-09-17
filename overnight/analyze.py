@@ -292,9 +292,10 @@ def status_manifest(seen, done):
     rows = []
     for c in MX.cells():
         r = c["run"]
-        hist = seen.get(r, [])
-        st = "done" if r in done else ("failed" if any(h["failed"] for h in hist) else
-                                       "incomplete (restartable)" if hist else "not started / not collected")
+        hist = sorted(seen.get(r, []), key=lambda h: h["tag"])
+        last = hist[-1] if hist else None            # earlier tags are superseded attempts
+        st = ("done" if r in done else "failed" if (last and last["failed"]) else
+              "incomplete (restartable)" if last else "not started / not collected")
         acc, g = where.get(r, (None, None))
         env = None
         if r in done:
