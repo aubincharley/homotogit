@@ -340,6 +340,22 @@ def main():
     man.to_csv(OUT / "download_manifest_verification.csv", index=False)
     stat = status_manifest(seen, done)
     stat.to_csv(OUT / "status_manifest.csv", index=False)
+    lines = ["# Checkpoint retrieval manifest", "",
+             "Large checkpoints are not in the handoff. New runs: Kaggle kernel output `<user>/ovn-<tag>-<account>` "
+             "under `ovn/cells/<run>/checkpoints/epoch_{030,060,120,160}.pt`, mirrored locally under "
+             "`studies/overnight_long_aug_bn/raw/<tag>/<account>/ovn/cells/<run>/` (git-ignored). "
+             "Historical 30-epoch endpoints: dataset `maxmonstre/overnight-inputs`, `old/<run>/epoch_030.pt`. "
+             "Verify with `sha256`; the digests below are those recorded when each checkpoint was evaluated.", "",
+             "| run | kernel output | epoch-160 checkpoint sha256 |", "|---|---|---|"]
+    for r in sorted(done):
+        pol = json.loads((done[r]["dir"] / "endpoint_policies.json").read_text())
+        user = json.loads((Path.home() / ".kaggle-accounts" / done[r]["account"] / "kaggle.json").read_text())["username"]
+        lines.append("| %s | `%s/ovn-%s-%s` | `%s` |" % (r, user, done[r]["tag"], done[r]["account"].lower(), pol["checkpoint_sha256"]))
+    lines += ["", "| historical run | location | epoch-30 checkpoint sha256 |", "|---|---|---|"]
+    old = pd.read_csv(OLD_RESULTS)
+    for _, o in old.sort_values("run").iterrows():
+        lines.append("| %s | `maxmonstre/overnight-inputs: old/%s/epoch_030.pt` | `%s` |" % (o.run, o.run, o.checkpoint_sha256))
+    (MX.STUDY / "CHECKPOINTS.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
     print("new done %d/63, old evaluated %d/42, rows %d, manifest problems %d"
           % (len(done), sum(c["evaluated"] for c in old_checks), len(df),
              int((man.missing + man.hash_mismatch).sum()) if len(man) else -1))
