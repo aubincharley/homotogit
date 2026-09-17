@@ -343,8 +343,24 @@ def _resume_check(gpu, ctx, ds):
         c = Trainer(cfg, dataset=ds, loaded_assets=ctx["assets_loaded"][0], device="cuda:%d" % gpu, out_dir=Path(ctx["out"]) / "pilot_resume" / "b", log=lambda *_: None)
         c.resume(ck)
         c.run(max_updates=35)
-        diffs = [float((x.float() - y.float()).abs().max()) for x, y in zip(a.model.state_dict().values(), c.model.state_dict().values())]
-        rec = {"max_abs_diff_state": max(diffs), "bitwise_equal": max(diffs) == 0.0, "updates": [60, "25+35"]}
+        a2 = Trainer(cfg, dataset=ds, loaded_assets=ctx["assets_loaded"][0], device="cuda:%d" % gpu, out_dir=Path(ctx["out"]) / "pilot_resume" / "a2", log=lambda *_: None)
+        a2.run(max_updates=60)
+
+        def cmp(m1, m2):
+            out = {"learned_max_abs": 0.0, "buffers_max_abs": 0.0, "num_batches_equal": True, "worst_learned": None}
+            for (k, x), y in zip(m1.state_dict().items(), m2.state_dict().values()):
+                d = float((x.double() - y.double()).abs().max())
+                if "num_batches" in k:
+                    out["num_batches_equal"] &= d == 0.0
+                elif "running" in k:
+                    out["buffers_max_abs"] = max(out["buffers_max_abs"], d)
+                elif d > out["learned_max_abs"]:
+                    out["learned_max_abs"], out["worst_learned"] = d, k
+            out["bitwise_equal"] = out["learned_max_abs"] == 0.0 and out["buffers_max_abs"] == 0.0 and out["num_batches_equal"]
+            return out
+        rec = {"straight_vs_resumed": cmp(a.model, c.model), "straight_vs_straight_repeat": cmp(a.model, a2.model),
+               "updates": [60, "25+35"], "arm": "sdpoint", "regime": "adamw_long_aug_160",
+               "note": "cuDNN is not forced deterministic; compare the resumed difference with the repeat difference"}
         ck.unlink()
     except Exception:
         rec = {"error": traceback.format_exc()}

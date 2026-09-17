@@ -136,8 +136,16 @@ def config(regime: str, arm: str, seed: int, data_root: str = "data",
                "data order: perm_seed%d epochs 0-29 pinned, 30-159 from %s" % (seed, PERM_EXTENSION_STREAM)])
 
 
+#: fields that locate files or pick a device; excluded from the configuration digest
+ENVIRONMENT_FIELDS = (("data", "root"), ("assets", "dir"), ("run", "out_dir"), ("run", "device"))
+
+
 def config_sha(cfg: ExperimentConfig) -> str:
-    return hashlib.sha256(json.dumps(cfg.to_dict(), sort_keys=True).encode()).hexdigest()
+    """sha256 of the configuration without its environment fields (paths, device)."""
+    d = cfg.to_dict()
+    for sec, key in ENVIRONMENT_FIELDS:
+        d[sec].pop(key, None)
+    return hashlib.sha256(json.dumps(d, sort_keys=True).encode()).hexdigest()
 
 
 def cells() -> list:

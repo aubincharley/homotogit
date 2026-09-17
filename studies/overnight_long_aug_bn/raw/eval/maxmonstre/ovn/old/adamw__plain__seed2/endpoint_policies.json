@@ -1,0 +1,229 @@
+{
+ "state": {
+  "resolution": null,
+  "sigma": null,
+  "label": "native"
+ },
+ "seed": 2,
+ "method": "plain",
+ "learned_sha256": "4573282ba14b7440ebabb44f892f95cd99d1e4ac360a659dcc920c3dd0bf4bf2",
+ "saved_buffers_sha256": "e6d7f2327d785de5f399aac0c13db0b523b6b157c264c095d8201a44a8268a15",
+ "physical_batch_for_P3": 32,
+ "augmentation_for_P3": "none",
+ "policies": {
+  "P0_saved_native": {
+   "policy": "P0_saved_native",
+   "state": {
+    "resolution": null,
+    "sigma": null,
+    "label": "native"
+   },
+   "per_site_sigma": [],
+   "calibration": null,
+   "buffers_sha256": "e6d7f2327d785de5f399aac0c13db0b523b6b157c264c095d8201a44a8268a15",
+   "train_full": {
+    "n": 50000,
+    "ce": 0.0002343473656475544,
+    "acc": 1.0
+   },
+   "test_full": {
+    "n": 10000,
+    "ce": 0.9884797790527343,
+    "acc": 0.8413
+   },
+   "learned_tensors_unchanged": true,
+   "seconds": 2.8766727849999825
+  },
+  "P1_cumulative_clean_500": {
+   "policy": "P1_cumulative_clean_500",
+   "state": {
+    "resolution": null,
+    "sigma": null,
+    "label": "native"
+   },
+   "per_site_sigma": [],
+   "calibration": {
+    "dataset": "CIFAR-10 training set (50,000), clean",
+    "order": "official file order 0..N-1",
+    "order_sha256": "33236cc6bd19fa6b89e06d441d3fcd8eb37dc8540f6a4f2b627b20af10894a41",
+    "augmentation": "none",
+    "batch_size": 500,
+    "n_batches": 100,
+    "final_batch": 500,
+    "remainder": "kept; weighted as one batch in the cumulative average",
+    "reset": true,
+    "momentum": null,
+    "passes": 1,
+    "mode": "train() forward, no_grad",
+    "labels_used": false
+   },
+   "buffers_sha256": "c685f426216e45ee41ec6682f2fdcb53f3abce15f1871fec115873595b1e010b",
+   "train_full": {
+    "n": 50000,
+    "ce": 0.00023575800463557245,
+    "acc": 1.0
+   },
+   "test_full": {
+    "n": 10000,
+    "ce": 0.9612845947265625,
+    "acc": 0.8426
+   },
+   "learned_tensors_unchanged": true,
+   "seconds": 5.53626554899995
+  },
+  "P2_cumulative_clean_32": {
+   "policy": "P2_cumulative_clean_32",
+   "state": {
+    "resolution": null,
+    "sigma": null,
+    "label": "native"
+   },
+   "per_site_sigma": [],
+   "calibration": {
+    "dataset": "CIFAR-10 training set (50,000), clean",
+    "order": "official file order 0..N-1",
+    "order_sha256": "33236cc6bd19fa6b89e06d441d3fcd8eb37dc8540f6a4f2b627b20af10894a41",
+    "augmentation": "none",
+    "batch_size": 32,
+    "n_batches": 1563,
+    "final_batch": 16,
+    "remainder": "kept; weighted as one batch in the cumulative average",
+    "reset": true,
+    "momentum": null,
+    "passes": 1,
+    "mode": "train() forward, no_grad",
+    "labels_used": false
+   },
+   "buffers_sha256": "b15ca455d6838e65dff5b0dc4efb068a0d8649c954e8361368ca0df93a777baa",
+   "train_full": {
+    "n": 50000,
+    "ce": 0.00022921991288661956,
+    "acc": 1.0
+   },
+   "test_full": {
+    "n": 10000,
+    "ce": 0.9690309661865234,
+    "acc": 0.8425
+   },
+   "learned_tensors_unchanged": true,
+   "seconds": 9.236966055999972
+  },
+  "P3_ema_training_loader": {
+   "policy": "P3_ema_training_loader",
+   "state": {
+    "resolution": null,
+    "sigma": null,
+    "label": "native"
+   },
+   "per_site_sigma": [],
+   "calibration": {
+    "dataset": "CIFAR-10 training set (50,000)",
+    "order": "seed-specific frozen permutation (bn_p3::calibration_order)",
+    "order_sha256": "ff5ef3d0e3d75a3fba2b59f18da29e8873df26f5ff89bd6056c5fc035cc19f4a",
+    "augmentation": "none",
+    "augmentation_draws_sha256": null,
+    "batch_size": 32,
+    "n_batches": 1563,
+    "final_batch": 16,
+    "remainder": "kept",
+    "reset": false,
+    "start": "checkpoint's own saved buffers",
+    "momentum": 0.1,
+    "passes": 1,
+    "mode": "train() forward, no_grad",
+    "labels_used": false,
+    "note": "author-style adaptation of xternalz/SDPoint@0013c5d main.py validate(); not the released ImageNet pipeline"
+   },
+   "buffers_sha256": "1f514bd12cb76222a3cd0952cb77c3b4937caa3948208f997bae4e8cc7256838",
+   "train_full": {
+    "n": 50000,
+    "ce": 0.00025400682412087916,
+    "acc": 1.0
+   },
+   "test_full": {
+    "n": 10000,
+    "ce": 0.9792176239013672,
+    "acc": 0.8435
+   },
+   "learned_tensors_unchanged": true,
+   "seconds": 8.121957767999959
+  }
+ },
+ "P0_repeat_identical": true,
+ "run": "adamw__plain__seed2",
+ "checkpoint_sha256": "58b5aeb928ee8595676aa870a507e0c01c2513ae74739553387564573cf4b8c3",
+ "old_panels_checkpoint_sha256": "58b5aeb928ee8595676aa870a507e0c01c2513ae74739553387564573cf4b8c3",
+ "checkpoint_identity_matches_old_panels": true,
+ "old_panels_state": {
+  "resolution": null,
+  "sigma": null,
+  "label": "native"
+ },
+ "native_state_matches_old_panels": true,
+ "reuse_check": {
+  "P0_saved_native/train_full": {
+   "reused": {
+    "n": 50000,
+    "ce": 0.0002343473656475544,
+    "acc": 1.0
+   },
+   "recomputed": {
+    "n": 50000,
+    "ce": 0.0002343473656475544,
+    "acc": 1.0
+   },
+   "abs_diff_acc": 0.0,
+   "abs_diff_ce": 0.0,
+   "matches": true
+  },
+  "P0_saved_native/test_full": {
+   "reused": {
+    "n": 10000,
+    "ce": 0.9884797790527343,
+    "acc": 0.8413
+   },
+   "recomputed": {
+    "n": 10000,
+    "ce": 0.9884797790527343,
+    "acc": 0.8413
+   },
+   "abs_diff_acc": 0.0,
+   "abs_diff_ce": 0.0,
+   "matches": true
+  },
+  "P1_cumulative_clean_500/train_full": {
+   "reused": {
+    "n": 50000,
+    "ce": 0.00023575800463557245,
+    "acc": 1.0
+   },
+   "recomputed": {
+    "n": 50000,
+    "ce": 0.00023575800463557245,
+    "acc": 1.0
+   },
+   "abs_diff_acc": 0.0,
+   "abs_diff_ce": 0.0,
+   "matches": true
+  },
+  "P1_cumulative_clean_500/test_full": {
+   "reused": {
+    "n": 10000,
+    "ce": 0.9612845947265625,
+    "acc": 0.8426
+   },
+   "recomputed": {
+    "n": 10000,
+    "ce": 0.9612845947265625,
+    "acc": 0.8426
+   },
+   "abs_diff_acc": 0.0,
+   "abs_diff_ce": 0.0,
+   "matches": true
+  }
+ },
+ "all_reuse_checks_match": true,
+ "physical_batch_source": "historical microbatch (budget.microbatch=32)",
+ "seconds": 33.226992091,
+ "gpu": "Tesla T4"
+}

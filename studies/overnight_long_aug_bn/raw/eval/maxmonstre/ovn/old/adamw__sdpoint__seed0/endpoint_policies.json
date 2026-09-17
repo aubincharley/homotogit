@@ -1,0 +1,241 @@
+{
+ "state": {
+  "resolution": null,
+  "sigma": null,
+  "label": "native",
+  "sd_point": 0,
+  "sd_ratio": null
+ },
+ "seed": 0,
+ "method": "sdpoint",
+ "learned_sha256": "f3a9ca6d996090f1d8f5161c061a7d9cb7205ce24207f99f4ed3f6f90abf8122",
+ "saved_buffers_sha256": "3142d0c50d410e6a16fa1116845f78ab2e68f4e218c201b1944820da84bcb13e",
+ "physical_batch_for_P3": 32,
+ "augmentation_for_P3": "none",
+ "policies": {
+  "P0_saved_native": {
+   "policy": "P0_saved_native",
+   "state": {
+    "resolution": null,
+    "sigma": null,
+    "label": "native",
+    "sd_point": 0,
+    "sd_ratio": null
+   },
+   "per_site_sigma": [],
+   "calibration": null,
+   "buffers_sha256": "3142d0c50d410e6a16fa1116845f78ab2e68f4e218c201b1944820da84bcb13e",
+   "train_full": {
+    "n": 50000,
+    "ce": 0.1305387070465088,
+    "acc": 0.9554
+   },
+   "test_full": {
+    "n": 10000,
+    "ce": 0.4227607025146484,
+    "acc": 0.867
+   },
+   "learned_tensors_unchanged": true,
+   "seconds": 3.0298457630000257
+  },
+  "P1_cumulative_clean_500": {
+   "policy": "P1_cumulative_clean_500",
+   "state": {
+    "resolution": null,
+    "sigma": null,
+    "label": "native",
+    "sd_point": 0,
+    "sd_ratio": null
+   },
+   "per_site_sigma": [],
+   "calibration": {
+    "dataset": "CIFAR-10 training set (50,000), clean",
+    "order": "official file order 0..N-1",
+    "order_sha256": "33236cc6bd19fa6b89e06d441d3fcd8eb37dc8540f6a4f2b627b20af10894a41",
+    "augmentation": "none",
+    "batch_size": 500,
+    "n_batches": 100,
+    "final_batch": 500,
+    "remainder": "kept; weighted as one batch in the cumulative average",
+    "reset": true,
+    "momentum": null,
+    "passes": 1,
+    "mode": "train() forward, no_grad",
+    "labels_used": false
+   },
+   "buffers_sha256": "7758acdd474099b9701c2871d9443245d7811f8269456d08c588d1359cdcd90f",
+   "train_full": {
+    "n": 50000,
+    "ce": 0.10951064392089843,
+    "acc": 0.96576
+   },
+   "test_full": {
+    "n": 10000,
+    "ce": 0.3796983901977539,
+    "acc": 0.8766
+   },
+   "learned_tensors_unchanged": true,
+   "seconds": 5.729772199999957
+  },
+  "P2_cumulative_clean_32": {
+   "policy": "P2_cumulative_clean_32",
+   "state": {
+    "resolution": null,
+    "sigma": null,
+    "label": "native",
+    "sd_point": 0,
+    "sd_ratio": null
+   },
+   "per_site_sigma": [],
+   "calibration": {
+    "dataset": "CIFAR-10 training set (50,000), clean",
+    "order": "official file order 0..N-1",
+    "order_sha256": "33236cc6bd19fa6b89e06d441d3fcd8eb37dc8540f6a4f2b627b20af10894a41",
+    "augmentation": "none",
+    "batch_size": 32,
+    "n_batches": 1563,
+    "final_batch": 16,
+    "remainder": "kept; weighted as one batch in the cumulative average",
+    "reset": true,
+    "momentum": null,
+    "passes": 1,
+    "mode": "train() forward, no_grad",
+    "labels_used": false
+   },
+   "buffers_sha256": "302bfcad684e5e0073383f62630acea6ab9c76e2aefdeefa994d0265cac1a4dc",
+   "train_full": {
+    "n": 50000,
+    "ce": 0.10899711708068847,
+    "acc": 0.96584
+   },
+   "test_full": {
+    "n": 10000,
+    "ce": 0.38084915618896487,
+    "acc": 0.8771
+   },
+   "learned_tensors_unchanged": true,
+   "seconds": 9.038899687000026
+  },
+  "P3_ema_training_loader": {
+   "policy": "P3_ema_training_loader",
+   "state": {
+    "resolution": null,
+    "sigma": null,
+    "label": "native",
+    "sd_point": 0,
+    "sd_ratio": null
+   },
+   "per_site_sigma": [],
+   "calibration": {
+    "dataset": "CIFAR-10 training set (50,000)",
+    "order": "seed-specific frozen permutation (bn_p3::calibration_order)",
+    "order_sha256": "e88a35145a7f8319e3cc2df19fe3127c8baef23a912e20da467bab1c264dd9e7",
+    "augmentation": "none",
+    "augmentation_draws_sha256": null,
+    "batch_size": 32,
+    "n_batches": 1563,
+    "final_batch": 16,
+    "remainder": "kept",
+    "reset": false,
+    "start": "checkpoint's own saved buffers",
+    "momentum": 0.1,
+    "passes": 1,
+    "mode": "train() forward, no_grad",
+    "labels_used": false,
+    "note": "author-style adaptation of xternalz/SDPoint@0013c5d main.py validate(); not the released ImageNet pipeline"
+   },
+   "buffers_sha256": "1ee5fb12c4cffb22225ad81b93da065692647bbc99772a2a0e94987f74c74740",
+   "train_full": {
+    "n": 50000,
+    "ce": 0.11140810798645019,
+    "acc": 0.96446
+   },
+   "test_full": {
+    "n": 10000,
+    "ce": 0.3833938766479492,
+    "acc": 0.8773
+   },
+   "learned_tensors_unchanged": true,
+   "seconds": 8.040809214999967
+  }
+ },
+ "P0_repeat_identical": true,
+ "run": "adamw__sdpoint__seed0",
+ "checkpoint_sha256": "dcc60257a43b2abe7597cfe35b872f6250db8c66bd0c225215000e553c309049",
+ "old_panels_checkpoint_sha256": "dcc60257a43b2abe7597cfe35b872f6250db8c66bd0c225215000e553c309049",
+ "checkpoint_identity_matches_old_panels": true,
+ "old_panels_state": {
+  "resolution": null,
+  "sigma": null,
+  "label": "native",
+  "sd_point": 0,
+  "sd_ratio": null
+ },
+ "native_state_matches_old_panels": true,
+ "reuse_check": {
+  "P0_saved_native/train_full": {
+   "reused": {
+    "n": 50000,
+    "ce": 0.1305387070465088,
+    "acc": 0.9554
+   },
+   "recomputed": {
+    "n": 50000,
+    "ce": 0.1305387070465088,
+    "acc": 0.9554
+   },
+   "abs_diff_acc": 0.0,
+   "abs_diff_ce": 0.0,
+   "matches": true
+  },
+  "P0_saved_native/test_full": {
+   "reused": {
+    "n": 10000,
+    "ce": 0.4227607025146484,
+    "acc": 0.867
+   },
+   "recomputed": {
+    "n": 10000,
+    "ce": 0.4227607025146484,
+    "acc": 0.867
+   },
+   "abs_diff_acc": 0.0,
+   "abs_diff_ce": 0.0,
+   "matches": true
+  },
+  "P1_cumulative_clean_500/train_full": {
+   "reused": {
+    "n": 50000,
+    "ce": 0.10951064392089843,
+    "acc": 0.96576
+   },
+   "recomputed": {
+    "n": 50000,
+    "ce": 0.10951064392089843,
+    "acc": 0.96576
+   },
+   "abs_diff_acc": 0.0,
+   "abs_diff_ce": 0.0,
+   "matches": true
+  },
+  "P1_cumulative_clean_500/test_full": {
+   "reused": {
+    "n": 10000,
+    "ce": 0.3796983901977539,
+    "acc": 0.8766
+   },
+   "recomputed": {
+    "n": 10000,
+    "ce": 0.3796983901977539,
+    "acc": 0.8766
+   },
+   "abs_diff_acc": 0.0,
+   "abs_diff_ce": 0.0,
+   "matches": true
+  }
+ },
+ "all_reuse_checks_match": true,
+ "physical_batch_source": "historical microbatch (budget.microbatch=32)",
+ "seconds": 33.36759755200001,
+ "gpu": "Tesla T4"
+}

@@ -1,0 +1,309 @@
+{
+ "state": {
+  "resolution": 32,
+  "sigma": 0.0,
+  "label": "native"
+ },
+ "seed": 2,
+ "method": "resolution_max_b1_gaussian_conv",
+ "learned_sha256": "bf15a384125e3903ba33becc1a0e7b645941d7e121106b087e68a028eb238dd9",
+ "saved_buffers_sha256": "014b057248fb86d102298361c0261c81f11c7f2ce314f800d7b4f1a663d31c6c",
+ "physical_batch_for_P3": 32,
+ "augmentation_for_P3": "none",
+ "policies": {
+  "P0_saved_native": {
+   "policy": "P0_saved_native",
+   "state": {
+    "resolution": 32,
+    "sigma": 0.0,
+    "label": "native"
+   },
+   "per_site_sigma": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ],
+   "calibration": null,
+   "buffers_sha256": "014b057248fb86d102298361c0261c81f11c7f2ce314f800d7b4f1a663d31c6c",
+   "train_full": {
+    "n": 50000,
+    "ce": 0.005241952531337738,
+    "acc": 0.99982
+   },
+   "test_full": {
+    "n": 10000,
+    "ce": 0.6483796844482422,
+    "acc": 0.8583
+   },
+   "learned_tensors_unchanged": true,
+   "seconds": 2.8405958600000076
+  },
+  "P1_cumulative_clean_500": {
+   "policy": "P1_cumulative_clean_500",
+   "state": {
+    "resolution": 32,
+    "sigma": 0.0,
+    "label": "native"
+   },
+   "per_site_sigma": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ],
+   "calibration": {
+    "dataset": "CIFAR-10 training set (50,000), clean",
+    "order": "official file order 0..N-1",
+    "order_sha256": "33236cc6bd19fa6b89e06d441d3fcd8eb37dc8540f6a4f2b627b20af10894a41",
+    "augmentation": "none",
+    "batch_size": 500,
+    "n_batches": 100,
+    "final_batch": 500,
+    "remainder": "kept; weighted as one batch in the cumulative average",
+    "reset": true,
+    "momentum": null,
+    "passes": 1,
+    "mode": "train() forward, no_grad",
+    "labels_used": false
+   },
+   "buffers_sha256": "43ed3541d7209437d2374208cf775f220e0535b2d4b78a7074d759a77e6e0b4e",
+   "train_full": {
+    "n": 50000,
+    "ce": 0.005081182401180267,
+    "acc": 0.9998
+   },
+   "test_full": {
+    "n": 10000,
+    "ce": 0.641446240234375,
+    "acc": 0.8583
+   },
+   "learned_tensors_unchanged": true,
+   "seconds": 5.471051975000023
+  },
+  "P2_cumulative_clean_32": {
+   "policy": "P2_cumulative_clean_32",
+   "state": {
+    "resolution": 32,
+    "sigma": 0.0,
+    "label": "native"
+   },
+   "per_site_sigma": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ],
+   "calibration": {
+    "dataset": "CIFAR-10 training set (50,000), clean",
+    "order": "official file order 0..N-1",
+    "order_sha256": "33236cc6bd19fa6b89e06d441d3fcd8eb37dc8540f6a4f2b627b20af10894a41",
+    "augmentation": "none",
+    "batch_size": 32,
+    "n_batches": 1563,
+    "final_batch": 16,
+    "remainder": "kept; weighted as one batch in the cumulative average",
+    "reset": true,
+    "momentum": null,
+    "passes": 1,
+    "mode": "train() forward, no_grad",
+    "labels_used": false
+   },
+   "buffers_sha256": "fce373ece41346f0900b6312a568e832c57d2d967498b885210f2180b70e49fc",
+   "train_full": {
+    "n": 50000,
+    "ce": 0.0049471973371505735,
+    "acc": 0.99982
+   },
+   "test_full": {
+    "n": 10000,
+    "ce": 0.6462398468017578,
+    "acc": 0.8579
+   },
+   "learned_tensors_unchanged": true,
+   "seconds": 9.389222846999928
+  },
+  "P3_ema_training_loader": {
+   "policy": "P3_ema_training_loader",
+   "state": {
+    "resolution": 32,
+    "sigma": 0.0,
+    "label": "native"
+   },
+   "per_site_sigma": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ],
+   "calibration": {
+    "dataset": "CIFAR-10 training set (50,000)",
+    "order": "seed-specific frozen permutation (bn_p3::calibration_order)",
+    "order_sha256": "ff5ef3d0e3d75a3fba2b59f18da29e8873df26f5ff89bd6056c5fc035cc19f4a",
+    "augmentation": "none",
+    "augmentation_draws_sha256": null,
+    "batch_size": 32,
+    "n_batches": 1563,
+    "final_batch": 16,
+    "remainder": "kept",
+    "reset": false,
+    "start": "checkpoint's own saved buffers",
+    "momentum": 0.1,
+    "passes": 1,
+    "mode": "train() forward, no_grad",
+    "labels_used": false,
+    "note": "author-style adaptation of xternalz/SDPoint@0013c5d main.py validate(); not the released ImageNet pipeline"
+   },
+   "buffers_sha256": "9c2ebc4bf780573e7329747a943e2f5169ee41e3ab5567c98e855cbe1401f95d",
+   "train_full": {
+    "n": 50000,
+    "ce": 0.005175920145511628,
+    "acc": 0.9998
+   },
+   "test_full": {
+    "n": 10000,
+    "ce": 0.6561434783935547,
+    "acc": 0.8582
+   },
+   "learned_tensors_unchanged": true,
+   "seconds": 8.341975581999918
+  }
+ },
+ "P0_repeat_identical": true,
+ "run": "adamw__resolution_max_b1_gaussian_conv__seed2",
+ "checkpoint_sha256": "c0a09cc738f00443f9cc3635c47a827fcc1fca5046753babe094c4fa111606f6",
+ "old_panels_checkpoint_sha256": "c0a09cc738f00443f9cc3635c47a827fcc1fca5046753babe094c4fa111606f6",
+ "checkpoint_identity_matches_old_panels": true,
+ "old_panels_state": {
+  "resolution": 32,
+  "sigma": 0.0,
+  "label": "native"
+ },
+ "native_state_matches_old_panels": true,
+ "reuse_check": {
+  "P0_saved_native/train_full": {
+   "reused": {
+    "n": 50000,
+    "ce": 0.005241952531337738,
+    "acc": 0.99982
+   },
+   "recomputed": {
+    "n": 50000,
+    "ce": 0.005241952531337738,
+    "acc": 0.99982
+   },
+   "abs_diff_acc": 0.0,
+   "abs_diff_ce": 0.0,
+   "matches": true
+  },
+  "P0_saved_native/test_full": {
+   "reused": {
+    "n": 10000,
+    "ce": 0.6483796844482422,
+    "acc": 0.8583
+   },
+   "recomputed": {
+    "n": 10000,
+    "ce": 0.6483796844482422,
+    "acc": 0.8583
+   },
+   "abs_diff_acc": 0.0,
+   "abs_diff_ce": 0.0,
+   "matches": true
+  },
+  "P1_cumulative_clean_500/train_full": {
+   "reused": {
+    "n": 50000,
+    "ce": 0.005081182401180267,
+    "acc": 0.9998
+   },
+   "recomputed": {
+    "n": 50000,
+    "ce": 0.005081182401180267,
+    "acc": 0.9998
+   },
+   "abs_diff_acc": 0.0,
+   "abs_diff_ce": 0.0,
+   "matches": true
+  },
+  "P1_cumulative_clean_500/test_full": {
+   "reused": {
+    "n": 10000,
+    "ce": 0.641446240234375,
+    "acc": 0.8583
+   },
+   "recomputed": {
+    "n": 10000,
+    "ce": 0.641446240234375,
+    "acc": 0.8583
+   },
+   "abs_diff_acc": 0.0,
+   "abs_diff_ce": 0.0,
+   "matches": true
+  }
+ },
+ "all_reuse_checks_match": true,
+ "physical_batch_source": "historical microbatch (budget.microbatch=32)",
+ "seconds": 33.071696693000035,
+ "gpu": "Tesla T4"
+}
