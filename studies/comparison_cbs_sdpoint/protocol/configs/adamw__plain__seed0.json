@@ -1,0 +1,83 @@
+{
+ "data": {
+  "name": "cifar10",
+  "root": "/kaggle/input/<cifar10-python>",
+  "normalization": "fit_on_train",
+  "expected_mean": [
+   0.4913996756076813,
+   0.4821584224700928,
+   0.44653090834617615
+  ],
+  "expected_std": [
+   0.24703222513198853,
+   0.24348512291908264,
+   0.26158782839775085
+  ],
+  "stats_atol": 1e-07
+ },
+ "model": {
+  "arch": "resnet20_bn_cifar",
+  "options": {}
+ },
+ "optimizer": {
+  "name": "adamw",
+  "lr": 0.02,
+  "weight_decay": 0.0005,
+  "momentum": 0.9,
+  "nesterov": false,
+  "betas": [
+   0.9,
+   0.999
+  ],
+  "eps": 1e-08,
+  "schedule": "warmup_cosine",
+  "warmup_updates": 60,
+  "min_lr": 0.0
+ },
+ "method": {
+  "id": "plain"
+ },
+ "budget": {
+  "epochs": 30,
+  "effective_batch": 128,
+  "microbatch": 32
+ },
+ "evaluation": {
+  "every_epochs": 1,
+  "at_epoch_zero": true,
+  "batch_size": 500,
+  "paths": [
+   "current",
+   "target"
+  ],
+  "splits": [
+   "train_probe",
+   "test"
+  ],
+  "bn_policy": "running_stats"
+ },
+ "checkpoint": {
+  "every_epoch": false,
+  "every_updates": 11730,
+  "transition_offsets": [],
+  "keep_rolling": true
+ },
+ "run": {
+  "seed": 0,
+  "device": "auto",
+  "out_dir": "/kaggle/working/cmp/cells",
+  "name": "adamw__plain__seed0",
+  "cudnn_deterministic": false,
+  "cudnn_benchmark": false
+ },
+ "assets": {
+  "dir": "<inputs>/assets",
+  "verify": true
+ },
+ "validation_status": "optimizer-variant",
+ "notes": [
+  "unified_selected batch recipe; evaluation after every epoch",
+  "optimizer replaced: adamw_lr0.02; every other section is the reference recipe",
+  "comparison-cbs-sdpoint: final checkpoint + rolling only; training unchanged"
+ ]
+}

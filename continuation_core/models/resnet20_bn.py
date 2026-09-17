@@ -49,11 +49,15 @@ class BasicBlockBN20(nn.Module):
             self.shortcut = nn.Identity()
         else:
             self.shortcut = PadShortcut(stride, out_ch - in_ch)
+        # hook point between the residual addition and the final ReLU (the SDPoint
+        # location); an Identity has no parameters or buffers, returns its input
+        # object, and leaves state_dict keys and every numerical result unchanged
+        self.post_add = nn.Identity()
 
     def forward(self, x):
         out = F.relu(self.bn1(self.conv1(x)))
         out = self.bn2(self.conv2(out))
-        out = out + self.shortcut(x)
+        out = self.post_add(out + self.shortcut(x))
         return F.relu(out)
 
 
@@ -109,6 +113,10 @@ SITE_MAP = {
     # reduction points, named by the block whose complete output is reduced:
     # "block1" = the tensor entering blocks[2] = the output of blocks[1]
     "reduction": {"block1": ("input", "blocks.2")},
+    # 9 positions after each block's residual addition and BEFORE its final ReLU
+    # (SDPoint, Kuen et al. 2018, author ResNet BasicBlock/Bottleneck forward);
+    # position i is residual block i + 1 in the paper's 1-based point index
+    "post_add": ["blocks.%d.post_add" % b for b in range(9)],
     "reference_resolution": 32,
 }
 

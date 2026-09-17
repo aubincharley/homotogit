@@ -127,3 +127,79 @@ def adaptive_max_reduce(x: torch.Tensor, r) -> torch.Tensor:
         return x
     r = int(r)
     return F.adaptive_max_pool2d(x, (r, r))
+
+
+# ---------------------------------------------------------------------------
+# Comparators (not used by the four frozen methods)
+# ---------------------------------------------------------------------------
+
+def cbs_gaussian_kernel(sigma: float, channels: int, kernel_size: int = 3) -> torch.Tensor:
+    """Depthwise weight ``[C, 1, k, k]`` of Curriculum By Smoothing.
+
+    Same arithmetic, dtype and operation order as ``utils.get_gaussian_filter`` in
+    github.com/pairlab/CBS @ 5f62e7d: integer grid -> float32, mean (k-1)/2,
+    variance ``sigma**2`` (a Python float), 2-D Gaussian with the
+    ``1/(2 pi variance)`` prefactor, divided by its sum, repeated per channel.
+    Built on the CPU (as the source does) and moved afterwards.
+    """
+    if not (math.isfinite(sigma) and sigma > 0):
+        raise ValueError("CBS kernel needs a finite sigma > 0 (sigma 0 is an exact bypass)")
+    x_coord = torch.arange(kernel_size)
+    x_grid = x_coord.repeat(kernel_size).view(kernel_size, kernel_size)
+    y_grid = x_grid.t()
+    xy_grid = torch.stack([x_grid, y_grid], dim=-1).float()
+    mean = (kernel_size - 1) / 2.
+    variance = sigma ** 2.
+    k = (1. / (2. * math.pi * variance)) * torch.exp(
+        -torch.sum((xy_grid - mean) ** 2., dim=-1) / (2 * variance))
+    k = k / torch.sum(k)
+    return k.view(1, 1, kernel_size, kernel_size).repeat(channels, 1, 1, 1)
+
+
+class CBSGaussian:
+    """``conv2d(x, kernel, padding=1, groups=C)``: zero padding, stride 1, no bias.
+
+    Equivalent to the source's frozen ``nn.Conv2d(C, C, 3, groups=C, bias=False,
+    padding=1)`` with the kernel above (checked bitwise in the tests).  Never a
+    parameter: no optimizer state, no weight decay, no initialisation RNG.
+    ``sigma == 0`` returns the input object (exact bypass).
+    """
+
+    kernel_size = 3
+    padding = 1
+
+    def __init__(self):
+        self._cache: dict = {}
+
+    def weight(self, sigma: float, channels: int, dtype, device):
+        key = (float(sigma), int(channels), str(dtype), str(device))
+        w = self._cache.get(key)
+        if w is None:
+            w = cbs_gaussian_kernel(float(sigma), int(channels), self.kernel_size).to(device=device, dtype=dtype)
+            self._cache[key] = w
+        return w
+
+    def __call__(self, x: torch.Tensor, sigma: float) -> torch.Tensor:
+        if float(sigma) == 0.0:
+            return x
+        c = x.shape[1]
+        return F.conv2d(x, self.weight(sigma, c, x.dtype, x.device), bias=None, stride=1,
+                        padding=self.padding, groups=c)
+
+    def describe(self) -> dict:
+        return {"kernel": "3x3 normalised 2-D Gaussian, utils.get_gaussian_filter (pairlab/CBS@5f62e7d)",
+                "padding": "zeros, 1", "groups": "channels", "bypass": "sigma == 0 returns the input"}
+
+
+def sdpoint_size(n: int, ratio: float) -> int:
+    """``int(round(n * ratio))`` as in xternalz/SDPoint@0013c5d.  Python's round is
+    round-half-to-even; for the ResNet-20 CIFAR map sizes (32, 16, 8) and ratios
+    0.5 / 0.75 every product is an integer, so the convention never binds here."""
+    return int(round(n * float(ratio)))
+
+
+def sdpoint_avg_reduce(x: torch.Tensor, ratio: float) -> torch.Tensor:
+    """Adaptive average pooling of a square map to ``int(round(n * ratio))``."""
+    if ratio is None or float(ratio) >= 1.0:
+        return x
+    return F.adaptive_avg_pool2d(x, sdpoint_size(int(x.shape[-1]), ratio))

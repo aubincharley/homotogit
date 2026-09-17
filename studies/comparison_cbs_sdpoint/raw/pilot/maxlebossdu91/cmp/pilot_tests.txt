@@ -1,0 +1,70 @@
+F........................................FFFF........                    [100%]
+=================================== FAILURES ===================================
+_____________ test_same_keys_shapes_and_initialisation_across_arms _____________
+
+    def test_same_keys_shapes_and_initialisation_across_arms():
+>       init = torch.load(ROOT / "assets/cifar10_resnet20bn/init_seed0.pt", weights_only=True)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_comparators.py:53: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/local/lib/python3.12/dist-packages/torch/serialization.py:1500: in load
+    with _open_file_like(f, "rb") as opened_file:
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.12/dist-packages/torch/serialization.py:768: in _open_file_like
+    return _open_file(name_or_buffer, mode)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <torch.serialization._open_file object at 0x7e071be98a70>
+name = PosixPath('/kaggle/working/_repo/assets/cifar10_resnet20bn/init_seed0.pt')
+mode = 'rb'
+
+    def __init__(self, name: str | os.PathLike[str], mode: str) -> None:
+>       super().__init__(open(name, mode))  # noqa: SIM115
+                         ^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/kaggle/working/_repo/assets/cifar10_resnet20bn/init_seed0.pt'
+
+/usr/local/lib/python3.12/dist-packages/torch/serialization.py:749: FileNotFoundError
+__________ test_the_campaign_manifest_covers_every_cell_exactly_once ___________
+
+    def test_the_campaign_manifest_covers_every_cell_exactly_once():
+        """Kernels slice the manifest by index, so a slicing bug either loses a cell
+        or, worse, runs one twice and silently overwrites its result."""
+>       import job_optimizer_benchmark as job
+E       ModuleNotFoundError: No module named 'job_optimizer_benchmark'
+
+tests/test_optimizers.py:175: ModuleNotFoundError
+_______________ test_every_arm_shares_the_reference_lr_schedule ________________
+
+    def test_every_arm_shares_the_reference_lr_schedule():
+        """Only the optimizer may differ between arms.  If the warmup or the cosine
+        moved with it, an optimizer contrast would also be a schedule contrast."""
+>       import job_optimizer_benchmark as job
+E       ModuleNotFoundError: No module named 'job_optimizer_benchmark'
+
+tests/test_optimizers.py:195: ModuleNotFoundError
+__________ test_the_grid_refuses_to_run_before_the_sweep_is_read_out ___________
+
+    def test_the_grid_refuses_to_run_before_the_sweep_is_read_out():
+>       import job_optimizer_benchmark as job
+E       ModuleNotFoundError: No module named 'job_optimizer_benchmark'
+
+tests/test_optimizers.py:208: ModuleNotFoundError
+____________ test_the_sgd_control_is_the_untouched_reference_recipe ____________
+
+    def test_the_sgd_control_is_the_untouched_reference_recipe():
+        """It is the drift control for the imported SGD numbers, so it must be the
+        same configuration those numbers came from -- not a variant of it."""
+>       import job_optimizer_benchmark as job
+E       ModuleNotFoundError: No module named 'job_optimizer_benchmark'
+
+tests/test_optimizers.py:221: ModuleNotFoundError
+=========================== short test summary info ============================
+FAILED tests/test_comparators.py::test_same_keys_shapes_and_initialisation_across_arms
+FAILED tests/test_optimizers.py::test_the_campaign_manifest_covers_every_cell_exactly_once
+FAILED tests/test_optimizers.py::test_every_arm_shares_the_reference_lr_schedule
+FAILED tests/test_optimizers.py::test_the_grid_refuses_to_run_before_the_sweep_is_read_out
+FAILED tests/test_optimizers.py::test_the_sgd_control_is_the_untouched_reference_recipe
+5 failed, 48 passed in 78.93s (0:01:18)
+

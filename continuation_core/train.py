@@ -96,6 +96,7 @@ class Trainer:
         self.batch, self.micro = int(b.effective_batch), int(b.microbatch)
         self.updates_per_epoch = (self.n_train + self.batch - 1) // self.batch
         self.total_updates = int(b.epochs) * self.updates_per_epoch
+        self.controller.configure(self.updates_per_epoch, self.total_updates, seed)
         if self.perms.shape[0] < b.epochs or self.perms.shape[1] != self.n_train:
             raise ValueError("data order %s does not cover %d epochs of %d examples"
                              % (self.perms.shape, b.epochs, self.n_train))
@@ -116,6 +117,16 @@ class Trainer:
 
     def _transition_updates(self) -> list:
         out = []
+        if self.method.sdpoint:
+            return out                      # a new random instance at every update
+        if self.controller.update_level or self.method.cbs:
+            prev = None
+            for u in range(self.total_updates):
+                st = self.controller.state_for_update(u)
+                if prev is not None and (st.resolution, st.sigma) != (prev.resolution, prev.sigma):
+                    out.append(u)
+                prev = st
+            return out
         for e in range(1, int(self.cfg.budget.epochs)):
             if self.controller.state_for_epoch(e) != self.controller.state_for_epoch(e - 1):
                 # compare resolution/sigma only; labels always differ
@@ -138,7 +149,13 @@ class Trainer:
         return extra
 
     def _state_of_update(self, u: int) -> InterventionState:
-        return self.controller.state_for_epoch(u // self.updates_per_epoch)
+        return self.controller.state_for_update(u, self.updates_per_epoch)
+
+    def _set_epoch_state(self, e: int) -> None:
+        if self.controller.update_level:
+            self.controller.set_state(self.controller.state_for_update(e * self.updates_per_epoch))
+        else:
+            self.controller.set_epoch(e)
 
     def _state_record(self, state):
         if state is None:
@@ -204,7 +221,7 @@ class Trainer:
     def snapshot(self, done_epochs: int, train_loss) -> dict:
         t0 = time.perf_counter()
         ecfg = self.cfg.evaluation
-        current = self.controller.state_for_epoch(max(done_epochs - 1, 0))
+        current = self.controller.eval_current_state(done_epochs)
         states = {"current": current, "target": self.controller.target_state()}
         splits = {"train_probe": (self.probe_images, self.probe_labels),
                   "test": (self.test_images, self.test_labels)}
@@ -222,7 +239,7 @@ class Trainer:
                "lr_last_update": lr_at(min(max(u - 1, 0), self.total_updates - 1),
                                        self.cfg.optimizer, self.total_updates),
                "state_used": self._state_record(current) if done_epochs > 0 else None,
-               "state_next": (self._state_record(self.controller.state_for_epoch(done_epochs))
+               "state_next": (self._state_record(self._state_of_update(done_epochs * self.updates_per_epoch))
                               if done_epochs < self.cfg.budget.epochs else None),
                "train_loss_epoch": train_loss, "bn_policy": ecfg.bn_policy,
                "eval": ev, "elapsed_seconds": self._wall()}
@@ -238,7 +255,10 @@ class Trainer:
 
     def train_update(self) -> None:
         e, dev = self.epoch, self.device
-        if self.batch_index == 0 or self.controller.state is None:
+        if self.controller.update_level:
+            # one state per logical batch, shared by all of its microbatches
+            self.controller.set_state(self._state_of_update(self.global_update))
+        elif self.batch_index == 0 or self.controller.state is None:
             self.controller.set_epoch(e)
         s0 = self.batch_index * self.batch
         batch = self.perms[e][s0:s0 + self.batch]
@@ -269,10 +289,10 @@ class Trainer:
         stop_at = None if max_updates is None else self.global_update + int(max_updates)
         epochs = int(self.cfg.budget.epochs)
         if self.global_update == 0 and self.cfg.evaluation.at_epoch_zero and not self.metrics:
-            self.controller.set_epoch(0)
+            self._set_epoch_state(0)
             self.snapshot(0, None)
         while self.epoch < epochs:
-            self.controller.set_epoch(self.epoch)
+            self._set_epoch_state(self.epoch)
             while self.batch_index < self.updates_per_epoch:
                 if stop_at is not None and self.global_update >= stop_at:
                     return None
@@ -284,7 +304,7 @@ class Trainer:
             loss = self.run_loss / max(self.run_n, 1)
             if done % int(self.cfg.evaluation.every_epochs) == 0 or done == epochs:
                 self.snapshot(done, loss)
-            self.controller.set_epoch(self.epoch)
+            self._set_epoch_state(self.epoch)
             self.epoch, self.batch_index = done, 0
             self.run_loss, self.run_n = 0.0, 0
             if self.cfg.checkpoint.every_epoch or self.global_update in self.extra_checkpoints:
@@ -302,7 +322,7 @@ class Trainer:
     def finish(self) -> dict:
         last = self.metrics[-1]
         wall = self._wall()
-        final_state = self.controller.state_for_epoch(int(self.cfg.budget.epochs) - 1)
+        final_state = self._state_of_update(self.total_updates - 1)
         summary = {
             "schema": RESULTS_SCHEMA,
             "method": self.method.id, "seed": int(self.cfg.run.seed),
@@ -320,6 +340,9 @@ class Trainer:
                                      == (self.controller.target_state().resolution,
                                          self.controller.target_state().sigma),
             "transition_updates": self.transition_updates,
+            "native_inference_state": self.controller.native_state().to_dict(),
+            "schedule_segments": (self.method.cbs.table(self.updates_per_epoch, self.total_updates)
+                                  if self.method.cbs else None),
             "timing": {"wall_seconds": wall, "eval_seconds": self.eval_seconds,
                        "train_seconds": wall - self.eval_seconds,
                        "scope": "from the start of run() (after data and model "
