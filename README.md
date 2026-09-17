@@ -263,6 +263,70 @@ schedule -- 32x32, so resolution is held fixed while the budget matches STL-10's
 No parity reference exists for any of this.
 
 
+## Longer budgets: the gaps are not a short-budget artifact, and the two families have different time constants
+
+Every study so far ran one budget per dataset. These two stretch it and scale
+**every schedule boundary by the same factor**, so the intervention keeps its
+share of the run -- which is what makes the comparison meaningful. Each arm is
+compared against the **same optimizer** at the base budget, never across
+optimizers. Records under `results/longer_budget/`.
+
+    cifar10   x3   30 ->  90 epochs   11,730 -> 35,190 updates   SGD  lr 0.005
+    stl10     x2   60 -> 120 epochs    2,400 ->  4,800 updates   Adam lr 1e-3
+
+**Preliminary: 1 seed per cell so far (4 of 12 runs per arm).** The tables below
+report absolute accuracy, not paired deltas, for a reason given at the end.
+
+### CIFAR-10 under SGD: the gaps hold
+
+| method | 30 ep | 90 ep | change |
+|---|---|---|---|
+| `plain` | 75.43 | 76.76 | +1.33 |
+| `R` | 80.37 | 81.54 | +1.17 |
+| `G` | 79.91 | 82.68 | +2.77 |
+| `RG` | 81.51 | 83.43 | +1.92 |
+
+Everything rises by 1-3 points, the ordering is unchanged, and `plain` closes
+none of the distance. **The recorded gaps are not an artifact of a short run** --
+the question this arm was built to answer.
+
+### STL-10 under Adam: only the blur methods gain
+
+| method | 60 ep | 120 ep | change |
+|---|---|---|---|
+| `plain` | 62.79 | 60.49 | **-2.30** |
+| `R` | 68.72 | 68.51 | -0.21 |
+| `G` | 63.33 | **67.79** | **+4.46** |
+| `RG` | 62.76 | **67.38** | **+4.62** |
+
+Three different behaviours in one table. `plain` gets **worse** with more
+training -- 5,000 images, no augmentation, so the extra budget overfits. `R` is
+flat: it had already finished its work by 60 epochs. `G` and `RG` gain over four
+points each.
+
+So under Adam the Gaussian had not yet paid off at 2,400 updates and has by
+4,800, while the resolution reduction was already done. **The two families have
+different time constants.**
+
+This revises the reading of the optimizer study. There, `G` under Adam on STL-10
+was +0.54 +- 2.22 -- indistinguishable from zero -- and that was read as the blur
+being a substitute for optimization the optimizer was not doing. On this evidence
+the blur was simply not finished: it needed more updates under Adam than under
+SGD, not less work to do.
+
+### Why these tables are absolute, not paired
+
+Elsewhere this README reports paired deltas, because within a budget all four
+methods share initial weights and data order, so seed variation cancels. Across
+budgets that does not hold -- different runs, and for CIFAR-10 a different data
+order, since the pinned reference assets cover only 30 epochs.
+
+Worse, a paired delta here would **mislead**. On STL-10 the paired deltas move
+`G` from +0.54 to +7.30, which reads as the method improving by 6.8 points. It
+improved by 4.5; the other 2.3 is `plain` getting worse. Reporting the paired
+number alone would have folded a control regression into a method gain.
+
+
 ## Optimizers: the Gaussian needs a weak optimizer, the resolution schedule does not
 
 The same four methods on CIFAR-10, SVHN and STL-10 under SGD, Adam and AdamW:

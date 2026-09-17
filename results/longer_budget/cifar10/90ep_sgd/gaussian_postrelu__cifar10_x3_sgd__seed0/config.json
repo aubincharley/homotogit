@@ -1,0 +1,139 @@
+{
+  "data": {
+    "name": "cifar10",
+    "root": "data",
+    "normalization": "fit_on_train",
+    "expected_mean": [
+      0.4913996756076813,
+      0.4821584224700928,
+      0.44653090834617615
+    ],
+    "expected_std": [
+      0.24703222513198853,
+      0.24348512291908264,
+      0.26158782839775085
+    ],
+    "stats_atol": 1e-07
+  },
+  "model": {
+    "arch": "resnet20_bn_cifar",
+    "options": {}
+  },
+  "optimizer": {
+    "name": "sgd",
+    "lr": 0.005,
+    "weight_decay": 0.0005,
+    "momentum": 0.9,
+    "nesterov": false,
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "eps": 1e-08,
+    "schedule": "warmup_cosine",
+    "warmup_updates": 60,
+    "min_lr": 0.0
+  },
+  "method": {
+    "id": "gaussian_postrelu__transfer",
+    "description": "Gaussian at the 10 post-ReLU positions (stem output + 9 block outputs), plateau schedule, no resolution change.",
+    "gaussian": {
+      "placement": "post_relu",
+      "schedule": {
+        "starts": [
+          0,
+          9,
+          18,
+          27,
+          36,
+          45,
+          54,
+          63
+        ],
+        "values": [
+          1.0,
+          0.85,
+          0.7,
+          0.6,
+          0.5,
+          0.4,
+          0.3,
+          0.0
+        ]
+      },
+      "sigma_scale": "none",
+      "sigma_max": 1.0,
+      "truncate": 4.0,
+      "units": "pixels of the feature map at the site; the reference levels unchanged"
+    },
+    "resolution": null,
+    "source": {
+      "transferred_from": "gaussian_postrelu",
+      "experiment": "unified_selected",
+      "branch": "benchmark-organized",
+      "config_id": "blur_relu",
+      "label": "Blur after every ReLU, annealed to zero",
+      "cells": [
+        "blur_relu__seed0",
+        "blur_relu__seed1",
+        "blur_relu__seed2"
+      ],
+      "final_test_acc_per_seed": {
+        "0": 0.8006,
+        "1": 0.8006,
+        "2": 0.796
+      },
+      "final_test_acc_mean": 0.799067,
+      "final_test_acc_sd": 0.002656,
+      "final_path": "target (equal to current at epoch 30)",
+      "asset_set": "r20bn-campaign-assets"
+    },
+    "validated_on": []
+  },
+  "budget": {
+    "epochs": 90,
+    "effective_batch": 128,
+    "microbatch": 32
+  },
+  "evaluation": {
+    "every_epochs": 3,
+    "at_epoch_zero": true,
+    "batch_size": 500,
+    "paths": [
+      "current",
+      "target"
+    ],
+    "splits": [
+      "train_probe",
+      "test"
+    ],
+    "bn_policy": "running_stats"
+  },
+  "checkpoint": {
+    "every_epoch": false,
+    "every_updates": null,
+    "transition_offsets": [],
+    "keep_rolling": true
+  },
+  "run": {
+    "seed": 0,
+    "device": "auto",
+    "out_dir": "/kaggle/working/runs",
+    "name": "gaussian_postrelu__cifar10_x3_sgd__seed0",
+    "cudnn_deterministic": false,
+    "cudnn_benchmark": false
+  },
+  "assets": {
+    "dir": "assets/cifar10_x3",
+    "verify": true
+  },
+  "validation_status": "unvalidated",
+  "notes": [
+    "transfer preset: not trained, not validated",
+    "insertion mapping: input of blocks.2, exactly as in the reference",
+    "the reference recipe rebuilt through transfer so the optimizer can be swapped; schedules, data and assets are the reference's own",
+    "budget x3: 30 -> 90 epochs, with every schedule boundary scaled by the same factor so the intervention keeps its share of the run",
+    "compare against this dataset's sgd column at the base budget; the question is whether the gaps are a short-budget artifact",
+    "the pinned reference asset set covers only 30 epochs of data order, so this budget needs a new one: initial weights are the reference's via --init-from, the permutations are not"
+  ]
+}
