@@ -100,6 +100,22 @@ epoch 60, so this looks recovery-starved rather than beaten -- untested either w
 > as small as 12x12, against the reference's sigma <= 0.525 on 4x4. The
 > pixel-sigma alternative rejected here is the obvious test and has not been run.
 
+> **Later finding, on branch `longer-budget`: more epochs do rescue `RG` on
+> STL-10 -- but under Adam, not under the SGD recipe measured above.** Doubling
+> the budget to 120 epochs, every schedule boundary scaled by the same factor,
+> takes `RG` from -0.03 +- 1.32 to **+5.09 +- 1.58** and `G` from +0.54 +- 2.22
+> to **+5.30 +- 1.75**, level with `R`. Per-epoch curves show both blur arms
+> *below* `plain` at epoch 24 and crossing over around 36-48, so at 60 epochs
+> they are measured mid-recovery.
+>
+> This does not rescue the table above, which is SGD at 60 epochs: **that arm was
+> never run at 120 epochs**, and the `cifar10-subset` disproof of the
+> recovery-window reading stands as written. What it does show is that on STL-10
+> the blur methods have a longer time constant than the budget chosen here, so
+> "recovery-starved rather than beaten" is the better reading of a short STL-10
+> run -- for reasons of *epochs*, not of the 720-update window that
+> `cifar10-subset` ruled out.
+
 No parity reference exists for any of this.
 
 ```bash
