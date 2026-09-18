@@ -82,6 +82,12 @@ def select_account(name):
             "no credentials for account %r at %s (available: %s)"
             % (name, cfg_dir / "kaggle.json", ", ".join(available_accounts()) or "none"))
     os.environ["KAGGLE_CONFIG_DIR"] = str(cfg_dir)
+    # kaggle CLI 2.x authenticates with an OAuth token at ``~/.kaggle/access_token``
+    # *before* it looks at any kaggle.json -- including the one KAGGLE_CONFIG_DIR
+    # points at -- so a machine with such a token would silently run the job as
+    # the default account.  Redirect HOME for the CLI subprocesses so that
+    # lookup misses (the account directory holds only its kaggle.json).
+    os.environ["HOME"] = str(cfg_dir)
     return cfg_dir
 
 

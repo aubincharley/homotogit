@@ -1,0 +1,4082 @@
+{
+  "completed": [
+    {
+      "label": "Rsteps4rh__Gnone__input_bilinear__seed3",
+      "part": "G",
+      "schedule": "Rsteps4rh",
+      "arm": "Rsteps4rh",
+      "gaussian": "Gnone",
+      "seed": 3,
+      "mixed": false,
+      "worker": 0,
+      "gpu_index": 0,
+      "gpu": "Tesla T4",
+      "epochs": 30,
+      "updates": 11730,
+      "updates_per_epoch": 391,
+      "n_train": 50000,
+      "n_test": 10000,
+      "warmup": 60,
+      "effective_batch": 128,
+      "microbatch": 32,
+      "resolution_by_epoch": [
+        16,
+        16,
+        16,
+        20,
+        20,
+        20,
+        24,
+        24,
+        24,
+        28,
+        28,
+        28,
+        32,
+        32,
+        32,
+        32,
+        32,
+        32,
+        32,
+        24,
+        32,
+        32,
+        32,
+        24,
+        32,
+        32,
+        32,
+        24,
+        32,
+        32
+      ],
+      "controller": {
+        "operator": "none",
+        "levels": null,
+        "n_sites": 19,
+        "sites": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18
+        ],
+        "insertion_mask": "all19",
+        "reduction": "input_bilinear",
+        "resolution_by_epoch": [
+          16,
+          16,
+          16,
+          20,
+          20,
+          20,
+          24,
+          24,
+          24,
+          28,
+          28,
+          28,
+          32,
+          32,
+          32,
+          32,
+          32,
+          32,
+          32,
+          24,
+          32,
+          32,
+          32,
+          24,
+          32,
+          32,
+          32,
+          24,
+          32,
+          32
+        ],
+        "sigma_rule": "sigma_l(e) = q_l(e) * G(e); q_l = width_l / width_l@32",
+        "gmix_rule": "T_alpha(h) = (1-alpha) h + alpha G_{q_l}(h), reference width 1; alpha=0 returns h unevaluated",
+        "gaussian_kernel": null
+      },
+      "controller_log": null,
+      "reheats": null,
+      "mix_probs": null,
+      "reduction": "input_bilinear (align_corners=False, antialias=True; exact bypass at 32)",
+      "operator": "none",
+      "levels": null,
+      "monitor": {
+        "size": 2000,
+        "seed": 0,
+        "stream": "adaptive_monitor",
+        "n": 2000,
+        "sha256": "9ddd2fedb1c16f50fdcdf315b8d226d4a34548554f48429bf78e6d130868b0ca"
+      },
+      "normalization": {
+        "mean": [
+          0.4913996756076813,
+          0.4821584224700928,
+          0.44653090834617615
+        ],
+        "std": [
+          0.24703222513198853,
+          0.24348512291908264,
+          0.26158782839775085
+        ]
+      },
+      "final_test_acc": 0.7944,
+      "final_test_ce": 0.5941748428344726,
+      "final_train_probe_ce": 0.3945771484375,
+      "wall_seconds": 556.7382672199999,
+      "eval_seconds": 120.92771159300003,
+      "train_seconds": 435.81055562699987,
+      "peak_mem_mib": 874.3876953125
+    },
+    {
+      "label": "Rsteps4rh__Gnone__input_bilinear__seed4",
+      "part": "G",
+      "schedule": "Rsteps4rh",
+      "arm": "Rsteps4rh",
+      "gaussian": "Gnone",
+      "seed": 4,
+      "mixed": false,
+      "worker": 1,
+      "gpu_index": 1,
+      "gpu": "Tesla T4",
+      "epochs": 30,
+      "updates": 11730,
+      "updates_per_epoch": 391,
+      "n_train": 50000,
+      "n_test": 10000,
+      "warmup": 60,
+      "effective_batch": 128,
+      "microbatch": 32,
+      "resolution_by_epoch": [
+        16,
+        16,
+        16,
+        20,
+        20,
+        20,
+        24,
+        24,
+        24,
+        28,
+        28,
+        28,
+        32,
+        32,
+        32,
+        32,
+        32,
+        32,
+        32,
+        24,
+        32,
+        32,
+        32,
+        24,
+        32,
+        32,
+        32,
+        24,
+        32,
+        32
+      ],
+      "controller": {
+        "operator": "none",
+        "levels": null,
+        "n_sites": 19,
+        "sites": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18
+        ],
+        "insertion_mask": "all19",
+        "reduction": "input_bilinear",
+        "resolution_by_epoch": [
+          16,
+          16,
+          16,
+          20,
+          20,
+          20,
+          24,
+          24,
+          24,
+          28,
+          28,
+          28,
+          32,
+          32,
+          32,
+          32,
+          32,
+          32,
+          32,
+          24,
+          32,
+          32,
+          32,
+          24,
+          32,
+          32,
+          32,
+          24,
+          32,
+          32
+        ],
+        "sigma_rule": "sigma_l(e) = q_l(e) * G(e); q_l = width_l / width_l@32",
+        "gmix_rule": "T_alpha(h) = (1-alpha) h + alpha G_{q_l}(h), reference width 1; alpha=0 returns h unevaluated",
+        "gaussian_kernel": null
+      },
+      "controller_log": null,
+      "reheats": null,
+      "mix_probs": null,
+      "reduction": "input_bilinear (align_corners=False, antialias=True; exact bypass at 32)",
+      "operator": "none",
+      "levels": null,
+      "monitor": {
+        "size": 2000,
+        "seed": 0,
+        "stream": "adaptive_monitor",
+        "n": 2000,
+        "sha256": "9ddd2fedb1c16f50fdcdf315b8d226d4a34548554f48429bf78e6d130868b0ca"
+      },
+      "normalization": {
+        "mean": [
+          0.4913996756076813,
+          0.4821584224700928,
+          0.44653090834617615
+        ],
+        "std": [
+          0.24703222513198853,
+          0.24348512291908264,
+          0.26158782839775085
+        ]
+      },
+      "final_test_acc": 0.8028,
+      "final_test_ce": 0.5745493316650391,
+      "final_train_probe_ce": 0.36992037963867186,
+      "wall_seconds": 564.2843510140001,
+      "eval_seconds": 127.84318827500044,
+      "train_seconds": 436.44116273899965,
+      "peak_mem_mib": 874.3876953125
+    },
+    {
+      "label": "Rsteps4rh__Gnone__input_bilinear__seed5",
+      "part": "G",
+      "schedule": "Rsteps4rh",
+      "arm": "Rsteps4rh",
+      "gaussian": "Gnone",
+      "seed": 5,
+      "mixed": false,
+      "worker": 0,
+      "gpu_index": 0,
+      "gpu": "Tesla T4",
+      "epochs": 30,
+      "updates": 11730,
+      "updates_per_epoch": 391,
+      "n_train": 50000,
+      "n_test": 10000,
+      "warmup": 60,
+      "effective_batch": 128,
+      "microbatch": 32,
+      "resolution_by_epoch": [
+        16,
+        16,
+        16,
+        20,
+        20,
+        20,
+        24,
+        24,
+        24,
+        28,
+        28,
+        28,
+        32,
+        32,
+        32,
+        32,
+        32,
+        32,
+        32,
+        24,
+        32,
+        32,
+        32,
+        24,
+        32,
+        32,
+        32,
+        24,
+        32,
+        32
+      ],
+      "controller": {
+        "operator": "none",
+        "levels": null,
+        "n_sites": 19,
+        "sites": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18
+        ],
+        "insertion_mask": "all19",
+        "reduction": "input_bilinear",
+        "resolution_by_epoch": [
+          16,
+          16,
+          16,
+          20,
+          20,
+          20,
+          24,
+          24,
+          24,
+          28,
+          28,
+          28,
+          32,
+          32,
+          32,
+          32,
+          32,
+          32,
+          32,
+          24,
+          32,
+          32,
+          32,
+          24,
+          32,
+          32,
+          32,
+          24,
+          32,
+          32
+        ],
+        "sigma_rule": "sigma_l(e) = q_l(e) * G(e); q_l = width_l / width_l@32",
+        "gmix_rule": "T_alpha(h) = (1-alpha) h + alpha G_{q_l}(h), reference width 1; alpha=0 returns h unevaluated",
+        "gaussian_kernel": null
+      },
+      "controller_log": null,
+      "reheats": null,
+      "mix_probs": null,
+      "reduction": "input_bilinear (align_corners=False, antialias=True; exact bypass at 32)",
+      "operator": "none",
+      "levels": null,
+      "monitor": {
+        "size": 2000,
+        "seed": 0,
+        "stream": "adaptive_monitor",
+        "n": 2000,
+        "sha256": "9ddd2fedb1c16f50fdcdf315b8d226d4a34548554f48429bf78e6d130868b0ca"
+      },
+      "normalization": {
+        "mean": [
+          0.4913996756076813,
+          0.4821584224700928,
+          0.44653090834617615
+        ],
+        "std": [
+          0.24703222513198853,
+          0.24348512291908264,
+          0.26158782839775085
+        ]
+      },
+      "final_test_acc": 0.8044,
+      "final_test_ce": 0.5713358474731445,
+      "final_train_probe_ce": 0.40917620849609376,
+      "wall_seconds": 564.4193852349999,
+      "eval_seconds": 125.9369671019997,
+      "train_seconds": 438.48241813300024,
+      "peak_mem_mib": 874.3876953125
+    },
+    {
+      "label": "Rsteps4ar__Gnone__input_bilinear__seed0",
+      "part": "G",
+      "schedule": "Rsteps4",
+      "arm": "Rsteps4ar",
+      "gaussian": "Gnone",
+      "seed": 0,
+      "mixed": false,
+      "controller": {
+        "operator": "none",
+        "levels": null,
+        "n_sites": 19,
+        "sites": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18
+        ],
+        "insertion_mask": "all19",
+        "reduction": "input_bilinear",
+        "resolution_by_epoch": [
+          16,
+          16,
+          16,
+          20,
+          20,
+          20,
+          24,
+          24,
+          24,
+          28,
+          28,
+          28,
+          32,
+          32,
+          32,
+          24,
+          32,
+          32,
+          24,
+          32,
+          24,
+          32,
+          24,
+          32,
+          32,
+          24,
+          32,
+          32,
+          32,
+          32
+        ],
+        "sigma_rule": "sigma_l(e) = q_l(e) * G(e); q_l = width_l / width_l@32",
+        "gmix_rule": "T_alpha(h) = (1-alpha) h + alpha G_{q_l}(h), reference width 1; alpha=0 returns h unevaluated",
+        "gaussian_kernel": null
+      },
+      "worker": 1,
+      "gpu_index": 1,
+      "gpu": "Tesla T4",
+      "epochs": 30,
+      "updates": 11730,
+      "updates_per_epoch": 391,
+      "n_train": 50000,
+      "n_test": 10000,
+      "warmup": 60,
+      "effective_batch": 128,
+      "microbatch": 32,
+      "resolution_by_epoch": [
+        16,
+        16,
+        16,
+        20,
+        20,
+        20,
+        24,
+        24,
+        24,
+        28,
+        28,
+        28,
+        32,
+        32,
+        32,
+        24,
+        32,
+        32,
+        24,
+        32,
+        24,
+        32,
+        24,
+        32,
+        32,
+        24,
+        32,
+        32,
+        32,
+        32
+      ],
+      "controller_log": [
+        {
+          "after_epoch": 1,
+          "r": 16,
+          "reason": null,
+          "r_next_epoch": 16
+        },
+        {
+          "after_epoch": 2,
+          "r": 16,
+          "reason": null,
+          "r_next_epoch": 16
+        },
+        {
+          "after_epoch": 3,
+          "r": 16,
+          "reason": null,
+          "r_next_epoch": 20
+        },
+        {
+          "after_epoch": 4,
+          "r": 20,
+          "reason": null,
+          "r_next_epoch": 20
+        },
+        {
+          "after_epoch": 5,
+          "r": 20,
+          "reason": null,
+          "r_next_epoch": 20
+        },
+        {
+          "after_epoch": 6,
+          "r": 20,
+          "reason": null,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 7,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 8,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 9,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 28
+        },
+        {
+          "after_epoch": 10,
+          "r": 28,
+          "reason": null,
+          "r_next_epoch": 28
+        },
+        {
+          "after_epoch": 11,
+          "r": 28,
+          "reason": null,
+          "r_next_epoch": 28
+        },
+        {
+          "after_epoch": 12,
+          "r": 28,
+          "reason": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 13,
+          "r": 32,
+          "reason": null,
+          "gap_down": null,
+          "ema_down": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 14,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.2910846444781512,
+          "ema_down": 0.2910846444781512,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 15,
+          "r": 32,
+          "reason": "reheat",
+          "gap_down": 0.38555886222887226,
+          "ema_down": 0.3383217533535117,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 16,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 17,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.2906037220998692,
+          "ema_down": 0.2906037220998692,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 18,
+          "r": 32,
+          "reason": "reheat",
+          "gap_down": 0.3898219573318441,
+          "ema_down": 0.34021283971585664,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 19,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 20,
+          "r": 32,
+          "reason": "reheat",
+          "gap_down": 0.36115782281198433,
+          "ema_down": 0.36115782281198433,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 21,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 22,
+          "r": 32,
+          "reason": "reheat",
+          "gap_down": 0.33910081759543176,
+          "ema_down": 0.33910081759543176,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 23,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 24,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.2948286670203498,
+          "ema_down": 0.2948286670203498,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 25,
+          "r": 32,
+          "reason": "reheat",
+          "gap_down": 0.3499937619531819,
+          "ema_down": 0.32241121448676585,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 26,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 27,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.27577413263452516,
+          "ema_down": 0.27577413263452516,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 28,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.3170779798104678,
+          "ema_down": 0.2964260562224965,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 29,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.3242665491264967,
+          "ema_down": 0.3103463026744966,
+          "r_next_epoch": 32
+        }
+      ],
+      "reheats": 5,
+      "mix_probs": null,
+      "reduction": "input_bilinear (align_corners=False, antialias=True; exact bypass at 32)",
+      "operator": "none",
+      "levels": null,
+      "monitor": {
+        "size": 2000,
+        "seed": 0,
+        "stream": "adaptive_monitor",
+        "n": 2000,
+        "sha256": "9ddd2fedb1c16f50fdcdf315b8d226d4a34548554f48429bf78e6d130868b0ca"
+      },
+      "normalization": {
+        "mean": [
+          0.4913996756076813,
+          0.4821584224700928,
+          0.44653090834617615
+        ],
+        "std": [
+          0.24703222513198853,
+          0.24348512291908264,
+          0.26158782839775085
+        ]
+      },
+      "final_test_acc": 0.8079,
+      "final_test_ce": 0.5669062454223632,
+      "final_train_probe_ce": 0.42909353637695313,
+      "wall_seconds": 567.453732014,
+      "eval_seconds": 131.8157757519998,
+      "train_seconds": 435.6379562620002,
+      "peak_mem_mib": 874.3876953125
+    },
+    {
+      "label": "Rsteps4ar__Gnone__input_bilinear__seed1",
+      "part": "G",
+      "schedule": "Rsteps4",
+      "arm": "Rsteps4ar",
+      "gaussian": "Gnone",
+      "seed": 1,
+      "mixed": false,
+      "controller": {
+        "operator": "none",
+        "levels": null,
+        "n_sites": 19,
+        "sites": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18
+        ],
+        "insertion_mask": "all19",
+        "reduction": "input_bilinear",
+        "resolution_by_epoch": [
+          16,
+          16,
+          16,
+          20,
+          20,
+          20,
+          24,
+          24,
+          24,
+          28,
+          28,
+          28,
+          32,
+          32,
+          32,
+          32,
+          24,
+          32,
+          24,
+          32,
+          32,
+          24,
+          32,
+          32,
+          24,
+          32,
+          32,
+          32,
+          32,
+          32
+        ],
+        "sigma_rule": "sigma_l(e) = q_l(e) * G(e); q_l = width_l / width_l@32",
+        "gmix_rule": "T_alpha(h) = (1-alpha) h + alpha G_{q_l}(h), reference width 1; alpha=0 returns h unevaluated",
+        "gaussian_kernel": null
+      },
+      "worker": 0,
+      "gpu_index": 0,
+      "gpu": "Tesla T4",
+      "epochs": 30,
+      "updates": 11730,
+      "updates_per_epoch": 391,
+      "n_train": 50000,
+      "n_test": 10000,
+      "warmup": 60,
+      "effective_batch": 128,
+      "microbatch": 32,
+      "resolution_by_epoch": [
+        16,
+        16,
+        16,
+        20,
+        20,
+        20,
+        24,
+        24,
+        24,
+        28,
+        28,
+        28,
+        32,
+        32,
+        32,
+        32,
+        24,
+        32,
+        24,
+        32,
+        32,
+        24,
+        32,
+        32,
+        24,
+        32,
+        32,
+        32,
+        32,
+        32
+      ],
+      "controller_log": [
+        {
+          "after_epoch": 1,
+          "r": 16,
+          "reason": null,
+          "r_next_epoch": 16
+        },
+        {
+          "after_epoch": 2,
+          "r": 16,
+          "reason": null,
+          "r_next_epoch": 16
+        },
+        {
+          "after_epoch": 3,
+          "r": 16,
+          "reason": null,
+          "r_next_epoch": 20
+        },
+        {
+          "after_epoch": 4,
+          "r": 20,
+          "reason": null,
+          "r_next_epoch": 20
+        },
+        {
+          "after_epoch": 5,
+          "r": 20,
+          "reason": null,
+          "r_next_epoch": 20
+        },
+        {
+          "after_epoch": 6,
+          "r": 20,
+          "reason": null,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 7,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 8,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 9,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 28
+        },
+        {
+          "after_epoch": 10,
+          "r": 28,
+          "reason": null,
+          "r_next_epoch": 28
+        },
+        {
+          "after_epoch": 11,
+          "r": 28,
+          "reason": null,
+          "r_next_epoch": 28
+        },
+        {
+          "after_epoch": 12,
+          "r": 28,
+          "reason": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 13,
+          "r": 32,
+          "reason": null,
+          "gap_down": null,
+          "ema_down": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 14,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.2384687613751781,
+          "ema_down": 0.2384687613751781,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 15,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.3259783028032453,
+          "ema_down": 0.2822235320892117,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 16,
+          "r": 32,
+          "reason": "reheat",
+          "gap_down": 0.37219373664756283,
+          "ema_down": 0.32720863436838726,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 17,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 18,
+          "r": 32,
+          "reason": "reheat",
+          "gap_down": 0.30268160663317284,
+          "ema_down": 0.30268160663317284,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 19,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 20,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.27757083219895123,
+          "ema_down": 0.27757083219895123,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 21,
+          "r": 32,
+          "reason": "reheat",
+          "gap_down": 0.3462505041433262,
+          "ema_down": 0.3119106681711387,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 22,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 23,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.2663399829762205,
+          "ema_down": 0.2663399829762205,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 24,
+          "r": 32,
+          "reason": "reheat",
+          "gap_down": 0.34173358579999746,
+          "ema_down": 0.304036784388109,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 25,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 26,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.2648698824503692,
+          "ema_down": 0.2648698824503692,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 27,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.28922449561735136,
+          "ema_down": 0.2770471890338603,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 28,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.30819099006096173,
+          "ema_down": 0.292619089547411,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 29,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.31398006570199266,
+          "ema_down": 0.30329957762470183,
+          "r_next_epoch": 32
+        }
+      ],
+      "reheats": 4,
+      "mix_probs": null,
+      "reduction": "input_bilinear (align_corners=False, antialias=True; exact bypass at 32)",
+      "operator": "none",
+      "levels": null,
+      "monitor": {
+        "size": 2000,
+        "seed": 0,
+        "stream": "adaptive_monitor",
+        "n": 2000,
+        "sha256": "9ddd2fedb1c16f50fdcdf315b8d226d4a34548554f48429bf78e6d130868b0ca"
+      },
+      "normalization": {
+        "mean": [
+          0.4913996756076813,
+          0.4821584224700928,
+          0.44653090834617615
+        ],
+        "std": [
+          0.24703222513198853,
+          0.24348512291908264,
+          0.26158782839775085
+        ]
+      },
+      "final_test_acc": 0.7973,
+      "final_test_ce": 0.5737783752441407,
+      "final_train_probe_ce": 0.41621603393554685,
+      "wall_seconds": 561.1699086829999,
+      "eval_seconds": 120.26675967200026,
+      "train_seconds": 440.90314901099964,
+      "peak_mem_mib": 874.3876953125
+    },
+    {
+      "label": "Rsteps4ar__Gnone__input_bilinear__seed2",
+      "part": "G",
+      "schedule": "Rsteps4",
+      "arm": "Rsteps4ar",
+      "gaussian": "Gnone",
+      "seed": 2,
+      "mixed": false,
+      "controller": {
+        "operator": "none",
+        "levels": null,
+        "n_sites": 19,
+        "sites": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18
+        ],
+        "insertion_mask": "all19",
+        "reduction": "input_bilinear",
+        "resolution_by_epoch": [
+          16,
+          16,
+          16,
+          20,
+          20,
+          20,
+          24,
+          24,
+          24,
+          28,
+          28,
+          28,
+          32,
+          32,
+          32,
+          32,
+          24,
+          32,
+          24,
+          32,
+          32,
+          24,
+          32,
+          32,
+          24,
+          32,
+          32,
+          24,
+          32,
+          32
+        ],
+        "sigma_rule": "sigma_l(e) = q_l(e) * G(e); q_l = width_l / width_l@32",
+        "gmix_rule": "T_alpha(h) = (1-alpha) h + alpha G_{q_l}(h), reference width 1; alpha=0 returns h unevaluated",
+        "gaussian_kernel": null
+      },
+      "worker": 1,
+      "gpu_index": 1,
+      "gpu": "Tesla T4",
+      "epochs": 30,
+      "updates": 11730,
+      "updates_per_epoch": 391,
+      "n_train": 50000,
+      "n_test": 10000,
+      "warmup": 60,
+      "effective_batch": 128,
+      "microbatch": 32,
+      "resolution_by_epoch": [
+        16,
+        16,
+        16,
+        20,
+        20,
+        20,
+        24,
+        24,
+        24,
+        28,
+        28,
+        28,
+        32,
+        32,
+        32,
+        32,
+        24,
+        32,
+        24,
+        32,
+        32,
+        24,
+        32,
+        32,
+        24,
+        32,
+        32,
+        24,
+        32,
+        32
+      ],
+      "controller_log": [
+        {
+          "after_epoch": 1,
+          "r": 16,
+          "reason": null,
+          "r_next_epoch": 16
+        },
+        {
+          "after_epoch": 2,
+          "r": 16,
+          "reason": null,
+          "r_next_epoch": 16
+        },
+        {
+          "after_epoch": 3,
+          "r": 16,
+          "reason": null,
+          "r_next_epoch": 20
+        },
+        {
+          "after_epoch": 4,
+          "r": 20,
+          "reason": null,
+          "r_next_epoch": 20
+        },
+        {
+          "after_epoch": 5,
+          "r": 20,
+          "reason": null,
+          "r_next_epoch": 20
+        },
+        {
+          "after_epoch": 6,
+          "r": 20,
+          "reason": null,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 7,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 8,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 9,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 28
+        },
+        {
+          "after_epoch": 10,
+          "r": 28,
+          "reason": null,
+          "r_next_epoch": 28
+        },
+        {
+          "after_epoch": 11,
+          "r": 28,
+          "reason": null,
+          "r_next_epoch": 28
+        },
+        {
+          "after_epoch": 12,
+          "r": 28,
+          "reason": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 13,
+          "r": 32,
+          "reason": null,
+          "gap_down": null,
+          "ema_down": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 14,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.24333548791371715,
+          "ema_down": 0.24333548791371715,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 15,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.3035826000446909,
+          "ema_down": 0.273459043979204,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 16,
+          "r": 32,
+          "reason": "reheat",
+          "gap_down": 0.379981321114573,
+          "ema_down": 0.3267201825468885,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 17,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 18,
+          "r": 32,
+          "reason": "reheat",
+          "gap_down": 0.3268666644446344,
+          "ema_down": 0.3268666644446344,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 19,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 20,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.26631585662573015,
+          "ema_down": 0.26631585662573015,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 21,
+          "r": 32,
+          "reason": "reheat",
+          "gap_down": 0.35595097615979143,
+          "ema_down": 0.3111334163927608,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 22,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 23,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.27502697340382554,
+          "ema_down": 0.27502697340382554,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 24,
+          "r": 32,
+          "reason": "reheat",
+          "gap_down": 0.35910641310148816,
+          "ema_down": 0.31706669325265685,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 25,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 26,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.2916982480498014,
+          "ema_down": 0.2916982480498014,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 27,
+          "r": 32,
+          "reason": "reheat",
+          "gap_down": 0.3201464756673245,
+          "ema_down": 0.3059223618585629,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 28,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 29,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.21542867519838088,
+          "ema_down": 0.21542867519838088,
+          "r_next_epoch": 32
+        }
+      ],
+      "reheats": 5,
+      "mix_probs": null,
+      "reduction": "input_bilinear (align_corners=False, antialias=True; exact bypass at 32)",
+      "operator": "none",
+      "levels": null,
+      "monitor": {
+        "size": 2000,
+        "seed": 0,
+        "stream": "adaptive_monitor",
+        "n": 2000,
+        "sha256": "9ddd2fedb1c16f50fdcdf315b8d226d4a34548554f48429bf78e6d130868b0ca"
+      },
+      "normalization": {
+        "mean": [
+          0.4913996756076813,
+          0.4821584224700928,
+          0.44653090834617615
+        ],
+        "std": [
+          0.24703222513198853,
+          0.24348512291908264,
+          0.26158782839775085
+        ]
+      },
+      "final_test_acc": 0.8128,
+      "final_test_ce": 0.5478909652709961,
+      "final_train_probe_ce": 0.3811859436035156,
+      "wall_seconds": 570.4940632390001,
+      "eval_seconds": 130.91083255699982,
+      "train_seconds": 439.58323068200025,
+      "peak_mem_mib": 874.3876953125
+    },
+    {
+      "label": "Rsteps4ar__Gnone__input_bilinear__seed3",
+      "part": "G",
+      "schedule": "Rsteps4",
+      "arm": "Rsteps4ar",
+      "gaussian": "Gnone",
+      "seed": 3,
+      "mixed": false,
+      "controller": {
+        "operator": "none",
+        "levels": null,
+        "n_sites": 19,
+        "sites": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18
+        ],
+        "insertion_mask": "all19",
+        "reduction": "input_bilinear",
+        "resolution_by_epoch": [
+          16,
+          16,
+          16,
+          20,
+          20,
+          20,
+          24,
+          24,
+          24,
+          28,
+          28,
+          28,
+          32,
+          32,
+          32,
+          32,
+          24,
+          32,
+          24,
+          32,
+          32,
+          24,
+          32,
+          24,
+          32,
+          32,
+          24,
+          32,
+          32,
+          32
+        ],
+        "sigma_rule": "sigma_l(e) = q_l(e) * G(e); q_l = width_l / width_l@32",
+        "gmix_rule": "T_alpha(h) = (1-alpha) h + alpha G_{q_l}(h), reference width 1; alpha=0 returns h unevaluated",
+        "gaussian_kernel": null
+      },
+      "worker": 0,
+      "gpu_index": 0,
+      "gpu": "Tesla T4",
+      "epochs": 30,
+      "updates": 11730,
+      "updates_per_epoch": 391,
+      "n_train": 50000,
+      "n_test": 10000,
+      "warmup": 60,
+      "effective_batch": 128,
+      "microbatch": 32,
+      "resolution_by_epoch": [
+        16,
+        16,
+        16,
+        20,
+        20,
+        20,
+        24,
+        24,
+        24,
+        28,
+        28,
+        28,
+        32,
+        32,
+        32,
+        32,
+        24,
+        32,
+        24,
+        32,
+        32,
+        24,
+        32,
+        24,
+        32,
+        32,
+        24,
+        32,
+        32,
+        32
+      ],
+      "controller_log": [
+        {
+          "after_epoch": 1,
+          "r": 16,
+          "reason": null,
+          "r_next_epoch": 16
+        },
+        {
+          "after_epoch": 2,
+          "r": 16,
+          "reason": null,
+          "r_next_epoch": 16
+        },
+        {
+          "after_epoch": 3,
+          "r": 16,
+          "reason": null,
+          "r_next_epoch": 20
+        },
+        {
+          "after_epoch": 4,
+          "r": 20,
+          "reason": null,
+          "r_next_epoch": 20
+        },
+        {
+          "after_epoch": 5,
+          "r": 20,
+          "reason": null,
+          "r_next_epoch": 20
+        },
+        {
+          "after_epoch": 6,
+          "r": 20,
+          "reason": null,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 7,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 8,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 9,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 28
+        },
+        {
+          "after_epoch": 10,
+          "r": 28,
+          "reason": null,
+          "r_next_epoch": 28
+        },
+        {
+          "after_epoch": 11,
+          "r": 28,
+          "reason": null,
+          "r_next_epoch": 28
+        },
+        {
+          "after_epoch": 12,
+          "r": 28,
+          "reason": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 13,
+          "r": 32,
+          "reason": null,
+          "gap_down": null,
+          "ema_down": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 14,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.2177701500337272,
+          "ema_down": 0.2177701500337272,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 15,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.24953029048531045,
+          "ema_down": 0.23365022025951881,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 16,
+          "r": 32,
+          "reason": "reheat",
+          "gap_down": 0.40368810362493845,
+          "ema_down": 0.3186691619422286,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 17,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 18,
+          "r": 32,
+          "reason": "reheat",
+          "gap_down": 0.3287988941511907,
+          "ema_down": 0.3287988941511907,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 19,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 20,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.2827537435444123,
+          "ema_down": 0.2827537435444123,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 21,
+          "r": 32,
+          "reason": "reheat",
+          "gap_down": 0.3892333523798868,
+          "ema_down": 0.33599354796214953,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 22,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 23,
+          "r": 32,
+          "reason": "reheat",
+          "gap_down": 0.31167146919680067,
+          "ema_down": 0.31167146919680067,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 24,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 25,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.27502058970630266,
+          "ema_down": 0.27502058970630266,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 26,
+          "r": 32,
+          "reason": "reheat",
+          "gap_down": 0.330439454574992,
+          "ema_down": 0.30273002214064737,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 27,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 28,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.25658096794028734,
+          "ema_down": 0.25658096794028734,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 29,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.26392867479639126,
+          "ema_down": 0.26025482136833933,
+          "r_next_epoch": 32
+        }
+      ],
+      "reheats": 5,
+      "mix_probs": null,
+      "reduction": "input_bilinear (align_corners=False, antialias=True; exact bypass at 32)",
+      "operator": "none",
+      "levels": null,
+      "monitor": {
+        "size": 2000,
+        "seed": 0,
+        "stream": "adaptive_monitor",
+        "n": 2000,
+        "sha256": "9ddd2fedb1c16f50fdcdf315b8d226d4a34548554f48429bf78e6d130868b0ca"
+      },
+      "normalization": {
+        "mean": [
+          0.4913996756076813,
+          0.4821584224700928,
+          0.44653090834617615
+        ],
+        "std": [
+          0.24703222513198853,
+          0.24348512291908264,
+          0.26158782839775085
+        ]
+      },
+      "final_test_acc": 0.8012,
+      "final_test_ce": 0.5796331970214844,
+      "final_train_probe_ce": 0.4208616943359375,
+      "wall_seconds": 560.027623682,
+      "eval_seconds": 121.86032400800013,
+      "train_seconds": 438.1672996739999,
+      "peak_mem_mib": 874.3876953125
+    },
+    {
+      "label": "Rsteps4ar__Gnone__input_bilinear__seed4",
+      "part": "G",
+      "schedule": "Rsteps4",
+      "arm": "Rsteps4ar",
+      "gaussian": "Gnone",
+      "seed": 4,
+      "mixed": false,
+      "controller": {
+        "operator": "none",
+        "levels": null,
+        "n_sites": 19,
+        "sites": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18
+        ],
+        "insertion_mask": "all19",
+        "reduction": "input_bilinear",
+        "resolution_by_epoch": [
+          16,
+          16,
+          16,
+          20,
+          20,
+          20,
+          24,
+          24,
+          24,
+          28,
+          28,
+          28,
+          32,
+          32,
+          32,
+          24,
+          32,
+          24,
+          32,
+          32,
+          24,
+          32,
+          24,
+          32,
+          32,
+          32,
+          24,
+          32,
+          32,
+          32
+        ],
+        "sigma_rule": "sigma_l(e) = q_l(e) * G(e); q_l = width_l / width_l@32",
+        "gmix_rule": "T_alpha(h) = (1-alpha) h + alpha G_{q_l}(h), reference width 1; alpha=0 returns h unevaluated",
+        "gaussian_kernel": null
+      },
+      "worker": 1,
+      "gpu_index": 1,
+      "gpu": "Tesla T4",
+      "epochs": 30,
+      "updates": 11730,
+      "updates_per_epoch": 391,
+      "n_train": 50000,
+      "n_test": 10000,
+      "warmup": 60,
+      "effective_batch": 128,
+      "microbatch": 32,
+      "resolution_by_epoch": [
+        16,
+        16,
+        16,
+        20,
+        20,
+        20,
+        24,
+        24,
+        24,
+        28,
+        28,
+        28,
+        32,
+        32,
+        32,
+        24,
+        32,
+        24,
+        32,
+        32,
+        24,
+        32,
+        24,
+        32,
+        32,
+        32,
+        24,
+        32,
+        32,
+        32
+      ],
+      "controller_log": [
+        {
+          "after_epoch": 1,
+          "r": 16,
+          "reason": null,
+          "r_next_epoch": 16
+        },
+        {
+          "after_epoch": 2,
+          "r": 16,
+          "reason": null,
+          "r_next_epoch": 16
+        },
+        {
+          "after_epoch": 3,
+          "r": 16,
+          "reason": null,
+          "r_next_epoch": 20
+        },
+        {
+          "after_epoch": 4,
+          "r": 20,
+          "reason": null,
+          "r_next_epoch": 20
+        },
+        {
+          "after_epoch": 5,
+          "r": 20,
+          "reason": null,
+          "r_next_epoch": 20
+        },
+        {
+          "after_epoch": 6,
+          "r": 20,
+          "reason": null,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 7,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 8,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 9,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 28
+        },
+        {
+          "after_epoch": 10,
+          "r": 28,
+          "reason": null,
+          "r_next_epoch": 28
+        },
+        {
+          "after_epoch": 11,
+          "r": 28,
+          "reason": null,
+          "r_next_epoch": 28
+        },
+        {
+          "after_epoch": 12,
+          "r": 28,
+          "reason": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 13,
+          "r": 32,
+          "reason": null,
+          "gap_down": null,
+          "ema_down": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 14,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.29110412881755227,
+          "ema_down": 0.29110412881755227,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 15,
+          "r": 32,
+          "reason": "reheat",
+          "gap_down": 0.3666931955454419,
+          "ema_down": 0.3288986621814971,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 16,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 17,
+          "r": 32,
+          "reason": "reheat",
+          "gap_down": 0.3198745126374992,
+          "ema_down": 0.3198745126374992,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 18,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 19,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.2956374971134044,
+          "ema_down": 0.2956374971134044,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 20,
+          "r": 32,
+          "reason": "reheat",
+          "gap_down": 0.38822644647090804,
+          "ema_down": 0.34193197179215623,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 21,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 22,
+          "r": 32,
+          "reason": "reheat",
+          "gap_down": 0.31201000736877194,
+          "ema_down": 0.31201000736877194,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 23,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 24,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.26360182098277535,
+          "ema_down": 0.26360182098277535,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 25,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.3145111164819009,
+          "ema_down": 0.28905646873233815,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 26,
+          "r": 32,
+          "reason": "reheat",
+          "gap_down": 0.3473238505654163,
+          "ema_down": 0.3181901596488772,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 27,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 28,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.2601870263125267,
+          "ema_down": 0.2601870263125267,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 29,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.2755393996906297,
+          "ema_down": 0.2678632130015782,
+          "r_next_epoch": 32
+        }
+      ],
+      "reheats": 5,
+      "mix_probs": null,
+      "reduction": "input_bilinear (align_corners=False, antialias=True; exact bypass at 32)",
+      "operator": "none",
+      "levels": null,
+      "monitor": {
+        "size": 2000,
+        "seed": 0,
+        "stream": "adaptive_monitor",
+        "n": 2000,
+        "sha256": "9ddd2fedb1c16f50fdcdf315b8d226d4a34548554f48429bf78e6d130868b0ca"
+      },
+      "normalization": {
+        "mean": [
+          0.4913996756076813,
+          0.4821584224700928,
+          0.44653090834617615
+        ],
+        "std": [
+          0.24703222513198853,
+          0.24348512291908264,
+          0.26158782839775085
+        ]
+      },
+      "final_test_acc": 0.8081,
+      "final_test_ce": 0.5584254379272461,
+      "final_train_probe_ce": 0.38451495361328125,
+      "wall_seconds": 569.5840398679998,
+      "eval_seconds": 131.8847336380004,
+      "train_seconds": 437.69930622999937,
+      "peak_mem_mib": 874.3876953125
+    },
+    {
+      "label": "Rsteps4ar__Gnone__input_bilinear__seed5",
+      "part": "G",
+      "schedule": "Rsteps4",
+      "arm": "Rsteps4ar",
+      "gaussian": "Gnone",
+      "seed": 5,
+      "mixed": false,
+      "controller": {
+        "operator": "none",
+        "levels": null,
+        "n_sites": 19,
+        "sites": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18
+        ],
+        "insertion_mask": "all19",
+        "reduction": "input_bilinear",
+        "resolution_by_epoch": [
+          16,
+          16,
+          16,
+          20,
+          20,
+          20,
+          24,
+          24,
+          24,
+          28,
+          28,
+          28,
+          32,
+          32,
+          24,
+          32,
+          32,
+          32,
+          24,
+          32,
+          24,
+          32,
+          32,
+          24,
+          32,
+          32,
+          24,
+          32,
+          32,
+          32
+        ],
+        "sigma_rule": "sigma_l(e) = q_l(e) * G(e); q_l = width_l / width_l@32",
+        "gmix_rule": "T_alpha(h) = (1-alpha) h + alpha G_{q_l}(h), reference width 1; alpha=0 returns h unevaluated",
+        "gaussian_kernel": null
+      },
+      "worker": 0,
+      "gpu_index": 0,
+      "gpu": "Tesla T4",
+      "epochs": 30,
+      "updates": 11730,
+      "updates_per_epoch": 391,
+      "n_train": 50000,
+      "n_test": 10000,
+      "warmup": 60,
+      "effective_batch": 128,
+      "microbatch": 32,
+      "resolution_by_epoch": [
+        16,
+        16,
+        16,
+        20,
+        20,
+        20,
+        24,
+        24,
+        24,
+        28,
+        28,
+        28,
+        32,
+        32,
+        24,
+        32,
+        32,
+        32,
+        24,
+        32,
+        24,
+        32,
+        32,
+        24,
+        32,
+        32,
+        24,
+        32,
+        32,
+        32
+      ],
+      "controller_log": [
+        {
+          "after_epoch": 1,
+          "r": 16,
+          "reason": null,
+          "r_next_epoch": 16
+        },
+        {
+          "after_epoch": 2,
+          "r": 16,
+          "reason": null,
+          "r_next_epoch": 16
+        },
+        {
+          "after_epoch": 3,
+          "r": 16,
+          "reason": null,
+          "r_next_epoch": 20
+        },
+        {
+          "after_epoch": 4,
+          "r": 20,
+          "reason": null,
+          "r_next_epoch": 20
+        },
+        {
+          "after_epoch": 5,
+          "r": 20,
+          "reason": null,
+          "r_next_epoch": 20
+        },
+        {
+          "after_epoch": 6,
+          "r": 20,
+          "reason": null,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 7,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 8,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 9,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 28
+        },
+        {
+          "after_epoch": 10,
+          "r": 28,
+          "reason": null,
+          "r_next_epoch": 28
+        },
+        {
+          "after_epoch": 11,
+          "r": 28,
+          "reason": null,
+          "r_next_epoch": 28
+        },
+        {
+          "after_epoch": 12,
+          "r": 28,
+          "reason": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 13,
+          "r": 32,
+          "reason": null,
+          "gap_down": null,
+          "ema_down": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 14,
+          "r": 32,
+          "reason": "reheat",
+          "gap_down": 0.3059799989834061,
+          "ema_down": 0.3059799989834061,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 15,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 16,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.19156585292966527,
+          "ema_down": 0.19156585292966527,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 17,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.29256676003868215,
+          "ema_down": 0.2420663064841737,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 18,
+          "r": 32,
+          "reason": "reheat",
+          "gap_down": 0.38159058590589645,
+          "ema_down": 0.3118284461950351,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 19,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 20,
+          "r": 32,
+          "reason": "reheat",
+          "gap_down": 0.36525039937305337,
+          "ema_down": 0.36525039937305337,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 21,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 22,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.29803723175642693,
+          "ema_down": 0.29803723175642693,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 23,
+          "r": 32,
+          "reason": "reheat",
+          "gap_down": 0.35205471746709677,
+          "ema_down": 0.3250459746117619,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 24,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 25,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.2998176029516298,
+          "ema_down": 0.2998176029516298,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 26,
+          "r": 32,
+          "reason": "reheat",
+          "gap_down": 0.3484768127918777,
+          "ema_down": 0.3241472078717538,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 27,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 28,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.2504714233198436,
+          "ema_down": 0.2504714233198436,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 29,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.2888235162213395,
+          "ema_down": 0.26964746977059156,
+          "r_next_epoch": 32
+        }
+      ],
+      "reheats": 5,
+      "mix_probs": null,
+      "reduction": "input_bilinear (align_corners=False, antialias=True; exact bypass at 32)",
+      "operator": "none",
+      "levels": null,
+      "monitor": {
+        "size": 2000,
+        "seed": 0,
+        "stream": "adaptive_monitor",
+        "n": 2000,
+        "sha256": "9ddd2fedb1c16f50fdcdf315b8d226d4a34548554f48429bf78e6d130868b0ca"
+      },
+      "normalization": {
+        "mean": [
+          0.4913996756076813,
+          0.4821584224700928,
+          0.44653090834617615
+        ],
+        "std": [
+          0.24703222513198853,
+          0.24348512291908264,
+          0.26158782839775085
+        ]
+      },
+      "final_test_acc": 0.804,
+      "final_test_ce": 0.571315542602539,
+      "final_train_probe_ce": 0.42759539794921875,
+      "wall_seconds": 560.348910527,
+      "eval_seconds": 121.70655270099996,
+      "train_seconds": 438.6423578260001,
+      "peak_mem_mib": 874.3876953125
+    },
+    {
+      "label": "Rsteps4__Gnone__input_bilinear__seed3",
+      "part": "G",
+      "schedule": "Rsteps4",
+      "arm": "Rsteps4",
+      "gaussian": "Gnone",
+      "seed": 3,
+      "mixed": false,
+      "worker": 1,
+      "gpu_index": 1,
+      "gpu": "Tesla T4",
+      "epochs": 30,
+      "updates": 11730,
+      "updates_per_epoch": 391,
+      "n_train": 50000,
+      "n_test": 10000,
+      "warmup": 60,
+      "effective_batch": 128,
+      "microbatch": 32,
+      "resolution_by_epoch": [
+        16,
+        16,
+        16,
+        20,
+        20,
+        20,
+        24,
+        24,
+        24,
+        28,
+        28,
+        28,
+        32,
+        32,
+        32,
+        32,
+        32,
+        32,
+        32,
+        32,
+        32,
+        32,
+        32,
+        32,
+        32,
+        32,
+        32,
+        32,
+        32,
+        32
+      ],
+      "controller": {
+        "operator": "none",
+        "levels": null,
+        "n_sites": 19,
+        "sites": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18
+        ],
+        "insertion_mask": "all19",
+        "reduction": "input_bilinear",
+        "resolution_by_epoch": [
+          16,
+          16,
+          16,
+          20,
+          20,
+          20,
+          24,
+          24,
+          24,
+          28,
+          28,
+          28,
+          32,
+          32,
+          32,
+          32,
+          32,
+          32,
+          32,
+          32,
+          32,
+          32,
+          32,
+          32,
+          32,
+          32,
+          32,
+          32,
+          32,
+          32
+        ],
+        "sigma_rule": "sigma_l(e) = q_l(e) * G(e); q_l = width_l / width_l@32",
+        "gmix_rule": "T_alpha(h) = (1-alpha) h + alpha G_{q_l}(h), reference width 1; alpha=0 returns h unevaluated",
+        "gaussian_kernel": null
+      },
+      "controller_log": null,
+      "reheats": null,
+      "mix_probs": null,
+      "reduction": "input_bilinear (align_corners=False, antialias=True; exact bypass at 32)",
+      "operator": "none",
+      "levels": null,
+      "monitor": {
+        "size": 2000,
+        "seed": 0,
+        "stream": "adaptive_monitor",
+        "n": 2000,
+        "sha256": "9ddd2fedb1c16f50fdcdf315b8d226d4a34548554f48429bf78e6d130868b0ca"
+      },
+      "normalization": {
+        "mean": [
+          0.4913996756076813,
+          0.4821584224700928,
+          0.44653090834617615
+        ],
+        "std": [
+          0.24703222513198853,
+          0.24348512291908264,
+          0.26158782839775085
+        ]
+      },
+      "final_test_acc": 0.7934,
+      "final_test_ce": 0.6141084259033203,
+      "final_train_probe_ce": 0.3238736572265625,
+      "wall_seconds": 563.6690514659999,
+      "eval_seconds": 118.33088718599947,
+      "train_seconds": 445.33816428000046,
+      "peak_mem_mib": 874.3876953125
+    },
+    {
+      "label": "Rsteps4__Gnone__input_bilinear__seed4",
+      "part": "G",
+      "schedule": "Rsteps4",
+      "arm": "Rsteps4",
+      "gaussian": "Gnone",
+      "seed": 4,
+      "mixed": false,
+      "worker": 0,
+      "gpu_index": 0,
+      "gpu": "Tesla T4",
+      "epochs": 30,
+      "updates": 11730,
+      "updates_per_epoch": 391,
+      "n_train": 50000,
+      "n_test": 10000,
+      "warmup": 60,
+      "effective_batch": 128,
+      "microbatch": 32,
+      "resolution_by_epoch": [
+        16,
+        16,
+        16,
+        20,
+        20,
+        20,
+        24,
+        24,
+        24,
+        28,
+        28,
+        28,
+        32,
+        32,
+        32,
+        32,
+        32,
+        32,
+        32,
+        32,
+        32,
+        32,
+        32,
+        32,
+        32,
+        32,
+        32,
+        32,
+        32,
+        32
+      ],
+      "controller": {
+        "operator": "none",
+        "levels": null,
+        "n_sites": 19,
+        "sites": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18
+        ],
+        "insertion_mask": "all19",
+        "reduction": "input_bilinear",
+        "resolution_by_epoch": [
+          16,
+          16,
+          16,
+          20,
+          20,
+          20,
+          24,
+          24,
+          24,
+          28,
+          28,
+          28,
+          32,
+          32,
+          32,
+          32,
+          32,
+          32,
+          32,
+          32,
+          32,
+          32,
+          32,
+          32,
+          32,
+          32,
+          32,
+          32,
+          32,
+          32
+        ],
+        "sigma_rule": "sigma_l(e) = q_l(e) * G(e); q_l = width_l / width_l@32",
+        "gmix_rule": "T_alpha(h) = (1-alpha) h + alpha G_{q_l}(h), reference width 1; alpha=0 returns h unevaluated",
+        "gaussian_kernel": null
+      },
+      "controller_log": null,
+      "reheats": null,
+      "mix_probs": null,
+      "reduction": "input_bilinear (align_corners=False, antialias=True; exact bypass at 32)",
+      "operator": "none",
+      "levels": null,
+      "monitor": {
+        "size": 2000,
+        "seed": 0,
+        "stream": "adaptive_monitor",
+        "n": 2000,
+        "sha256": "9ddd2fedb1c16f50fdcdf315b8d226d4a34548554f48429bf78e6d130868b0ca"
+      },
+      "normalization": {
+        "mean": [
+          0.4913996756076813,
+          0.4821584224700928,
+          0.44653090834617615
+        ],
+        "std": [
+          0.24703222513198853,
+          0.24348512291908264,
+          0.26158782839775085
+        ]
+      },
+      "final_test_acc": 0.7988,
+      "final_test_ce": 0.5876243225097656,
+      "final_train_probe_ce": 0.30361825561523437,
+      "wall_seconds": 555.4490331380002,
+      "eval_seconds": 108.92000750699935,
+      "train_seconds": 446.5290256310009,
+      "peak_mem_mib": 874.3876953125
+    },
+    {
+      "label": "Rsteps4__Gnone__input_bilinear__seed5",
+      "part": "G",
+      "schedule": "Rsteps4",
+      "arm": "Rsteps4",
+      "gaussian": "Gnone",
+      "seed": 5,
+      "mixed": false,
+      "worker": 1,
+      "gpu_index": 1,
+      "gpu": "Tesla T4",
+      "epochs": 30,
+      "updates": 11730,
+      "updates_per_epoch": 391,
+      "n_train": 50000,
+      "n_test": 10000,
+      "warmup": 60,
+      "effective_batch": 128,
+      "microbatch": 32,
+      "resolution_by_epoch": [
+        16,
+        16,
+        16,
+        20,
+        20,
+        20,
+        24,
+        24,
+        24,
+        28,
+        28,
+        28,
+        32,
+        32,
+        32,
+        32,
+        32,
+        32,
+        32,
+        32,
+        32,
+        32,
+        32,
+        32,
+        32,
+        32,
+        32,
+        32,
+        32,
+        32
+      ],
+      "controller": {
+        "operator": "none",
+        "levels": null,
+        "n_sites": 19,
+        "sites": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18
+        ],
+        "insertion_mask": "all19",
+        "reduction": "input_bilinear",
+        "resolution_by_epoch": [
+          16,
+          16,
+          16,
+          20,
+          20,
+          20,
+          24,
+          24,
+          24,
+          28,
+          28,
+          28,
+          32,
+          32,
+          32,
+          32,
+          32,
+          32,
+          32,
+          32,
+          32,
+          32,
+          32,
+          32,
+          32,
+          32,
+          32,
+          32,
+          32,
+          32
+        ],
+        "sigma_rule": "sigma_l(e) = q_l(e) * G(e); q_l = width_l / width_l@32",
+        "gmix_rule": "T_alpha(h) = (1-alpha) h + alpha G_{q_l}(h), reference width 1; alpha=0 returns h unevaluated",
+        "gaussian_kernel": null
+      },
+      "controller_log": null,
+      "reheats": null,
+      "mix_probs": null,
+      "reduction": "input_bilinear (align_corners=False, antialias=True; exact bypass at 32)",
+      "operator": "none",
+      "levels": null,
+      "monitor": {
+        "size": 2000,
+        "seed": 0,
+        "stream": "adaptive_monitor",
+        "n": 2000,
+        "sha256": "9ddd2fedb1c16f50fdcdf315b8d226d4a34548554f48429bf78e6d130868b0ca"
+      },
+      "normalization": {
+        "mean": [
+          0.4913996756076813,
+          0.4821584224700928,
+          0.44653090834617615
+        ],
+        "std": [
+          0.24703222513198853,
+          0.24348512291908264,
+          0.26158782839775085
+        ]
+      },
+      "final_test_acc": 0.802,
+      "final_test_ce": 0.5910036163330078,
+      "final_train_probe_ce": 0.35137158203125,
+      "wall_seconds": 562.7144585319998,
+      "eval_seconds": 118.42779953400122,
+      "train_seconds": 444.28665899799853,
+      "peak_mem_mib": 874.3876953125
+    },
+    {
+      "label": "Rgap2s30__Gnone__input_bilinear__seed3",
+      "part": "G",
+      "schedule": "Rgap2s30",
+      "arm": "Rgap2s30",
+      "gaussian": "Gnone",
+      "seed": 3,
+      "mixed": false,
+      "controller": {
+        "operator": "none",
+        "levels": null,
+        "n_sites": 19,
+        "sites": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18
+        ],
+        "insertion_mask": "all19",
+        "reduction": "input_bilinear",
+        "resolution_by_epoch": [
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          20,
+          24,
+          24,
+          24,
+          24,
+          28,
+          28,
+          32,
+          32,
+          32,
+          32,
+          32,
+          24,
+          32,
+          24,
+          32,
+          32,
+          24,
+          32,
+          32,
+          24,
+          32,
+          32,
+          32
+        ],
+        "sigma_rule": "sigma_l(e) = q_l(e) * G(e); q_l = width_l / width_l@32",
+        "gmix_rule": "T_alpha(h) = (1-alpha) h + alpha G_{q_l}(h), reference width 1; alpha=0 returns h unevaluated",
+        "gaussian_kernel": null
+      },
+      "worker": 0,
+      "gpu_index": 0,
+      "gpu": "Tesla T4",
+      "epochs": 30,
+      "updates": 11730,
+      "updates_per_epoch": 391,
+      "n_train": 50000,
+      "n_test": 10000,
+      "warmup": 60,
+      "effective_batch": 128,
+      "microbatch": 32,
+      "resolution_by_epoch": [
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        20,
+        24,
+        24,
+        24,
+        24,
+        28,
+        28,
+        32,
+        32,
+        32,
+        32,
+        32,
+        24,
+        32,
+        24,
+        32,
+        32,
+        24,
+        32,
+        32,
+        24,
+        32,
+        32,
+        32
+      ],
+      "controller_log": [
+        {
+          "after_epoch": 1,
+          "r": 16,
+          "reason": null,
+          "gap": -0.006190698121399325,
+          "ema": -0.006190698121399325,
+          "r_next_epoch": 16
+        },
+        {
+          "after_epoch": 2,
+          "r": 16,
+          "reason": null,
+          "gap": 0.011868026364260976,
+          "ema": 0.0028386641214308253,
+          "r_next_epoch": 16
+        },
+        {
+          "after_epoch": 3,
+          "r": 16,
+          "reason": null,
+          "gap": 0.002533869974521906,
+          "ema": 0.002686267047976366,
+          "r_next_epoch": 16
+        },
+        {
+          "after_epoch": 4,
+          "r": 16,
+          "reason": null,
+          "gap": 0.07760433389534559,
+          "ema": 0.040145300471660976,
+          "r_next_epoch": 16
+        },
+        {
+          "after_epoch": 5,
+          "r": 16,
+          "reason": null,
+          "gap": 0.07501573376269732,
+          "ema": 0.05758051711717915,
+          "r_next_epoch": 16
+        },
+        {
+          "after_epoch": 6,
+          "r": 16,
+          "reason": "gap_above_gstar",
+          "gap": 0.11982813945696977,
+          "ema": 0.08870432828707446,
+          "r_next_epoch": 20
+        },
+        {
+          "after_epoch": 7,
+          "r": 20,
+          "reason": "gap_above_gstar",
+          "gap": 0.061159593545227264,
+          "ema": 0.061159593545227264,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 8,
+          "r": 24,
+          "reason": null,
+          "gap": -0.0034504428071966487,
+          "ema": -0.0034504428071966487,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 9,
+          "r": 24,
+          "reason": null,
+          "gap": 0.06334986688512369,
+          "ema": 0.02994971203896352,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 10,
+          "r": 24,
+          "reason": null,
+          "gap": 0.07947974577460537,
+          "ema": 0.05471472890678444,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 11,
+          "r": 24,
+          "reason": "gap_above_gstar",
+          "gap": 0.06945240578261735,
+          "ema": 0.0620835673447009,
+          "r_next_epoch": 28
+        },
+        {
+          "after_epoch": 12,
+          "r": 28,
+          "reason": null,
+          "gap": 0.05729040304935281,
+          "ema": 0.05729040304935281,
+          "r_next_epoch": 28
+        },
+        {
+          "after_epoch": 13,
+          "r": 28,
+          "reason": "gap_above_gstar",
+          "gap": 0.09113304305430886,
+          "ema": 0.07421172305183084,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 14,
+          "r": 32,
+          "reason": null,
+          "gap_down": null,
+          "ema_down": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 15,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.16223078805240265,
+          "ema_down": 0.16223078805240265,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 16,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.2983434541428885,
+          "ema_down": 0.23028712109764557,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 17,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.35597405715527636,
+          "ema_down": 0.29313058912646095,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 18,
+          "r": 32,
+          "reason": "reheat",
+          "gap_down": 0.43519202866109286,
+          "ema_down": 0.3641613088937769,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 19,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 20,
+          "r": 32,
+          "reason": "reheat",
+          "gap_down": 0.3118901753388929,
+          "ema_down": 0.3118901753388929,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 21,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 22,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.27664215158700933,
+          "ema_down": 0.27664215158700933,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 23,
+          "r": 32,
+          "reason": "reheat",
+          "gap_down": 0.3682451642362641,
+          "ema_down": 0.3224436579116367,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 24,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 25,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.2931808260032443,
+          "ema_down": 0.2931808260032443,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 26,
+          "r": 32,
+          "reason": "reheat",
+          "gap_down": 0.33762688571965704,
+          "ema_down": 0.3154038558614507,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 27,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 28,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.2663754091039359,
+          "ema_down": 0.2663754091039359,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 29,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.271831640581529,
+          "ema_down": 0.2691035248427325,
+          "r_next_epoch": 32
+        }
+      ],
+      "reheats": 4,
+      "mix_probs": null,
+      "reduction": "input_bilinear (align_corners=False, antialias=True; exact bypass at 32)",
+      "operator": "none",
+      "levels": null,
+      "monitor": {
+        "size": 2000,
+        "seed": 0,
+        "stream": "adaptive_monitor",
+        "n": 2000,
+        "sha256": "9ddd2fedb1c16f50fdcdf315b8d226d4a34548554f48429bf78e6d130868b0ca"
+      },
+      "normalization": {
+        "mean": [
+          0.4913996756076813,
+          0.4821584224700928,
+          0.44653090834617615
+        ],
+        "std": [
+          0.24703222513198853,
+          0.24348512291908264,
+          0.26158782839775085
+        ]
+      },
+      "final_test_acc": 0.7954,
+      "final_test_ce": 0.59504208984375,
+      "final_train_probe_ce": 0.4475072326660156,
+      "wall_seconds": 555.8482234349999,
+      "eval_seconds": 119.0156577000007,
+      "train_seconds": 436.8325657349992,
+      "peak_mem_mib": 874.3876953125
+    },
+    {
+      "label": "Rgap2s30__Gnone__input_bilinear__seed4",
+      "part": "G",
+      "schedule": "Rgap2s30",
+      "arm": "Rgap2s30",
+      "gaussian": "Gnone",
+      "seed": 4,
+      "mixed": false,
+      "controller": {
+        "operator": "none",
+        "levels": null,
+        "n_sites": 19,
+        "sites": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18
+        ],
+        "insertion_mask": "all19",
+        "reduction": "input_bilinear",
+        "resolution_by_epoch": [
+          16,
+          16,
+          16,
+          16,
+          16,
+          20,
+          20,
+          24,
+          24,
+          24,
+          28,
+          28,
+          28,
+          28,
+          32,
+          32,
+          24,
+          32,
+          32,
+          24,
+          32,
+          24,
+          32,
+          24,
+          32,
+          32,
+          32,
+          32,
+          32,
+          32
+        ],
+        "sigma_rule": "sigma_l(e) = q_l(e) * G(e); q_l = width_l / width_l@32",
+        "gmix_rule": "T_alpha(h) = (1-alpha) h + alpha G_{q_l}(h), reference width 1; alpha=0 returns h unevaluated",
+        "gaussian_kernel": null
+      },
+      "worker": 1,
+      "gpu_index": 1,
+      "gpu": "Tesla T4",
+      "epochs": 30,
+      "updates": 11730,
+      "updates_per_epoch": 391,
+      "n_train": 50000,
+      "n_test": 10000,
+      "warmup": 60,
+      "effective_batch": 128,
+      "microbatch": 32,
+      "resolution_by_epoch": [
+        16,
+        16,
+        16,
+        16,
+        16,
+        20,
+        20,
+        24,
+        24,
+        24,
+        28,
+        28,
+        28,
+        28,
+        32,
+        32,
+        24,
+        32,
+        32,
+        24,
+        32,
+        24,
+        32,
+        24,
+        32,
+        32,
+        32,
+        32,
+        32,
+        32
+      ],
+      "controller_log": [
+        {
+          "after_epoch": 1,
+          "r": 16,
+          "reason": null,
+          "gap": 0.0014020308926112528,
+          "ema": 0.0014020308926112528,
+          "r_next_epoch": 16
+        },
+        {
+          "after_epoch": 2,
+          "r": 16,
+          "reason": null,
+          "gap": 0.02991032972215471,
+          "ema": 0.015656180307382982,
+          "r_next_epoch": 16
+        },
+        {
+          "after_epoch": 3,
+          "r": 16,
+          "reason": null,
+          "gap": 0.06254683164672223,
+          "ema": 0.03910150597705261,
+          "r_next_epoch": 16
+        },
+        {
+          "after_epoch": 4,
+          "r": 16,
+          "reason": null,
+          "gap": 0.07501577697326767,
+          "ema": 0.05705864147516014,
+          "r_next_epoch": 16
+        },
+        {
+          "after_epoch": 5,
+          "r": 16,
+          "reason": "gap_above_gstar",
+          "gap": 0.08036834484917514,
+          "ema": 0.06871349316216764,
+          "r_next_epoch": 20
+        },
+        {
+          "after_epoch": 6,
+          "r": 20,
+          "reason": null,
+          "gap": 0.05314375875172287,
+          "ema": 0.05314375875172287,
+          "r_next_epoch": 20
+        },
+        {
+          "after_epoch": 7,
+          "r": 20,
+          "reason": "gap_above_gstar",
+          "gap": 0.07274338908372951,
+          "ema": 0.06294357391772619,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 8,
+          "r": 24,
+          "reason": null,
+          "gap": 0.04463186014789666,
+          "ema": 0.04463186014789666,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 9,
+          "r": 24,
+          "reason": null,
+          "gap": 0.06615938470296229,
+          "ema": 0.055395622425429475,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 10,
+          "r": 24,
+          "reason": "gap_above_gstar",
+          "gap": 0.07637744363510322,
+          "ema": 0.06588653303026634,
+          "r_next_epoch": 28
+        },
+        {
+          "after_epoch": 11,
+          "r": 28,
+          "reason": null,
+          "gap": 0.02397995092105739,
+          "ema": 0.02397995092105739,
+          "r_next_epoch": 28
+        },
+        {
+          "after_epoch": 12,
+          "r": 28,
+          "reason": null,
+          "gap": 0.03836253263894178,
+          "ema": 0.031171241779999585,
+          "r_next_epoch": 28
+        },
+        {
+          "after_epoch": 13,
+          "r": 28,
+          "reason": null,
+          "gap": 0.05247837357149246,
+          "ema": 0.04182480767574602,
+          "r_next_epoch": 28
+        },
+        {
+          "after_epoch": 14,
+          "r": 28,
+          "reason": "gap_above_gstar",
+          "gap": 0.11450012839677659,
+          "ema": 0.07816246803626131,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 15,
+          "r": 32,
+          "reason": null,
+          "gap_down": null,
+          "ema_down": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 16,
+          "r": 32,
+          "reason": "reheat",
+          "gap_down": 0.32897923471755364,
+          "ema_down": 0.32897923471755364,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 17,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 18,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.29497142165929147,
+          "ema_down": 0.29497142165929147,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 19,
+          "r": 32,
+          "reason": "reheat",
+          "gap_down": 0.39317593652544647,
+          "ema_down": 0.34407367909236897,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 20,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 21,
+          "r": 32,
+          "reason": "reheat",
+          "gap_down": 0.3258111097341316,
+          "ema_down": 0.3258111097341316,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 22,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 23,
+          "r": 32,
+          "reason": "reheat",
+          "gap_down": 0.3091961256429901,
+          "ema_down": 0.3091961256429901,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 24,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 25,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.2613329809024015,
+          "ema_down": 0.2613329809024015,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 26,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.316583088577773,
+          "ema_down": 0.28895803474008724,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 27,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.31630767184132935,
+          "ema_down": 0.3026328532907083,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 28,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.34517910929884066,
+          "ema_down": 0.3239059812947745,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 29,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.3502519152848853,
+          "ema_down": 0.33707894828982987,
+          "r_next_epoch": 32
+        }
+      ],
+      "reheats": 4,
+      "mix_probs": null,
+      "reduction": "input_bilinear (align_corners=False, antialias=True; exact bypass at 32)",
+      "operator": "none",
+      "levels": null,
+      "monitor": {
+        "size": 2000,
+        "seed": 0,
+        "stream": "adaptive_monitor",
+        "n": 2000,
+        "sha256": "9ddd2fedb1c16f50fdcdf315b8d226d4a34548554f48429bf78e6d130868b0ca"
+      },
+      "normalization": {
+        "mean": [
+          0.4913996756076813,
+          0.4821584224700928,
+          0.44653090834617615
+        ],
+        "std": [
+          0.24703222513198853,
+          0.24348512291908264,
+          0.26158782839775085
+        ]
+      },
+      "final_test_acc": 0.8059,
+      "final_test_ce": 0.5612269500732422,
+      "final_train_probe_ce": 0.4015408935546875,
+      "wall_seconds": 571.4675206729999,
+      "eval_seconds": 134.51698175799993,
+      "train_seconds": 436.9505389149999,
+      "peak_mem_mib": 874.3876953125
+    },
+    {
+      "label": "Rgap2s30__Gnone__input_bilinear__seed5",
+      "part": "G",
+      "schedule": "Rgap2s30",
+      "arm": "Rgap2s30",
+      "gaussian": "Gnone",
+      "seed": 5,
+      "mixed": false,
+      "controller": {
+        "operator": "none",
+        "levels": null,
+        "n_sites": 19,
+        "sites": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18
+        ],
+        "insertion_mask": "all19",
+        "reduction": "input_bilinear",
+        "resolution_by_epoch": [
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          20,
+          20,
+          20,
+          24,
+          24,
+          24,
+          28,
+          32,
+          32,
+          32,
+          32,
+          32,
+          24,
+          32,
+          24,
+          32,
+          32,
+          24,
+          32,
+          32,
+          24,
+          32,
+          32,
+          32
+        ],
+        "sigma_rule": "sigma_l(e) = q_l(e) * G(e); q_l = width_l / width_l@32",
+        "gmix_rule": "T_alpha(h) = (1-alpha) h + alpha G_{q_l}(h), reference width 1; alpha=0 returns h unevaluated",
+        "gaussian_kernel": null
+      },
+      "worker": 0,
+      "gpu_index": 0,
+      "gpu": "Tesla T4",
+      "epochs": 30,
+      "updates": 11730,
+      "updates_per_epoch": 391,
+      "n_train": 50000,
+      "n_test": 10000,
+      "warmup": 60,
+      "effective_batch": 128,
+      "microbatch": 32,
+      "resolution_by_epoch": [
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        20,
+        20,
+        20,
+        24,
+        24,
+        24,
+        28,
+        32,
+        32,
+        32,
+        32,
+        32,
+        24,
+        32,
+        24,
+        32,
+        32,
+        24,
+        32,
+        32,
+        24,
+        32,
+        32,
+        32
+      ],
+      "controller_log": [
+        {
+          "after_epoch": 1,
+          "r": 16,
+          "reason": null,
+          "gap": 0.007920609220414751,
+          "ema": 0.007920609220414751,
+          "r_next_epoch": 16
+        },
+        {
+          "after_epoch": 2,
+          "r": 16,
+          "reason": null,
+          "gap": 0.027608405981548147,
+          "ema": 0.01776450760098145,
+          "r_next_epoch": 16
+        },
+        {
+          "after_epoch": 3,
+          "r": 16,
+          "reason": null,
+          "gap": 0.031897667479381296,
+          "ema": 0.024831087540181374,
+          "r_next_epoch": 16
+        },
+        {
+          "after_epoch": 4,
+          "r": 16,
+          "reason": null,
+          "gap": 0.0487727864801182,
+          "ema": 0.03680193701014979,
+          "r_next_epoch": 16
+        },
+        {
+          "after_epoch": 5,
+          "r": 16,
+          "reason": null,
+          "gap": 0.08010491766891163,
+          "ema": 0.05845342733953071,
+          "r_next_epoch": 16
+        },
+        {
+          "after_epoch": 6,
+          "r": 16,
+          "reason": "gap_above_gstar",
+          "gap": 0.09767217291666883,
+          "ema": 0.07806280012809977,
+          "r_next_epoch": 20
+        },
+        {
+          "after_epoch": 7,
+          "r": 20,
+          "reason": null,
+          "gap": 0.05351872711952993,
+          "ema": 0.05351872711952993,
+          "r_next_epoch": 20
+        },
+        {
+          "after_epoch": 8,
+          "r": 20,
+          "reason": null,
+          "gap": 0.05358139276334895,
+          "ema": 0.05355005994143944,
+          "r_next_epoch": 20
+        },
+        {
+          "after_epoch": 9,
+          "r": 20,
+          "reason": "gap_above_gstar",
+          "gap": 0.12219522854033386,
+          "ema": 0.08787264424088664,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 10,
+          "r": 24,
+          "reason": null,
+          "gap": 0.019094059047855418,
+          "ema": 0.019094059047855418,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 11,
+          "r": 24,
+          "reason": null,
+          "gap": 0.061925723719042876,
+          "ema": 0.04050989138344915,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 12,
+          "r": 24,
+          "reason": "gap_above_gstar",
+          "gap": 0.08593942571202567,
+          "ema": 0.06322465854773741,
+          "r_next_epoch": 28
+        },
+        {
+          "after_epoch": 13,
+          "r": 28,
+          "reason": "gap_above_gstar",
+          "gap": 0.08044059075692772,
+          "ema": 0.08044059075692772,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 14,
+          "r": 32,
+          "reason": null,
+          "gap_down": null,
+          "ema_down": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 15,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.14745122074458358,
+          "ema_down": 0.14745122074458358,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 16,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.2186100211673386,
+          "ema_down": 0.1830306209559611,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 17,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.3114621123449765,
+          "ema_down": 0.24724636665046879,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 18,
+          "r": 32,
+          "reason": "reheat",
+          "gap_down": 0.3557127522275098,
+          "ema_down": 0.3014795594389893,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 19,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 20,
+          "r": 32,
+          "reason": "reheat",
+          "gap_down": 0.3353890378244685,
+          "ema_down": 0.3353890378244685,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 21,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 22,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.29395068839743005,
+          "ema_down": 0.29395068839743005,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 23,
+          "r": 32,
+          "reason": "reheat",
+          "gap_down": 0.35258257717938274,
+          "ema_down": 0.3232666327884064,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 24,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 25,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.29437263252503626,
+          "ema_down": 0.29437263252503626,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 26,
+          "r": 32,
+          "reason": "reheat",
+          "gap_down": 0.3399959477863777,
+          "ema_down": 0.317184290155707,
+          "r_next_epoch": 24
+        },
+        {
+          "after_epoch": 27,
+          "r": 24,
+          "reason": null,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 28,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.24930188318602592,
+          "ema_down": 0.24930188318602592,
+          "r_next_epoch": 32
+        },
+        {
+          "after_epoch": 29,
+          "r": 32,
+          "reason": null,
+          "gap_down": 0.27978969280880506,
+          "ema_down": 0.26454578799741546,
+          "r_next_epoch": 32
+        }
+      ],
+      "reheats": 4,
+      "mix_probs": null,
+      "reduction": "input_bilinear (align_corners=False, antialias=True; exact bypass at 32)",
+      "operator": "none",
+      "levels": null,
+      "monitor": {
+        "size": 2000,
+        "seed": 0,
+        "stream": "adaptive_monitor",
+        "n": 2000,
+        "sha256": "9ddd2fedb1c16f50fdcdf315b8d226d4a34548554f48429bf78e6d130868b0ca"
+      },
+      "normalization": {
+        "mean": [
+          0.4913996756076813,
+          0.4821584224700928,
+          0.44653090834617615
+        ],
+        "std": [
+          0.24703222513198853,
+          0.24348512291908264,
+          0.26158782839775085
+        ]
+      },
+      "final_test_acc": 0.8016,
+      "final_test_ce": 0.5813482025146485,
+      "final_train_probe_ce": 0.425123046875,
+      "wall_seconds": 533.6805279009996,
+      "eval_seconds": 116.28609525899992,
+      "train_seconds": 417.39443264199963,
+      "peak_mem_mib": 874.3876953125
+    }
+  ],
+  "failed_or_incomplete": [],
+  "elapsed_s": 4499.014161422
+}

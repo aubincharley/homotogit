@@ -1,0 +1,5 @@
+{
+  "invalid": true,
+  "reason": "controller decisions never reached the training path: SiteController holds a copy of the schedule, so the network trained at 16x16 for all 30 epochs while the snapshot evaluated it at the decided resolution. Fixed in job_adaptive_phase0.py (ctrl.resolution_by_epoch updated + schedule guard) and re-run as adaptive-phase2b-*. The per-epoch signals of these runs are still valid measurements of a network trained at r=16 throughout.",
+  "found": "2026-09-17"
+}

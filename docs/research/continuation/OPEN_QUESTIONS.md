@@ -1,7 +1,7 @@
 ---
 id: DOC-QUESTIONS
 schema_version: 1
-updated_at: 2026-09-09
+updated_at: 2026-09-17
 status: unexecuted_research_options
 ---
 
@@ -42,6 +42,9 @@ Rprog, Rgentle et Rreverse ne constituent pas une recherche complète sur toutes
 Pour isoler une question précise, il faudrait choisir soit de conserver la convention d'échelle et d'assumer ce couplage, soit de fixer une trajectoire effective comparable. Le meilleur choix dépend de l'hypothèse ; aucune équivalence universelle entre sigma et résolution ne peut être obtenue en faisant simplement correspondre leurs valeurs numériques.
 
 ## Q-04 — Quelle part du mauvais chemin cible vient de BN ?
+
+**Tranchée par [EXP-012](experiments/EXP-012_adaptive_phase0.md)** (2026-09-16) : la recalibration BN à poids fixés récupère environ la moitié de l'effondrement du chemin cible en fin de palier 16 (30→44 % contre 57 % sur le chemin courant, graine 0) et sa quasi-totalité en fin de palier 24. Le texte historique suit.
+
 
 Une recalibration BN à poids fixés sur les seules données d'entraînement serait un diagnostic distinct. Elle permettrait d'observer ce qui est récupérable par les statistiques, tout en sachant que la fonction sans filtre reste différente. Aucun contrôle de ce type n'est présent dans les résultats disponibles. Les métriques finales après neuf époques à la cible ne nécessitent pas de retrait anticipé des filtres.
 

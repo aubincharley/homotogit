@@ -1,0 +1,23 @@
+{
+  "spec": {
+    "label": "Rgap2s15__Gnone__input_bilinear__seed1",
+    "part": "F",
+    "schedule": "Rgap2s15",
+    "gaussian": "Gnone",
+    "seed": 1,
+    "mixed": false,
+    "controller": {
+      "kind": "gap2s",
+      "gstar": 0.06,
+      "delta": 4,
+      "ema_beta": 0.5,
+      "floor_start": 11,
+      "down_gstar": 0.15,
+      "reheat_r": 24,
+      "settle": 3,
+      "floor": "ascent only: r >= 16 + 4*(e-11) for e >= 11"
+    }
+  },
+  "worker": 1,
+  "traceback": "Traceback (most recent call last):\n  File \"/kaggle/working/_repo/scripts/job_adaptive_phase0.py\", line 656, in _worker\n    train_run(spec, Path(shared_dir), gpu, Path(out_dir), worker)\n  File \"/kaggle/working/_repo/scripts/job_adaptive_phase0.py\", line 604, in train_run\n    controller_decide(done, sig)\n  File \"/kaggle/working/_repo/scripts/job_adaptive_phase0.py\", line 393, in controller_decide\n    if ctl_state[\"ema\"] is not None and ctl_state[\"ema\"] < controller[\"theta\"]:\n                                                           ~~~~~~~~~~^^^^^^^^^\nKeyError: 'theta'\n"
+}

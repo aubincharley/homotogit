@@ -172,6 +172,68 @@ EVIDENCE = {
         "code_state": "code de la campagne ecrit pour ce run et inchange depuis ; "
                       "commit f191fa6 contient les resultats.",
     },
+    "EXP-012": {
+        "code": ["continuation/probe_signals.py", "scripts/job_adaptive_phase0.py",
+                 "scripts/analyze_adaptive_phase0.py", "scripts/kaggle_run.py"],
+        "config": [],
+        "results": ["results/kaggle_outputs/adaptive-phase0-20260916-185116",
+                    "results/adaptive_phase0_analysis.json",
+                    "results/adaptive_phase0_analysis.md"],
+        "docs": ["docs/adaptive_resolution_plan.md"],
+        "code_state": "code ecrit pour ce run sur la branche adaptative-resolution ; "
+                      "non commite a la redaction de la fiche.",
+    },
+    "EXP-013": {
+        "code": ["continuation/probe_signals.py", "scripts/job_adaptive_phase0.py",
+                 "scripts/job_adaptive_phase1.py", "scripts/analyze_adaptive_phase0.py"],
+        "config": [],
+        "results": ["results/kaggle_outputs/adaptive-phase1-20260917-075615",
+                    "results/adaptive_phase0_analysis.json"],
+        "docs": ["docs/adaptive_resolution_plan.md"],
+        "code_state": "meme code que EXP-012 etendu (operateur Gaussian, tau multi-pas) ; "
+                      "non commite a la redaction de la fiche.",
+    },
+    "EXP-014": {
+        "code": ["continuation/probe_signals.py", "scripts/job_adaptive_phase0.py",
+                 "scripts/job_adaptive_phase2.py", "scripts/analyze_adaptive_phase0.py"],
+        "config": [],
+        "results": ["results/kaggle_outputs/adaptive-phase2-20260917-093614",
+                    "results/kaggle_outputs/adaptive-phase2b-20260917-113110",
+                    "results/adaptive_phase0_analysis.json"],
+        "docs": ["docs/adaptive_resolution_plan.md"],
+        "code_state": "controleur ajoute a job_adaptive_phase0.py ; bogue de copie de "
+                      "calendrier corrige entre les deux kernels ; non commite.",
+    },
+    "EXP-015": {
+        "code": ["scripts/job_stl10_resolution.py", "scripts/job_stl10_controls.py",
+                 "scripts/analyze_stl10_resolution.py", "continuation/probe_signals.py"],
+        "config": [],
+        "results": ["results/kaggle_outputs/stl10-resolution-20260917-121258",
+                    "results/kaggle_outputs/stl10-controls-20260917-133339",
+                    "results/stl10_resolution_analysis.md"],
+        "docs": ["docs/adaptive_resolution_plan.md"],
+        "code_state": "job STL-10 ecrit pour ce run ; controles ajoutes entre les deux kernels ; non commite.",
+    },
+    "EXP-016": {
+        "code": ["continuation/probe_signals.py", "scripts/job_adaptive_phase0.py",
+                 "scripts/job_adaptive_phase3.py"],
+        "config": [],
+        "results": ["results/kaggle_outputs/adaptive-phase3-20260917-142057"],
+        "docs": ["docs/adaptive_resolution_plan.md"],
+        "code_state": "controleur 'gap', sondes gap_probe et bn_shift ajoutes a job_adaptive_phase0.py ; non commite.",
+    },
+    "EXP-017": {
+        "code": ["continuation/probe_signals.py", "scripts/job_adaptive_phase0.py",
+                 "scripts/job_adaptive_phase4.py", "scripts/job_adaptive_phase4c.py",
+                 "scripts/job_adaptive_phase5.py"],
+        "config": [],
+        "results": ["results/kaggle_outputs/adaptive-phase4-20260917-151733",
+                    "results/kaggle_outputs/adaptive-phase4b-20260917-154529",
+                    "results/kaggle_outputs/adaptive-phase4c-20260917-165354",
+                    "results/kaggle_outputs/adaptive-phase5-20260918-055940"],
+        "docs": ["docs/adaptive_resolution_plan.md"],
+        "code_state": "controleur 'gap2s' (ascension fixe ou adaptative + rechauffes) ; graines configurables ; non commite.",
+    },
 }
 
 

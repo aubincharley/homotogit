@@ -58,10 +58,10 @@ Généré par `tools/enrich_records.py` depuis [`data/repo_evidence.json`](../da
 
 | Rôle | Chemin dans le dépôt | Dernier commit touchant ce fichier |
 |---|---|---|
-| Implémentation | [`continuation/transforms/tv.py`](../../../../continuation/transforms/tv.py) | 86c00bc 2026-09-08 |
-| Implémentation | [`scripts/tv_previews.py`](../../../../scripts/tv_previews.py) | 86c00bc 2026-09-08 |
+| Implémentation | [`continuation/transforms/tv.py`](../../../../continuation/transforms/tv.py) | — |
+| Implémentation | [`scripts/tv_previews.py`](../../../../scripts/tv_previews.py) | — |
 | Sorties d'exécution | [`results/tv_previews`](../../../../results/tv_previews) | 3 fichiers |
-| Documentation du dépôt | [`docs/tv_budget.md`](../../../../docs/tv_budget.md) | 86c00bc 2026-09-08 |
+| Documentation du dépôt | [`docs/tv_budget.md`](../../../../docs/tv_budget.md) | — |
 
 Un chemin listé existe dans le dépôt au moment de la génération. Cela ne prouve pas seul quelle version du code a exécuté ce run : pour les runs Kaggle, le code réellement expédié est archivé dans le sous-dossier `_repo/` de la sortie correspondante.
 

@@ -1,0 +1,330 @@
+{
+  "label": "Rgap06__Gnone__input_bilinear__seed0",
+  "part": "E",
+  "schedule": "Rgap06",
+  "gaussian": "Gnone",
+  "seed": 0,
+  "mixed": false,
+  "controller": {
+    "operator": "none",
+    "levels": null,
+    "n_sites": 19,
+    "sites": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18
+    ],
+    "insertion_mask": "all19",
+    "reduction": "input_bilinear",
+    "resolution_by_epoch": [
+      16,
+      16,
+      16,
+      16,
+      16,
+      16,
+      20,
+      20,
+      24,
+      24,
+      24,
+      28,
+      28,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32
+    ],
+    "sigma_rule": "sigma_l(e) = q_l(e) * G(e); q_l = width_l / width_l@32",
+    "gmix_rule": "T_alpha(h) = (1-alpha) h + alpha G_{q_l}(h), reference width 1; alpha=0 returns h unevaluated",
+    "gaussian_kernel": null
+  },
+  "worker": 1,
+  "gpu_index": 1,
+  "gpu": "Tesla T4",
+  "epochs": 30,
+  "updates": 11730,
+  "updates_per_epoch": 391,
+  "n_train": 50000,
+  "n_test": 10000,
+  "warmup": 60,
+  "effective_batch": 128,
+  "microbatch": 32,
+  "resolution_by_epoch": [
+    16,
+    16,
+    16,
+    16,
+    16,
+    16,
+    20,
+    20,
+    24,
+    24,
+    24,
+    28,
+    28,
+    32,
+    32,
+    32,
+    32,
+    32,
+    32,
+    32,
+    32,
+    32,
+    32,
+    32,
+    32,
+    32,
+    32,
+    32,
+    32,
+    32
+  ],
+  "controller_log": [
+    {
+      "after_epoch": 1,
+      "r": 16,
+      "reason": null,
+      "gap": -0.0020159630628542777,
+      "ema": -0.0020159630628542777,
+      "r_next_epoch": 16
+    },
+    {
+      "after_epoch": 2,
+      "r": 16,
+      "reason": null,
+      "gap": 0.029240169936906778,
+      "ema": 0.01361210343702625,
+      "r_next_epoch": 16
+    },
+    {
+      "after_epoch": 3,
+      "r": 16,
+      "reason": null,
+      "gap": 0.020275541145956793,
+      "ema": 0.016943822291491523,
+      "r_next_epoch": 16
+    },
+    {
+      "after_epoch": 4,
+      "r": 16,
+      "reason": null,
+      "gap": 0.05542786403208387,
+      "ema": 0.0361858431617877,
+      "r_next_epoch": 16
+    },
+    {
+      "after_epoch": 5,
+      "r": 16,
+      "reason": null,
+      "gap": 0.07369241053192448,
+      "ema": 0.05493912684685609,
+      "r_next_epoch": 16
+    },
+    {
+      "after_epoch": 6,
+      "r": 16,
+      "reason": "gap_above_gstar",
+      "gap": 0.10489011782120632,
+      "ema": 0.07991462233403121,
+      "r_next_epoch": 20
+    },
+    {
+      "after_epoch": 7,
+      "r": 20,
+      "reason": null,
+      "gap": 0.04956242633866954,
+      "ema": 0.04956242633866954,
+      "r_next_epoch": 20
+    },
+    {
+      "after_epoch": 8,
+      "r": 20,
+      "reason": "gap_above_gstar",
+      "gap": 0.07148952470048282,
+      "ema": 0.06052597551957618,
+      "r_next_epoch": 24
+    },
+    {
+      "after_epoch": 9,
+      "r": 24,
+      "reason": null,
+      "gap": 0.020596838228340675,
+      "ema": 0.020596838228340675,
+      "r_next_epoch": 24
+    },
+    {
+      "after_epoch": 10,
+      "r": 24,
+      "reason": null,
+      "gap": 0.06435418068415065,
+      "ema": 0.04247550945624566,
+      "r_next_epoch": 24
+    },
+    {
+      "after_epoch": 11,
+      "r": 24,
+      "reason": "gap_above_gstar",
+      "gap": 0.11430692504398236,
+      "ema": 0.07839121725011401,
+      "r_next_epoch": 28
+    },
+    {
+      "after_epoch": 12,
+      "r": 28,
+      "reason": null,
+      "gap": 0.0593190388000322,
+      "ema": 0.0593190388000322,
+      "r_next_epoch": 28
+    },
+    {
+      "after_epoch": 13,
+      "r": 28,
+      "reason": "gap_above_gstar",
+      "gap": 0.08024208951612744,
+      "ema": 0.06978056415807982,
+      "r_next_epoch": 32
+    },
+    {
+      "after_epoch": 14,
+      "r": 32,
+      "reason": null
+    },
+    {
+      "after_epoch": 15,
+      "r": 32,
+      "reason": null
+    },
+    {
+      "after_epoch": 16,
+      "r": 32,
+      "reason": null
+    },
+    {
+      "after_epoch": 17,
+      "r": 32,
+      "reason": null
+    },
+    {
+      "after_epoch": 18,
+      "r": 32,
+      "reason": null
+    },
+    {
+      "after_epoch": 19,
+      "r": 32,
+      "reason": null
+    },
+    {
+      "after_epoch": 20,
+      "r": 32,
+      "reason": null
+    },
+    {
+      "after_epoch": 21,
+      "r": 32,
+      "reason": null
+    },
+    {
+      "after_epoch": 22,
+      "r": 32,
+      "reason": null
+    },
+    {
+      "after_epoch": 23,
+      "r": 32,
+      "reason": null
+    },
+    {
+      "after_epoch": 24,
+      "r": 32,
+      "reason": null
+    },
+    {
+      "after_epoch": 25,
+      "r": 32,
+      "reason": null
+    },
+    {
+      "after_epoch": 26,
+      "r": 32,
+      "reason": null
+    },
+    {
+      "after_epoch": 27,
+      "r": 32,
+      "reason": null
+    },
+    {
+      "after_epoch": 28,
+      "r": 32,
+      "reason": null
+    },
+    {
+      "after_epoch": 29,
+      "r": 32,
+      "reason": null
+    }
+  ],
+  "mix_probs": null,
+  "reduction": "input_bilinear (align_corners=False, antialias=True; exact bypass at 32)",
+  "operator": "none",
+  "levels": null,
+  "monitor": {
+    "size": 2000,
+    "seed": 0,
+    "stream": "adaptive_monitor",
+    "n": 2000,
+    "sha256": "9ddd2fedb1c16f50fdcdf315b8d226d4a34548554f48429bf78e6d130868b0ca"
+  },
+  "normalization": {
+    "mean": [
+      0.4913996756076813,
+      0.4821584224700928,
+      0.44653090834617615
+    ],
+    "std": [
+      0.24703222513198853,
+      0.24348512291908264,
+      0.26158782839775085
+    ]
+  },
+  "final_test_acc": 0.7986,
+  "final_test_ce": 0.5823309692382812,
+  "final_train_probe_ce": 0.3549942932128906,
+  "wall_seconds": 568.045266486,
+  "eval_seconds": 101.63686941900062,
+  "train_seconds": 466.4083970669993,
+  "peak_mem_mib": 874.3876953125
+}

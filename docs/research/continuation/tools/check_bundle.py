@@ -72,7 +72,7 @@ def main():
             if sep and q.suffix=='.md' and unquote(frag) not in anchors(q.read_text(encoding='utf-8')):
                 errors.append(f'{p.name}: unknown anchor {target}')
     registry=json.loads((ROOT/'data/experiments.json').read_text(encoding='utf-8'))
-    assert len(registry['experiments'])==12
+    assert len(registry['experiments'])==18  # EXP-000..EXP-017
     for e in registry['experiments']:
         if e['experiment_id'] not in ids:errors.append(f'Unresolved experiment {e["experiment_id"]}')
         elif ids[e['experiment_id']]!=(ROOT/e['file']):errors.append(f'Wrong experiment file {e["experiment_id"]}')

@@ -14,6 +14,11 @@ conflated:
 2. **Feature-space continuation** — filter the *activations* after every 3×3
    convolution, i.e. the placement used by *Curriculum by Smoothing*.
 
+**[`docs/adaptive_resolution_method.md`](docs/adaptive_resolution_method.md)
+describes the current best method** (adaptive resolution by bounded scale
+specialisation, 2026-09-18) and [`docs/adaptive_resolution_plan.md`](docs/adaptive_resolution_plan.md)
+§12–18 the experiments that led to it, including everything that did not work.
+
 **[`docs/HANDOVER.md`](docs/HANDOVER.md) is the authoritative record**: every
 phase, exact numbers, verification results, hardware gotchas and open threads.
 Read it before quoting any past result or re-running anything.
@@ -36,6 +41,7 @@ proposal recorded in an archived prompt is **not** authorisation to run it.
 | **Progressive input resolution** | **+4.47 pp** (1 seed) | 0.94× |
 | Progressive resolution + Gaussian | +4.83 pp vs plain (1 seed) | ~1.4× |
 | db2 wavelet feature shrinkage | +0.94 pp (1 seed) — set aside | ~61× |
+| **Fine ramp 16/20/24/28 + adaptive 24×24 reheats (bounded scale specialisation)** | **80.52 % vs 79.91 % for the fixed fine ramp: +0.61 pp, 6/6 seeds** — best unfiltered recipe, see [`docs/adaptive_resolution_method.md`](docs/adaptive_resolution_method.md) | 0.68× of the filtered winner |
 
 Current model is `resnet20_bn_cifar` (ResNet-20, BatchNorm, option-A shortcuts,
 269,722 params, 19 filter insertion points). Two runs of the same paired plain
