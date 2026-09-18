@@ -439,7 +439,13 @@ def push(folder: Path) -> bool:
                            capture_output=True, text=True, env=ENV)
         out = r.stdout + r.stderr
         if BUSY not in out:
-            if r.returncode != 0 or "Error" in out:
+            # the CLI exits 0 on refusals and writes them to stdout, and the
+            # wording is inconsistent: "Kernel push error:" is lowercase, so a
+            # capital-E check silently passes a failed push off as a success.
+            # That is how an exhausted GPU quota read as "pushed 2 kernel(s)".
+            refused = any(t in out.lower() for t in
+                          ("error", "quota", "forbidden", "denied", "exceeded"))
+            if r.returncode != 0 or refused:
                 print("  FAILED %s: %s" % (folder.name, " | ".join(
                     l.strip() for l in out.splitlines() if l.strip())[:300]), flush=True)
                 return False
@@ -486,7 +492,7 @@ def commit_is_on_origin(commit: str) -> bool:
 
 
 def write(dataset: str, method: str, seed: int, commit: str, user: str,
-          out_root: Path) -> Path:
+          out_root: Path, source: str | None = None) -> Path:
     spec = DATASETS[dataset]
     slug = "%s-%s-seed%d" % (spec.get("slug", dataset),
                              method.replace("_", "-"), seed)
@@ -513,7 +519,7 @@ def write(dataset: str, method: str, seed: int, commit: str, user: str,
                 # the title must slugify to the id, or Kaggle warns and the
                 # two can drift apart
                 title=slug.replace("-", " "),
-                dataset_sources=[spec["source"]],
+                dataset_sources=[source or spec["source"]],
                 code_file=slug + ".py")
     (d / "kernel-metadata.json").write_text(json.dumps(meta, indent=2) + "\n")
     return d
@@ -534,6 +540,10 @@ def main(argv=None):
     ap.add_argument("--commit", help="default: HEAD, which must be pushed to origin")
     ap.add_argument("--out", default=str(Path(__file__).parent / "kernels"))
     ap.add_argument("--dry-run", action="store_true", help="write the kernels, push nothing")
+    ap.add_argument("--source",
+                    help="attach this dataset instead of the study's default. A "
+                         "dataset is only visible to its owner, so running a study "
+                         "on another account needs that account's own copy.")
     ap.add_argument("--no-wait", action="store_true",
                     help="do not sleep waiting for a GPU slot; leave the rest for "
                          "a later pass. Use for short repeated passes on a machine "
@@ -557,7 +567,8 @@ def main(argv=None):
     pushed, failed, skipped, deferred = [], [], [], []
     for seed in (int(s) for s in args.seeds.split(",")):
         for method in args.methods.split(","):
-            d = write(args.dataset, method, seed, commit, args.user, Path(args.out))
+            d = write(args.dataset, method, seed, commit, args.user, Path(args.out),
+                      source=args.source)
             print("wrote", d)
             if args.dry_run:
                 continue
