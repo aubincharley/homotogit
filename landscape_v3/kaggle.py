@@ -1,15 +1,18 @@
 """Publish per-account inputs, push jobs (tasks inside the code payload), pull, verify.
 
     py -m landscape_v3.kaggle publish [--accounts ...]
-    py -m landscape_v3.kaggle push [--accounts ...] [--pilot]
-    py -m landscape_v3.kaggle status
-    py -m landscape_v3.kaggle pull --account maxnicaise [--pilot]
-    py -m landscape_v3.kaggle verify --account maxnicaise [--pilot]
+    py -m landscape_v3.kaggle push [--accounts ...] [--pilot | --tag rerun]
+    py -m landscape_v3.kaggle status [--tag rerun]
+    py -m landscape_v3.kaggle pull --account maxnicaise [--pilot | --tag rerun]
+    py -m landscape_v3.kaggle verify --account maxnicaise [--pilot | --tag rerun]
 
 Dataset ``landscape-v3-inputs`` per account (flat): the checkpoints its tasks need
 (``<method>__seed<k>__epoch_NNN.pt``, byte copies of the v2 files), the v2
 direction draw files of its seeds, ``subsets.npz`` and ``expected_digests.json``.
-Kernel ``landscape-v3-<account>`` (``-pilot`` suffix for the pilot).  ``verify``
+
+A job is identified by a tag: ``bundle`` (main job, kernel ``landscape-v3-<account>``),
+``pilot`` or any other tag (bundle ``protocol/<tag>_<account>.json``, kernel
+``landscape-v3-<account>-<tag>``, outputs ``raw/<account>_<tag>/``).  ``verify``
 recomputes the sha256 of every file listed in ``eval_manifest.json``; the
 downloader's exit code is never taken as evidence.
 """
@@ -45,14 +48,22 @@ sys.exit(r.returncode)
 '''
 
 
-def bundle(acc, pilot):
-    return json.loads((PROTO / ("%s_%s.json" % ("pilot" if pilot else "bundle", acc))).read_text())
+def suffix(tag):
+    return "" if tag == "bundle" else "-" + tag
+
+
+def dsuffix(tag):
+    return "" if tag == "bundle" else "_" + tag
+
+
+def bundle(acc, tag):
+    return json.loads((PROTO / ("%s_%s.json" % (tag, acc))).read_text())
 
 
 def needed_files(acc):
     if not (PROTO / ("bundle_%s.json" % acc)).exists():
         return [], []
-    b = bundle(acc, False)
+    b = bundle(acc, "bundle")
     cks, seeds = set(), set()
     for t in b["tasks"]:
         seeds.add(t["s"])
@@ -92,37 +103,37 @@ def publish(accounts):
                 raise SystemExit("publish failed for %s" % acc)
 
 
-def payload(acc, pilot):
+def payload(acc, tag):
     buf = io.BytesIO()
     with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
         for pkg in ("continuation_core", "landscape_study", "landscape_v2", "landscape_v3"):
             for p in sorted((C.ROOT / pkg).rglob("*.py")):
                 zf.write(p, p.relative_to(C.ROOT).as_posix())
-        zf.writestr("tasks.json", json.dumps(bundle(acc, pilot)))
+        zf.writestr("tasks.json", json.dumps(bundle(acc, tag)))
     return base64.b64encode(buf.getvalue()).decode("ascii")
 
 
-def kid(acc, pilot=False):
-    return "%s/landscape-v3-%s%s" % (env_for(acc)[1], acc.lower(), "-pilot" if pilot else "")
+def kid(acc, tag="bundle"):
+    return "%s/landscape-v3-%s%s" % (env_for(acc)[1], acc.lower(), suffix(tag))
 
 
-def push(accounts, hours, pilot):
+def push(accounts, hours, tag):
     for acc in accounts:
         env, user = env_for(acc)
-        d = STAGE / ("kernel_%s%s" % (acc, "_pilot" if pilot else ""))
+        d = STAGE / ("kernel_%s%s" % (acc, dsuffix(tag)))
         d.mkdir(parents=True, exist_ok=True)
-        extra = '["--pilot"]' if pilot else "[]"
-        (d / "script.py").write_text(WRAPPER.format(payload=payload(acc, pilot), hours=hours, extra=extra),
+        extra = '["--pilot"]' if tag == "pilot" else "[]"
+        (d / "script.py").write_text(WRAPPER.format(payload=payload(acc, tag), hours=hours, extra=extra),
                                      encoding="utf-8")
         (d / "kernel-metadata.json").write_text(json.dumps({
-            "id": kid(acc, pilot), "title": "landscape-v3-%s%s" % (acc.lower(), "-pilot" if pilot else ""),
+            "id": kid(acc, tag), "title": "landscape-v3-%s%s" % (acc.lower(), suffix(tag)),
             "code_file": "script.py", "language": "python", "kernel_type": "script", "is_private": True,
             "enable_gpu": True, "enable_internet": False, "enable_tpu": False, "machine_shape": "NvidiaTeslaT4",
             "dataset_sources": ["pankrzysiu/cifar10-python", "%s/%s" % (user, SLUG)],
             "kernel_sources": [], "competition_sources": []}, indent=2))
         RAW.mkdir(parents=True, exist_ok=True)
-        (RAW / ("launch_%s%s.json" % (acc, "_pilot" if pilot else ""))).write_text(json.dumps(
-            {"account": acc, "kernel": kid(acc, pilot), "pilot": pilot,
+        (RAW / ("launch_%s%s.json" % (acc, dsuffix(tag)))).write_text(json.dumps(
+            {"account": acc, "kernel": kid(acc, tag), "tag": tag,
              "launched_utc": datetime.now(timezone.utc).isoformat(),
              "script_bytes": (d / "script.py").stat().st_size}, indent=2))
         print(acc, "script bytes", (d / "script.py").stat().st_size, flush=True)
@@ -130,10 +141,10 @@ def push(accounts, hours, pilot):
             raise SystemExit("push failed for %s" % acc)
 
 
-def verify(acc, pilot):
+def verify(acc, tag):
     import hashlib
-    root = RAW / (acc + ("_pilot" if pilot else "")) / "v3"
-    rep = {"account": acc, "pilot": pilot}
+    root = RAW / (acc + dsuffix(tag)) / "v3"
+    rep = {"account": acc, "tag": tag}
     p = root / "eval_manifest.json"
     if not p.exists():
         rep["eval_manifest"] = "MISSING MANIFEST"
@@ -148,9 +159,13 @@ def verify(acc, pilot):
             if hashlib.sha256(f.read_bytes()).hexdigest() != info["sha256"] or f.stat().st_size != info["bytes"]:
                 bad.append(rel)
         rep["eval_manifest"] = {"listed": len(listed), "missing": missing, "hash_mismatch": bad}
-    (RAW / ("verify_%s%s.json" % (acc, "_pilot" if pilot else ""))).write_text(json.dumps(rep, indent=2))
+    env_p = root / "environment.json"
+    if env_p.exists():
+        rep["n_gpu"] = json.loads(env_p.read_text()).get("n_gpu")
+    (RAW / ("verify_%s%s.json" % (acc, dsuffix(tag)))).write_text(json.dumps(rep, indent=2))
     em = rep["eval_manifest"]
-    print(acc, em if isinstance(em, str) else {k: (len(v) if isinstance(v, list) else v) for k, v in em.items()})
+    print(acc, tag, "n_gpu", rep.get("n_gpu"),
+          em if isinstance(em, str) else {k: (len(v) if isinstance(v, list) else v) for k, v in em.items()})
     return rep
 
 
@@ -161,23 +176,25 @@ def main():
     ap.add_argument("--account")
     ap.add_argument("--hours", default="11.3")
     ap.add_argument("--pilot", action="store_true")
+    ap.add_argument("--tag", default="bundle")
     a = ap.parse_args()
+    tag = "pilot" if a.pilot else a.tag
     accs = [a.account] if a.account else a.accounts
     if a.action == "publish":
         publish(accs)
     elif a.action == "push":
-        push(accs, a.hours, a.pilot)
+        push(accs, a.hours, tag)
     elif a.action == "status":
         for acc in accs:
-            run(["kaggle", "kernels", "status", kid(acc, a.pilot)], env_for(acc)[0])
+            run(["kaggle", "kernels", "status", kid(acc, tag)], env_for(acc)[0])
     elif a.action == "pull":
         for acc in accs:
-            dest = RAW / (acc + ("_pilot" if a.pilot else ""))
+            dest = RAW / (acc + dsuffix(tag))
             dest.mkdir(parents=True, exist_ok=True)
-            run(["kaggle", "kernels", "output", kid(acc, a.pilot), "-p", str(dest), "-o"], env_for(acc)[0])
+            run(["kaggle", "kernels", "output", kid(acc, tag), "-p", str(dest), "-o"], env_for(acc)[0])
     else:
         for acc in accs:
-            verify(acc, a.pilot)
+            verify(acc, tag)
 
 
 if __name__ == "__main__":

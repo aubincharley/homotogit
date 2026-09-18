@@ -1,0 +1,126 @@
+[{"stream_name":"stdout","time":6.7575267,"data":"{'torch': '2.10.0+cu128', 'cuda': '12.8', 'n_gpu': 2, 'gpus': ['Tesla T4', 'Tesla T4'], 'inputs': '/kaggle/input/datasets/maxlefrr/landscape-v3-inputs', 'data_root': '/kaggle/input/datasets/pankrzysiu/cifar10-python', 'pilot': False, 'n_tasks': 110, 'protocol': {'lanczos_m_max': 400, 'lanczos_check_every': 10, 'lanczos_tol': 0.001, 'lanczos_floor': 0.001, 'reuse_tolerance_ce': 1e-05, 'hess_fd_t': [1e-05, 3e-05, 0.0001, 0.0003, 0.001, 0.003, 0.01], '_fd_t_note': 'local dry run: r-normalised extreme eigendirections are far from quadratic already at t = 0.01 (top1 CE rise \u003e 100 nats); steps reduced to 1e-5..1e-2 (float64)', '_chosen_from_local_pilot': 'studies/landscape_v3/pilot/pilot_lanczos.json: plain seed 0, centre-frozen BN, train probe; ordinary and relative coordinates both met tol 1e-3 for top1/top2/min by 70 iterations with floor 1e-2; floor tightened to 1e-3 (scale = max(|theta|, 1e-3 |theta_top1|)); m_max 400 leaves \u003e5x headroom'}, 'tf32': False, 'cudnn_deterministic': True}\n"}
+,{"stream_name":"stdout","time":23.829462304,"data":"inputs ok True reuse valid True 0.0\n"}
+,{"stream_name":"stderr","time":32.495201963,"data":"/kaggle/working/_repo/landscape_v3/hessian.py:79: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.\n"}
+,{"stream_name":"stderr","time":32.495276745,"data":"Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:836.)\n"}
+,{"stream_name":"stderr","time":32.495283138,"data":"  tot += float(loss) * w\n"}
+,{"stream_name":"stderr","time":32.495887128,"data":"/kaggle/working/_repo/landscape_v3/hessian.py:79: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.\n"}
+,{"stream_name":"stderr","time":32.495909195,"data":"Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:836.)\n"}
+,{"stream_name":"stderr","time":32.495914766,"data":"  tot += float(loss) * w\n"}
+,{"stream_name":"stdout","time":119.661450226,"data":"[13:46:58 gpu0] hchecks__plain__seed1                                                  complete       91s\n"}
+,{"stream_name":"stdout","time":120.611541236,"data":"[13:46:59 gpu1] hchecks__resolution__seed1                                             complete       92s\n"}
+,{"stream_name":"stdout","time":209.987438279,"data":"[13:48:28 gpu0] hchecks__gaussian__seed1                                               complete       90s\n"}
+,{"stream_name":"stdout","time":211.946573202,"data":"[13:48:30 gpu1] hchecks__combined__seed1                                               complete       91s\n"}
+,{"stream_name":"stdout","time":373.392933896,"data":"[13:51:12 gpu0] hessian__plain_s1_train_saved_ord                                      complete      163s\n"}
+,{"stream_name":"stdout","time":383.709257183,"data":"[13:51:22 gpu1] hessian__plain_s1_train_saved_rel                                      complete      172s\n"}
+,{"stream_name":"stdout","time":567.818445292,"data":"[13:54:26 gpu0] hessian__plain_s1_train_centre_frozen_ord                              complete      194s\n"}
+,{"stream_name":"stdout","time":577.759753647,"data":"[13:54:36 gpu1] hessian__plain_s1_train_centre_frozen_rel                              complete      194s\n"}
+,{"stream_name":"stdout","time":751.986982597,"data":"[13:57:30 gpu0] hessian__plain_s1_test_saved_ord                                       complete      184s\n"}
+,{"stream_name":"stdout","time":793.578177741,"data":"[13:58:12 gpu1] hessian__plain_s1_test_saved_rel                                       complete      216s\n"}
+,{"stream_name":"stdout","time":904.986471978,"data":"[14:00:03 gpu0] hessian__plain_s1_test_centre_frozen_ord                               complete      153s\n"}
+,{"stream_name":"stdout","time":943.553652328,"data":"[14:00:42 gpu1] hessian__plain_s1_test_centre_frozen_rel                               complete      150s\n"}
+,{"stream_name":"stdout","time":1088.922671625,"data":"[14:03:07 gpu0] hessian__resolution_s1_train_saved_ord                                 complete      184s\n"}
+,{"stream_name":"stdout","time":1137.364262831,"data":"[14:03:56 gpu1] hessian__resolution_s1_train_saved_rel                                 complete      194s\n"}
+,{"stream_name":"stdout","time":1262.674659333,"data":"[14:06:01 gpu0] hessian__resolution_s1_train_centre_frozen_ord                         complete      174s\n"}
+,{"stream_name":"stdout","time":1309.175746112,"data":"[14:06:48 gpu1] hessian__resolution_s1_train_centre_frozen_rel                         complete      172s\n"}
+,{"stream_name":"stdout","time":1467.334996205,"data":"[14:09:26 gpu0] hessian__resolution_s1_test_saved_ord                                  complete      205s\n"}
+,{"stream_name":"stdout","time":1535.837516129,"data":"[14:10:34 gpu1] hessian__resolution_s1_test_saved_rel                                  complete      227s\n"}
+,{"stream_name":"stdout","time":1630.741143427,"data":"[14:12:09 gpu0] hessian__resolution_s1_test_centre_frozen_ord                          complete      163s\n"}
+,{"stream_name":"stdout","time":1707.089812645,"data":"[14:13:26 gpu1] hessian__resolution_s1_test_centre_frozen_rel                          complete      171s\n"}
+,{"stream_name":"stdout","time":1794.086725774,"data":"[14:14:53 gpu0] hessian__gaussian_s1_train_saved_ord                                   complete      163s\n"}
+,{"stream_name":"stdout","time":1922.17863884,"data":"[14:17:01 gpu1] hessian__gaussian_s1_train_saved_rel                                   complete      215s\n"}
+,{"stream_name":"stdout","time":1978.252940234,"data":"[14:17:57 gpu0] hessian__gaussian_s1_train_centre_frozen_ord                           complete      184s\n"}
+,{"stream_name":"stdout","time":2115.872427706,"data":"[14:20:14 gpu1] hessian__gaussian_s1_train_centre_frozen_rel                           complete      194s\n"}
+,{"stream_name":"stdout","time":2182.965853868,"data":"[14:21:21 gpu0] hessian__gaussian_s1_test_saved_ord                                    complete      205s\n"}
+,{"stream_name":"stdout","time":2353.286183502,"data":"[14:24:12 gpu1] hessian__gaussian_s1_test_saved_rel                                    complete      237s\n"}
+,{"stream_name":"stdout","time":2367.127639663,"data":"[14:24:26 gpu0] hessian__gaussian_s1_test_centre_frozen_ord                            complete      184s\n"}
+,{"stream_name":"stdout","time":2530.752625144,"data":"[14:27:09 gpu0] hessian__combined_s1_train_saved_ord                                   complete      164s\n"}
+,{"stream_name":"stdout","time":2557.918544694,"data":"[14:27:36 gpu1] hessian__gaussian_s1_test_centre_frozen_rel                            complete      205s\n"}
+,{"stream_name":"stdout","time":2714.729039382,"data":"[14:30:13 gpu0] hessian__combined_s1_train_saved_rel                                   complete      184s\n"}
+,{"stream_name":"stdout","time":2762.776562196,"data":"[14:31:01 gpu1] hessian__combined_s1_train_centre_frozen_ord                           complete      205s\n"}
+,{"stream_name":"stdout","time":2929.912511168,"data":"[14:33:48 gpu0] hessian__combined_s1_train_centre_frozen_rel                           complete      215s\n"}
+,{"stream_name":"stdout","time":3011.337165056,"data":"[14:35:10 gpu1] hessian__combined_s1_test_saved_ord                                    complete      249s\n"}
+,{"stream_name":"stdout","time":3186.529900634,"data":"[14:38:05 gpu0] hessian__combined_s1_test_saved_rel                                    complete      257s\n"}
+,{"stream_name":"stdout","time":3205.10562148,"data":"[14:38:24 gpu1] hessian__combined_s1_test_centre_frozen_ord                            complete      194s\n"}
+,{"stream_name":"stdout","time":3355.82036861,"data":"[14:40:54 gpu1] pts__gaussian__seed1__epoch_030__r-_G0__large__f32                     complete      151s\n"}
+,{"stream_name":"stdout","time":3390.711951089,"data":"[14:41:29 gpu0] hessian__combined_s1_test_centre_frozen_rel                            complete      204s\n"}
+,{"stream_name":"stdout","time":3506.692580149,"data":"[14:43:25 gpu1] pts__plain__seed1__epoch_030__r-_G-__large__f32                        complete      151s\n"}
+,{"stream_name":"stdout","time":3535.956641211,"data":"[14:43:54 gpu0] pts__resolution__seed1__epoch_030__r32_G-__large__f32                  complete      145s\n"}
+,{"stream_name":"stdout","time":3639.389395383,"data":"[14:45:38 gpu0] pts__gaussian__seed1__epoch_030__r-_G0__probes__f32                    complete      103s\n"}
+,{"stream_name":"stdout","time":3657.846142868,"data":"[14:45:56 gpu1] pts__combined__seed1__epoch_030__r32_G0__large__f32                    complete      151s\n"}
+,{"stream_name":"stdout","time":3742.660199053,"data":"[14:47:21 gpu0] pts__plain__seed1__epoch_030__r-_G-__probes__f32                       complete      103s\n"}
+,{"stream_name":"stdout","time":3764.358391929,"data":"[14:47:43 gpu1] pts__resolution__seed1__epoch_030__r32_G-__probes__f32                 complete      107s\n"}
+,{"stream_name":"stdout","time":3846.497355895,"data":"[14:49:05 gpu0] pts__combined__seed1__epoch_030__r32_G0__probes__f32                   complete      104s\n"}
+,{"stream_name":"stdout","time":3853.210128988,"data":"[14:49:12 gpu1] quadform__plain__seed1                                                 complete       89s\n"}
+,{"stream_name":"stdout","time":3929.858169364,"data":"[14:50:28 gpu0] quadform__resolution__seed1                                            complete       83s\n"}
+,{"stream_name":"stdout","time":3942.400163934,"data":"[14:50:41 gpu1] quadform__gaussian__seed1                                              complete       89s\n"}
+,{"stream_name":"stdout","time":3990.577387207,"data":"[14:51:29 gpu1] pts__gaussian__seed1__epoch_006__r-_G0.7__probes__f32                  complete       48s\n"}
+,{"stream_name":"stdout","time":4013.258921393,"data":"[14:51:52 gpu0] quadform__combined__seed1                                              complete       83s\n"}
+,{"stream_name":"stdout","time":4038.630054981,"data":"[14:52:17 gpu1] pts__gaussian__seed1__epoch_009__r-_G0.6__probes__f32                  complete       48s\n"}
+,{"stream_name":"stdout","time":4060.085108824,"data":"[14:52:39 gpu0] pts__gaussian__seed1__epoch_012__r-_G0.5__probes__f32                  complete       47s\n"}
+,{"stream_name":"stdout","time":4086.584565755,"data":"[14:53:05 gpu1] pts__gaussian__seed1__epoch_015__r-_G0.4__probes__f32                  complete       48s\n"}
+,{"stream_name":"stdout","time":4106.829622147,"data":"[14:53:25 gpu0] pts__gaussian__seed1__epoch_018__r-_G0.3__probes__f32                  complete       47s\n"}
+,{"stream_name":"stdout","time":4139.127008238,"data":"[14:53:58 gpu1] pts__combined__seed1__epoch_006__r24_G0.7__probes__f32                 complete       53s\n"}
+,{"stream_name":"stdout","time":4158.07553818,"data":"[14:54:17 gpu0] pts__combined__seed1__epoch_009__r24_G0.6__probes__f32                 complete       51s\n"}
+,{"stream_name":"stdout","time":4205.719540828,"data":"[14:55:04 gpu1] pts__combined__seed1__epoch_012__r32_G0.5__probes__f32                 complete       67s\n"}
+,{"stream_name":"stdout","time":4223.02097471,"data":"[14:55:21 gpu0] pts__combined__seed1__epoch_015__r32_G0.4__probes__f32                 complete       65s\n"}
+,{"stream_name":"stdout","time":4248.130232635,"data":"[14:55:47 gpu0] pts__gaussian__seed1__epoch_006__r-_G0__probes__f32                    complete       25s\n"}
+,{"stream_name":"stdout","time":4272.410198791,"data":"[14:56:11 gpu1] pts__combined__seed1__epoch_018__r32_G0.3__probes__f32                 complete       67s\n"}
+,{"stream_name":"stdout","time":4294.330646072,"data":"[14:56:33 gpu0] pts__gaussian__seed1__epoch_006__r-_G0.85__probes__f32                 complete       46s\n"}
+,{"stream_name":"stdout","time":4298.103265958,"data":"[14:56:37 gpu1] pts__gaussian__seed1__epoch_009__r-_G0__probes__f32                    complete       26s\n"}
+,{"stream_name":"stdout","time":4323.901175185,"data":"[14:57:02 gpu1] pts__gaussian__seed1__epoch_012__r-_G0__probes__f32                    complete       26s\n"}
+,{"stream_name":"stdout","time":4340.666880119,"data":"[14:57:19 gpu0] pts__gaussian__seed1__epoch_009__r-_G0.7__probes__f32                  complete       46s\n"}
+,{"stream_name":"stdout","time":4365.727681006,"data":"[14:57:44 gpu0] pts__gaussian__seed1__epoch_015__r-_G0__probes__f32                    complete       25s\n"}
+,{"stream_name":"stdout","time":4371.204159346,"data":"[14:57:50 gpu1] pts__gaussian__seed1__epoch_012__r-_G0.6__probes__f32                  complete       47s\n"}
+,{"stream_name":"stdout","time":4396.964630353,"data":"[14:58:15 gpu1] pts__gaussian__seed1__epoch_018__r-_G0__probes__f32                    complete       26s\n"}
+,{"stream_name":"stdout","time":4411.898514138,"data":"[14:58:30 gpu0] pts__gaussian__seed1__epoch_015__r-_G0.5__probes__f32                  complete       46s\n"}
+,{"stream_name":"stdout","time":4444.253695298,"data":"[14:59:03 gpu1] pts__gaussian__seed1__epoch_018__r-_G0.4__probes__f32                  complete       47s\n"}
+,{"stream_name":"stdout","time":4454.655289269,"data":"[14:59:13 gpu0] pts__combined__seed1__epoch_006__r16_G0.85__probes__f32                complete       43s\n"}
+,{"stream_name":"stdout","time":4469.888375941,"data":"[14:59:28 gpu1] pts__combined__seed1__epoch_006__r32_G0__probes__f32                   complete       26s\n"}
+,{"stream_name":"stdout","time":4495.736528214,"data":"[14:59:54 gpu1] pts__combined__seed1__epoch_009__r32_G0__probes__f32                   complete       26s\n"}
+,{"stream_name":"stdout","time":4505.215916793,"data":"[15:00:04 gpu0] pts__combined__seed1__epoch_009__r24_G0.7__probes__f32                 complete       51s\n"}
+,{"stream_name":"stdout","time":4530.310579811,"data":"[15:00:29 gpu0] pts__combined__seed1__epoch_012__r32_G0__probes__f32                   complete       25s\n"}
+,{"stream_name":"stdout","time":4547.646010206,"data":"[15:00:46 gpu1] pts__combined__seed1__epoch_012__r24_G0.6__probes__f32                 complete       52s\n"}
+,{"stream_name":"stdout","time":4555.259036261,"data":"[15:00:54 gpu0] pts__combined__seed1__epoch_015__r32_G0__probes__f32                   complete       25s\n"}
+,{"stream_name":"stdout","time":4580.276939252,"data":"[15:01:19 gpu0] pts__combined__seed1__epoch_018__r32_G0__probes__f32                   complete       25s\n"}
+,{"stream_name":"stdout","time":4613.465975542,"data":"[15:01:52 gpu1] pts__combined__seed1__epoch_015__r32_G0.5__probes__f32                 complete       66s\n"}
+,{"stream_name":"stdout","time":4626.346753094,"data":"[15:02:05 gpu1] pts__plain__seed1__epoch_003__r-_G-__probes__f32                       complete       13s\n"}
+,{"stream_name":"stdout","time":4639.233984928,"data":"[15:02:18 gpu1] pts__plain__seed1__epoch_006__r-_G-__probes__f32                       complete       13s\n"}
+,{"stream_name":"stdout","time":4644.242747683,"data":"[15:02:23 gpu0] pts__combined__seed1__epoch_018__r32_G0.4__probes__f32                 complete       64s\n"}
+,{"stream_name":"stdout","time":4652.10965211,"data":"[15:02:31 gpu1] pts__plain__seed1__epoch_009__r-_G-__probes__f32                       complete       13s\n"}
+,{"stream_name":"stdout","time":4656.803926632,"data":"[15:02:35 gpu0] pts__plain__seed1__epoch_012__r-_G-__probes__f32                       complete       13s\n"}
+,{"stream_name":"stdout","time":4664.987357333,"data":"[15:02:43 gpu1] pts__plain__seed1__epoch_018__r-_G-__probes__f32                       complete       13s\n"}
+,{"stream_name":"stdout","time":4669.319743801,"data":"[15:02:48 gpu0] pts__plain__seed1__epoch_021__r-_G-__probes__f32                       complete       13s\n"}
+,{"stream_name":"stdout","time":4673.078121012,"data":"[15:02:52 gpu1] pts__resolution__seed1__epoch_003__r16_G-__probes__f32                 complete        8s\n"}
+,{"stream_name":"stdout","time":4681.832173563,"data":"[15:03:00 gpu0] pts__resolution__seed1__epoch_003__r32_G-__probes__f32                 complete       13s\n"}
+,{"stream_name":"stdout","time":4683.846013332,"data":"[15:03:02 gpu1] pts__resolution__seed1__epoch_009__r24_G-__probes__f32                 complete       11s\n"}
+,{"stream_name":"stdout","time":4694.345265325,"data":"[15:03:13 gpu0] pts__resolution__seed1__epoch_009__r32_G-__probes__f32                 complete       13s\n"}
+,{"stream_name":"stdout","time":4696.723997822,"data":"[15:03:15 gpu1] pts__resolution__seed1__epoch_018__r32_G-__probes__f32                 complete       13s\n"}
+,{"stream_name":"stdout","time":4701.122284015,"data":"[15:03:20 gpu1] pts__gaussian__seed1__epoch_003__r-_G0__probes__f32                    complete        4s\n"}
+,{"stream_name":"stdout","time":4706.857163009,"data":"[15:03:25 gpu0] pts__resolution__seed1__epoch_021__r32_G-__probes__f32                 complete       13s\n"}
+,{"stream_name":"stdout","time":4709.004011069,"data":"[15:03:27 gpu1] pts__gaussian__seed1__epoch_003__r-_G0.85__probes__f32                 complete        8s\n"}
+,{"stream_name":"stdout","time":4713.389135199,"data":"[15:03:32 gpu1] pts__gaussian__seed1__epoch_021__r-_G0__probes__f32                    complete        4s\n"}
+,{"stream_name":"stdout","time":4714.71006076,"data":"[15:03:33 gpu0] pts__gaussian__seed1__epoch_003__r-_G1__probes__f32                    complete        8s\n"}
+,{"stream_name":"stdout","time":4717.499689425,"data":"[15:03:36 gpu0] pts__resolution__seed1__epoch_006__r16_G-__probes__f32                 complete        3s\n"}
+,{"stream_name":"stdout","time":4720.993472943,"data":"[15:03:39 gpu0] pts__resolution__seed1__epoch_006__r24_G-__probes__f32                 complete        3s\n"}
+,{"stream_name":"stdout","time":4721.281122454,"data":"[15:03:40 gpu1] pts__gaussian__seed1__epoch_021__r-_G0.3__probes__f32                  complete        8s\n"}
+,{"stream_name":"stdout","time":4724.111011581,"data":"[15:03:43 gpu1] pts__resolution__seed1__epoch_012__r16_G-__probes__f32                 complete        3s\n"}
+,{"stream_name":"stdout","time":4725.144410043,"data":"[15:03:44 gpu0] pts__resolution__seed1__epoch_006__r32_G-__probes__f32                 complete        4s\n"}
+,{"stream_name":"stdout","time":4727.690547628,"data":"[15:03:46 gpu1] pts__resolution__seed1__epoch_012__r24_G-__probes__f32                 complete        4s\n"}
+,{"stream_name":"stdout","time":4729.419942645,"data":"[15:03:48 gpu0] pts__resolution__seed1__epoch_012__r32_G-__probes__f32                 complete        4s\n"}
+,{"stream_name":"stdout","time":4735.254869067,"data":"[15:03:54 gpu1] pts__combined__seed1__epoch_003__r16_G0.85__probes__f32                complete        8s\n"}
+,{"stream_name":"stdout","time":4736.708563546,"data":"[15:03:55 gpu0] pts__combined__seed1__epoch_003__r16_G1__probes__f32                   complete        7s\n"}
+,{"stream_name":"stdout","time":4739.539642227,"data":"[15:03:58 gpu1] pts__combined__seed1__epoch_003__r32_G0__probes__f32                   complete        4s\n"}
+,{"stream_name":"stdout","time":4740.984195363,"data":"[15:03:59 gpu0] pts__combined__seed1__epoch_021__r32_G0__probes__f32                   complete        4s\n"}
+,{"stream_name":"stdout","time":4750.643978257,"data":"[15:04:09 gpu1] pts__combined__seed1__epoch_021__r32_G0.3__probes__f32                 complete       11s\n"}
+,{"stream_name":"stdout","time":4798.053988481,"data":"[15:04:56 gpu0] hcut__plain__seed1                                                     complete       57s\n"}
+,{"stream_name":"stdout","time":4809.217938062,"data":"[15:05:08 gpu1] hcut__resolution__seed1                                                complete       59s\n"}
+,{"stream_name":"stdout","time":4854.929627725,"data":"[15:05:53 gpu0] hcut__gaussian__seed1                                                  complete       57s\n"}
+,{"stream_name":"stdout","time":4867.645253928,"data":"[15:06:06 gpu1] hcut__combined__seed1                                                  complete       58s\n"}
+,{"stream_name":"stdout","time":4868.540156569,"data":"job done {'start': 1789479905.1614902, 'input_check_seconds': 3.2016170024871826, 'reuse_reproduction_seconds': 13.870365142822266, 'eval_wall_seconds': 4844.378415346146, 'gpu_seconds_sum_of_tasks': 9664.791500806808, 'gpu_seconds_by_kind': {'pts': 2550.9480056762695, 'hessian': 6173.867521047592, 'hchecks': 364.2311179637909, 'hcut': 230.94434928894043, 'quadform': 344.80050683021545}, 'n_gpus': 2, 'total_seconds': 4861.987576723099}\n"}
+,{"stream_name":"stderr","time":4871.395482545,"data":"/usr/local/lib/python3.12/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":4871.395508108,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":4871.704575974,"data":"/usr/local/lib/python3.12/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":4871.704598033,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":4872.372049044,"data":"[NbConvertApp] Converting notebook __script__.ipynb to html\n"}
+,{"stream_name":"stderr","time":4873.617134451,"data":"[NbConvertApp] Writing 520715 bytes to __results__.html\n"}
+]

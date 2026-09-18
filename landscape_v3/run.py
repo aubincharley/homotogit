@@ -539,6 +539,7 @@ def main():
     ap.add_argument("--out", required=True)
     ap.add_argument("--deadline-hours", type=float, default=11.3)
     ap.add_argument("--pilot", action="store_true")
+    ap.add_argument("--allow-cpu", dest="require_gpu", action="store_false")
     a = ap.parse_args()
     t_start = time.time()
     deadline = t_start + a.deadline_hours * 3600
@@ -555,6 +556,11 @@ def main():
            "protocol": PROTOCOL, "tf32": False, "cudnn_deterministic": True}
     (out / "environment.json").write_text(json.dumps(env, indent=2))
     print(env, flush=True)
+    if a.require_gpu and torch.cuda.device_count() == 0:
+        # an unverified Kaggle account silently runs "GPU" kernels on CPU; fail fast instead
+        (out / "NO_GPU_ABORTED.txt").write_text("no CUDA device visible; job aborted before any evaluation\n")
+        print("NO GPU: aborting", flush=True)
+        raise SystemExit(3)
     timing = {"start": t_start}
     t0 = time.time()
     chk = check_inputs(inputs, tasks, out)
