@@ -65,13 +65,13 @@ Généré par `tools/enrich_records.py` depuis [`data/repo_evidence.json`](../da
 
 | Rôle | Chemin dans le dépôt | Dernier commit touchant ce fichier |
 |---|---|---|
-| Implémentation | [`continuation/experiments/exp0.py`](../../../../continuation/experiments/exp0.py) | — |
-| Implémentation | [`continuation/engine.py`](../../../../continuation/engine.py) | — |
-| Implémentation | [`continuation/transforms/gaussian.py`](../../../../continuation/transforms/gaussian.py) | — |
-| Configuration | [`configs/exp0_gaussian.yaml`](../../../../configs/exp0_gaussian.yaml) | — |
+| Implémentation | [`continuation/experiments/exp0.py`](../../../../continuation/experiments/exp0.py) | 86c00bc 2026-09-08 |
+| Implémentation | [`continuation/engine.py`](../../../../continuation/engine.py) | 86c00bc 2026-09-08 |
+| Implémentation | [`continuation/transforms/gaussian.py`](../../../../continuation/transforms/gaussian.py) | d643f75 2026-09-08 |
+| Configuration | [`configs/exp0_gaussian.yaml`](../../../../configs/exp0_gaussian.yaml) | 86c00bc 2026-09-08 |
 | Sorties d'exécution | [`results/exp0_gaussian`](../../../../results/exp0_gaussian) | 73 fichiers |
-| Documentation du dépôt | [`docs/experiment0.md`](../../../../docs/experiment0.md) | — |
-| Documentation du dépôt | [`docs/results.md`](../../../../docs/results.md) | — |
+| Documentation du dépôt | [`docs/experiment0.md`](../../../../docs/experiment0.md) | 86c00bc 2026-09-08 |
+| Documentation du dépôt | [`docs/results.md`](../../../../docs/results.md) | 86c00bc 2026-09-08 |
 
 Un chemin listé existe dans le dépôt au moment de la génération. Cela ne prouve pas seul quelle version du code a exécuté ce run : pour les runs Kaggle, le code réellement expédié est archivé dans le sous-dossier `_repo/` de la sortie correspondante.
 

@@ -144,9 +144,14 @@ the fine phase.
 
 The fixed ramps transfer (plan §16, EXP-015): coarse epochs are genuinely
 cheaper there (48×48 costs 25 % of 96×96), and at equal wall time progressive
-resolution is worth about +2.3 pp over plain. The reheat controller has **not**
-been run on STL-10 yet; that, and its interaction with the Gaussian filter and
-with data augmentation, are the open items.
+resolution is worth about +2.3 pp over plain. The reheat controller **was run on
+STL-10** at equal compute on six seeds (plan §19, EXP-018): it almost never
+fired, because STL-10's 40 updates per epoch give the fine phase only ~1,900
+updates to specialise — the signal grows at the same rate *per update* as on
+CIFAR (≈ 1.1–1.3 × 10⁻⁴), so g(96→72) reaches 0.2–0.3 only in the last epochs.
+The fixed fine ramp at equal compute (60.94 %) is the best STL-10 arm; the
+reheats have nothing to correct at that budget. The interaction with the
+Gaussian filter and with data augmentation remains untested.
 
 ## 8. Code map
 

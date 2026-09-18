@@ -31,10 +31,11 @@ Les IDs sont propres à cette base. Les campagnes antérieures aux runs datés d
 | [EXP-015](EXP-015_stl10_resolution.md) | Résolution progressive sur STL-10 (96×96) | 7 bras × 3 graines, 60–74 époques | Époques grossières 4× moins chères ; à compute égal **+2,6…+2,8 points** (dont ~2/3 d'effet budget), à temps égal ≈ +2,3 ; calendriers indiscernables sur 3 graines |
 | [EXP-016](EXP-016_bounded_specialisation.md) | Signal de spécialisation d'échelle g et contrôleur borné | 3 seuils × 3 graines, 30 époques | **35 bascules sur 36 décidées par le signal** ; 80,02 % = rampe fine fixe, +0,9 sur Rprog ; séjour non uniforme ; seuil robuste ×2 ; décalage BN inutilisable |
 | [EXP-017](EXP-017_two_sided_specialisation.md) | Réchauffes adaptatives à 24 pendant la phase 32 (signal g vers le bas) | 36 runs valides, jusqu'à 6 graines | **Bat les rampes fines fixes : +0,61 ± 0,35 point, 6/6 graines** (80,52 contre 79,91) ; au moins égal à des réchauffes fixes réglées à la main ; au-dessus du gagnant filtré pour 68 % du temps |
+| [EXP-018](EXP-018_stl10_adaptive.md) | STL-10 : réchauffes adaptatives + contrôleur conjoint, compute égal | 3 bras × 6 graines, 72 époques | Contrôleurs dominés par leurs gardes : g croît au même rythme **par update** qu'en CIFAR mais 40 updates/époque ne suffisent pas ; rampe fine fixe = meilleur bras STL-10 (60,94 %) |
 
 ## Différents niveaux de preuve
 
-- **JSON numérique local** : EXP-002, EXP-003, EXP-011, EXP-012, EXP-013, EXP-014, EXP-015, EXP-016 et EXP-017 ; détails de calcul et agrégats accessibles.
+- **JSON numérique local** : EXP-002, EXP-003, EXP-011, EXP-012, EXP-013, EXP-014, EXP-015, EXP-016, EXP-017 et EXP-018 ; détails de calcul et agrégats accessibles.
 - **Rapport local d'exécution** : EXP-000, EXP-001, EXP-010, EXP-011.
 - **Compte rendu copié dans la conversation + figures** : EXP-006 à EXP-009.
 - **Sources partielles, lectures graphiques** : EXP-004 et une partie d'EXP-005.

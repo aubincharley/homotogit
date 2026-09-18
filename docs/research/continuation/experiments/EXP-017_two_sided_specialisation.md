@@ -64,16 +64,16 @@ Généré par `tools/enrich_records.py` depuis [`data/repo_evidence.json`](../da
 
 | Rôle | Chemin dans le dépôt | Dernier commit touchant ce fichier |
 |---|---|---|
-| Implémentation | [`continuation/probe_signals.py`](../../../../continuation/probe_signals.py) | — |
-| Implémentation | [`scripts/job_adaptive_phase0.py`](../../../../scripts/job_adaptive_phase0.py) | — |
-| Implémentation | [`scripts/job_adaptive_phase4.py`](../../../../scripts/job_adaptive_phase4.py) | — |
-| Implémentation | [`scripts/job_adaptive_phase4c.py`](../../../../scripts/job_adaptive_phase4c.py) | — |
-| Implémentation | [`scripts/job_adaptive_phase5.py`](../../../../scripts/job_adaptive_phase5.py) | — |
+| Implémentation | [`continuation/probe_signals.py`](../../../../continuation/probe_signals.py) | df89fbf 2026-09-18 |
+| Implémentation | [`scripts/job_adaptive_phase0.py`](../../../../scripts/job_adaptive_phase0.py) | df89fbf 2026-09-18 |
+| Implémentation | [`scripts/job_adaptive_phase4.py`](../../../../scripts/job_adaptive_phase4.py) | df89fbf 2026-09-18 |
+| Implémentation | [`scripts/job_adaptive_phase4c.py`](../../../../scripts/job_adaptive_phase4c.py) | df89fbf 2026-09-18 |
+| Implémentation | [`scripts/job_adaptive_phase5.py`](../../../../scripts/job_adaptive_phase5.py) | df89fbf 2026-09-18 |
 | Sorties d'exécution | [`results/kaggle_outputs/adaptive-phase4-20260917-151733`](../../../../results/kaggle_outputs/adaptive-phase4-20260917-151733) | 135 fichiers |
 | Sorties d'exécution | [`results/kaggle_outputs/adaptive-phase4b-20260917-154529`](../../../../results/kaggle_outputs/adaptive-phase4b-20260917-154529) | 123 fichiers |
 | Sorties d'exécution | [`results/kaggle_outputs/adaptive-phase4c-20260917-165354`](../../../../results/kaggle_outputs/adaptive-phase4c-20260917-165354) | 124 fichiers |
 | Sorties d'exécution | [`results/kaggle_outputs/adaptive-phase5-20260918-055940`](../../../../results/kaggle_outputs/adaptive-phase5-20260918-055940) | 146 fichiers |
-| Documentation du dépôt | [`docs/adaptive_resolution_plan.md`](../../../../docs/adaptive_resolution_plan.md) | — |
+| Documentation du dépôt | [`docs/adaptive_resolution_plan.md`](../../../../docs/adaptive_resolution_plan.md) | df89fbf 2026-09-18 |
 
 Un chemin listé existe dans le dépôt au moment de la génération. Cela ne prouve pas seul quelle version du code a exécuté ce run : pour les runs Kaggle, le code réellement expédié est archivé dans le sous-dossier `_repo/` de la sortie correspondante.
 

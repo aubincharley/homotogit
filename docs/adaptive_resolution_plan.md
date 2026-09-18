@@ -1398,3 +1398,99 @@ What this does not establish: robustness of g*_down beyond CIFAR-10 / ResNet-20
 / no augmentation; behaviour with the Gaussian filter; behaviour on STL-10,
 where the reheat epochs are also cheaper. Those are the next experiments, in
 that order.
+
+
+---
+
+## 19. STL-10 — adaptive reheats and a joint step-size controller (launched 2026-09-18, kernel `paulinezarka/stl10-adaptive-20260918-115842`)
+
+### 19.1 Two facts from the multi-step probes that shape the design
+
+Replaying the logged g_Δ for Δ ∈ {2, 4, 8} along the six fixed-ascent runs of
+§18.7 shows that **g is not monotone in the step**: from r = 16, the +2 step
+(to 18) costs 0.10–0.14 while +4 (to 20) costs 0.03 and +8 (to 24) 0.06; from
+28, +2 (to 30) costs 0.20 and +4 (to 32) 0.04. The expensive sizes are those
+not divisible by 4: after the two stride-2 stages, 18 → 9 → 5 lands on a
+shifted sampling grid, 20 → 10 → 5 does not. The network is specialised to the
+**phase of its sampling grid** as much as to scale. Consequence: candidate
+sizes must be restricted to the grid compatible with the architecture's strides
+(multiples of 4 here), otherwise the signal measures an artefact. This is also
+the mechanism behind the parity effect of §14.2.
+
+Second, on the three-epoch dwells of the fixed ramp, g(+4) stays within the
+noise (−0.02 to 0.06, noise ≈ ±0.02); and a step rule "largest Δ with
+g_Δ ≤ 0.10" would take +8 from 16 at epoch 2–3, reconstructing the short
+16 → 24 jumps that the §12.6 grid found worse. The immediate transfer penalty
+does not capture everything the small step buys, so g_jump must be tight.
+
+### 19.2 Design
+
+Equal compute for every arm (72-epoch horizon ≈ 60 units of a 96×96 epoch, as
+`R96`'s 60 epochs), six seeds, STL-10 protocol of §16.
+
+| arm | ascent | fine phase |
+|---|---|---|
+| `Rsteps4_72` | fixed 48/60/72/84 ×6, 96 from epoch 24 | none (comparator) |
+| `Rsteps4ar_72` | same fixed ascent | adaptive reheats at 72×72 when g(96→72) ≥ 0.30, settle 2 |
+| `Rjoint_72` | **joint**: start 48; candidates r+12 / r+24 / r+48 (all multiples of 4, ≤ 96); *timing* — advance when the EMA of g toward the smallest candidate ≥ g_up = 0.05 after ≥ 2 epochs; *step* — the largest candidate with g_Δ ≤ g_jump = 0.05, else the smallest; floor r ≥ 48 + 12·(e−18), 96 by epoch 30 | same adaptive reheats |
+
+Every probe is one BN recalibration plus one evaluation on the 1,000-image
+monitor set at the candidate size, weights and buffers verified restored.
+Comparators already measured on seeds 0–2 (§16.4): `R96_72` 59.52, `Rprogeq`
+60.48, `Rlin24eq` 60.25.
+
+Readings fixed in advance: (i) `Rsteps4ar_72 − Rsteps4_72` ≥ +0.5 pp on ≥ 5/6
+seeds → the reheat mechanism transfers; (ii) `Rjoint_72` ≈ `Rsteps4ar_72` with
+seed-stable steps → the ascent table can be dropped without cost; `Rjoint_72`
+below it → adaptive ascent costs here as on CIFAR; (iii) both ≈ `Rsteps4_72` →
+the STL-10 fine phase is not specialising enough at 40 updates per epoch for
+reheats to matter.
+
+### 19.3 Results (`paulinezarka/stl10-adaptive-20260918-115842`, 18 runs, 6,518 s, 0 failures)
+
+| arm | seeds 0–5 (%) | mean | train s |
+|---|---|---:|---:|
+| Rsteps4_72 (fixed fine ramp, equal compute) | 60.82 / 60.52 / 60.50 / 61.81 / 61.06 / 60.90 | **60.94** | 537 |
+| Rsteps4ar_72 (+ adaptive reheats) | 60.88 / 60.59 / 60.30 / 61.36 / 60.68 / 60.50 | 60.72 | 546 |
+| Rjoint_72 (joint step-size controller + reheats) | 60.26 / 59.90 / 60.41 / 61.46 / 61.24 / 60.77 | 60.68 | 503 |
+
+Paired: reheats − fixed = −0.22 ± 0.23 (2/6 positive); joint − fixed =
+−0.26 ± 0.31 (1/6); joint − reheats = −0.04 ± 0.50. Earlier comparators on seeds
+0–2: `R96_72` 59.52, `Rprogeq` 60.48, `Rlin24eq` 60.25 — the fixed fine ramp at
+equal compute is the **best STL-10 arm so far** (60.61 on the same three seeds).
+
+**Both controllers were dominated by their guards.** The reheat rule fired 0–1
+times per run (one late reheat on seeds 3–5, each time slightly harmful); the
+joint ascent never triggered on the signal and its floor produced 48 ×19 → 60 →
+72 → 84 → 96 from epoch 22 on every seed. The traces say why, and it is not a
+failure of the signal: g grows at the same rate **per update** as on CIFAR
+(≈ 1.1–1.3 × 10⁻⁴ per update in both datasets) but STL-10 has 40 updates per
+epoch instead of 391, so the fine phase reaches g(96→72) ≈ 0.2–0.3 only in the
+last epochs, and g(+12) during the 48 stage stays within ±0.04 for nineteen
+epochs. Thresholds calibrated on CIFAR in *epochs* do not transfer; the
+quantity that transfers is the specialisation rate per update, and at 2,400
+updates STL-10 simply never specialises enough for reheats to pay. This is the
+third pre-registered reading of §19.2.
+
+What this establishes and what it does not. Established: the reheat mechanism
+needs a fine phase long enough (in updates) to specialise; at STL-10's budget it
+does not exist, so the fixed ramp is the right answer there. Not established:
+whether the joint controller would work with thresholds set per update (e.g.
+g_up ≈ 0.02 and a probe every 5 epochs) — the floor took every decision, so its
+step rule was never exercised. A fair test needs either a longer STL-10 horizon
+(≥ 10,000 updates) or thresholds scaled by the update budget.
+
+### 19.4 Overall status of "adaptive resolution", end of 2026-09-18
+
+* CIFAR-10 (11,730 updates): a fixed fine ramp plus **adaptive reheats** driven
+  by the specialisation signal beats the best fixed ramp by +0.61 pp on six
+  paired seeds (§18.7). This is the method to keep.
+* Adaptive *ascent*, in any form tested (plateau, alignment, specialisation
+  threshold, joint step size): never better than the fixed ramp, sometimes
+  worse by 0.3 pp; on STL-10 the thresholds did not fire at all.
+* STL-10 (2,400–2,880 updates): progressive resolution buys real wall time and
+  about +2.3 pp at equal time; the fixed fine ramp at equal compute (60.94 %)
+  is the best arm; reheats have nothing to correct at this budget.
+* One discovery worth keeping for any future controller: candidate sizes must
+  be compatible with the network's stride pattern (multiples of 4 for
+  ResNet-20); otherwise the signal measures a sampling-grid artefact (§19.1).

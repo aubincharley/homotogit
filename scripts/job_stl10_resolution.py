@@ -71,7 +71,7 @@ PROTOCOL = {"warmup": 60, "effective_batch": 128, "microbatch": 32,
 EVAL_EVERY = 3
 PROBE = {"size": 500, "seed": 0, "stream": "study_train_probe"}
 MONITOR = {"size": 1000, "seed": 0, "stream": "adaptive_monitor"}
-SEEDS = (0, 1, 2)
+SEEDS = tuple(int(v) for v in os.environ.get("STL10_SEEDS", "0,1,2").split(","))
 
 
 def log(msg):
@@ -98,9 +98,21 @@ SCHEDULES = {
     # until its nominal compute matches R96's 60 epochs (45.8 + 14 = 59.8 units)
     "R96_72":   [96] * 72,
     "Rprogeq":  [48] * 12 + [72] * 12 + [96] * 50,
+    # equal-compute fine ramp (59.8 units, like R96's 60): the fixed comparator of phase 3
+    "Rsteps4_72": [48] * 6 + [60] * 6 + [72] * 6 + [84] * 6 + [96] * 48,
 }
 PHASE = int(os.environ.get("STL10_PHASE", "1"))
-ARMS = {1: ("R96", "Rprog", "Rsteps4", "Rlin24", "Rlin24eq"), 2: ("R96_72", "Rprogeq")}[PHASE]
+ARMS = {1: ("R96", "Rprog", "Rsteps4", "Rlin24", "Rlin24eq"), 2: ("R96_72", "Rprogeq"),
+        3: ("Rsteps4_72", "Rsteps4ar_72", "Rjoint_72")}[PHASE]
+
+# phase-3 controllers (docs/adaptive_resolution_plan.md section 19)
+REHEAT = {"down_gstar": 0.30, "reheat_r": 72, "settle": 2, "ema_beta": 0.5}
+CONTROLLERS = {
+    "Rsteps4ar_72": {"kind": "gap2s", "ascent": "fixed", "schedule": "Rsteps4_72", **REHEAT},
+    "Rjoint_72": {"kind": "gap2s", "ascent": "joint", "start": 48, "target": 96,
+                  "deltas": (12, 24, 48), "g_up": 0.05, "g_jump": 0.05, "min_dwell": 2,
+                  "floor": "r >= 48 + 12*(e-18) from epoch 18; 96 by epoch 30", **REHEAT},
+}
 
 
 def compute_units(sched):
@@ -109,8 +121,14 @@ def compute_units(sched):
 
 
 def build_runs():
-    return [{"label": "%s__stl10__seed%d" % (name, s), "schedule": name, "seed": s}
-            for name in ARMS for s in SEEDS]
+    runs = []
+    for name in ARMS:
+        for sd in SEEDS:
+            ctl = CONTROLLERS.get(name)
+            runs.append({"label": "%s__stl10__seed%d" % (name, sd), "arm": name,
+                         "schedule": ctl["schedule"] if ctl and "schedule" in ctl else name,
+                         "seed": sd, "controller": ctl})
+    return runs
 
 
 # --------------------------------------------------------------------------
@@ -194,8 +212,15 @@ def train_run(spec, shared_dir: Path, gpu: int, out_dir: Path, worker: int):
     run_dir = out_dir / spec["label"]
     run_dir.mkdir(parents=True, exist_ok=True)
     seed = int(spec["seed"])
-    sched = list(SCHEDULES[spec["schedule"]])
-    epochs = len(sched)
+    controller = spec.get("controller")
+    if controller and controller.get("ascent") == "joint":
+        epochs = 72
+        sched = [controller["start"]] * epochs          # realised schedule, filled as decided
+    else:
+        sched = list(SCHEDULES[spec["schedule"]])
+        epochs = len(sched)
+    ctl = {"ema_up": None, "ema_down": None, "dwell": 0, "reached": False, "reheats": 0,
+           "log": [], "gaps": []}
 
     tr_x, tr_y, te_x, te_y = load_stl10(find_stl10())
     mean, std = channel_stats(tr_x)
@@ -281,6 +306,77 @@ def train_run(spec, shared_dir: Path, gpu: int, out_dir: Path, worker: int):
                "-" if tacc_r is None else "%.4f" % tacc_r, train_seconds[0],
                epoch_seconds[-1] if epoch_seconds else 0.0))
 
+    def gap_to(r_cur, r_probe):
+        """Relative loss penalty at r_probe after BN recalibration (weights fixed, restored)."""
+        ref = parameter_checksum(model)
+        ce_cur, _ = ce_acc(model, fwd_at(r_cur), mon_imgs, mon_lbls, batch=250)
+        saved = BNState(model)
+        recalibrate_bn(model, fwd_at(r_probe), mon_imgs, batch=250)
+        ce_p, _ = ce_acc(model, fwd_at(r_probe), mon_imgs, mon_lbls, batch=250)
+        saved.restore()
+        if saved.differs() or not parameters_equal(model, ref):
+            raise RuntimeError("gap probe perturbed the model")
+        return (ce_p - ce_cur) / ce_cur, ce_cur, ce_p
+
+    def floor_resolution(e):
+        return min(96, max(48, 48 + 12 * (e - 18)))
+
+    def controller_step(done):
+        """After epoch ``done`` (1-based): decide the resolution of epoch ``done``."""
+        sync()
+        t0 = time.perf_counter()
+        r_cur = sched[done - 1]
+        b = controller["ema_beta"]
+        entry = {"after_epoch": done, "r": r_cur, "reason": None}
+        if r_cur == controller.get("target", 96):
+            ctl["reached"] = True
+        if ctl["reached"]:
+            if r_cur == 96:
+                g, _, _ = gap_to(96, controller["reheat_r"])
+                ctl["ema_down"] = g if ctl["ema_down"] is None else b * ctl["ema_down"] + (1 - b) * g
+                entry.update(gap_down=g, ema_down=ctl["ema_down"])
+                if (done < epochs - controller["settle"]
+                        and ctl["ema_down"] >= controller["down_gstar"]):
+                    sched[done] = controller["reheat_r"]
+                    ctl["ema_down"] = None
+                    ctl["reheats"] += 1
+                    entry["reason"] = "reheat"
+            entry["r_next_epoch"] = sched[done]
+        elif controller.get("ascent") == "joint":
+            ctl["dwell"] += 1
+            gaps = {}
+            for d in controller["deltas"]:
+                rp = r_cur + d
+                if rp <= controller["target"]:
+                    gaps[rp] = gap_to(r_cur, rp)[0]
+            smallest = min(gaps) if gaps else None
+            if smallest is not None:
+                ctl["ema_up"] = (gaps[smallest] if ctl["ema_up"] is None
+                                 else b * ctl["ema_up"] + (1 - b) * gaps[smallest])
+            entry.update(gaps={str(k): v for k, v in gaps.items()}, ema_up=ctl["ema_up"])
+            r_new = r_cur
+            if (ctl["ema_up"] is not None and ctl["ema_up"] >= controller["g_up"]
+                    and ctl["dwell"] >= controller["min_dwell"]):
+                ok = [rp for rp, g in gaps.items() if g <= controller["g_jump"]]
+                r_new = max(ok) if ok else smallest
+                entry["reason"] = "g_up (step %+d)" % (r_new - r_cur)
+            if floor_resolution(done) > r_new:
+                r_new, entry["reason"] = floor_resolution(done), "floor"
+            if r_new != r_cur:
+                for k in range(done, epochs):
+                    sched[k] = r_new
+                ctl["ema_up"], ctl["dwell"] = None, 0
+            entry["r_next_epoch"] = sched[done]
+        else:
+            entry["r_next_epoch"] = sched[done]             # fixed ascent: no decision
+        sync()
+        entry["seconds"] = time.perf_counter() - t0
+        eval_seconds[0] += entry["seconds"]
+        ctl["log"].append(entry)
+        if entry["reason"]:
+            log("%-24s controller after epoch %d: r %d -> %d (%s)"
+                % (spec["label"], done, r_cur, sched[done], entry["reason"]))
+
     snapshot(0)
     eval_epochs = set(range(EVAL_EVERY, epochs + 1, EVAL_EVERY)) | {epochs}
     for e in range(epochs):
@@ -309,6 +405,8 @@ def train_run(spec, shared_dir: Path, gpu: int, out_dir: Path, worker: int):
         train_seconds[0] += dt
         epoch_seconds.append(round(dt, 3))
         done = e + 1
+        if controller and done < epochs:
+            controller_step(done)
         if done in eval_epochs:
             snapshot(done, epoch_train_loss=loss_sum / max(loss_n, 1))
 
@@ -320,6 +418,8 @@ def train_run(spec, shared_dir: Path, gpu: int, out_dir: Path, worker: int):
                "epochs": epochs, "updates": gstep, "updates_per_epoch": per_epoch,
                "n_train": n, "n_test": int(test_imgs.shape[0]), **PROTOCOL,
                "resolution_by_epoch": sched, "compute_units_nominal": compute_units(sched),
+               "controller": controller, "controller_log": ctl["log"] if controller else None,
+               "reheats": ctl["reheats"] if controller else None,
                "reduction": "bilinear on the float image, align_corners=False, antialias=True; "
                             "exact bypass at 96",
                "normalization": {"mean": [float(v) for v in mean], "std": [float(v) for v in std]},
@@ -383,9 +483,10 @@ def main():
 
     runs = build_runs()
     # longest first: R96 and the 72-epoch arm
-    runs.sort(key=lambda r: (-compute_units(SCHEDULES[r["schedule"]]), r["seed"]))
+    runs.sort(key=lambda r: (-compute_units(SCHEDULES[r["schedule"]]) if r["schedule"] in SCHEDULES else -60.0,
+                             r["seed"]))
     (out_dir / "config.json").write_text(json.dumps(
-        {"phase": PHASE, "arms": ARMS, "protocol": PROTOCOL, "schedules": SCHEDULES,
+        {"phase": PHASE, "arms": ARMS, "controllers": CONTROLLERS, "protocol": PROTOCOL, "schedules": SCHEDULES,
          "compute_units_nominal": {k: compute_units(v) for k, v in SCHEDULES.items()},
          "eval_every": EVAL_EVERY, "probe": PROBE, "monitor": MONITOR, "runs": runs}, indent=2))
     log("%d runs: %s" % (len(runs), [r["label"] for r in runs]))

@@ -71,11 +71,11 @@ Généré par `tools/enrich_records.py` depuis [`data/repo_evidence.json`](../da
 
 | Rôle | Chemin dans le dépôt | Dernier commit touchant ce fichier |
 |---|---|---|
-| Implémentation | [`continuation/experiments/exp1.py`](../../../../continuation/experiments/exp1.py) | — |
-| Implémentation | [`continuation/engine.py`](../../../../continuation/engine.py) | — |
-| Configuration | [`configs/exp1_warmstart.yaml`](../../../../configs/exp1_warmstart.yaml) | — |
+| Implémentation | [`continuation/experiments/exp1.py`](../../../../continuation/experiments/exp1.py) | 86c00bc 2026-09-08 |
+| Implémentation | [`continuation/engine.py`](../../../../continuation/engine.py) | 86c00bc 2026-09-08 |
+| Configuration | [`configs/exp1_warmstart.yaml`](../../../../configs/exp1_warmstart.yaml) | 86c00bc 2026-09-08 |
 | Sorties d'exécution | [`results/exp1_gaussian_warmstart`](../../../../results/exp1_gaussian_warmstart) | 43 fichiers |
-| Documentation du dépôt | [`docs/exp1_warmstart.md`](../../../../docs/exp1_warmstart.md) | — |
+| Documentation du dépôt | [`docs/exp1_warmstart.md`](../../../../docs/exp1_warmstart.md) | 86c00bc 2026-09-08 |
 
 Un chemin listé existe dans le dépôt au moment de la génération. Cela ne prouve pas seul quelle version du code a exécuté ce run : pour les runs Kaggle, le code réellement expédié est archivé dans le sous-dossier `_repo/` de la sortie correspondante.
 

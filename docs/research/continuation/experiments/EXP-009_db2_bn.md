@@ -78,13 +78,13 @@ Généré par `tools/enrich_records.py` depuis [`data/repo_evidence.json`](../da
 
 | Rôle | Chemin dans le dépôt | Dernier commit touchant ce fichier |
 |---|---|---|
-| Implémentation | [`scripts/job_db2_pilot.py`](../../../../scripts/job_db2_pilot.py) | — |
-| Implémentation | [`scripts/verify_db2_operator.py`](../../../../scripts/verify_db2_operator.py) | — |
-| Implémentation | [`continuation/transforms/wavelet.py`](../../../../continuation/transforms/wavelet.py) | — |
-| Implémentation | [`scripts/continuation_driver.py`](../../../../scripts/continuation_driver.py) | — |
+| Implémentation | [`scripts/job_db2_pilot.py`](../../../../scripts/job_db2_pilot.py) | 26cfb82 2026-09-09 |
+| Implémentation | [`scripts/verify_db2_operator.py`](../../../../scripts/verify_db2_operator.py) | 26cfb82 2026-09-09 |
+| Implémentation | [`continuation/transforms/wavelet.py`](../../../../continuation/transforms/wavelet.py) | d643f75 2026-09-08 |
+| Implémentation | [`scripts/continuation_driver.py`](../../../../scripts/continuation_driver.py) | 26cfb82 2026-09-09 |
 | Sorties d'exécution | [`results/kaggle_outputs/db2-pilot-r20bn-20260908-191741`](../../../../results/kaggle_outputs/db2-pilot-r20bn-20260908-191741) | 9 fichiers |
-| Sorties d'exécution | [`results/db2_operator_verification.json`](../../../../results/db2_operator_verification.json) | — |
-| Sorties d'exécution | [`results/db2_pilot.png`](../../../../results/db2_pilot.png) | — |
+| Sorties d'exécution | [`results/db2_operator_verification.json`](../../../../results/db2_operator_verification.json) | 26cfb82 2026-09-09 |
+| Sorties d'exécution | [`results/db2_pilot.png`](../../../../results/db2_pilot.png) | 26cfb82 2026-09-09 |
 
 Un chemin listé existe dans le dépôt au moment de la génération. Cela ne prouve pas seul quelle version du code a exécuté ce run : pour les runs Kaggle, le code réellement expédié est archivé dans le sous-dossier `_repo/` de la sortie correspondante.
 

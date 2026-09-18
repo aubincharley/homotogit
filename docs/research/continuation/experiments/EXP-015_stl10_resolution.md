@@ -67,14 +67,14 @@ Généré par `tools/enrich_records.py` depuis [`data/repo_evidence.json`](../da
 
 | Rôle | Chemin dans le dépôt | Dernier commit touchant ce fichier |
 |---|---|---|
-| Implémentation | [`scripts/job_stl10_resolution.py`](../../../../scripts/job_stl10_resolution.py) | — |
-| Implémentation | [`scripts/job_stl10_controls.py`](../../../../scripts/job_stl10_controls.py) | — |
-| Implémentation | [`scripts/analyze_stl10_resolution.py`](../../../../scripts/analyze_stl10_resolution.py) | — |
-| Implémentation | [`continuation/probe_signals.py`](../../../../continuation/probe_signals.py) | — |
+| Implémentation | [`scripts/job_stl10_resolution.py`](../../../../scripts/job_stl10_resolution.py) | df89fbf 2026-09-18 |
+| Implémentation | [`scripts/job_stl10_controls.py`](../../../../scripts/job_stl10_controls.py) | df89fbf 2026-09-18 |
+| Implémentation | [`scripts/analyze_stl10_resolution.py`](../../../../scripts/analyze_stl10_resolution.py) | df89fbf 2026-09-18 |
+| Implémentation | [`continuation/probe_signals.py`](../../../../continuation/probe_signals.py) | df89fbf 2026-09-18 |
 | Sorties d'exécution | [`results/kaggle_outputs/stl10-resolution-20260917-121258`](../../../../results/kaggle_outputs/stl10-resolution-20260917-121258) | 133 fichiers |
 | Sorties d'exécution | [`results/kaggle_outputs/stl10-controls-20260917-133339`](../../../../results/kaggle_outputs/stl10-controls-20260917-133339) | 117 fichiers |
-| Sorties d'exécution | [`results/stl10_resolution_analysis.md`](../../../../results/stl10_resolution_analysis.md) | — |
-| Documentation du dépôt | [`docs/adaptive_resolution_plan.md`](../../../../docs/adaptive_resolution_plan.md) | — |
+| Sorties d'exécution | [`results/stl10_resolution_analysis.md`](../../../../results/stl10_resolution_analysis.md) | df89fbf 2026-09-18 |
+| Documentation du dépôt | [`docs/adaptive_resolution_plan.md`](../../../../docs/adaptive_resolution_plan.md) | df89fbf 2026-09-18 |
 
 Un chemin listé existe dans le dépôt au moment de la génération. Cela ne prouve pas seul quelle version du code a exécuté ce run : pour les runs Kaggle, le code réellement expédié est archivé dans le sous-dossier `_repo/` de la sortie correspondante.
 

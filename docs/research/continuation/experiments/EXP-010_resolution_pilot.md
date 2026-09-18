@@ -75,14 +75,14 @@ Généré par `tools/enrich_records.py` depuis [`data/repo_evidence.json`](../da
 
 | Rôle | Chemin dans le dépôt | Dernier commit touchant ce fichier |
 |---|---|---|
-| Implémentation | [`scripts/job_progressive_resolution.py`](../../../../scripts/job_progressive_resolution.py) | — |
-| Implémentation | [`scripts/verify_progressive_resolution.py`](../../../../scripts/verify_progressive_resolution.py) | — |
-| Implémentation | [`scripts/plot_progressive_resolution.py`](../../../../scripts/plot_progressive_resolution.py) | — |
-| Implémentation | [`continuation/pipeline.py`](../../../../continuation/pipeline.py) | — |
-| Implémentation | [`scripts/continuation_driver.py`](../../../../scripts/continuation_driver.py) | — |
+| Implémentation | [`scripts/job_progressive_resolution.py`](../../../../scripts/job_progressive_resolution.py) | 26cfb82 2026-09-09 |
+| Implémentation | [`scripts/verify_progressive_resolution.py`](../../../../scripts/verify_progressive_resolution.py) | 26cfb82 2026-09-09 |
+| Implémentation | [`scripts/plot_progressive_resolution.py`](../../../../scripts/plot_progressive_resolution.py) | 26cfb82 2026-09-09 |
+| Implémentation | [`continuation/pipeline.py`](../../../../continuation/pipeline.py) | 26cfb82 2026-09-09 |
+| Implémentation | [`scripts/continuation_driver.py`](../../../../scripts/continuation_driver.py) | 26cfb82 2026-09-09 |
 | Sorties d'exécution | [`results/kaggle_outputs/progres-r20bn-20260909-075846`](../../../../results/kaggle_outputs/progres-r20bn-20260909-075846) | 10 fichiers |
-| Sorties d'exécution | [`results/progressive_resolution.png`](../../../../results/progressive_resolution.png) | — |
-| Sorties d'exécution | [`results/progressive_resolution_verification.json`](../../../../results/progressive_resolution_verification.json) | — |
+| Sorties d'exécution | [`results/progressive_resolution.png`](../../../../results/progressive_resolution.png) | 26cfb82 2026-09-09 |
+| Sorties d'exécution | [`results/progressive_resolution_verification.json`](../../../../results/progressive_resolution_verification.json) | 26cfb82 2026-09-09 |
 
 Un chemin listé existe dans le dépôt au moment de la génération. Cela ne prouve pas seul quelle version du code a exécuté ce run : pour les runs Kaggle, le code réellement expédié est archivé dans le sous-dossier `_repo/` de la sortie correspondante.
 

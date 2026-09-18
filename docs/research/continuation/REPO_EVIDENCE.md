@@ -14,7 +14,7 @@ Un chemin présent signifie que le fichier existe aujourd'hui ; il ne
 prouve pas à lui seul quelle version de ce code a exécuté un run
 ancien. La colonne « état du code » précise la portée.
 
-Dépôt : `adaptative-resolution`, branche `None`, HEAD `None`.
+Dépôt : `adaptative-resolution`, branche `adaptative-resolution`, HEAD `df89fbf`.
 
 ## EXP-000
 
@@ -22,13 +22,13 @@ Dépôt : `adaptative-resolution`, branche `None`, HEAD `None`.
 
 | Rôle | Chemin | Présent | Dernier commit |
 |---|---|---|---|
-| code | `continuation/experiments/exp0.py` | oui | — |
-| code | `continuation/engine.py` | oui | — |
-| code | `continuation/transforms/gaussian.py` | oui | — |
-| config | `configs/exp0_gaussian.yaml` | oui | — |
+| code | `continuation/experiments/exp0.py` | oui | 86c00bc 2026-09-08 |
+| code | `continuation/engine.py` | oui | 86c00bc 2026-09-08 |
+| code | `continuation/transforms/gaussian.py` | oui | d643f75 2026-09-08 |
+| config | `configs/exp0_gaussian.yaml` | oui | 86c00bc 2026-09-08 |
 | results | `results/exp0_gaussian` | oui | 73 fichiers |
-| docs | `docs/experiment0.md` | oui | — |
-| docs | `docs/results.md` | oui | — |
+| docs | `docs/experiment0.md` | oui | 86c00bc 2026-09-08 |
+| docs | `docs/results.md` | oui | 86c00bc 2026-09-08 |
 
 ## EXP-001
 
@@ -36,11 +36,11 @@ Dépôt : `adaptative-resolution`, branche `None`, HEAD `None`.
 
 | Rôle | Chemin | Présent | Dernier commit |
 |---|---|---|---|
-| code | `continuation/experiments/exp1.py` | oui | — |
-| code | `continuation/engine.py` | oui | — |
-| config | `configs/exp1_warmstart.yaml` | oui | — |
+| code | `continuation/experiments/exp1.py` | oui | 86c00bc 2026-09-08 |
+| code | `continuation/engine.py` | oui | 86c00bc 2026-09-08 |
+| config | `configs/exp1_warmstart.yaml` | oui | 86c00bc 2026-09-08 |
 | results | `results/exp1_gaussian_warmstart` | oui | 43 fichiers |
-| docs | `docs/exp1_warmstart.md` | oui | — |
+| docs | `docs/exp1_warmstart.md` | oui | 86c00bc 2026-09-08 |
 
 ## EXP-002
 
@@ -48,10 +48,10 @@ Dépôt : `adaptative-resolution`, branche `None`, HEAD `None`.
 
 | Rôle | Chemin | Présent | Dernier commit |
 |---|---|---|---|
-| code | `continuation/transforms/tv.py` | oui | — |
-| code | `scripts/tv_previews.py` | oui | — |
+| code | `continuation/transforms/tv.py` | oui | 86c00bc 2026-09-08 |
+| code | `scripts/tv_previews.py` | oui | 86c00bc 2026-09-08 |
 | results | `results/tv_previews` | oui | 3 fichiers |
-| docs | `docs/tv_budget.md` | oui | — |
+| docs | `docs/tv_budget.md` | oui | 86c00bc 2026-09-08 |
 
 ## EXP-003
 
@@ -59,13 +59,13 @@ Dépôt : `adaptative-resolution`, branche `None`, HEAD `None`.
 
 | Rôle | Chemin | Présent | Dernier commit |
 |---|---|---|---|
-| code | `continuation/transforms/wavelet.py` | oui | — |
-| code | `scripts/wavelet_previews.py` | oui | — |
-| code | `scripts/wavelet_benchmark.py` | oui | — |
-| code | `scripts/wavelet_profile.py` | oui | — |
-| code | `scripts/wavelet_optimized_benchmark.py` | oui | — |
+| code | `continuation/transforms/wavelet.py` | oui | d643f75 2026-09-08 |
+| code | `scripts/wavelet_previews.py` | oui | d643f75 2026-09-08 |
+| code | `scripts/wavelet_benchmark.py` | oui | d643f75 2026-09-08 |
+| code | `scripts/wavelet_profile.py` | oui | d643f75 2026-09-08 |
+| code | `scripts/wavelet_optimized_benchmark.py` | oui | d643f75 2026-09-08 |
 | results | `results/wavelet_previews` | oui | 14 fichiers |
-| docs | `docs/wavelet_shrinkage.md` | oui | — |
+| docs | `docs/wavelet_shrinkage.md` | oui | d643f75 2026-09-08 |
 
 ## EXP-004
 
@@ -73,11 +73,11 @@ Dépôt : `adaptative-resolution`, branche `None`, HEAD `None`.
 
 | Rôle | Chemin | Présent | Dernier commit |
 |---|---|---|---|
-| code | `scripts/kaggle_pilot_continuation.py` | oui | — |
-| code | `scripts/kaggle_run.py` | oui | — |
+| code | `scripts/kaggle_pilot_continuation.py` | oui | d643f75 2026-09-08 |
+| code | `scripts/kaggle_run.py` | oui | df89fbf 2026-09-18 |
 | results | `results/kaggle_outputs/pilot-continuation-20260908-103434` | oui | 3 fichiers |
 | results | `results/kaggle_outputs/pilot-continuation-20260908-122558` | oui | 10 fichiers |
-| docs | `docs/kaggle_cli.md` | oui | — |
+| docs | `docs/kaggle_cli.md` | oui | 0160bd1 2026-09-09 |
 
 ## EXP-005
 
@@ -85,22 +85,22 @@ Dépôt : `adaptative-resolution`, branche `None`, HEAD `None`.
 
 | Rôle | Chemin | Présent | Dernier commit |
 |---|---|---|---|
-| code | `scripts/continuation_driver.py` | oui | — |
-| code | `scripts/job_plain_study.py` | oui | — |
-| code | `scripts/job_gaussian_study.py` | oui | — |
-| code | `scripts/job_lr_diagnostic.py` | oui | — |
-| code | `scripts/job_lr_control_002.py` | oui | — |
-| code | `scripts/audit_gaussian_placement.py` | oui | — |
-| code | `scripts/verify_grad_accumulation.py` | oui | — |
-| code | `continuation/models/resnet_gn.py` | oui | — |
-| config | `scripts/_study_common.py` | oui | — |
+| code | `scripts/continuation_driver.py` | oui | 26cfb82 2026-09-09 |
+| code | `scripts/job_plain_study.py` | oui | d643f75 2026-09-08 |
+| code | `scripts/job_gaussian_study.py` | oui | d643f75 2026-09-08 |
+| code | `scripts/job_lr_diagnostic.py` | oui | d643f75 2026-09-08 |
+| code | `scripts/job_lr_control_002.py` | oui | d643f75 2026-09-08 |
+| code | `scripts/audit_gaussian_placement.py` | oui | d643f75 2026-09-08 |
+| code | `scripts/verify_grad_accumulation.py` | oui | d643f75 2026-09-08 |
+| code | `continuation/models/resnet_gn.py` | oui | 86c00bc 2026-09-08 |
+| config | `scripts/_study_common.py` | oui | d643f75 2026-09-08 |
 | results | `results/kaggle_outputs/plain-study-20260908-132611` | oui | 10 fichiers |
 | results | `results/kaggle_outputs/gaussian-study-20260908-132957` | oui | 10 fichiers |
 | results | `results/kaggle_outputs/lr-diagnostic-20260908-132240` | oui | 8 fichiers |
 | results | `results/kaggle_outputs/lr-control-002-20260908-140604` | oui | 8 fichiers |
-| results | `results/gaussian_placement_audit.json` | oui | — |
-| results | `results/grad_accumulation_check.json` | oui | — |
-| results | `results/plain_vs_gaussian_paired.json` | oui | — |
+| results | `results/gaussian_placement_audit.json` | oui | d643f75 2026-09-08 |
+| results | `results/grad_accumulation_check.json` | oui | d643f75 2026-09-08 |
+| results | `results/plain_vs_gaussian_paired.json` | oui | d643f75 2026-09-08 |
 
 ## EXP-006
 
@@ -108,11 +108,11 @@ Dépôt : `adaptative-resolution`, branche `None`, HEAD `None`.
 
 | Rôle | Chemin | Présent | Dernier commit |
 |---|---|---|---|
-| code | `continuation/models/resnet18_bn.py` | oui | — |
-| code | `scripts/job_resnet18_gaussian.py` | oui | — |
-| code | `scripts/continuation_driver.py` | oui | — |
+| code | `continuation/models/resnet18_bn.py` | oui | d643f75 2026-09-08 |
+| code | `scripts/job_resnet18_gaussian.py` | oui | d643f75 2026-09-08 |
+| code | `scripts/continuation_driver.py` | oui | 26cfb82 2026-09-09 |
 | results | `results/kaggle_outputs/resnet18-gaussian-20260908-144640` | oui | 5 fichiers |
-| results | `results/resnet18_plain_vs_gaussian.png` | oui | — |
+| results | `results/resnet18_plain_vs_gaussian.png` | oui | d643f75 2026-09-08 |
 
 ## EXP-007
 
@@ -120,12 +120,12 @@ Dépôt : `adaptative-resolution`, branche `None`, HEAD `None`.
 
 | Rôle | Chemin | Présent | Dernier commit |
 |---|---|---|---|
-| code | `continuation/models/resnet20_bn.py` | oui | — |
-| code | `scripts/job_resnet20bn_gaussian.py` | oui | — |
-| code | `scripts/continuation_driver.py` | oui | — |
+| code | `continuation/models/resnet20_bn.py` | oui | d643f75 2026-09-08 |
+| code | `scripts/job_resnet20bn_gaussian.py` | oui | d643f75 2026-09-08 |
+| code | `scripts/continuation_driver.py` | oui | 26cfb82 2026-09-09 |
 | results | `results/kaggle_outputs/resnet20bn-gaussian-20260908-154226` | oui | 8 fichiers |
-| results | `results/resnet20bn_plain_vs_gaussian.png` | oui | — |
-| results | `results/resnet20bn_pilot_corrected.png` | oui | — |
+| results | `results/resnet20bn_plain_vs_gaussian.png` | oui | d643f75 2026-09-08 |
+| results | `results/resnet20bn_pilot_corrected.png` | oui | d643f75 2026-09-08 |
 
 ## EXP-008
 
@@ -133,11 +133,11 @@ Dépôt : `adaptative-resolution`, branche `None`, HEAD `None`.
 
 | Rôle | Chemin | Présent | Dernier commit |
 |---|---|---|---|
-| code | `scripts/job_fulldata_campaign.py` | oui | — |
-| code | `scripts/continuation_driver.py` | oui | — |
+| code | `scripts/job_fulldata_campaign.py` | oui | d643f75 2026-09-08 |
+| code | `scripts/continuation_driver.py` | oui | 26cfb82 2026-09-09 |
 | results | `results/kaggle_outputs/fulldata-r20bn-20260908-161221` | oui | 22 fichiers |
-| results | `results/fulldata_campaign.png` | oui | — |
-| docs | `docs/HANDOVER.md` | oui | — |
+| results | `results/fulldata_campaign.png` | oui | d643f75 2026-09-08 |
+| docs | `docs/HANDOVER.md` | oui | 8112db0 2026-09-09 |
 
 ## EXP-009
 
@@ -145,13 +145,13 @@ Dépôt : `adaptative-resolution`, branche `None`, HEAD `None`.
 
 | Rôle | Chemin | Présent | Dernier commit |
 |---|---|---|---|
-| code | `scripts/job_db2_pilot.py` | oui | — |
-| code | `scripts/verify_db2_operator.py` | oui | — |
-| code | `continuation/transforms/wavelet.py` | oui | — |
-| code | `scripts/continuation_driver.py` | oui | — |
+| code | `scripts/job_db2_pilot.py` | oui | 26cfb82 2026-09-09 |
+| code | `scripts/verify_db2_operator.py` | oui | 26cfb82 2026-09-09 |
+| code | `continuation/transforms/wavelet.py` | oui | d643f75 2026-09-08 |
+| code | `scripts/continuation_driver.py` | oui | 26cfb82 2026-09-09 |
 | results | `results/kaggle_outputs/db2-pilot-r20bn-20260908-191741` | oui | 9 fichiers |
-| results | `results/db2_operator_verification.json` | oui | — |
-| results | `results/db2_pilot.png` | oui | — |
+| results | `results/db2_operator_verification.json` | oui | 26cfb82 2026-09-09 |
+| results | `results/db2_pilot.png` | oui | 26cfb82 2026-09-09 |
 
 ## EXP-010
 
@@ -159,14 +159,14 @@ Dépôt : `adaptative-resolution`, branche `None`, HEAD `None`.
 
 | Rôle | Chemin | Présent | Dernier commit |
 |---|---|---|---|
-| code | `scripts/job_progressive_resolution.py` | oui | — |
-| code | `scripts/verify_progressive_resolution.py` | oui | — |
-| code | `scripts/plot_progressive_resolution.py` | oui | — |
-| code | `continuation/pipeline.py` | oui | — |
-| code | `scripts/continuation_driver.py` | oui | — |
+| code | `scripts/job_progressive_resolution.py` | oui | 26cfb82 2026-09-09 |
+| code | `scripts/verify_progressive_resolution.py` | oui | 26cfb82 2026-09-09 |
+| code | `scripts/plot_progressive_resolution.py` | oui | 26cfb82 2026-09-09 |
+| code | `continuation/pipeline.py` | oui | 26cfb82 2026-09-09 |
+| code | `scripts/continuation_driver.py` | oui | 26cfb82 2026-09-09 |
 | results | `results/kaggle_outputs/progres-r20bn-20260909-075846` | oui | 10 fichiers |
-| results | `results/progressive_resolution.png` | oui | — |
-| results | `results/progressive_resolution_verification.json` | oui | — |
+| results | `results/progressive_resolution.png` | oui | 26cfb82 2026-09-09 |
+| results | `results/progressive_resolution_verification.json` | oui | 26cfb82 2026-09-09 |
 
 ## EXP-011
 
@@ -174,27 +174,27 @@ Dépôt : `adaptative-resolution`, branche `None`, HEAD `None`.
 
 | Rôle | Chemin | Présent | Dernier commit |
 |---|---|---|---|
-| code | `continuation/campaign_ops.py` | oui | — |
-| code | `scripts/campaign_driver.py` | oui | — |
-| code | `scripts/campaign_manifest.py` | oui | — |
-| code | `scripts/job_campaign.py` | oui | — |
-| code | `scripts/job_campaign_0.py` | oui | — |
-| code | `scripts/job_campaign_1.py` | oui | — |
-| code | `scripts/job_campaign_2.py` | oui | — |
-| code | `scripts/verify_campaign_ops.py` | oui | — |
-| code | `scripts/stage_campaign_assets.py` | oui | — |
-| code | `scripts/analyze_campaign.py` | oui | — |
-| code | `scripts/make_presentation.py` | oui | — |
-| code | `scripts/presentation_labels.py` | oui | — |
-| config | `results/campaign_manifest_frozen.json` | oui | — |
+| code | `continuation/campaign_ops.py` | oui | b9bb609 2026-09-09 |
+| code | `scripts/campaign_driver.py` | oui | b9bb609 2026-09-09 |
+| code | `scripts/campaign_manifest.py` | oui | b9bb609 2026-09-09 |
+| code | `scripts/job_campaign.py` | oui | b9bb609 2026-09-09 |
+| code | `scripts/job_campaign_0.py` | oui | b9bb609 2026-09-09 |
+| code | `scripts/job_campaign_1.py` | oui | b9bb609 2026-09-09 |
+| code | `scripts/job_campaign_2.py` | oui | b9bb609 2026-09-09 |
+| code | `scripts/verify_campaign_ops.py` | oui | b9bb609 2026-09-09 |
+| code | `scripts/stage_campaign_assets.py` | oui | b9bb609 2026-09-09 |
+| code | `scripts/analyze_campaign.py` | oui | f191fa6 2026-09-09 |
+| code | `scripts/make_presentation.py` | oui | 9da41d6 2026-09-09 |
+| code | `scripts/presentation_labels.py` | oui | 9da41d6 2026-09-09 |
+| config | `results/campaign_manifest_frozen.json` | oui | b9bb609 2026-09-09 |
 | results | `results/kaggle_outputs/campaign-j0-20260909-095039` | oui | 49 fichiers |
 | results | `results/kaggle_outputs/campaign-j1-20260909-095101` | oui | 49 fichiers |
 | results | `results/kaggle_outputs/campaign-j2-20260909-095123` | oui | 49 fichiers |
-| results | `results/campaign_results.json` | oui | — |
-| results | `results/campaign_verification.json` | oui | — |
+| results | `results/campaign_results.json` | oui | f191fa6 2026-09-09 |
+| results | `results/campaign_verification.json` | oui | b9bb609 2026-09-09 |
 | results | `results/campaign_previews` | oui | 2 fichiers |
 | results | `results/presentation` | oui | 43 fichiers |
-| docs | `docs/HANDOVER.md` | oui | — |
+| docs | `docs/HANDOVER.md` | oui | 8112db0 2026-09-09 |
 
 ## EXP-012
 
@@ -202,14 +202,14 @@ Dépôt : `adaptative-resolution`, branche `None`, HEAD `None`.
 
 | Rôle | Chemin | Présent | Dernier commit |
 |---|---|---|---|
-| code | `continuation/probe_signals.py` | oui | — |
-| code | `scripts/job_adaptive_phase0.py` | oui | — |
-| code | `scripts/analyze_adaptive_phase0.py` | oui | — |
-| code | `scripts/kaggle_run.py` | oui | — |
+| code | `continuation/probe_signals.py` | oui | df89fbf 2026-09-18 |
+| code | `scripts/job_adaptive_phase0.py` | oui | df89fbf 2026-09-18 |
+| code | `scripts/analyze_adaptive_phase0.py` | oui | df89fbf 2026-09-18 |
+| code | `scripts/kaggle_run.py` | oui | df89fbf 2026-09-18 |
 | results | `results/kaggle_outputs/adaptive-phase0-20260916-185116` | oui | 134 fichiers |
-| results | `results/adaptive_phase0_analysis.json` | oui | — |
-| results | `results/adaptive_phase0_analysis.md` | oui | — |
-| docs | `docs/adaptive_resolution_plan.md` | oui | — |
+| results | `results/adaptive_phase0_analysis.json` | oui | df89fbf 2026-09-18 |
+| results | `results/adaptive_phase0_analysis.md` | oui | df89fbf 2026-09-18 |
+| docs | `docs/adaptive_resolution_plan.md` | oui | df89fbf 2026-09-18 |
 
 ## EXP-013
 
@@ -217,13 +217,13 @@ Dépôt : `adaptative-resolution`, branche `None`, HEAD `None`.
 
 | Rôle | Chemin | Présent | Dernier commit |
 |---|---|---|---|
-| code | `continuation/probe_signals.py` | oui | — |
-| code | `scripts/job_adaptive_phase0.py` | oui | — |
-| code | `scripts/job_adaptive_phase1.py` | oui | — |
-| code | `scripts/analyze_adaptive_phase0.py` | oui | — |
+| code | `continuation/probe_signals.py` | oui | df89fbf 2026-09-18 |
+| code | `scripts/job_adaptive_phase0.py` | oui | df89fbf 2026-09-18 |
+| code | `scripts/job_adaptive_phase1.py` | oui | df89fbf 2026-09-18 |
+| code | `scripts/analyze_adaptive_phase0.py` | oui | df89fbf 2026-09-18 |
 | results | `results/kaggle_outputs/adaptive-phase1-20260917-075615` | oui | 135 fichiers |
-| results | `results/adaptive_phase0_analysis.json` | oui | — |
-| docs | `docs/adaptive_resolution_plan.md` | oui | — |
+| results | `results/adaptive_phase0_analysis.json` | oui | df89fbf 2026-09-18 |
+| docs | `docs/adaptive_resolution_plan.md` | oui | df89fbf 2026-09-18 |
 
 ## EXP-014
 
@@ -231,14 +231,14 @@ Dépôt : `adaptative-resolution`, branche `None`, HEAD `None`.
 
 | Rôle | Chemin | Présent | Dernier commit |
 |---|---|---|---|
-| code | `continuation/probe_signals.py` | oui | — |
-| code | `scripts/job_adaptive_phase0.py` | oui | — |
-| code | `scripts/job_adaptive_phase2.py` | oui | — |
-| code | `scripts/analyze_adaptive_phase0.py` | oui | — |
+| code | `continuation/probe_signals.py` | oui | df89fbf 2026-09-18 |
+| code | `scripts/job_adaptive_phase0.py` | oui | df89fbf 2026-09-18 |
+| code | `scripts/job_adaptive_phase2.py` | oui | df89fbf 2026-09-18 |
+| code | `scripts/analyze_adaptive_phase0.py` | oui | df89fbf 2026-09-18 |
 | results | `results/kaggle_outputs/adaptive-phase2-20260917-093614` | oui | 130 fichiers |
 | results | `results/kaggle_outputs/adaptive-phase2b-20260917-113110` | oui | 118 fichiers |
-| results | `results/adaptive_phase0_analysis.json` | oui | — |
-| docs | `docs/adaptive_resolution_plan.md` | oui | — |
+| results | `results/adaptive_phase0_analysis.json` | oui | df89fbf 2026-09-18 |
+| docs | `docs/adaptive_resolution_plan.md` | oui | df89fbf 2026-09-18 |
 
 ## EXP-015
 
@@ -246,14 +246,14 @@ Dépôt : `adaptative-resolution`, branche `None`, HEAD `None`.
 
 | Rôle | Chemin | Présent | Dernier commit |
 |---|---|---|---|
-| code | `scripts/job_stl10_resolution.py` | oui | — |
-| code | `scripts/job_stl10_controls.py` | oui | — |
-| code | `scripts/analyze_stl10_resolution.py` | oui | — |
-| code | `continuation/probe_signals.py` | oui | — |
+| code | `scripts/job_stl10_resolution.py` | oui | df89fbf 2026-09-18 |
+| code | `scripts/job_stl10_controls.py` | oui | df89fbf 2026-09-18 |
+| code | `scripts/analyze_stl10_resolution.py` | oui | df89fbf 2026-09-18 |
+| code | `continuation/probe_signals.py` | oui | df89fbf 2026-09-18 |
 | results | `results/kaggle_outputs/stl10-resolution-20260917-121258` | oui | 133 fichiers |
 | results | `results/kaggle_outputs/stl10-controls-20260917-133339` | oui | 117 fichiers |
-| results | `results/stl10_resolution_analysis.md` | oui | — |
-| docs | `docs/adaptive_resolution_plan.md` | oui | — |
+| results | `results/stl10_resolution_analysis.md` | oui | df89fbf 2026-09-18 |
+| docs | `docs/adaptive_resolution_plan.md` | oui | df89fbf 2026-09-18 |
 
 ## EXP-016
 
@@ -261,11 +261,11 @@ Dépôt : `adaptative-resolution`, branche `None`, HEAD `None`.
 
 | Rôle | Chemin | Présent | Dernier commit |
 |---|---|---|---|
-| code | `continuation/probe_signals.py` | oui | — |
-| code | `scripts/job_adaptive_phase0.py` | oui | — |
-| code | `scripts/job_adaptive_phase3.py` | oui | — |
+| code | `continuation/probe_signals.py` | oui | df89fbf 2026-09-18 |
+| code | `scripts/job_adaptive_phase0.py` | oui | df89fbf 2026-09-18 |
+| code | `scripts/job_adaptive_phase3.py` | oui | df89fbf 2026-09-18 |
 | results | `results/kaggle_outputs/adaptive-phase3-20260917-142057` | oui | 128 fichiers |
-| docs | `docs/adaptive_resolution_plan.md` | oui | — |
+| docs | `docs/adaptive_resolution_plan.md` | oui | df89fbf 2026-09-18 |
 
 ## EXP-017
 
@@ -273,19 +273,31 @@ Dépôt : `adaptative-resolution`, branche `None`, HEAD `None`.
 
 | Rôle | Chemin | Présent | Dernier commit |
 |---|---|---|---|
-| code | `continuation/probe_signals.py` | oui | — |
-| code | `scripts/job_adaptive_phase0.py` | oui | — |
-| code | `scripts/job_adaptive_phase4.py` | oui | — |
-| code | `scripts/job_adaptive_phase4c.py` | oui | — |
-| code | `scripts/job_adaptive_phase5.py` | oui | — |
+| code | `continuation/probe_signals.py` | oui | df89fbf 2026-09-18 |
+| code | `scripts/job_adaptive_phase0.py` | oui | df89fbf 2026-09-18 |
+| code | `scripts/job_adaptive_phase4.py` | oui | df89fbf 2026-09-18 |
+| code | `scripts/job_adaptive_phase4c.py` | oui | df89fbf 2026-09-18 |
+| code | `scripts/job_adaptive_phase5.py` | oui | df89fbf 2026-09-18 |
 | results | `results/kaggle_outputs/adaptive-phase4-20260917-151733` | oui | 135 fichiers |
 | results | `results/kaggle_outputs/adaptive-phase4b-20260917-154529` | oui | 123 fichiers |
 | results | `results/kaggle_outputs/adaptive-phase4c-20260917-165354` | oui | 124 fichiers |
 | results | `results/kaggle_outputs/adaptive-phase5-20260918-055940` | oui | 146 fichiers |
-| docs | `docs/adaptive_resolution_plan.md` | oui | — |
+| docs | `docs/adaptive_resolution_plan.md` | oui | df89fbf 2026-09-18 |
+
+## EXP-018
+
+**État du code** : controleurs (rechauffes, montee conjointe) ajoutes au job STL-10 apres df89fbf.
+
+| Rôle | Chemin | Présent | Dernier commit |
+|---|---|---|---|
+| code | `scripts/job_stl10_resolution.py` | oui | df89fbf 2026-09-18 |
+| code | `scripts/job_stl10_adaptive.py` | oui | — |
+| code | `continuation/probe_signals.py` | oui | df89fbf 2026-09-18 |
+| results | `results/kaggle_outputs/stl10-adaptive-20260918-115842` | oui | 149 fichiers |
+| docs | `docs/adaptive_resolution_plan.md` | oui | df89fbf 2026-09-18 |
 
 ## Recoupement numérique EXP-011
 
 Instantané contre copie du dépôt de `results/campaign_results.json` : 21 configuration(s) comparée(s), 0 écart(s). Cellules complétées : instantané 63, dépôt 63.
 
-Commit `f191fa6` cité par la fiche EXP-011 : **non résolu** — None.
+Commit `f191fa6` cité par la fiche EXP-011 : résolu dans ce dépôt — f191fa6 2026-09-09 push.

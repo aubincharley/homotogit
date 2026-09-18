@@ -45,22 +45,22 @@ Généré par `tools/enrich_records.py` depuis [`data/repo_evidence.json`](../da
 
 | Rôle | Chemin dans le dépôt | Dernier commit touchant ce fichier |
 |---|---|---|
-| Implémentation | [`scripts/continuation_driver.py`](../../../../scripts/continuation_driver.py) | — |
-| Implémentation | [`scripts/job_plain_study.py`](../../../../scripts/job_plain_study.py) | — |
-| Implémentation | [`scripts/job_gaussian_study.py`](../../../../scripts/job_gaussian_study.py) | — |
-| Implémentation | [`scripts/job_lr_diagnostic.py`](../../../../scripts/job_lr_diagnostic.py) | — |
-| Implémentation | [`scripts/job_lr_control_002.py`](../../../../scripts/job_lr_control_002.py) | — |
-| Implémentation | [`scripts/audit_gaussian_placement.py`](../../../../scripts/audit_gaussian_placement.py) | — |
-| Implémentation | [`scripts/verify_grad_accumulation.py`](../../../../scripts/verify_grad_accumulation.py) | — |
-| Implémentation | [`continuation/models/resnet_gn.py`](../../../../continuation/models/resnet_gn.py) | — |
-| Configuration | [`scripts/_study_common.py`](../../../../scripts/_study_common.py) | — |
+| Implémentation | [`scripts/continuation_driver.py`](../../../../scripts/continuation_driver.py) | 26cfb82 2026-09-09 |
+| Implémentation | [`scripts/job_plain_study.py`](../../../../scripts/job_plain_study.py) | d643f75 2026-09-08 |
+| Implémentation | [`scripts/job_gaussian_study.py`](../../../../scripts/job_gaussian_study.py) | d643f75 2026-09-08 |
+| Implémentation | [`scripts/job_lr_diagnostic.py`](../../../../scripts/job_lr_diagnostic.py) | d643f75 2026-09-08 |
+| Implémentation | [`scripts/job_lr_control_002.py`](../../../../scripts/job_lr_control_002.py) | d643f75 2026-09-08 |
+| Implémentation | [`scripts/audit_gaussian_placement.py`](../../../../scripts/audit_gaussian_placement.py) | d643f75 2026-09-08 |
+| Implémentation | [`scripts/verify_grad_accumulation.py`](../../../../scripts/verify_grad_accumulation.py) | d643f75 2026-09-08 |
+| Implémentation | [`continuation/models/resnet_gn.py`](../../../../continuation/models/resnet_gn.py) | 86c00bc 2026-09-08 |
+| Configuration | [`scripts/_study_common.py`](../../../../scripts/_study_common.py) | d643f75 2026-09-08 |
 | Sorties d'exécution | [`results/kaggle_outputs/plain-study-20260908-132611`](../../../../results/kaggle_outputs/plain-study-20260908-132611) | 10 fichiers |
 | Sorties d'exécution | [`results/kaggle_outputs/gaussian-study-20260908-132957`](../../../../results/kaggle_outputs/gaussian-study-20260908-132957) | 10 fichiers |
 | Sorties d'exécution | [`results/kaggle_outputs/lr-diagnostic-20260908-132240`](../../../../results/kaggle_outputs/lr-diagnostic-20260908-132240) | 8 fichiers |
 | Sorties d'exécution | [`results/kaggle_outputs/lr-control-002-20260908-140604`](../../../../results/kaggle_outputs/lr-control-002-20260908-140604) | 8 fichiers |
-| Sorties d'exécution | [`results/gaussian_placement_audit.json`](../../../../results/gaussian_placement_audit.json) | — |
-| Sorties d'exécution | [`results/grad_accumulation_check.json`](../../../../results/grad_accumulation_check.json) | — |
-| Sorties d'exécution | [`results/plain_vs_gaussian_paired.json`](../../../../results/plain_vs_gaussian_paired.json) | — |
+| Sorties d'exécution | [`results/gaussian_placement_audit.json`](../../../../results/gaussian_placement_audit.json) | d643f75 2026-09-08 |
+| Sorties d'exécution | [`results/grad_accumulation_check.json`](../../../../results/grad_accumulation_check.json) | d643f75 2026-09-08 |
+| Sorties d'exécution | [`results/plain_vs_gaussian_paired.json`](../../../../results/plain_vs_gaussian_paired.json) | d643f75 2026-09-08 |
 
 Un chemin listé existe dans le dépôt au moment de la génération. Cela ne prouve pas seul quelle version du code a exécuté ce run : pour les runs Kaggle, le code réellement expédié est archivé dans le sous-dossier `_repo/` de la sortie correspondante.
 

@@ -3,7 +3,7 @@ id: DOC-CURRENT
 schema_version: 1
 updated_at: 2026-09-18
 status: current_at_snapshot
-latest_completed_experiment: EXP-017
+latest_completed_experiment: EXP-018
 ---
 
 # État actuel au 9 septembre 2026
@@ -99,3 +99,7 @@ La pénalité relative de perte à l'échelle suivante après recalibration BN, 
 ## Complément du 18 septembre 2026 — EXP-017 : le contrôleur adaptatif dépasse les rampes fixes
 
 Le signal de spécialisation lu vers le bas, g(32→24), croît pendant toute la phase 32×32 alors que l'accuracy test stagne ; une époque 24×24 de « réchauffe » chaque fois qu'il dépasse 0,30 ([fiche](experiments/EXP-017_two_sided_specialisation.md)) donne, sur **six graines appariées**, **80,52 % contre 79,91 % pour la rampe fine fixe Rsteps4 : +0,61 ± 0,35 point, positif sur chaque graine**, à budget et temps égaux, sans filtre, au-dessus du gagnant filtré de la campagne (80,48 % dans ce protocole) pour 68 % de son temps. Un contrôle fixe (réchauffes aux époques 20/24/28) confirme le mécanisme (+0,46) ; la version adaptative le place au moins aussi bien. **Nouvelle meilleure recette non filtrée : rampe fine + réchauffes adaptatives.** À vérifier : robustesse du seuil, Gaussian, STL-10.
+
+## Complément du 18 septembre 2026 — EXP-018 : la méthode sur STL-10
+
+À compute égal et six graines ([fiche](experiments/EXP-018_stl10_adaptive.md)), les réchauffes adaptatives et le contrôleur conjoint de pas ne font pas mieux que la rampe fine fixe (60,72 et 60,68 contre **60,94 %**, nouveau meilleur bras STL-10) : leurs seuils n'ont presque jamais déclenché. Le signal de spécialisation croît au même rythme par update qu'en CIFAR, mais STL-10 n'a que 40 updates par époque : à 2 880 updates la phase fine ne se spécialise pas assez pour qu'il y ait quelque chose à corriger. Recette STL-10 recommandée : rampe fine fixe 48/60/72/84 puis 96, horizon choisi pour le temps. Le contrôleur de pas reste à tester avec des seuils exprimés par update.

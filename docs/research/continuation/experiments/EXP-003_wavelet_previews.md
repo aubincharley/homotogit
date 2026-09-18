@@ -63,13 +63,13 @@ Généré par `tools/enrich_records.py` depuis [`data/repo_evidence.json`](../da
 
 | Rôle | Chemin dans le dépôt | Dernier commit touchant ce fichier |
 |---|---|---|
-| Implémentation | [`continuation/transforms/wavelet.py`](../../../../continuation/transforms/wavelet.py) | — |
-| Implémentation | [`scripts/wavelet_previews.py`](../../../../scripts/wavelet_previews.py) | — |
-| Implémentation | [`scripts/wavelet_benchmark.py`](../../../../scripts/wavelet_benchmark.py) | — |
-| Implémentation | [`scripts/wavelet_profile.py`](../../../../scripts/wavelet_profile.py) | — |
-| Implémentation | [`scripts/wavelet_optimized_benchmark.py`](../../../../scripts/wavelet_optimized_benchmark.py) | — |
+| Implémentation | [`continuation/transforms/wavelet.py`](../../../../continuation/transforms/wavelet.py) | d643f75 2026-09-08 |
+| Implémentation | [`scripts/wavelet_previews.py`](../../../../scripts/wavelet_previews.py) | d643f75 2026-09-08 |
+| Implémentation | [`scripts/wavelet_benchmark.py`](../../../../scripts/wavelet_benchmark.py) | d643f75 2026-09-08 |
+| Implémentation | [`scripts/wavelet_profile.py`](../../../../scripts/wavelet_profile.py) | d643f75 2026-09-08 |
+| Implémentation | [`scripts/wavelet_optimized_benchmark.py`](../../../../scripts/wavelet_optimized_benchmark.py) | d643f75 2026-09-08 |
 | Sorties d'exécution | [`results/wavelet_previews`](../../../../results/wavelet_previews) | 14 fichiers |
-| Documentation du dépôt | [`docs/wavelet_shrinkage.md`](../../../../docs/wavelet_shrinkage.md) | — |
+| Documentation du dépôt | [`docs/wavelet_shrinkage.md`](../../../../docs/wavelet_shrinkage.md) | d643f75 2026-09-08 |
 
 Un chemin listé existe dans le dépôt au moment de la génération. Cela ne prouve pas seul quelle version du code a exécuté ce run : pour les runs Kaggle, le code réellement expédié est archivé dans le sous-dossier `_repo/` de la sortie correspondante.
 

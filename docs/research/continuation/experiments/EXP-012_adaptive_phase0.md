@@ -79,14 +79,14 @@ Généré par `tools/enrich_records.py` depuis [`data/repo_evidence.json`](../da
 
 | Rôle | Chemin dans le dépôt | Dernier commit touchant ce fichier |
 |---|---|---|
-| Implémentation | [`continuation/probe_signals.py`](../../../../continuation/probe_signals.py) | — |
-| Implémentation | [`scripts/job_adaptive_phase0.py`](../../../../scripts/job_adaptive_phase0.py) | — |
-| Implémentation | [`scripts/analyze_adaptive_phase0.py`](../../../../scripts/analyze_adaptive_phase0.py) | — |
-| Implémentation | [`scripts/kaggle_run.py`](../../../../scripts/kaggle_run.py) | — |
+| Implémentation | [`continuation/probe_signals.py`](../../../../continuation/probe_signals.py) | df89fbf 2026-09-18 |
+| Implémentation | [`scripts/job_adaptive_phase0.py`](../../../../scripts/job_adaptive_phase0.py) | df89fbf 2026-09-18 |
+| Implémentation | [`scripts/analyze_adaptive_phase0.py`](../../../../scripts/analyze_adaptive_phase0.py) | df89fbf 2026-09-18 |
+| Implémentation | [`scripts/kaggle_run.py`](../../../../scripts/kaggle_run.py) | df89fbf 2026-09-18 |
 | Sorties d'exécution | [`results/kaggle_outputs/adaptive-phase0-20260916-185116`](../../../../results/kaggle_outputs/adaptive-phase0-20260916-185116) | 134 fichiers |
-| Sorties d'exécution | [`results/adaptive_phase0_analysis.json`](../../../../results/adaptive_phase0_analysis.json) | — |
-| Sorties d'exécution | [`results/adaptive_phase0_analysis.md`](../../../../results/adaptive_phase0_analysis.md) | — |
-| Documentation du dépôt | [`docs/adaptive_resolution_plan.md`](../../../../docs/adaptive_resolution_plan.md) | — |
+| Sorties d'exécution | [`results/adaptive_phase0_analysis.json`](../../../../results/adaptive_phase0_analysis.json) | df89fbf 2026-09-18 |
+| Sorties d'exécution | [`results/adaptive_phase0_analysis.md`](../../../../results/adaptive_phase0_analysis.md) | df89fbf 2026-09-18 |
+| Documentation du dépôt | [`docs/adaptive_resolution_plan.md`](../../../../docs/adaptive_resolution_plan.md) | df89fbf 2026-09-18 |
 
 Un chemin listé existe dans le dépôt au moment de la génération. Cela ne prouve pas seul quelle version du code a exécuté ce run : pour les runs Kaggle, le code réellement expédié est archivé dans le sous-dossier `_repo/` de la sortie correspondante.
 

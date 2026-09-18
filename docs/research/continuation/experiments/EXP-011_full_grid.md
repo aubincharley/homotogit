@@ -148,27 +148,27 @@ Généré par `tools/enrich_records.py` depuis [`data/repo_evidence.json`](../da
 
 | Rôle | Chemin dans le dépôt | Dernier commit touchant ce fichier |
 |---|---|---|
-| Implémentation | [`continuation/campaign_ops.py`](../../../../continuation/campaign_ops.py) | — |
-| Implémentation | [`scripts/campaign_driver.py`](../../../../scripts/campaign_driver.py) | — |
-| Implémentation | [`scripts/campaign_manifest.py`](../../../../scripts/campaign_manifest.py) | — |
-| Implémentation | [`scripts/job_campaign.py`](../../../../scripts/job_campaign.py) | — |
-| Implémentation | [`scripts/job_campaign_0.py`](../../../../scripts/job_campaign_0.py) | — |
-| Implémentation | [`scripts/job_campaign_1.py`](../../../../scripts/job_campaign_1.py) | — |
-| Implémentation | [`scripts/job_campaign_2.py`](../../../../scripts/job_campaign_2.py) | — |
-| Implémentation | [`scripts/verify_campaign_ops.py`](../../../../scripts/verify_campaign_ops.py) | — |
-| Implémentation | [`scripts/stage_campaign_assets.py`](../../../../scripts/stage_campaign_assets.py) | — |
-| Implémentation | [`scripts/analyze_campaign.py`](../../../../scripts/analyze_campaign.py) | — |
-| Implémentation | [`scripts/make_presentation.py`](../../../../scripts/make_presentation.py) | — |
-| Implémentation | [`scripts/presentation_labels.py`](../../../../scripts/presentation_labels.py) | — |
-| Configuration | [`results/campaign_manifest_frozen.json`](../../../../results/campaign_manifest_frozen.json) | — |
+| Implémentation | [`continuation/campaign_ops.py`](../../../../continuation/campaign_ops.py) | b9bb609 2026-09-09 |
+| Implémentation | [`scripts/campaign_driver.py`](../../../../scripts/campaign_driver.py) | b9bb609 2026-09-09 |
+| Implémentation | [`scripts/campaign_manifest.py`](../../../../scripts/campaign_manifest.py) | b9bb609 2026-09-09 |
+| Implémentation | [`scripts/job_campaign.py`](../../../../scripts/job_campaign.py) | b9bb609 2026-09-09 |
+| Implémentation | [`scripts/job_campaign_0.py`](../../../../scripts/job_campaign_0.py) | b9bb609 2026-09-09 |
+| Implémentation | [`scripts/job_campaign_1.py`](../../../../scripts/job_campaign_1.py) | b9bb609 2026-09-09 |
+| Implémentation | [`scripts/job_campaign_2.py`](../../../../scripts/job_campaign_2.py) | b9bb609 2026-09-09 |
+| Implémentation | [`scripts/verify_campaign_ops.py`](../../../../scripts/verify_campaign_ops.py) | b9bb609 2026-09-09 |
+| Implémentation | [`scripts/stage_campaign_assets.py`](../../../../scripts/stage_campaign_assets.py) | b9bb609 2026-09-09 |
+| Implémentation | [`scripts/analyze_campaign.py`](../../../../scripts/analyze_campaign.py) | f191fa6 2026-09-09 |
+| Implémentation | [`scripts/make_presentation.py`](../../../../scripts/make_presentation.py) | 9da41d6 2026-09-09 |
+| Implémentation | [`scripts/presentation_labels.py`](../../../../scripts/presentation_labels.py) | 9da41d6 2026-09-09 |
+| Configuration | [`results/campaign_manifest_frozen.json`](../../../../results/campaign_manifest_frozen.json) | b9bb609 2026-09-09 |
 | Sorties d'exécution | [`results/kaggle_outputs/campaign-j0-20260909-095039`](../../../../results/kaggle_outputs/campaign-j0-20260909-095039) | 49 fichiers |
 | Sorties d'exécution | [`results/kaggle_outputs/campaign-j1-20260909-095101`](../../../../results/kaggle_outputs/campaign-j1-20260909-095101) | 49 fichiers |
 | Sorties d'exécution | [`results/kaggle_outputs/campaign-j2-20260909-095123`](../../../../results/kaggle_outputs/campaign-j2-20260909-095123) | 49 fichiers |
-| Sorties d'exécution | [`results/campaign_results.json`](../../../../results/campaign_results.json) | — |
-| Sorties d'exécution | [`results/campaign_verification.json`](../../../../results/campaign_verification.json) | — |
+| Sorties d'exécution | [`results/campaign_results.json`](../../../../results/campaign_results.json) | f191fa6 2026-09-09 |
+| Sorties d'exécution | [`results/campaign_verification.json`](../../../../results/campaign_verification.json) | b9bb609 2026-09-09 |
 | Sorties d'exécution | [`results/campaign_previews`](../../../../results/campaign_previews) | 2 fichiers |
 | Sorties d'exécution | [`results/presentation`](../../../../results/presentation) | 43 fichiers |
-| Documentation du dépôt | [`docs/HANDOVER.md`](../../../../docs/HANDOVER.md) | — |
+| Documentation du dépôt | [`docs/HANDOVER.md`](../../../../docs/HANDOVER.md) | 8112db0 2026-09-09 |
 
 Un chemin listé existe dans le dépôt au moment de la génération. Cela ne prouve pas seul quelle version du code a exécuté ce run : pour les runs Kaggle, le code réellement expédié est archivé dans le sous-dossier `_repo/` de la sortie correspondante.
 

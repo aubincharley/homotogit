@@ -234,6 +234,14 @@ EVIDENCE = {
         "docs": ["docs/adaptive_resolution_plan.md"],
         "code_state": "controleur 'gap2s' (ascension fixe ou adaptative + rechauffes) ; graines configurables ; non commite.",
     },
+    "EXP-018": {
+        "code": ["scripts/job_stl10_resolution.py", "scripts/job_stl10_adaptive.py",
+                 "continuation/probe_signals.py"],
+        "config": [],
+        "results": ["results/kaggle_outputs/stl10-adaptive-20260918-115842"],
+        "docs": ["docs/adaptive_resolution_plan.md"],
+        "code_state": "controleurs (rechauffes, montee conjointe) ajoutes au job STL-10 apres df89fbf.",
+    },
 }
 
 
