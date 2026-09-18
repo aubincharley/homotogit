@@ -274,45 +274,51 @@ optimizers. Records under `results/longer_budget/`.
     cifar10   x3   30 ->  90 epochs   11,730 -> 35,190 updates   SGD  lr 0.005
     stl10     x2   60 -> 120 epochs    2,400 ->  4,800 updates   Adam lr 1e-3
 
-**Preliminary: 1 seed per cell so far (4 of 12 runs per arm).** The tables below
-report absolute accuracy, not paired deltas, for a reason given at the end.
+**Complete: 3 seeds, 24 runs.** The tables report absolute accuracy, not paired
+deltas, for the reason given further down.
 
 ### CIFAR-10 under SGD: the gaps hold
 
-| method | 30 ep | 90 ep | change |
-|---|---|---|---|
-| `plain` | 75.43 | 76.76 | +1.33 |
-| `R` | 80.37 | 81.54 | +1.17 |
-| `G` | 79.91 | 82.68 | +2.77 |
-| `RG` | 81.51 | 83.43 | +1.92 |
+| method | 30 ep | 90 ep | change | paired at 90 ep |
+|---|---|---|---|---|
+| `plain` | 75.43 | 76.92 +- 0.18 | +1.49 | - |
+| `R` | 80.37 | 81.75 +- 0.20 | +1.38 | +4.83 +- 0.05 |
+| `G` | 79.91 | 82.35 +- 0.56 | +2.44 | +5.43 +- 0.56 |
+| `RG` | 81.51 | 83.67 +- 0.44 | +2.16 | **+6.75 +- 0.27** |
 
-Everything rises by 1-3 points, the ordering is unchanged, and `plain` closes
-none of the distance. **The recorded gaps are not an artifact of a short run** --
-the question this arm was built to answer.
+Everything rises 1.4-2.4 points, the ordering is unchanged, and `plain` closes
+none of the distance -- its paired gaps are +4.83 / +5.43 / +6.75 against
++4.94 / +4.48 / +6.08 at the base budget. **The recorded gaps are not an artifact
+of a short run**, which is what this arm was built to answer.
 
-### STL-10 under Adam: only the blur methods gain
+### STL-10 under Adam: the methods converge to the same benefit
 
-| method | 60 ep | 120 ep | change |
-|---|---|---|---|
-| `plain` | 62.79 | 60.49 | **-2.30** |
-| `R` | 68.72 | 68.51 | -0.21 |
-| `G` | 63.33 | **67.79** | **+4.46** |
-| `RG` | 62.76 | **67.38** | **+4.62** |
+| method | 60 ep | 120 ep | change | paired at 120 ep |
+|---|---|---|---|---|
+| `plain` | 62.79 | 62.06 +- 1.40 | -0.73 | - |
+| `R` | 68.72 | 67.29 +- 1.06 | **-1.43** | +5.23 +- 2.43 |
+| `G` | 63.33 | 67.37 +- 0.36 | **+4.04** | +5.30 +- 1.75 |
+| `RG` | 62.76 | 67.15 +- 0.58 | **+4.39** | +5.09 +- 1.58 |
 
-Three different behaviours in one table. `plain` gets **worse** with more
-training -- 5,000 images, no augmentation, so the extra budget overfits. `R` is
-flat: it had already finished its work by 60 epochs. `G` and `RG` gain over four
-points each.
+At 60 epochs the three methods were far apart -- `R` at +5.93, `G` at +0.54,
+`RG` at -0.03. At 120 they land within 0.2 pp of each other, all near +5.2. They
+get there from opposite directions: `R` **loses** 1.43 points of absolute
+accuracy, while `G` and `RG` gain about 4.
 
-So under Adam the Gaussian had not yet paid off at 2,400 updates and has by
-4,800, while the resolution reduction was already done. **The two families have
-different time constants.**
+So the three do roughly the same amount of good in the end, and differ in **how
+long they take**. The resolution schedule finishes early and then decays slightly
+with further training; the Gaussian is still paying off at 60 epochs and has
+finished by 120. `plain` also declines (-0.73), consistent with 5,000 images and
+no augmentation.
 
-This revises the reading of the optimizer study. There, `G` under Adam on STL-10
-was +0.54 +- 2.22 -- indistinguishable from zero -- and that was read as the blur
-being a substitute for optimization the optimizer was not doing. On this evidence
-the blur was simply not finished: it needed more updates under Adam than under
-SGD, not less work to do.
+This revises the optimizer study's reading. There, `G` under Adam on STL-10 was
++0.54 +- 2.22 and that was taken as the blur substituting for optimization the
+optimizer was already doing. It was simply unfinished: given twice the budget it
+reaches the same benefit as the resolution schedule.
+
+Caveat: the paired spreads on STL-10 are wide (+-1.58 to +-2.43 against +-0.05 to
++-0.56 on CIFAR-10), so "they converge to the same value" is the shape of the
+result, not a precise claim about equality.
 
 ### Was the weak 60-epoch result a bug? No -- the methods had not finished
 

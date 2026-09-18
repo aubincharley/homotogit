@@ -1,0 +1,120 @@
+{
+  "schema": "continuation_core.results/1",
+  "method": "resolution_max_b1__transfer",
+  "seed": 1,
+  "validation_status": "unvalidated",
+  "dataset": "stl10",
+  "arch": "resnet20_bn_cifar",
+  "arch_validated": true,
+  "epochs": 120,
+  "updates": 4800,
+  "updates_per_epoch": 40,
+  "n_train": 5000,
+  "n_test": 8000,
+  "final": {
+    "current": {
+      "train_probe": {
+        "ce": 0.008087821960449219,
+        "acc": 1.0,
+        "n": 500
+      },
+      "test": {
+        "ce": 1.2102994537353515,
+        "acc": 0.667625,
+        "n": 8000
+      }
+    },
+    "target": {
+      "train_probe": {
+        "ce": 0.008087821960449219,
+        "acc": 1.0,
+        "n": 500
+      },
+      "test": {
+        "ce": 1.2102994537353515,
+        "acc": 0.667625,
+        "n": 8000
+      }
+    }
+  },
+  "final_state_used": {
+    "state": {
+      "resolution": 96,
+      "sigma": null,
+      "label": "epoch 119"
+    },
+    "per_site_sigma": []
+  },
+  "final_state_is_target": true,
+  "transition_updates": [
+    960,
+    1920
+  ],
+  "timing": {
+    "wall_seconds": 1126.101226364,
+    "eval_seconds": 143.2594687450004,
+    "train_seconds": 982.8417576189996,
+    "scope": "from the start of run() (after data and model construction) to the last evaluation, including checkpoint writes; resumed runs add the wall time stored in the checkpoint"
+  },
+  "method_definition": {
+    "id": "resolution_max_b1__transfer",
+    "description": "Adaptive max pooling of the complete output of blocks[1] (input of blocks[2]) to 48 / 72 / 96; no Gaussian.",
+    "gaussian": null,
+    "resolution": {
+      "point": "block1",
+      "schedule": {
+        "starts": [
+          0,
+          24,
+          48
+        ],
+        "values": [
+          48,
+          72,
+          96
+        ]
+      },
+      "reference_resolution": 96,
+      "operator": "adaptive_max"
+    },
+    "source": {
+      "transferred_from": "resolution_max_b1",
+      "experiment": "unified_selected",
+      "branch": "benchmark-organized",
+      "config_id": "shrink_b1",
+      "label": "Shrink block 1 with max-pool, 16 to 24 to 32",
+      "cells": [
+        "shrink_b1__seed0",
+        "shrink_b1__seed1",
+        "shrink_b1__seed2"
+      ],
+      "final_test_acc_per_seed": {
+        "0": 0.7997,
+        "1": 0.8006,
+        "2": 0.8107
+      },
+      "final_test_acc_mean": 0.803667,
+      "final_test_acc_sd": 0.006108,
+      "final_path": "target (equal to current at epoch 30)",
+      "asset_set": "r20bn-campaign-assets"
+    },
+    "validated_on": []
+  },
+  "provenance": {
+    "assets_dir": "assets/stl10_x2",
+    "asset_states": {
+      "init_seed0": "6e652c49e5139e785887b9cb6b08ce5b0dee734bde6384550be6a8a3641e2c1b",
+      "init_seed1": "f6fb22087956ae3e39398efa42ab92580bbd66d86a8886a468e13bb4fc28ef5e",
+      "init_seed2": "fb19c69f3b02419133c852d831622cba0adc539775e578f826fdb0944ab815db"
+    },
+    "asset_arrays": {
+      "subset": "7080a3a6949fa5ec8ce280ab752ed1f7394b652efb69e8ead00cd8a003551e9d",
+      "train_probe": "0634544f72218a898f7f8bbb575f4236139e24a24a3098d3b981b95c2b9552d4",
+      "perm_seed0": "3724bcf698bf8c831e2db4f9b77b83cdc6dbf521a9f3c5a35b88abf3a0a9e607",
+      "perm_seed1": "20d5d746406f51c87c5c66e3bbbbe334bd0c6e104641e20924de1e4bd0523d2f",
+      "perm_seed2": "35c32d38ac17b40a0264c271d919b1343232243eaeb349ee078a1bfa824ca7f1"
+    },
+    "torch": "2.10.0+cu128",
+    "code": "c8bd77a2400f50154846dba4f0bee4a639dee365"
+  }
+}
