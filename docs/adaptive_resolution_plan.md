@@ -1494,3 +1494,79 @@ step rule was never exercised. A fair test needs either a longer STL-10 horizon
 * One discovery worth keeping for any future controller: candidate sizes must
   be compatible with the network's stride pattern (multiples of 4 for
   ResNet-20); otherwise the signal measures a sampling-grid artefact (§19.1).
+
+
+---
+
+## 20. Pilot — onset-detection ascent (one seed, launched 2026-09-18, kernels `paulinezarka/adaptive-phase6-20260918-141229` [30 epochs] and `adaptive-phase6b-20260918-141333` [60 epochs])
+
+Design from §19.4 and the insights list: **step fixed** at the smallest
+stride-compatible size (+4); **timing by onset**: advance when the EMA of
+g(r→r+4) exceeds k × its own measurement noise plus a 0.01 margin, where the
+noise is estimated live as |g_A − g_B|/√2 from two disjoint halves of the
+monitor set (EMA, re-seeded after a switch); minimum dwell 2 epochs; maximum
+dwell 5 (30 epochs) / 8 (60 epochs) as the guard; reheats at 24 when
+g(32→24) ≥ 0.30 where marked. Seed 0 only — a smoke test of behaviour, not a
+result.
+
+| kernel | arm | what it tests | reference (seed 0) |
+|---|---|---|---|
+| phase6 (30 ep) | Ronset2 / Ronset3 | onset timing at k = 2 / 3, no reheats | Rsteps4 79.80, Rgap06 79.86 |
+| phase6 (30 ep) | Ronset2rh | onset timing + reheats | Rsteps4ar 80.79 |
+| phase6b (60 ep) | Rsteps4_60 | fixed ramp, 6 epochs per size, 32 from 24 | — |
+| phase6b (60 ep) | Rsteps4ar_60 | fixed ramp + reheats at the long budget | — |
+| phase6b (60 ep) | Ronset2rh_60 | onset timing + reheats at the long budget | — |
+
+The 60-epoch runs are **not paired** with the campaign (different permutation
+tables; the pairing check is recorded, not enforced, when the horizon differs).
+What to read: does the onset rule fire at 3–4 epochs per size on its own (not
+via the guard), and is the switch timing sensible; at 60 epochs, do reheats
+become more valuable as the fine phase has more updates to specialise?
+
+### 20.1 Results (seed 0 only — behaviour check, not a result)
+
+First launch: `Ronset2` / `Ronset3` valid; `Ronset2rh` ran without its reheat
+side (the descent probe was wired for the previous controller kind only) and
+the two fixed 60-epoch arms failed on a schedule defined in the parent process
+only (marked `INVALID.json`). Both bugs fixed; affected runs re-launched as
+`adaptive-phase6r-20260918-143513` and `adaptive-phase6br-20260918-154408`.
+
+**The onset rule decides on its own.** Every ascent switch in every run was
+taken by the signal, none by the guard. With k = 2 the realised dwell is
+3 / 3 / 5 / 2 epochs (32 from epoch 13); with k = 3, 4 / 3 / 4 / 2. The live
+noise estimate from the two monitor halves is 0.005–0.035 and the EMA of g
+clears the threshold cleanly at each switch (e.g. 0.032 against 0.025).
+
+| horizon | arm | acc (seed 0) | reheats | seed-0 references |
+|---|---|---:|---:|---|
+| 30 | Ronset2 (k = 2, no reheats) | 80.05 | 0 | Rsteps4 79.80 · Rgap06 79.86 |
+| 30 | Ronset3 (k = 3, no reheats) | 79.95 | 0 | |
+| 30 | Ronset2rh (k = 2 + reheats) | 79.98 | 4 | Rsteps4ar 80.79 · Rsteps4rh 80.32 |
+| 60 | Rsteps4_60 (fixed ramp, 6 per size) | 81.71 | — | |
+| 60 | **Rsteps4ar_60** (fixed ramp + adaptive reheats) | **83.13** | 13 | |
+| 60 | Ronset2rh_60 (onset ascent + reheats) | 82.97 | 19 | |
+
+Readings (one seed, noise ±0.4 pp on identical schedules):
+
+* **Onset timing ≈ fixed ramp**, as expected from the flat ascent surface: +0.25
+  and +0.15 over Rsteps4 at 30 epochs, −0.16 against the fixed-ascent
+  equivalent at 60. Its value is that no table was written.
+* **Reheats matter more as the budget grows.** At 30 epochs, on the onset
+  ascent, they added nothing on this seed (79.98 vs 80.05); at 60 epochs they
+  add **+1.42 pp on the fixed ascent (83.13 vs 81.71) and +1.26 on the onset
+  ascent**, with 13–19 reheats. The fixed 60-epoch ramp memorises (train-probe
+  CE 0.026, test accuracy flat at 81.7–81.9 from epoch 36 on) while the
+  reheated runs keep improving (test CE 0.53 vs 0.66). This is the mechanism of
+  §18.1 with more updates to act on, and it is consistent with STL-10's null
+  result at 2,880 updates: the reheat gain scales with how much fine-scale
+  specialisation the budget allows.
+* **The onset detector is budget-invariant in updates.** At 60 epochs it
+  reached 32 at epoch 12, as at 30 epochs: specialisation onset happens at a
+  given number of updates, so the ascent occupies 40 % of a 30-epoch run and
+  20 % of a 60-epoch one. Whether a longer ascent would have been better at 60
+  epochs is not tested (the fixed 6-per-size ramp is not the answer either:
+  81.71 with reheats absent).
+
+What to run next if this direction is pursued: the 60-epoch comparison on
+three to six seeds (fixed ramp, fixed ramp + reheats, onset + reheats), since a
++1.3 pp effect at that budget would be a stronger result than the +0.61 at 30.

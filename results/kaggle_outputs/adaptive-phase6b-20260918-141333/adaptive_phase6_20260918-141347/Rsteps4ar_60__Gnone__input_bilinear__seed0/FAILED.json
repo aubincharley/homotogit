@@ -1,0 +1,24 @@
+{
+  "spec": {
+    "label": "Rsteps4ar_60__Gnone__input_bilinear__seed0",
+    "part": "H",
+    "schedule": "Rsteps4_60",
+    "arm": "Rsteps4ar_60",
+    "gaussian": "Gnone",
+    "seed": 0,
+    "mixed": false,
+    "controller": {
+      "kind": "gap2s",
+      "ascent": "fixed",
+      "ema_beta": 0.5,
+      "delta": 4,
+      "down_gstar": 0.3,
+      "reheat_r": 24,
+      "settle": 2,
+      "gstar": null,
+      "floor_start": null
+    }
+  },
+  "worker": 1,
+  "traceback": "Traceback (most recent call last):\n  File \"/kaggle/working/_repo/scripts/job_adaptive_phase0.py\", line 745, in _worker\n    train_run(spec, Path(shared_dir), gpu, Path(out_dir), worker)\n  File \"/kaggle/working/_repo/scripts/job_adaptive_phase0.py\", line 370, in train_run\n    sched = list(SCHEDULES[spec[\"schedule\"]])      # fixed ascent, adaptive reheats only\n                 ~~~~~~~~~^^^^^^^^^^^^^^^^^^\nKeyError: 'Rsteps4_60'\n"
+}

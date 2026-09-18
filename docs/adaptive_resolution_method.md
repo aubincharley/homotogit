@@ -140,6 +140,17 @@ the fine phase.
 | reheat bound 0.15 / 0.45 / 0.60 | over- / under-regularise, three seeds | §18.4–18.5 |
 | BatchNorm-shift as label-free specialisation measure | flat over dwell | §17.5 |
 
+## 6b. Longer budget — one-seed pilot (plan §20)
+
+At a 60-epoch horizon the fixed fine ramp memorises (train-probe CE 0.03, test
+accuracy flat from epoch 36) and reaches 81.71 %; the same ramp with adaptive
+reheats reaches **83.13 %** (13 reheats), and an ascent whose timing is chosen
+by onset detection (advance when g exceeds 2× its live measurement noise) plus
+reheats reaches 82.97 %. One seed each, so indicative only, but consistent with
+the mechanism: the reheat gain grows with the number of updates the fine phase
+has to specialise in. The onset detector took every ascent decision itself,
+with no hand-written table.
+
 ## 7. Transfer to STL-10 (96×96), and limits
 
 The fixed ramps transfer (plan §16, EXP-015): coarse epochs are genuinely

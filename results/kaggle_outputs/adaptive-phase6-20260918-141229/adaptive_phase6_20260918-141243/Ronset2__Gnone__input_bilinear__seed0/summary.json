@@ -1,0 +1,384 @@
+{
+  "label": "Ronset2__Gnone__input_bilinear__seed0",
+  "part": "H",
+  "schedule": "Ronset2",
+  "arm": "Ronset2",
+  "gaussian": "Gnone",
+  "seed": 0,
+  "mixed": false,
+  "controller": {
+    "operator": "none",
+    "levels": null,
+    "n_sites": 19,
+    "sites": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18
+    ],
+    "insertion_mask": "all19",
+    "reduction": "input_bilinear",
+    "resolution_by_epoch": [
+      16,
+      16,
+      16,
+      20,
+      20,
+      20,
+      24,
+      24,
+      24,
+      24,
+      24,
+      28,
+      28,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32
+    ],
+    "sigma_rule": "sigma_l(e) = q_l(e) * G(e); q_l = width_l / width_l@32",
+    "gmix_rule": "T_alpha(h) = (1-alpha) h + alpha G_{q_l}(h), reference width 1; alpha=0 returns h unevaluated",
+    "gaussian_kernel": null
+  },
+  "worker": 1,
+  "gpu_index": 1,
+  "gpu": "Tesla T4",
+  "epochs": 30,
+  "updates": 11730,
+  "updates_per_epoch": 391,
+  "n_train": 50000,
+  "n_test": 10000,
+  "warmup": 60,
+  "effective_batch": 128,
+  "microbatch": 32,
+  "resolution_by_epoch": [
+    16,
+    16,
+    16,
+    20,
+    20,
+    20,
+    24,
+    24,
+    24,
+    24,
+    24,
+    28,
+    28,
+    32,
+    32,
+    32,
+    32,
+    32,
+    32,
+    32,
+    32,
+    32,
+    32,
+    32,
+    32,
+    32,
+    32,
+    32,
+    32,
+    32
+  ],
+  "controller_log": [
+    {
+      "after_epoch": 1,
+      "r": 16,
+      "reason": null,
+      "gap": 0.00556659995969332,
+      "ema": 0.00556659995969332,
+      "noise": 0.005616713633506201,
+      "ema_noise": 0.005616713633506201,
+      "dwell": 1,
+      "threshold": 0.021233427267012404,
+      "r_next_epoch": 16
+    },
+    {
+      "after_epoch": 2,
+      "r": 16,
+      "reason": null,
+      "gap": 0.03295756456469696,
+      "ema": 0.01926208226219514,
+      "noise": 0.004995770386301294,
+      "ema_noise": 0.005306242009903747,
+      "dwell": 2,
+      "threshold": 0.020612484019807496,
+      "r_next_epoch": 16
+    },
+    {
+      "after_epoch": 3,
+      "r": 16,
+      "reason": "onset",
+      "gap": 0.03198018266763101,
+      "ema": 0.025621132464913075,
+      "noise": 0.009470109073991687,
+      "ema_noise": 0.007388175541947717,
+      "dwell": 3,
+      "threshold": 0.024776351083895434,
+      "r_next_epoch": 20
+    },
+    {
+      "after_epoch": 4,
+      "r": 20,
+      "reason": null,
+      "gap": -0.0027181319234996977,
+      "ema": -0.0027181319234996977,
+      "noise": 0.01320236186919077,
+      "ema_noise": 0.01320236186919077,
+      "dwell": 1,
+      "threshold": 0.03640472373838154,
+      "r_next_epoch": 20
+    },
+    {
+      "after_epoch": 5,
+      "r": 20,
+      "reason": null,
+      "gap": 0.02007541819587,
+      "ema": 0.00867864313618515,
+      "noise": 0.008460282922594755,
+      "ema_noise": 0.010831322395892764,
+      "dwell": 2,
+      "threshold": 0.03166264479178553,
+      "r_next_epoch": 20
+    },
+    {
+      "after_epoch": 6,
+      "r": 20,
+      "reason": "onset",
+      "gap": 0.06419833035541803,
+      "ema": 0.036438486745801586,
+      "noise": 0.002358788188046086,
+      "ema_noise": 0.006595055291969425,
+      "dwell": 3,
+      "threshold": 0.02319011058393885,
+      "r_next_epoch": 24
+    },
+    {
+      "after_epoch": 7,
+      "r": 24,
+      "reason": null,
+      "gap": 0.03639522898941324,
+      "ema": 0.03639522898941324,
+      "noise": 0.014646552356442058,
+      "ema_noise": 0.014646552356442058,
+      "dwell": 1,
+      "threshold": 0.039293104712884115,
+      "r_next_epoch": 24
+    },
+    {
+      "after_epoch": 8,
+      "r": 24,
+      "reason": null,
+      "gap": 0.046163235402929624,
+      "ema": 0.04127923219617143,
+      "noise": 0.032557020799177924,
+      "ema_noise": 0.02360178657780999,
+      "dwell": 2,
+      "threshold": 0.05720357315561998,
+      "r_next_epoch": 24
+    },
+    {
+      "after_epoch": 9,
+      "r": 24,
+      "reason": null,
+      "gap": 0.018078613200555545,
+      "ema": 0.02967892269836349,
+      "noise": 0.029298589617255368,
+      "ema_noise": 0.02645018809753268,
+      "dwell": 3,
+      "threshold": 0.06290037619506536,
+      "r_next_epoch": 24
+    },
+    {
+      "after_epoch": 10,
+      "r": 24,
+      "reason": null,
+      "gap": 0.060234990731192685,
+      "ema": 0.04495695671477809,
+      "noise": 0.01681279977079408,
+      "ema_noise": 0.02163149393416338,
+      "dwell": 4,
+      "threshold": 0.05326298786832676,
+      "r_next_epoch": 24
+    },
+    {
+      "after_epoch": 11,
+      "r": 24,
+      "reason": "onset",
+      "gap": 0.11734653546920741,
+      "ema": 0.08115174609199274,
+      "noise": 0.003816745057321602,
+      "ema_noise": 0.012724119495742491,
+      "dwell": 5,
+      "threshold": 0.035448238991484984,
+      "r_next_epoch": 28
+    },
+    {
+      "after_epoch": 12,
+      "r": 28,
+      "reason": null,
+      "gap": 0.07933432378843432,
+      "ema": 0.07933432378843432,
+      "noise": 0.01676204389770688,
+      "ema_noise": 0.01676204389770688,
+      "dwell": 1,
+      "threshold": 0.04352408779541376,
+      "r_next_epoch": 28
+    },
+    {
+      "after_epoch": 13,
+      "r": 28,
+      "reason": "onset",
+      "gap": 0.1324147991829133,
+      "ema": 0.10587456148567381,
+      "noise": 0.007814003252511123,
+      "ema_noise": 0.012288023575109,
+      "dwell": 2,
+      "threshold": 0.034576047150218,
+      "r_next_epoch": 32
+    },
+    {
+      "after_epoch": 14,
+      "r": 32,
+      "reason": null
+    },
+    {
+      "after_epoch": 15,
+      "r": 32,
+      "reason": null
+    },
+    {
+      "after_epoch": 16,
+      "r": 32,
+      "reason": null
+    },
+    {
+      "after_epoch": 17,
+      "r": 32,
+      "reason": null
+    },
+    {
+      "after_epoch": 18,
+      "r": 32,
+      "reason": null
+    },
+    {
+      "after_epoch": 19,
+      "r": 32,
+      "reason": null
+    },
+    {
+      "after_epoch": 20,
+      "r": 32,
+      "reason": null
+    },
+    {
+      "after_epoch": 21,
+      "r": 32,
+      "reason": null
+    },
+    {
+      "after_epoch": 22,
+      "r": 32,
+      "reason": null
+    },
+    {
+      "after_epoch": 23,
+      "r": 32,
+      "reason": null
+    },
+    {
+      "after_epoch": 24,
+      "r": 32,
+      "reason": null
+    },
+    {
+      "after_epoch": 25,
+      "r": 32,
+      "reason": null
+    },
+    {
+      "after_epoch": 26,
+      "r": 32,
+      "reason": null
+    },
+    {
+      "after_epoch": 27,
+      "r": 32,
+      "reason": null
+    },
+    {
+      "after_epoch": 28,
+      "r": 32,
+      "reason": null
+    },
+    {
+      "after_epoch": 29,
+      "r": 32,
+      "reason": null
+    }
+  ],
+  "reheats": 0,
+  "mix_probs": null,
+  "reduction": "input_bilinear (align_corners=False, antialias=True; exact bypass at 32)",
+  "operator": "none",
+  "levels": null,
+  "monitor": {
+    "size": 2000,
+    "seed": 0,
+    "stream": "adaptive_monitor",
+    "n": 2000,
+    "sha256": "9ddd2fedb1c16f50fdcdf315b8d226d4a34548554f48429bf78e6d130868b0ca"
+  },
+  "normalization": {
+    "mean": [
+      0.4913996756076813,
+      0.4821584224700928,
+      0.44653090834617615
+    ],
+    "std": [
+      0.24703222513198853,
+      0.24348512291908264,
+      0.26158782839775085
+    ]
+  },
+  "final_test_acc": 0.8005,
+  "final_test_ce": 0.5902185516357422,
+  "final_train_probe_ce": 0.348895751953125,
+  "wall_seconds": 581.189257079,
+  "eval_seconds": 106.62391363999996,
+  "train_seconds": 474.565343439,
+  "peak_mem_mib": 874.3876953125
+}

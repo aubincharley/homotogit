@@ -77,7 +77,7 @@ PHASE = int(os.environ.get("ADAPT_PHASE", "0"))
 WORK = Path(os.environ.get("STUDY_OUT", "/kaggle/working"))
 T0 = time.perf_counter()
 
-EPOCHS = 3 if SMOKE else 30
+EPOCHS = 3 if SMOKE else int(os.environ.get("ADAPT_EPOCHS", "30"))
 PROTOCOL = {"epochs": EPOCHS, "warmup": 60, "effective_batch": 128, "microbatch": 32,
             "lr": 0.005, "momentum": 0.9, "weight_decay": 5e-4}
 SHARED_CFG = {"name": "adaptive_phase0", "arch": "resnet20_bn_cifar",
@@ -143,6 +143,8 @@ else:
         # control for the two-sided controller of phase 4
         "Rsteps4rh": [16] * 3 + [20] * 3 + [24] * 3 + [28] * 3
                      + [24 if e in (19, 23, 27) else 32 for e in range(12, 30)],
+        # 60-epoch horizon pilot (phase 6b): six epochs per size, 32 from epoch 24
+        "Rsteps4_60": [16] * 6 + [20] * 6 + [24] * 6 + [28] * 6 + [32] * 36,
     }
     # per-update draw over (16, 24, 32); low-resolution mass 12.3 epoch-equivalents
     # against Rprog's 12; pure 32 from epoch 18 as in Rprog's final 18 epochs? no --
@@ -223,6 +225,30 @@ def build_runs():
             r["controller"] = {"kind": "gap2s", "gstar": 0.06, "delta": 4, "ema_beta": 0.5,
                                "floor_start": 11, "down_gstar": 0.30, "reheat_r": 24, "settle": 3}
             runs.append(r)
+    elif PHASE == 6:
+        # pilot, seed 0: onset-detection ascent (advance by the smallest grid step when the
+        # EMA of g(+4) exceeds k x its measurement noise), optional reheats; two horizons
+        long = EPOCHS >= 60
+        base = {"kind": "onset", "delta": 4, "ema_beta": 0.5, "min_dwell": 2,
+                "max_dwell": 8 if long else 5, "margin": 0.01, "floor_start": 999,
+                "down_gstar": 0.30, "reheat_r": 24, "settle": 2}
+        if long:
+            runs.append(_run("Rsteps4_60", "Gnone", 0, "H"))
+            r = _run("Rsteps4ar_60", "Gnone", 0, "H"); r["schedule"] = "Rsteps4_60"
+            r["controller"] = {"kind": "gap2s", "ascent": "fixed", "ema_beta": 0.5, "delta": 4,
+                               "down_gstar": 0.30, "reheat_r": 24, "settle": 2, "gstar": None,
+                               "floor_start": None}
+            runs.append(r)
+            r = _run("Ronset2rh_60", "Gnone", 0, "H"); r["controller"] = {**base, "k": 2.0, "reheat": True}
+            runs.append(r)
+        else:
+            for k in (2.0, 3.0):
+                r = _run("Ronset%d" % int(k), "Gnone", 0, "H"); r["controller"] = {**base, "k": k, "reheat": False}
+                runs.append(r)
+            r = _run("Ronset2rh", "Gnone", 0, "H"); r["controller"] = {**base, "k": 2.0, "reheat": True}
+            runs.append(r)
+            if os.environ.get("ADAPT_REHEAT_ONLY") == "1":
+                runs = [r for r in runs if r["label"].startswith("Ronset2rh")]
     else:
         # Gaussian arms first (longest); Rprog + Gplateau replicates a campaign cell
         for sched in ("Rprog", "Rsteps4", "Rlin12"):
@@ -266,7 +292,8 @@ def verify_pairing(run_dir: Path) -> dict:
               "all_match": all(matches.values()), "enforced": not SMOKE}
     (run_dir / "pairing_verification.json").write_text(json.dumps(result, indent=2))
     log("pairing verification: %s" % json.dumps(matches))
-    if not result["all_match"] and not SMOKE:
+    result["enforced"] = (not SMOKE) and EPOCHS == 30
+    if not result["all_match"] and result["enforced"]:
         raise RuntimeError("regenerated shared state does not reproduce the "
                            "campaign's pinned assets: %s" % matches)
     return result
@@ -366,7 +393,7 @@ def train_run(spec, shared_dir: Path, gpu: int, out_dir: Path, worker: int):
             return
         r_cur = sched[done - 1]
         entry = {"after_epoch": done, "r": r_cur, "reason": None}
-        two_sided = controller.get("kind") == "gap2s"
+        two_sided = controller.get("kind") == "gap2s" or bool(controller.get("reheat"))
         if r_cur == 32:
             ctl_state["reached_32"] = True
         if two_sided and ctl_state["reached_32"]:
@@ -402,7 +429,30 @@ def train_run(spec, shared_dir: Path, gpu: int, out_dir: Path, worker: int):
             kind = controller.get("kind", "tau")
             b = controller["ema_beta"]
             r_new = r_cur
-            if kind in ("gap", "gap2s"):
+            if kind == "onset":
+                ctl_state["dwell"] = ctl_state.get("dwell", 0) + 1
+                probe = sig.get("gap_probe", {}).get(str(min(r_cur + controller["delta"], 32)))
+                if probe is not None:
+                    g = probe["gap_rel"]
+                    halves = probe.get("gap_half")
+                    noise = abs(halves[0] - halves[1]) / 1.4142 if halves else None
+                    ctl_state["ema"] = g if ctl_state["ema"] is None else b * ctl_state["ema"] + (1 - b) * g
+                    if noise is not None:
+                        ctl_state["ema_noise"] = (noise if ctl_state.get("ema_noise") is None
+                                                  else b * ctl_state["ema_noise"] + (1 - b) * noise)
+                    entry.update(gap=g, ema=ctl_state["ema"], noise=noise,
+                                 ema_noise=ctl_state.get("ema_noise"), dwell=ctl_state["dwell"])
+                thr = controller["k"] * (ctl_state.get("ema_noise") or 0.0) + controller["margin"]
+                entry["threshold"] = thr
+                if ctl_state["dwell"] >= controller["min_dwell"] and ctl_state["ema"] is not None \
+                        and ctl_state["ema"] >= thr:
+                    r_new, entry["reason"] = min(r_cur + controller["delta"], 32), "onset"
+                elif ctl_state["dwell"] >= controller["max_dwell"]:
+                    r_new, entry["reason"] = min(r_cur + controller["delta"], 32), "max_dwell"
+                if r_new != r_cur:
+                    ctl_state["dwell"] = 0
+                    ctl_state["ema_noise"] = None
+            elif kind in ("gap", "gap2s"):
                 cur, nxt = sig["current"], sig.get("next", {})
                 gap = None
                 if "monitor_ce_bnrecal" in nxt and cur["monitor_ce"] > 0:
@@ -475,7 +525,8 @@ def train_run(spec, shared_dir: Path, gpu: int, out_dir: Path, worker: int):
         r_next = None if mixed else next_distinct(sched, done)
         if controller and r_cur < 32:
             r_next = min(r_cur + controller["delta"], 32)
-        if controller and controller.get("kind") == "gap2s" and ctl_state["reached_32"]:
+        if controller and (controller.get("kind") == "gap2s" or controller.get("reheat")) \
+                and ctl_state["reached_32"]:
             r_next = controller["reheat_r"] if r_cur == 32 else 32
         cur_level = ctrl.levels[last] if ctrl.levels else None
         filtered = cur_level is not None and float(cur_level) > 0.0
@@ -534,6 +585,19 @@ def train_run(spec, shared_dir: Path, gpu: int, out_dir: Path, worker: int):
                 gp[str(rc)] = {"delta": d, "monitor_ce_bnrecal": rce, "monitor_acc_bnrecal": racc,
                                "gap_rel": (rce - sig["current"]["monitor_ce"]) / sig["current"]["monitor_ce"],
                                "bn_shift": shift}
+                if d == 4:
+                    # two disjoint halves of the monitor set -> two independent estimates of g
+                    half = mon_imgs.shape[0] // 2
+                    gh = []
+                    cur_fwd = forward_at(r_cur, cur_level)
+                    for sl in (slice(0, half), slice(half, None)):
+                        ce_c, _ = ce_acc(model, cur_fwd, mon_imgs[sl], mon_lbls[sl])
+                        saved = BNState(model)
+                        recalibrate_bn(model, fwd, mon_imgs[sl])
+                        ce_p, _ = ce_acc(model, fwd, mon_imgs[sl], mon_lbls[sl])
+                        saved.restore()
+                        gh.append((ce_p - ce_c) / ce_c)
+                    gp[str(rc)]["gap_half"] = gh
             sig["gap_probe"] = gp
 
         # step-size controller signal: train-mode gradients at r + Delta
