@@ -315,6 +315,23 @@ indistinguishable from the control on STL-10 (-0.03 +- 1.32). It is the method
 that blurs at 19 pre-normalisation convolution outputs, which is consistent with
 the same reading.
 
+> **Correction (longer-budget study, 3 seeds).** ~~On STL-10 the blur's benefit
+> disappears under Adam.~~ It had not disappeared, it had not yet arrived. Run
+> at 120 epochs instead of 60, with every schedule boundary scaled by the same
+> factor, `G` reaches **+5.30 +- 1.75** and `RG` **+5.09 +- 1.58** -- level with
+> `R` at +5.23 +- 2.43, and gaining ~4 pp of absolute accuracy over the
+> 60-epoch numbers while `plain` declines. The 60-epoch budget cut STL-10 at
+> roughly the point where the two blur arms start to pay; per-epoch curves show
+> them *below* `plain` at epoch 24 and crossing over around 36-48.
+>
+> What survives here: Adam and AdamW remain interchangeable, and the CIFAR-10
+> and SVHN shrinkages are untouched -- the longer CIFAR-10 arm ran under SGD, so
+> nothing in that study tests whether those two would also recover with more
+> epochs. **They have not been tested and should not be assumed.** What does not
+> survive is the STL-10 leg, and with it the reading that the blur substitutes
+> for optimization: on the one dataset where the effect looked cleanest, it was
+> a budget artifact. See the `longer-budget` branch.
+
 ### What this does not establish
 
 The learning rates are textbook values, not calibrated to match the SGD recipe's
@@ -322,11 +339,14 @@ difficulty, so every control improves: CIFAR-10's rises 75.4 -> 79.6, STL-10's
 57.4 -> 62.9. Part of the shrinkage is therefore lost headroom rather than the
 optimizer substituting for the method, and this study cannot separate the two.
 
-What headroom does **not** explain is the split. STL-10's control rose as much as
-CIFAR-10's, and `R` grew there while `G` vanished -- if less headroom were the
-whole story, both would have moved the same way. Settling the magnitudes would
-need an arm whose learning rate puts each control back at its SGD accuracy, which
-was not run.
+~~What headroom does **not** explain is the split. STL-10's control rose as much
+as CIFAR-10's, and `R` grew there while `G` vanished -- if less headroom were the
+whole story, both would have moved the same way.~~ This argument rested on the
+STL-10 split, and the correction above removes it: `G` did not vanish, it was
+measured before it had finished. At 120 epochs `R` and `G` are level, so on
+STL-10 there is no split left to explain, and nothing here separates headroom
+from substitution. Settling the magnitudes would still need an arm whose learning
+rate puts each control back at its SGD accuracy, which was not run.
 
 
 ## CIFAR-10 at 5,000 images: the STL-10 control
